@@ -15,7 +15,7 @@
 
 namespace life {
 
-// polymorphic wrapper for types that walk, talk, and quack like organims
+// polymorphic wrapper for types that walk, talk, and quack like experiments 
 class experiment {
 public:
   template <typename UserExperiment>
@@ -31,11 +31,19 @@ public:
   }
   experiment &operator=(experiment &&) noexcept = default;
 
+
   // public interface of experiments - how experiments can be used
   void run() const { self_->run_(); }
 
   configuration publish_configuration() const {
    return  self_->publish_configuration_();
+  }
+
+  void configure(configuration con) const {
+    auto real = publish_configuration();
+    validate_subset(con, real);
+    merge_into(con, real);
+    self_->configure_(con);
   }
 
 private:
@@ -47,6 +55,7 @@ private:
 
     virtual void run_() = 0;
     virtual configuration publish_configuration_() = 0;
+    virtual void configure_(configuration ) = 0;
   };
 
   // concept to test if method is provided by user
@@ -63,21 +72,20 @@ private:
     void run_() override {
       data_.run(); 
     }
-   configuration publish_configuration_() override {
-      return data_.publish_configuration(); 
+    configuration publish_configuration_() override {
+      return data_.publish_configuration();
     }
+    virtual void configure_(configuration c) override { data_.configure(c); }
 
-
-/*
-	// optional methods
-	//
-    std::string name_() const override {
-      if constexpr (enhanced_type_traits::is_detected<UserExperiment, nameable>{})
-        return "experiment-name:" + data_.name();
-      else
-        return " #unnamed experiment??? ";
-    }
-*/
+    /*
+            // optional methods
+            //
+        std::string name_() const override {
+          if constexpr (enhanced_type_traits::is_detected<UserExperiment,
+       nameable>{}) return "experiment-name:" + data_.name(); else return "
+       #unnamed experiment??? ";
+        }
+    */
 
     UserExperiment data_;
   };

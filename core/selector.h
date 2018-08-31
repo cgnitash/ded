@@ -19,6 +19,7 @@ public:
   template <typename UserSelector>
   selector(UserSelector x) : self_(new selector_object<UserSelector>(std::move(x))) {}
 
+  selector() =  default;
   selector(const selector &x) : self_(x.self_->copy_()) {}
   selector(selector &&) noexcept = default;
 
@@ -38,6 +39,13 @@ public:
    return  self_->publish_configuration_();
   }
 
+  void configure(configuration con) const {
+    auto real = publish_configuration();
+    validate_subset(con, real);
+    merge_into(con, real);
+    self_->configure_(con);
+  }
+
 private:
 
   // interface/ABC for an selector
@@ -48,6 +56,7 @@ private:
     virtual std::vector<life::entity>
     select_(std::vector<life::entity> &) const = 0;
     virtual configuration publish_configuration_() = 0;
+    virtual void configure_(configuration ) = 0;
   };
 
   // concept to test if method is provided by user
@@ -68,6 +77,7 @@ private:
    configuration publish_configuration_() override {
       return data_.publish_configuration(); 
     }
+    virtual void configure_(configuration c) override { data_.configure(c); }
 
 	
 

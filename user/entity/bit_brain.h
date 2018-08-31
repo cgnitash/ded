@@ -12,14 +12,14 @@ class bit_brain {
   std::vector<bool> encoding_;
 
 public:
-  bit_brain(life::configuration c)
-      : size_(std::stol(c["size"].first)),
-        encoding_(std::vector<bool>(size_, false)) {}
+  void configure(life::configuration c)
+      { size_=c["size"];
+        encoding_=std::vector<bool>(size_, false); }
 
-  bit_brain() : bit_brain(publish_configuration()) {}
+  bit_brain() { configure(publish_configuration()) ;}
   life::configuration publish_configuration() {
 	life::configuration c;
-   	c["size"] = {"8","length of bit brain"};
+   	c["size"] = 8;
 return c; 
   }
   void mutate() ;

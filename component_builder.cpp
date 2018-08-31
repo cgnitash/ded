@@ -35,16 +35,6 @@ int main() {
   header << "\n#include<string_view>\n\nnamespace life {\n\n";
 
   for (auto &[type, names] : build_options) {
-    header << type << " configure_" << type
-           << "(std::string_view choice, configuration con) {\n";
-    for (auto &name : names)
-      header << "  if (choice == \"" << name << "\")\n    return " << name
-             << "(con);\n";
-    header << "  std::cout << \"unknown-" << type
-           << ": \" << choice;\n  exit(1);\n}\n\n";
-  }
-
-  for (auto &[type, names] : build_options) {
     header << type << " make_" << type << "(std::string_view choice) {\n";
     for (auto &name : names)
       header << "  if (choice == \"" << name << "\")\n    return " << name

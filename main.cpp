@@ -1,6 +1,10 @@
 
 
+
 #include"components.h"
+
+#include <nlohmann/json.hpp>
+
 #include <algorithm>
 #include <iostream>
 #include <fstream>
@@ -12,18 +16,19 @@
 #include <regex>
 
 template <typename L, typename M>
-void save(std::ofstream &f, std::string_view component, L component_lister,
+void save(std::ofstream &f, std::string_view comp_type, L component_lister,
           M component_maker) {
 
   for (auto &comp_name : component_lister()) {
-    auto comp  = component_maker(comp_name);
-    auto con = comp.publish_configuration();
-
-    for (auto &[name, vm] : con) {
-      auto &[val, message] = vm;
-      f << "<" << component << ">" << comp_name << "::" << name << " = " << val
-        << "  #" << message << "\n";
-    }
+                         auto n  = component_maker(comp_name);
+    std::cout <<
+	   	comp_type
+                          << " -- " << comp_name << "\n  " <<       std::endl;
+	  std::cout <<std::setw(4) << n.publish_configuration()
+                          << std::endl;
+    f << "\n"
+      << comp_type << " -- " << comp_name << "\n  " << std::setw(4)
+      << component_maker(comp_name).publish_configuration() << std::endl;
   }
 }
 void save_configs() {
@@ -36,36 +41,24 @@ void save_configs() {
   file.close();
 }
 
-std::pair<std::string, life::configuration>
-load_user_experiment(std::string file_name) {
-  std::ifstream ef(file_name);
-  std::string exp_name;
+life::configuration load_user_experiment(std::string file_name) {
   life::configuration con;
-  std::regex re(R"(^\s*(\w+)\s*>\s*$)");
-  std::regex rv(R"(^\s*(\w+)\s*(\w+)\s*$)");
-  std::regex rx(R"(^\s*(selector|entity)\s*(\w+)\s*>\s*$)");
-  for (std::string s; std::getline(ef, s);) {
-    std::smatch m;
-    if (std::regex_match(s, m, re)) {
-      exp_name = m[1].str();
-      life::experiment e(life::make_experiment(exp_name));
-      con = e.publish_configuration();
-    }
-    if (std::regex_match(s, m, rv)) {
-      con[m[1]] = {m[2], ""};
-    }
-  }
-	return {exp_name,con};
+  std::ifstream ef(file_name);
+  ef >> con;
+//  std::cout << std::setw(4) << con << std::endl;
+  return con;
 }
-//con["generations"] = {"10",""};
+
 int main(int argc, char **argv) {
   if (argc == 2 && std::string(argv[1]) == "-s") {
     save_configs();
   }
 
   if (argc == 3 && std::string(argv[1]) == "-s") {
-    auto [exp_name, con] = load_user_experiment(argv[2]);
-    auto n = life::configure_experiment(exp_name, con);
-    n.run();
+    auto  con = load_user_experiment(argv[2]);
+    std::string name = con[0];
+    auto ex = life::make_experiment(name);
+    ex.configure(con[1]);
+    ex.run();
   }
 }

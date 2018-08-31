@@ -21,6 +21,7 @@ public:
   template <typename UserEntity>
   entity(UserEntity x) : self_(new entity_object<UserEntity>(std::move(x))) {}
 
+  entity() = default;
   entity(const entity &x) : self_(x.self_->copy_()) {}
   entity(entity &&) noexcept = default;
 
@@ -43,6 +44,14 @@ public:
   }
 
   double score() const { return score_; }
+
+  void configure(configuration con) const {
+    auto real = publish_configuration();
+    validate_subset(con, real);
+    merge_into(con, real);
+    self_->configure_(con);
+  }
+
 private:
 
   // interface/ABC for an entity
@@ -53,6 +62,7 @@ private:
     virtual void mutate_() = 0;
     virtual configuration publish_configuration_() = 0;
 	virtual long update_() = 0;
+    virtual void configure_(configuration ) = 0;
   };
 
   // concept to test if method is provided by user
@@ -78,6 +88,7 @@ private:
       return data_.publish_configuration(); 
     }
 
+    virtual void configure_(configuration c) override { data_.configure(c); }
 
 /*
 	// optional methods

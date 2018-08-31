@@ -9,20 +9,20 @@
 #include <vector>
 #include <random>
 
-
+// will be used as a 'selector'
 class moran {
-	
-	bool ran_;
 
-	public:
-  moran() : moran(publish_configuration()) {}
-  moran(life::configuration c) : ran_(std::stol(c["random"].first)) {}
+  bool ran_;
 
-  life::configuration publish_configuration() const  {
-  life::configuration c;
-  c["random"] = {"0", "random replacement"};
-  return c;
-}
+public:
+  moran() { configure(publish_configuration()); }
 
-std::vector<life::entity> select(std::vector<life::entity> &pop) const ;
+  life::configuration publish_configuration() const {
+    life::configuration c;
+    c["random"] = false;
+    return c;
+  }
+  void configure(life::configuration c) { ran_ = c["random"]; }
+
+  std::vector<life::entity> select(std::vector<life::entity> &pop) const;
 };

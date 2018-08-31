@@ -9,18 +9,16 @@
 #include <vector>
 
 
-class elite_replacement {
+class null_selector{
 
-		double strength_;
 public:
-  void configure(life::configuration c) { strength_ =c["st"]; }
+ void  configure(life::configuration ) {}
 
 life::configuration publish_configuration() const  {
   life::configuration c;
-  c["st"] = 0.2;
   return c;
 }
-  elite_replacement() { configure(publish_configuration()); }
+  null_selector () {configure(publish_configuration()); }
 
   std::vector<life::entity> select(std::vector<life::entity> &pop) const ;
 };
