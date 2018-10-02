@@ -3,6 +3,7 @@
 
 #include "../../core/configuration.h"
 #include "../../core/entity.h"
+#include "../../core/eval_results.h"
 
 #include <algorithm>
 #include <iostream>
@@ -11,16 +12,17 @@
 
 class elite_replacement {
 
-		double strength_;
+	std::string expr_;
 public:
-  void configure(life::configuration c) { strength_ =c["st"]; }
+  void configure(life::configuration c) { expr_  =c["expr"]; }
 
 life::configuration publish_configuration() const  {
   life::configuration c;
-  c["st"] = 0.2;
+  c["expr"] = "max $score";
   return c;
 }
   elite_replacement() { configure(publish_configuration()); }
 
-  std::vector<life::entity> select(std::vector<life::entity> &pop) const ;
+  std::vector<life::entity> select(const std::vector<life::entity> &,
+                                   const life::eval_results &);
 };

@@ -2,7 +2,8 @@
  [ "evolution" ,  {  
 				"population_size" : 100,
 				"generations" : 100,
-				"selector" : [ "elite_replacement" , { "st" : 0.2 } ],
-			    "entity" : [ "bit_brain", { "size" : 50 } ]
+				"selector" : [ "moran"  ],
+				"environment" : [ "forager"  ],
+			    "entity" : [ "markov_brain" ] 
  } ]	
 				

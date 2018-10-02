@@ -20,12 +20,7 @@ void save(std::ofstream &f, std::string_view comp_type, L component_lister,
           M component_maker) {
 
   for (auto &comp_name : component_lister()) {
-                         auto n  = component_maker(comp_name);
-    std::cout <<
-	   	comp_type
-                          << " -- " << comp_name << "\n  " <<       std::endl;
-	  std::cout <<std::setw(4) << n.publish_configuration()
-                          << std::endl;
+    auto n = component_maker(comp_name);
     f << "\n"
       << comp_type << " -- " << comp_name << "\n  " << std::setw(4)
       << component_maker(comp_name).publish_configuration() << std::endl;
@@ -38,6 +33,7 @@ void save_configs() {
   save(file, "experiment", life::experiment_list, life::make_experiment);
   save(file, "entity", life::entity_list, life::make_entity);
   save(file, "selector", life::selector_list, life::make_selector);
+  save(file, "environment", life::environment_list, life::make_environment);
   file.close();
 }
 
@@ -61,4 +57,12 @@ int main(int argc, char **argv) {
     ex.configure(con[1]);
     ex.run();
   }
+
+  // if no arguments are passed 
+  auto e = life::make_entity("markov_brain");
+  e.input({1,0,1,0});
+		  e.tick();
+		  auto o = e.output();
+		  for (auto x:o)
+			  std::cout << x;
 }

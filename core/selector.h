@@ -3,6 +3,7 @@
 
 #include"member_detection.h"
 #include "entity.h"
+#include "eval_results.h"
 
 #include <cassert>
 #include <iostream>
@@ -13,11 +14,12 @@
 
 namespace life {
 
-// polymorphic wrapper for types that walk, talk, and quack like organims
+// polymorphic wrapper for types that walk, talk, and quack like selectors 
 class selector {
 public:
   template <typename UserSelector>
-  selector(UserSelector x) : self_(new selector_object<UserSelector>(std::move(x))) {}
+  selector(UserSelector x)
+      : self_(new selector_object<UserSelector>(std::move(x))) {}
 
   selector() =  default;
   selector(const selector &x) : self_(x.self_->copy_()) {}
@@ -31,15 +33,15 @@ public:
   selector &operator=(selector &&) noexcept = default;
 
   // public interface of selectors - how selectors can be used
-  std::vector<life::entity> select(std::vector<life::entity> & pop) const {
-    return self_->select_(pop);
+  std::vector<entity> select(eval_results &p) {
+    return self_->select_(p);
   }
 
   configuration publish_configuration() const {
    return  self_->publish_configuration_();
   }
 
-  void configure(configuration con) const {
+  void configure(configuration con) {
     auto real = publish_configuration();
     validate_subset(con, real);
     merge_into(con, real);
@@ -53,10 +55,10 @@ private:
     virtual ~selector_interface () = default;
     virtual selector_interface *copy_() const = 0;
 
-    virtual std::vector<life::entity>
-    select_(std::vector<life::entity> &) const = 0;
-    virtual configuration publish_configuration_() = 0;
-    virtual void configure_(configuration ) = 0;
+    virtual std::vector<entity>
+    select_( eval_results&) = 0;
+    virtual configuration publish_configuration_()const  = 0;
+    virtual void configure_(configuration )= 0;
   };
 
   // concept to test if method is provided by user
@@ -70,14 +72,14 @@ private:
 
 	// mandatory methods
 	//
-    virtual std::vector<life::entity>
-    select_(std::vector<life::entity> &pop) const override {
-      return data_.select(pop);
+    std::vector<entity>
+    select_( eval_results& p) override {
+      return data_.select(p);
     }
-   configuration publish_configuration_() override {
+   configuration publish_configuration_() const override {
       return data_.publish_configuration(); 
     }
-    virtual void configure_(configuration c) override { data_.configure(c); }
+    void configure_(configuration c) override { data_.configure(c); }
 
 	
 

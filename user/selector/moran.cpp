@@ -7,22 +7,24 @@
 #include <vector>
 #include <random>
 
+std::vector<life::entity> moran::select(life::eval_results &pop) const {
 
-std::vector<life::entity> moran::select(std::vector<life::entity> &pop) const {
+  std::string name = "score";
+  std::vector<life::entity> result;
 
-  if (ran_) {
-    std::random_device rd;
-    std::mt19937 g(rd());
-    std::shuffle(pop.begin(), pop.end(), g);
+  std::nth_element(std::begin(pop), std::begin(pop) + pop.size() / 2,
+                   std::end(pop), [&name](auto &org1, auto &org2) {
+                     return std::stod(org1.second[name]) >
+                            std::stod(org2.second[name]);
+                   });
+
+  for (auto i = 0u; i < pop.size() / 2; i++) {
+    auto org = pop[i].first;
+    result.push_back(org);
+    org.mutate();
+    result.push_back(org);
   }
 
-  for (auto it = std::begin(pop); it != std::end(pop); it += 2) {
-    if (it->score() < (it + 1)->score())
-      std::swap(*it, *(it + 1));
-    auto x = *it;
-    x.mutate();
-    *(it + 1) = x;
-  }
-  return pop;
+  return result;
 }
 

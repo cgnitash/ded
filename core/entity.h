@@ -3,6 +3,8 @@
 
 #include"member_detection.h"
 #include"configuration.h"
+#include"encoding.h"
+#include"signal.h"
 
 
 #include <cassert>
@@ -15,7 +17,7 @@
 
 namespace life {
 
-// polymorphic wrapper for types that walk, talk, and quack like organims
+// polymorphic wrapper for types that walk, talk, and quack like organisms
 class entity {
 public:
   template <typename UserEntity>
@@ -33,17 +35,21 @@ public:
   entity &operator=(entity &&) noexcept = default;
 
   // public interface of entitys - how entitys can be used
-  long update() {
-   score_ =  self_->update_();
-  	return score_;
+  void input(signal s) {
+  	self_->input_(s);
   }
-  void mutate() const { self_->mutate_(); }
+
+  signal output() {
+	  return self_->output_();
+  }
+
+  void mutate() { self_->mutate_(); }
 
   configuration publish_configuration() const {
    return  self_->publish_configuration_();
   }
 
-  double score() const { return score_; }
+  void tick() { self_->tick_(); }
 
   void configure(configuration con) const {
     auto real = publish_configuration();
@@ -61,23 +67,33 @@ private:
 
     virtual void mutate_() = 0;
     virtual configuration publish_configuration_() = 0;
-	virtual long update_() = 0;
+	virtual void tick_() = 0;
+	virtual void input_(signal) = 0;
+	virtual signal output_() = 0;
     virtual void configure_(configuration ) = 0;
   };
 
   // concept to test if method is provided by user
 //  template <typename T> using nameable = decltype(std::declval<T&>().name());
 
-  template <typename UserEntity> struct entity_object : entity_interface {
+  template <typename UserEntity> struct entity_object final : entity_interface {
+
     entity_object(UserEntity x) : data_(std::move(x)) {}
-    entity_interface *copy_() const override {
+ 
+ 	entity_interface *copy_() const override {
       return new entity_object(*this);
     }
 
 	// mandatory methods
 	//
-    long update_() override {
-      return data_.update(); 
+    void input_(signal s) override {
+      data_.input(s); 
+    }
+    signal output_() override {
+      return data_.output(); 
+    }
+    void tick_() override {
+      data_.tick(); 
     }
 
    void mutate_() override {
@@ -88,7 +104,7 @@ private:
       return data_.publish_configuration(); 
     }
 
-    virtual void configure_(configuration c) override { data_.configure(c); }
+    void configure_(configuration c) override { data_.configure(c); }
 
 /*
 	// optional methods
@@ -104,12 +120,10 @@ private:
     UserEntity data_;
   };
 
-  double score_ = 0;
   std::unique_ptr<entity_interface> self_;
 };
 
 std::vector<std::string> entity_list();
-//static std::vector<std::string> _entity_list;
 entity make_entity(std::string_view);
 entity configure_entity(std::string_view, configuration);
 } // namespace life

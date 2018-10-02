@@ -1,31 +1,31 @@
 
-#include"evolution.h"
+#include "evolution.h"
 #include <algorithm>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <numeric>
+#include <random>
+#include <regex>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <random>
-#include <regex>
+#include <utility>
 
 void evolution::run() {
-  std::vector pop(pop_size, ent);
+  std::vector pop(pop_size, org);
 
   for (int i = 0; i < generations; i++) {
 
-    for (auto &e : pop)
-      e.update();
+    auto scores = world.evaluate(pop);
 
-    std::cout << "\navg score: "
-              << std::accumulate(std::begin(pop), std::end(pop), 0.f,
-                                 [](auto const total, auto &value) {
-                                   return total + value.score();
-                                 }) /
-                     pop.size();
+    std::cout << "avg: "
+              << std::accumulate(std::begin(scores), std::end(scores), 0.0,
+                                 [](double total, auto &org) {
+                                   return total + std::stod(org.second["score"]);
+                                 })
+              << std::endl;
 
-    pop = sel.select(pop);
+    pop = optimiser.select(scores);
   }
 }
 

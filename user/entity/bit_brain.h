@@ -1,6 +1,8 @@
 # pragma once
 
 #include"../../core/configuration.h"
+#include"../../core/signal.h"
+#include"../../core/encoding.h"
 
 #include <vector>
 #include <algorithm>
@@ -22,7 +24,9 @@ public:
    	c["size"] = 8;
 return c; 
   }
-  void mutate() ;
-  long update() const ;
+  void mutate();
+  void input(life::signal);
+  life::signal output();
+  void tick();
 
 };

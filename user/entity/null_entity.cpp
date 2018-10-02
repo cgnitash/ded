@@ -4,10 +4,9 @@
 #include <vector>
 #include <algorithm>
 
-  void null_entity::mutate() {
-  }
-  long null_entity::update() const {
-    return 0;
-  }
+  void null_entity::mutate() {}
+  void null_entity::input(life::signal) {}
+  life::signal null_entity::output() { return life::signal(); }
+  void null_entity::tick() {}
 
 

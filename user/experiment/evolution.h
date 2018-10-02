@@ -15,8 +15,9 @@ class evolution {
 
   long pop_size;
   long generations;
-  life::entity ent ;
-  life::selector sel ;
+  life::entity org ;
+  life::selector optimiser ;
+  life::environment world ;
 
 public:
   evolution() {
@@ -28,6 +29,8 @@ public:
     ec["entity"] = {"null_entity", {}, "the entities to be evolved"};
     ec["selector"] = {
         "null_selector", {}, "selection process used by evolution"};
+    ec["environment"] = {
+        "null_environment", {}, "selection process used by evolution"};
     ec["population_size"] = 100;
     ec["generations"] = 50;
     return ec;
@@ -37,10 +40,12 @@ public:
 
     pop_size = (con["population_size"]);
     generations = (con["generations"]);
-    ent = life::make_entity(std::string(con["entity"][0]));
-    ent.configure(con["entity"][1]);
-    sel = life::make_selector(std::string(con["selector"][0]));
-    sel.configure(con["selector"][1]);
+    org = life::make_entity(std::string(con["entity"][0]));
+    org.configure(con["entity"][1]);
+    optimiser= life::make_selector(std::string(con["selector"][0]));
+    optimiser.configure(con["selector"][1]);
+    world = life::make_environment(std::string(con["environment"][0]));
+    world.configure(con["environment"][1]);
   }
 
   void run();
