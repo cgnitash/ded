@@ -1,18 +1,25 @@
 
-#include"bit_brain.h"
+#include "bit_brain.h"
 
-#include <vector>
 #include <algorithm>
+#include <vector>
 
-  void bit_brain::tick() { }
+void bit_brain::tick() {}
 
-  void bit_brain::mutate() {
-    auto i = rand() % size_;
-    encoding_[i] = !encoding_[i];
-  }
+void bit_brain::mutate() {
+  auto i = rand() % size_;
+  genome_[i] = static_cast<char>(rand()); 
+}
 
-  life::signal bit_brain::output() {
-    return {static_cast<double>(
-        std::count(std::cbegin(encoding_), std::cend(encoding_), true))};
-  }
+life::signal bit_brain::output() {
+	life::signal v;
+	std::transform(std::begin(genome_), std::end(genome_),
+	               std::back_inserter(v),
+	               [](auto const value) {
+		return value %2;
+	});
+  	return v;
+}
+
 void bit_brain::input(life::signal) {}
+

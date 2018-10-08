@@ -58,11 +58,15 @@ int main(int argc, char **argv) {
     ex.run();
   }
 
+  {
   // if no arguments are passed 
-  auto e = life::make_entity("markov_brain");
-  e.input({1,0,1,0});
-		  e.tick();
-		  auto o = e.output();
-		  for (auto x:o)
-			  std::cout << x;
+  std::cout << " This is just a handwritten test\n";
+  auto e = life::make_entity("bit_brain");
+
+//  e.input({1, 0, 1, 0});
+//  e.tick();
+  auto o = e.output();
+  for (auto x : o)
+    std::cout << x;
+}
 }

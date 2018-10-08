@@ -11,18 +11,18 @@
 class bit_brain {
 
   long size_;
-  std::vector<bool> encoding_;
+	life::encoding genome_;
 
 public:
-  void configure(life::configuration c)
-      { size_=c["size"];
-        encoding_=std::vector<bool>(size_, false); }
-
+  void configure(life::configuration c) {
+    size_ = c["size"];
+    genome_ = std::string(size_, 'a');
+  }
   bit_brain() { configure(publish_configuration()) ;}
   life::configuration publish_configuration() {
-	life::configuration c;
-   	c["size"] = 8;
-return c; 
+    life::configuration c;
+    c["size"] = 8;
+    return c;
   }
   void mutate();
   void input(life::signal);

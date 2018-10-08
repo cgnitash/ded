@@ -74,11 +74,19 @@ int main() {
 
     makefile
         << "\n\n{0}ded : $({0}components)"
-           "\n\t$({0}flags) $({0}components) -o ded{0}"
+           "\n\t$({0}flags) $({0}components) -o {0}ded"
            "\n\n{0}obj_files/main.o : main.cpp"
            "\n\t$({0}flags) -c main.cpp -o {0}obj_files/main.o"
-           "\n\n{0}obj_files/components.o : components.cpp components.h"
-           "\n\t$({0}flags) -c components.cpp -o {0}obj_files/components.o\n\n"_format(
+           "\n\n{0}obj_files/components.o : components.cpp components.h "
+           "core/experiment.h core/environment.h core/entity.h core/selector.h"_format(
+               flags);
+    for (auto &[type, names] : build_options)
+      for (auto &name : names)
+        makefile
+            << " user/{0}/{1}.h"_format(type,name);
+
+    makefile
+        << "\n\t$({0}flags) -c components.cpp -o {0}obj_files/components.o\n\n"_format(
                flags);
 
     for (auto &[type, names] : build_options)
@@ -88,7 +96,7 @@ int main() {
                "\t$({0}flags) -c user/{1}/{2}.cpp -o {0}obj_files/{1}__{2}.o\n\n"_format(
                    flags, type, name);
 
-    makefile << "clean{0} : \n\trm  {0}obj_files/* {0}ded\n\n"_format(flags);
+    makefile << "clean{0} : \n\trm  {0}obj_files/*.o {0}ded\n\n"_format(flags);
   }
   makefile.close();
 }

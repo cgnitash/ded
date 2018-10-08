@@ -71,11 +71,11 @@ void markov_brain::compute_gates_() {
        i != end; ++i) {
     std::smatch m = *i;
     gate g;
-    auto in_num = std::stol(m[1]) % addresses;
+    auto in_num = m[1].str()[0] % input_;
     auto ins_val = m[2].str();
     for (int i = 0; i < in_num; i++)
       g.ins_.push_back(ins_val[i] % addresses);
-    auto out_num= std::stol(m[3]) % addresses;
+    auto out_num= m[3].str()[0] % output_;
     auto out_val  = m[4].str();
     for (int i = 0; i < out_num; i++)
       g.outs_.push_back(out_val[i] % addresses);

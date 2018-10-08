@@ -22,7 +22,7 @@ void evolution::run() {
               << std::accumulate(std::begin(scores), std::end(scores), 0.0,
                                  [](double total, auto &org) {
                                    return total + std::stod(org.second["score"]);
-                                 })
+                                 }) / scores.size()
               << std::endl;
 
     pop = optimiser.select(scores);

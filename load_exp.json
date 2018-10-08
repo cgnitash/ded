@@ -3,7 +3,7 @@
 				"population_size" : 100,
 				"generations" : 100,
 				"selector" : [ "moran"  ],
-				"environment" : [ "forager"  ],
-			    "entity" : [ "markov_brain" ] 
+				"environment" : [ "max_one"  ],
+			    "entity" : [ "bit_brain" ] 
  } ]	
 				
