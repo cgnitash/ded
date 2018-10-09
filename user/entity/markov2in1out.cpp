@@ -1,5 +1,6 @@
 
 #include"markov2in1out.h"
+#include"../../core/utilities.h"
 
 #include <vector>
 #include <algorithm>
@@ -19,14 +20,14 @@ void markov2in1out::mutate() {
 
 void markov2in1out::input(life::signal v) {
 	for(auto i=0;i<input_;i++)
-		buffer_[i] = v[i];
+		buffer_[i] = util::bit(v[i]);
 }
 
 
 life::signal markov2in1out::output() {
   life::signal v(output_);
   for (auto i = 0; i < output_; i++)
-    v[i] = bit(buffer_[i + input_]);
+    v[i] = util::bit(buffer_[i + input_]);
   return v;
 }
 
@@ -38,14 +39,15 @@ void markov2in1out::tick() {
   std::vector<double> out_buffer(buffer_.size(), 0);
 
   for (auto &g : gates_)
-    out_buffer[g.out_] += g.logic_[bit(buffer_[g.in_1_]) * 2 + bit(buffer_[g.in_2_])];
+    out_buffer[g.out_] +=
+        g.logic_[util::bit(buffer_[g.in_1_]) * 2 + util::bit(buffer_[g.in_2_])];
 
   buffer_ = out_buffer;
 }
 
 void markov2in1out::seed_gates(long n) {
   for (int i = 0; i < n; i++) {
-    auto pos = rand() % (genome_.size() - 1);
+    auto pos = std::rand() % (genome_.size() - 1);
     genome_[pos] = 42;
     genome_[pos + 1] = 84;
   }
@@ -69,4 +71,5 @@ void markov2in1out::compute_gates_() {
     gates_.push_back(g);
   }
   gates_valid_ = true;
+ std::cout << gates_.size() << " ";
 }

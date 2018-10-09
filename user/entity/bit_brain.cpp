@@ -7,8 +7,7 @@
 void bit_brain::tick() {}
 
 void bit_brain::mutate() {
-  auto i = rand() % size_;
-  genome_[i] = static_cast<char>(rand()); 
+	life::point_mutate(genome_);
 }
 
 life::signal bit_brain::output() {

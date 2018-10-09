@@ -14,7 +14,7 @@
 void forager::replace_resource_() {
   while (true){
   // yucky randomness :(
-    auto p = location{rand() % grid_size_, rand() % grid_size_};
+    auto p = location{std::rand() % grid_size_, std::rand() % grid_size_};
     auto  inserted = resources_.insert(p);
     if (inserted.second)
       break;
@@ -42,8 +42,8 @@ double forager::eval(life::entity org) {
 
   auto score = 0.0;
   resources_.clear();
-  auto p = location{rand() % grid_size_, rand() % grid_size_};
-  auto d = direction{rand() % 4};
+  auto p = location{std::rand() % grid_size_, std::rand() % grid_size_};
+  auto d = direction{std::rand() % 4};
 
   for (auto i = 0; i < density_ * grid_size_ * grid_size_; i++)
 	 replace_resource_(); 

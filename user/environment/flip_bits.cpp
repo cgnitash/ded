@@ -29,7 +29,7 @@ flip_bits::evaluate(const std::vector<life::entity> &pop) {
                        std::begin(s), std::end(s), std::begin(r), 0,
                        std::plus<>(),
                        [](long a, long b) { return std::abs(a - b); }));
-                   return std::make_pair(org, m);
+				   return std::make_pair(org, m);
                  });
   return scores;
 }

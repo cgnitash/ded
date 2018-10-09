@@ -3,7 +3,7 @@
 				"population_size" : 100,
 				"generations" : 100,
 				"selector" : [ "moran"  ],
-				"environment" : [ "forager"  ],
-			    "entity" : [ "markov2in1out" ] 
+				"environment" : [ "flip_bits"  ],
+			    "entity" : [ "markov2in1out" ,  { "inputs" : 10 , "outputs" : 10 }  ]  
  } ]	
 				

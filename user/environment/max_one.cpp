@@ -21,7 +21,7 @@ max_one::evaluate(const std::vector<life::entity> &pop) {
     o.tick();
     auto v = o.output();
     m["score"] = std::to_string(std::count(std::begin(v), std::end(v), 1));
-    scores.push_back(make_pair(o, m));
+    scores.push_back(make_pair(org, m));
   }
 
           /*

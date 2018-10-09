@@ -30,8 +30,6 @@ class markov2in1out {
 
   void seed_gates(long = 1);
 
-  long bit(double d) { return d < 1.0 ? 0 : 1; }
-
 public:
   markov2in1out() { configure(publish_configuration()); }
   life::configuration publish_configuration() {
@@ -46,7 +44,7 @@ public:
     output_ = con["outputs"];
     hidden_ = con["hiddens"];
     buffer_ = std::vector<double>(input_ + output_ + hidden_, 0);
-    seed_gates(6);
+    seed_gates(10);
   }
   void mutate();
   void input(life::signal);

@@ -62,17 +62,15 @@ int main(int argc, char **argv) {
   // if no arguments are passed 
   std::cout << " This is just random testing -- ignore\n";
   auto e = life::make_entity("markov2in1out");
+  auto v = life::make_environment("flip_bits");
 
-//  e.input({1, 0, 1, 0});
-  e.tick();
-  auto o = e.output();
-  for (auto x : o)
-    std::cout << x;
-  auto f = e;
-  f.tick();
-  o = f.output();
-  for (auto x : o)
-    std::cout << x;
+  life::configuration c;
+  c["inputs"] = 10;
+  c["outputs"] = 10;
+  e.configure(c);
+  std::vector<life::entity> pop;
+  pop.push_back(e);
+  v.evaluate(pop);
 }
 
 }
