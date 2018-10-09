@@ -6,26 +6,12 @@
 #include <regex>
 
 void markov_brain::mutate() {
-  auto copy_prob = rand() % 1000;
-  if (!copy_prob) {
-    auto copy_from_pos = rand() % (genome_.length() - 40);
-    auto copy_to_pos = rand() % genome_.length();
-    genome_ = genome_.insert(copy_to_pos, genome_, copy_from_pos, 40);
-  }
 
-  auto point_mut = rand() % 3;
-  for (auto i = 0; i < point_mut; i++)
-    genome_[rand() % genome_.length()] = static_cast<char>(rand());
-
-  auto point_ins = rand() % 3;
-  for (auto i = 0; i < point_ins; i++)
-    genome_.insert(std::begin(genome_) + rand() % genome_.length(),
-                   static_cast<char>(rand()));
-
-  auto point_del = rand() % 3;
-  for (auto i = 0; i < point_del; i++)
-    genome_.erase(std::begin(genome_) + rand() % genome_.length());
-
+  life::point_delete(genome_);
+  life::point_insert(genome_);
+  life::point_mutate(genome_);
+  life::copy_chunk(genome_);
+  life::del_chunk(genome_);
   gates_valid_ = false;
   gates_.clear();
   buffer_ = std::vector<long>(input_ + output_ + hidden_, 0);
@@ -66,6 +52,7 @@ void markov_brain::tick() {
 void markov_brain::compute_gates_() {
 
   auto addresses = input_ + output_ + hidden_;
+ /*
   std::regex r(R"(ab(.)(....)(.)(....)(.){16})");
   for (std::sregex_iterator end, i(std::begin(genome_), std::end(genome_), r);
        i != end; ++i) {
@@ -84,5 +71,6 @@ void markov_brain::compute_gates_() {
       g.logic_.push_back(c % 16);
 	gates_.push_back(g);
   }
+  */
   gates_valid_ = true;
 }

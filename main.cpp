@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
     save_configs();
   }
 
-  if (argc == 3 && std::string(argv[1]) == "-s") {
+  if (argc == 3 && std::string(argv[1]) == "-f") {
     auto  con = load_user_experiment(argv[2]);
     std::string name = con[0];
     auto ex = life::make_experiment(name);
@@ -60,13 +60,19 @@ int main(int argc, char **argv) {
 
   {
   // if no arguments are passed 
-  std::cout << " This is just a handwritten test\n";
-  auto e = life::make_entity("bit_brain");
+  std::cout << " This is just random testing -- ignore\n";
+  auto e = life::make_entity("markov2in1out");
 
 //  e.input({1, 0, 1, 0});
-//  e.tick();
+  e.tick();
   auto o = e.output();
   for (auto x : o)
     std::cout << x;
+  auto f = e;
+  f.tick();
+  o = f.output();
+  for (auto x : o)
+    std::cout << x;
 }
+
 }

@@ -45,13 +45,13 @@ public:
 
   void mutate() { self_->mutate_(); }
 
-  configuration publish_configuration() const {
+  configuration publish_configuration() {
    return  self_->publish_configuration_();
   }
 
   void tick() { self_->tick_(); }
 
-  void configure(configuration con) const {
+  void configure(configuration con) {
     auto real = publish_configuration();
     validate_subset(con, real);
     merge_into(con, real);

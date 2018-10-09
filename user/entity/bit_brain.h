@@ -16,7 +16,7 @@ class bit_brain {
 public:
   void configure(life::configuration c) {
     size_ = c["size"];
-    genome_ = std::string(size_, 'a');
+    genome_ = life::encoding(size_, 0);
   }
   bit_brain() { configure(publish_configuration()) ;}
   life::configuration publish_configuration() {

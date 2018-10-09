@@ -38,7 +38,7 @@ public:
     input_ = con["inputs"];
     output_ = con["outputs"];
     hidden_ = con["hiddens"];
-    genome_ = std::string(500, 'a');
+    genome_ = life::encoding(500, 0);
     buffer_ = std::vector<long>(input_ + output_ + hidden_, 0);
   }
   void mutate();
