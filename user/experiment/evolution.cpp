@@ -18,6 +18,10 @@ void evolution::run() {
     org.configure(org_config);
     return org;
   });
+  auto optimiser = life::make_selector(sel_name);
+  optimiser.configure(sel_config);
+  auto world = life::make_environment(world_name);
+  world.configure(world_config);
 
   std::ofstream file("avg.csv");
   file << "avg\n";
