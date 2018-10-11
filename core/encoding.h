@@ -17,7 +17,7 @@ inline encoding generate(long len = 100) {
   return v;
 }
 
-inline void copy_chunk(encoding &v, long prob = 10, long len = 20) {
+inline void copy_chunk(encoding &v, long prob = 20, long len = 20) {
   auto copy_prob = std::rand() % prob;
   if (!copy_prob) {
     auto copy_from_pos = std::rand() % (v.size() - len);
@@ -28,14 +28,14 @@ inline void copy_chunk(encoding &v, long prob = 10, long len = 20) {
   }
 }
 
-inline void del_chunk(encoding &v, long prob = 200, long len = 20) {
+inline void del_chunk(encoding &v, long prob = 50, long len = 20) {
   auto del_prob = std::rand() % prob;
   auto del_pos = std::rand() % (v.size() - len);
   if (!del_prob)
     v.erase(std::begin(v) + del_pos, std::begin(v) + del_pos + len);
 }
 
-inline void point_mutate(encoding &v, long num = 2) {
+inline void point_mutate(encoding &v, long num = 3) {
   auto point_mut = rand() % num;
   for (auto i = 0; i < point_mut; i++)
     v[std::rand() % v.size()] = std::rand();
@@ -47,7 +47,7 @@ inline void point_insert(encoding &v, long num = 3) {
     v.insert(std::begin(v) + std::rand() % v.size(), std::rand());
 }
 
-inline void point_delete(encoding &v, long prob = 2) {
+inline void point_delete(encoding &v, long prob = 3) {
   auto point_del = std::rand() % prob;
   for (auto i = 0; i < point_del; i++)
     v.erase(std::begin(v) + std::rand() % v.size());
