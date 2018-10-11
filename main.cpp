@@ -13,6 +13,7 @@
 #include <string_view>
 #include <vector>
 #include <random>
+#include <thread>
 #include <regex>
 
 template <typename L, typename M>
@@ -46,11 +47,12 @@ life::configuration load_user_experiment(std::string file_name) {
 }
 
 int main(int argc, char **argv) {
-  if (argc == 2 && std::string(argv[1]) == "-s") {
+	if (argc == 2 && std::string(argv[1]) == "-s") {
     save_configs();
   }
 
-  if (argc == 3 && std::string(argv[1]) == "-f") {
+  if (argc == 4 && std::string(argv[1]) == "-f") {
+  srand(std::stol(argv[3]));
     auto  con = load_user_experiment(argv[2]);
     std::string name = con[0];
     auto ex = life::make_experiment(name);

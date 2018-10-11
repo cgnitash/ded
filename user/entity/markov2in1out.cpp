@@ -71,5 +71,5 @@ void markov2in1out::compute_gates_() {
     gates_.push_back(g);
   }
   gates_valid_ = true;
- std::cout << gates_.size() << " ";
+//` std::cout << gates_.size() << " ";
 }

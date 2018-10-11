@@ -15,10 +15,11 @@ class evolution {
 
   long pop_size;
   long generations;
-  life::entity org ;
+  //life::entity org ;
   life::selector optimiser ;
   life::environment world ;
-
+  std::string org_name;
+  life::configuration org_config;
 public:
   evolution() {
 	  configure(publish_configuration());
@@ -40,12 +41,12 @@ public:
 
     pop_size = (con["population_size"]);
     generations = (con["generations"]);
-    org = life::make_entity(std::string(con["entity"][0]));
-    org.configure(con["entity"][1]);
     optimiser= life::make_selector(std::string(con["selector"][0]));
     optimiser.configure(con["selector"][1]);
     world = life::make_environment(std::string(con["environment"][0]));
     world.configure(con["environment"][1]);
+	org_name = std::string(con["entity"][0]);
+	org_config = con["entity"][1];
   }
 
   void run();

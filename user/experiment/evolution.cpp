@@ -12,7 +12,12 @@
 #include <vector>
 
 void evolution::run() {
-  std::vector pop(pop_size, org);
+  std::vector<life::entity> pop(pop_size);
+  std::generate(std::begin(pop), std::end(pop), [this]() {
+    auto org = life::make_entity(org_name);
+    org.configure(org_config);
+    return org;
+  });
 
   std::ofstream file("avg.csv");
   file << "avg\n";

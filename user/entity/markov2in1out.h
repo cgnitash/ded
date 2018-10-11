@@ -9,7 +9,7 @@
 
 class markov2in1out {
 
-  life::encoding genome_ = life::encoding(100l, 0);
+  life::encoding genome_ = life::generate(100);
   long input_ = 4;
   long output_ = 2;
   long hidden_ = 4;
@@ -44,7 +44,7 @@ public:
     output_ = con["outputs"];
     hidden_ = con["hiddens"];
     buffer_ = std::vector<double>(input_ + output_ + hidden_, 0);
-    seed_gates(10);
+    seed_gates(1);
   }
   void mutate();
   void input(life::signal);
