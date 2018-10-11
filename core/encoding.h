@@ -4,12 +4,20 @@
 
 #include <cstdlib>
 #include <vector>
+#include <iostream>
+#include <algorithm>
 
 namespace life {
 
 using encoding = std::vector<long>;
 
-inline void copy_chunk(encoding &v, long prob = 100, long len = 20) {
+inline encoding generate(long len = 100) {
+  encoding v(len);
+  std::generate(std::begin(v), std::end(v), std::rand);
+  return v;
+}
+
+inline void copy_chunk(encoding &v, long prob = 10, long len = 20) {
   auto copy_prob = std::rand() % prob;
   if (!copy_prob) {
     auto copy_from_pos = std::rand() % (v.size() - len);
@@ -27,7 +35,7 @@ inline void del_chunk(encoding &v, long prob = 200, long len = 20) {
     v.erase(std::begin(v) + del_pos, std::begin(v) + del_pos + len);
 }
 
-inline void point_mutate(encoding &v, long num = 3) {
+inline void point_mutate(encoding &v, long num = 2) {
   auto point_mut = rand() % num;
   for (auto i = 0; i < point_mut; i++)
     v[std::rand() % v.size()] = std::rand();
