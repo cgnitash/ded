@@ -13,15 +13,15 @@
 
 class evolution {
 
-  long pop_size;
-  long generations;
+  long pop_size_;
+  long generations_;
   //life::entity org ;
-  std::string org_name = "null_entity";
-  std::string sel_name = "null_selector";
-  std::string world_name = "null_environment";
-  life::configuration org_config;
-  life::configuration sel_config;
-  life::configuration world_config;
+  std::string org_name_ = "null_entity";
+  std::string sel_name_ = "null_selector";
+  std::string world_name_ = "null_environment";
+  life::configuration org_config_;
+  life::configuration sel_config_;
+  life::configuration world_config_;
 public:
   evolution() {
 	  configure(publish_configuration());
@@ -29,23 +29,23 @@ public:
 
   life::configuration publish_configuration() {
     life::configuration ec;
-    ec["entity"] = {org_name,{}};
-    ec["selector"] = {sel_name,{}};
-    ec["environment"] = {world_name,{}};
+    ec["entity"] = {org_name_,{}};
+    ec["selector"] = {sel_name_,{}};
+    ec["environment"] = {world_name_,{}};
     ec["population_size"] = 100;
     ec["generations"] = 50;
     return ec;
   }
 
   void configure(life::configuration con) {
-    pop_size = (con["population_size"]);
-    generations = (con["generations"]);
-	org_name = std::string(con["entity"][0]);
-	org_config = con["entity"][1];
-	sel_name = std::string(con["selector"][0]);
-	sel_config = con["selector"][1];
-	world_name= std::string(con["environment"][0]);
-	world_config = con["environment"][1];
+    pop_size_ = (con["population_size"]);
+    generations_ = (con["generations"]);
+	org_name_ = std::string(con["entity"][0]);
+	org_config_ = con["entity"][1];
+	sel_name_ = std::string(con["selector"][0]);
+	sel_config_ = con["selector"][1];
+	world_name_= std::string(con["environment"][0]);
+	world_config_ = con["environment"][1];
   }
 
   void run();

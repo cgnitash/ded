@@ -12,20 +12,20 @@
 #include <vector>
 
 void evolution::run() {
-  std::vector<life::entity> pop(pop_size);
-  std::generate(std::begin(pop), std::end(pop), [this]() {
-    auto org = life::make_entity(org_name);
-    org.configure(org_config);
-    return org;
-  });
-  auto optimiser = life::make_selector(sel_name);
-  optimiser.configure(sel_config);
-  auto world = life::make_environment(world_name);
-  world.configure(world_config);
+  std::vector<life::entity> pop;
+  for (auto i = 0; i < pop_size_; i++) {
+    auto org = life::make_entity(org_name_);
+    org.configure(org_config_);
+    pop.push_back(org);
+  }
+  auto optimiser = life::make_selector(sel_name_);
+  optimiser.configure(sel_config_);
+  auto world = life::make_environment(world_name_);
+  world.configure(world_config_);
 
   std::ofstream file("avg.csv");
   file << "avg\n";
-  for (int i = 0; i < generations; i++) {
+  for (int i = 0; i < generations_; i++) {
 
     auto scores = world.evaluate(pop);
 

@@ -25,7 +25,6 @@ public:
   template <typename UserEnvironment>
   environment(UserEnvironment x) : self_(new environment_object<UserEnvironment>(std::move(x))) {}
 
-  environment() = default;
   environment(const environment &x) : self_(x.self_->copy_()) {}
   environment(environment &&) noexcept = default;
 

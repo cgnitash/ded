@@ -21,7 +21,6 @@ public:
   selector(UserSelector x)
       : self_(new selector_object<UserSelector>(std::move(x))) {}
 
-  selector() =  default;
   selector(const selector &x) : self_(x.self_->copy_()) {}
   selector(selector &&) noexcept = default;
 
