@@ -12,17 +12,17 @@
 
 class elite_replacement {
 
-	std::string expr_;
+	double strength_ = 0.1;
 public:
-  void configure(life::configuration c) { expr_  =c["expr"]; }
+  void configure(life::configuration c) { strength_=c["strength"]; }
 
 life::configuration publish_configuration() const  {
   life::configuration c;
-  c["expr"] = "max $score";
+  c["strength"] = strength_;
   return c;
 }
   elite_replacement() { configure(publish_configuration()); }
 
-  std::vector<life::entity> select(const std::vector<life::entity> &,
-                                   const life::eval_results &);
+  std::vector<life::entity> select(life::eval_results &);
+                                   
 };

@@ -7,31 +7,32 @@
 #include <vector>
 
 std::vector<life::entity>
-elite_replacement::select(const std::vector<life::entity> &pop,
-                          const life::eval_results &res) {
+elite_replacement::select(life::eval_results &pop) {
 
-  int str = pop.size() * strength_;
-  int rem = pop.size() % str;
-
-  // get rank of current pop
-  std::nth_element(
-      std::begin(pop), std::begin(pop) + str, std::end(pop),
-      [](auto &a, auto &b) { return a.output()[0] > b.output()[0]; });
-
-  // new population
-  std::vector<life::entity> next(pop);
-  for (auto i = 1u; i < next.size() / str; i++)
-    std::transform(std::begin(next), std::begin(next) + str,
-                   std::begin(next) + i * str, [](auto &value) {
-                     value.mutate();
-                     return value;
+  std::vector<life::entity> result;
+  std::string name = "score";
+  int frac = pop.size()*strength_;
+  std::nth_element(std::begin(pop), std::begin(pop) + frac,
+                   std::end(pop), [&name](auto &org1, auto &org2) {
+                     return std::stod(org1.second[name]) >
+                            std::stod(org2.second[name]);
                    });
 
-  std::transform(std::begin(next), std::begin(next) + rem, std::end(next) - rem,
-                 [](auto &value) {
-                   value.mutate();
-                   return value;
-                 });
-  return next;
+  for (auto i = 0; i < frac; i++) {
+    auto org = pop[i].first;
+    result.push_back(org);
+	for (auto j = 0; j < 1/strength_ - 1; j++) {
+    org.mutate();
+    result.push_back(org);
+	}
+  }
+
+  result.erase(std::begin(result) + pop.size(),std::end(result));
+  if (pop.size() > result.size())
+  {
+	  std::cout << "elite_replacement error  " << pop.size() << " " << result.size();
+	 exit(1);
+  } 
+  return result;
 }
 
