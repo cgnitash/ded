@@ -25,5 +25,5 @@ public:
   }
   void configure(life::configuration c) { ran_ = c["random"]; }
 
-  std::vector<life::entity> select(life::eval_results &) const;
+  std::vector<life::entity> select(life::eval_results  &pop) const;
 };
