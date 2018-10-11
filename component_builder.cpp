@@ -64,6 +64,11 @@ int main() {
               "\n\ndebugflags = g++-7 -Wall -std=c++17 -O3 -g"
               "\n\nall : ded \n\n"_format();
 
+  std::string core_headers(
+      " core/experiment.h core/environment.h core/entity.h core/selector.h "
+      "core/encoding.h core/configuration.h	core/eval_results.h "
+      "core/signal.h ");
+
   for (auto &flags : {"", "debug"}) {
     makefile
         << "\n\n{0}components = {0}obj_files/main.o {0}obj_files/components.o "_format(
@@ -77,13 +82,10 @@ int main() {
            "\n\t$({0}flags) $({0}components) -o {0}ded"
            "\n\n{0}obj_files/main.o : main.cpp"
            "\n\t$({0}flags) -c main.cpp -o {0}obj_files/main.o"
-           "\n\n{0}obj_files/components.o : components.cpp components.h "
-           "core/experiment.h core/environment.h core/entity.h core/selector.h"_format(
+           "\n\n{0}obj_files/components.o : components.cpp components.h "_format(
                flags);
-    for (auto &[type, names] : build_options)
-      for (auto &name : names)
-        makefile
-            << " user/{0}/{1}.h"_format(type,name);
+
+	makefile << core_headers;
 
     makefile
         << "\n\t$({0}flags) -c components.cpp -o {0}obj_files/components.o\n\n"_format(
@@ -92,9 +94,9 @@ int main() {
     for (auto &[type, names] : build_options)
       for (auto &name : names)
         makefile
-            << "{0}obj_files/{1}__{2}.o : user/{1}/{2}.cpp user/{1}/{2}.h\n"
+            << "{0}obj_files/{1}__{2}.o : user/{1}/{2}.cpp user/{1}/{2}.h {3}\n"
                "\t$({0}flags) -c user/{1}/{2}.cpp -o {0}obj_files/{1}__{2}.o\n\n"_format(
-                   flags, type, name);
+                   flags, type, name,core_headers);
 
     makefile << "clean{0} : \n\trm  {0}obj_files/*.o {0}ded\n\n"_format(flags);
   }
