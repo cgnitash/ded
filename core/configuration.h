@@ -1,12 +1,12 @@
 
 # pragma once
 
+#include "nlohmann/json.hpp"
 #include <string>
 #include <map>
 #include <vector>
 #include <fstream>
 #include <iostream>
-#include <nlohmann/json.hpp>
 
 namespace life{
 
