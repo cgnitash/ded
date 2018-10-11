@@ -76,14 +76,18 @@ int main() {
       for (auto &name : names)
         makefile << "{0}obj_files/{1}__{2}.o "_format(flags, type, name);
 
+    makefile << "\n\n{0}ded : $({0}components)"
+                "\n\t$({0}flags) $({0}components) -o {0}ded"
+                "\n\n{0}obj_files/main.o : main.cpp"
+                "\n\t$({0}flags) -c main.cpp -o {0}obj_files/main.o"
+                "\n\n{0}obj_files/components.o : components.cpp components.h "
+                "$(core_headers) "_format(flags);
+    for (auto &[type, names] : build_options)
+      for (auto &name : names)
+        makefile << "user/{0}/{1}.h "_format( type, name);
+
     makefile
-        << "\n\n{0}ded : $({0}components)"
-           "\n\t$({0}flags) $({0}components) -o {0}ded"
-           "\n\n{0}obj_files/main.o : main.cpp"
-           "\n\t$({0}flags) -c main.cpp -o {0}obj_files/main.o"
-           "\n\n{0}obj_files/components.o : components.cpp components.h "
-           "$(core_headers)"
-           "\n\t$({0}flags) -c components.cpp -o {0}obj_files/components.o\n\n"_format(
+        << "\n\t$({0}flags) -c components.cpp -o {0}obj_files/components.o\n\n"_format(
                flags);
 
     for (auto &[type, names] : build_options)
