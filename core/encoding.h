@@ -35,20 +35,20 @@ inline void del_chunk(encoding &v, long prob = 50, long len = 20) {
     v.erase(std::begin(v) + del_pos, std::begin(v) + del_pos + len);
 }
 
-inline void point_mutate(encoding &v, long num = 3) {
-  auto point_mut = rand() % num;
+inline void point_mutate(encoding &v, double prob = 0.01) {
+  auto point_mut = v.size() * prob;
   for (auto i = 0; i < point_mut; i++)
     v[std::rand() % v.size()] = std::rand();
 }
 
-inline void point_insert(encoding &v, long num = 3) {
-  auto point_ins = std::rand() % num;
+inline void point_insert(encoding &v, double prob = 0.01) {
+  auto point_ins =  v.size() * prob;
   for (auto i = 0; i < point_ins; i++)
     v.insert(std::begin(v) + std::rand() % v.size(), std::rand());
 }
 
-inline void point_delete(encoding &v, long prob = 3) {
-  auto point_del = std::rand() % prob;
+inline void point_delete(encoding &v, double prob = 0.01) {
+  auto point_del = v.size() * prob;
   for (auto i = 0; i < point_del; i++)
     v.erase(std::begin(v) + std::rand() % v.size());
 }
