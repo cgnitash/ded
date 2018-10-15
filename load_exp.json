@@ -1,9 +1,9 @@
 
  [ "evolution" ,  {  
 				"population_size" : 100,
-				"generations" : 2500,
-				"selector" : [ "elite_replacement" , { "strength" : 0.7 } ],
-				"environment" : [ "flip_bits"  ],
+				"generations" : 1000,
+				"selector" : [ "elite_replacement" , { "strength" : 0.8 } ],
+				"environment" : [ "flip_bits" , { "reps" : 5 } ],
 			    "entity" : [ "markov2in1out" ,  { "inputs" : 10 , "outputs" : 10 }  ]  
  } ]	
 				
