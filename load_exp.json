@@ -3,7 +3,7 @@
 				"population_size" : 100,
 				"generations" : 2000,
 				"selector" : [ "elite_replacement" , { "strength" : 0.5 } ],
-				"environment" : [ "flip_bits" , { "reps" : 10 , "size" : 16 } ],
+				"environment" : [ "replicate" , { "env" : [ "flip_bits" , {  "size" : 16 } ] , "num" : 10 } ],
 			    "entity" : [ "markov2in1out" ,  { "inputs" : 16 , "outputs" : 16 }  ]  
  } ]	
 				
