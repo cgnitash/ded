@@ -8,11 +8,7 @@
 
 void markov2in1out::mutate() {
 
-  life::point_delete(genome_);
-  life::point_insert(genome_);
-  life::point_mutate(genome_);
-  life::copy_chunk(genome_);
-  life::del_chunk(genome_);
+  life::all_mutations(genome_);
   gates_valid_ = false;
   gates_.clear();
   buffer_ = std::vector<double>(input_ + output_ + hidden_, 0);
@@ -48,8 +44,8 @@ void markov2in1out::tick() {
 void markov2in1out::seed_gates(long n) {
   for (int i = 0; i < n; i++) {
     auto pos = std::rand() % (genome_.size() - 1);
-    genome_[pos] = 42;
-    genome_[pos + 1] = 84;
+    genome_[pos] = 2;
+    genome_[pos + 1] = 8;
   }
 }
 void markov2in1out::compute_gates_() {
@@ -57,8 +53,8 @@ void markov2in1out::compute_gates_() {
   gates_.clear();
   auto addresses = input_ + output_ + hidden_;
   for (auto pos = std::begin(genome_);pos<std::end(genome_)-10;pos++) {
-     pos = std::find(pos, std::end(genome_) - 10, 42);
-    if (pos == std::end(genome_)-10 || *(pos+1) != 84 ) {
+    pos = std::find(pos, std::end(genome_) - 10, 2);
+    if (pos == std::end(genome_)-10 || *(pos+1) != 8 ) {
     continue;	
     }
     gate g{*(pos + 2) % addresses,
