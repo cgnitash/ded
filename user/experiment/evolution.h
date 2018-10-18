@@ -38,8 +38,8 @@ public:
   }
 
   void configure(life::configuration con) {
-    pop_size_ = (con["population_size"]);
-    generations_ = (con["generations"]);
+    pop_size_ = con["population_size"];
+    generations_ = con["generations"];
 	org_name_ = std::string(con["entity"][0]);
 	org_config_ = con["entity"][1];
 	sel_name_ = std::string(con["selector"][0]);

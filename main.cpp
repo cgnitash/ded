@@ -47,7 +47,8 @@ life::configuration load_user_experiment(std::string file_name) {
 }
 
 int main(int argc, char **argv) {
-	if (argc == 2 && std::string(argv[1]) == "-s") {
+  if (argc == 2 && std::string(argv[1]) == "-s") {
+    std::cout << "saving configurations.cfg ... \n";
     save_configs();
   }
 
