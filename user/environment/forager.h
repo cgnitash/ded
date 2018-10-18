@@ -17,9 +17,9 @@
 
 class forager {
 
-  long grid_size_;
-  long updates_;
-  double density_;
+  long grid_size_ = 10;
+  long updates_ = 100;
+  double density_ = 0.1;
   struct location {
     long x_, y_;
     bool operator<(const location &A) const{
@@ -66,9 +66,9 @@ class forager {
 
   life::configuration publish_configuration() {
     life::configuration ec;
-    ec["grid-size"] = 10;
-    ec["updates"] = 100;
-    ec["density"] = 0.1;
+    ec["grid-size"] = grid_size_;
+    ec["updates"] = updates_;
+    ec["density"] = density_;
     return ec;
   }
 
