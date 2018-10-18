@@ -23,8 +23,8 @@ void evolution::run() {
   auto world = life::make_environment(world_name_);
   world.configure(world_config_);
 
-  std::ofstream file("avg.csv");
-  file << "avg\n";
+  std::ofstream file("data.csv");
+  file << "avg,max\n";
   for (int i = 0; i < generations_; i++) {
 
     auto scores = world.evaluate(pop);
@@ -36,8 +36,13 @@ void evolution::run() {
                         }) /
         scores.size();
 
+    auto max =
+        *std::max_element(std::begin(scores), std::end(scores), [](auto &a,auto &b) {
+          return std::stod(a.second["score"]) < std::stod(b.second["score"]);
+        });
+
     std::cout << "avg: " << avg << std::endl;
-    file << avg << '\n';
+    file << avg << "," << max.second["score"] << '\n';
 
     pop = optimiser.select(scores);
   }
