@@ -41,10 +41,14 @@ void evolution::run() {
           return std::stod(a.second["score"]) < std::stod(b.second["score"]);
         });
 
-    std::cout << "avg: " << avg << std::endl;
+    std::cout << "update: " << std::setw(3) << i << " avg: " << std::setw(3)
+              << std::setprecision(2) << avg << "   max: " << std::setw(3)
+              << std::setprecision(2) << max.second["score"] << std::endl;
+	
     file << avg << "," << max.second["score"] << '\n';
 
     pop = optimiser.select(scores);
   }
+  file.close();
 }
 

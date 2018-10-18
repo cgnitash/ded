@@ -62,7 +62,7 @@ inline void all_deletions(encoding &v) {
 }
 
 inline void all_insertions(encoding &v) {
-  if (v.size() > 500)
+  if (v.size() > 2500)
     return;
   point_insert(v);
   copy_chunk(v);

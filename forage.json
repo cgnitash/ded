@@ -1,9 +1,9 @@
 
  [ "evolution" ,  {  
 				"population_size" : 100,
-				"generations" : 100,
+				"generations" : 200,
 				"selector" : [ "elite_replacement" , { "strength" : 0.5 } ],
-				"environment" : [ "forager" , { "density" : 0.5 } ],
+				"environment" : [ "replicate" , { "env" : [ "forager" , { "density" : 0.8 , "updates" : 200 } ] ,  "num" : 1 } ],
 			    "entity" : [ "markov2in1out" ,  { "inputs" : 4 , "outputs" : 4  }  ]  
  } ]	
 				

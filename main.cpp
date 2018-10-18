@@ -1,9 +1,8 @@
 
 
+#include "components.h"
 
-#include"components.h"
-
-#include <nlohmann/json.hpp>
+#include "nlohmann/json.hpp"
 
 #include <algorithm>
 #include <iostream>
