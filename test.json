@@ -1,0 +1,9 @@
+
+ [ "evolution" ,  {  
+				"population_size" : 100,
+				"generations" : 5000,
+				"selector" : [ "elite_replacement" , { "strength" : 0.5 } ],
+				"environment" : [ "max_one"  ],
+			    "entity" : [ "markov2in1out" ,  { "outputs" : 50  } ] 
+ } ]	
+				
