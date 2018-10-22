@@ -2,7 +2,7 @@
 
 #include "components.h"
 
-#include "nlohmann/json.hpp"
+#include "core/nlohmann/json.hpp"
 
 #include <algorithm>
 #include <iostream>

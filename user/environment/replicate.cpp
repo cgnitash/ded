@@ -13,6 +13,10 @@
 
 life::eval_results replicate::evaluate(const std::vector<life::entity> &pop) {
 
+// TODO
+// multiply scores to reduce lucky fitness evals
+
+
  // std::cout << "here1 " << std::flush;
   auto env = life::make_environment(env_name_);
   env.configure(env_config_);
