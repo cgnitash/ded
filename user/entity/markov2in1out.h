@@ -14,12 +14,11 @@ class markov2in1out {
   long output_ = 2;
   long hidden_ = 4;
 
-  std::vector<double> buffer_ =
-      std::vector<double>(input_ + output_ + hidden_, 0);
+  std::vector<long> buffer_ = std::vector(input_ + output_ + hidden_, 0l);
 
   struct gate {
     long in_1_, in_2_, out_;
-    std::array<double, 4> logic_;
+    std::array<long, 4> logic_;
   };
 
   std::vector<gate> gates_;
@@ -43,7 +42,7 @@ public:
     input_ = con["inputs"];
     output_ = con["outputs"];
     hidden_ = con["hiddens"];
-    buffer_ = std::vector<double>(input_ + output_ + hidden_, 0);
+    buffer_ = std::vector(input_ + output_ + hidden_, 0l);
     seed_gates(1);
   }
   void mutate();
