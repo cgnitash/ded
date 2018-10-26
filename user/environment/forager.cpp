@@ -1,5 +1,6 @@
 
 #include "forager.h"
+#include "../../core/utilities.h"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -11,13 +12,34 @@
 #include <utility>
 #include <vector>
 
+void forager::remove_resource_() {
+  while (true) {
+    auto p = location{std::rand() % grid_size_, std::rand() % grid_size_};
+    if (resources_.erase(p))
+      break;
+  }
+}
+
 void forager::replace_resource_() {
   while (true) {
-    // yucky randomness :(
     auto p = location{std::rand() % grid_size_, std::rand() % grid_size_};
     auto inserted = resources_.insert(p);
     if (inserted.second)
       break;
+  }
+}
+
+void forager::initialize_resource_() {
+
+  if (density_ < 0.5) {
+    for (auto i = 0; i < density_ * grid_size_ * grid_size_; i++)
+      replace_resource_();
+  } else {
+    for (auto i = 0; i < grid_size_; i++)
+      for (auto j = 0; j < grid_size_; j++)
+        resources_.insert(location{i, j});
+    for (auto i = 0; i < density_ * grid_size_ * grid_size_; i++)
+      remove_resource_();
   }
 }
 
@@ -37,7 +59,7 @@ void forager::refresh_signals() {
 }
 
 std::vector<double> forager::signals_at(location p) {
-  // feed input to org
+  // inputs to be fed to org
   auto v = std::vector<double>(4, 0);
   std::fill_n(std::begin(v), signal_strength_[p], 1);
   return v;
@@ -46,14 +68,11 @@ std::vector<double> forager::signals_at(location p) {
 double forager::eval(life::entity org) {
 
   auto score = 0.0;
-  resources_.clear();
   auto p = location{std::rand() % grid_size_, std::rand() % grid_size_};
   auto d = direction{std::rand() % 4};
 
-  // inefficent
-  for (auto i = 0; i < density_ * grid_size_ * grid_size_; i++)
-    replace_resource_();
-
+  resources_.clear();
+  initialize_resource_();
   refresh_signals();
 
   for (auto i = 0; i < updates_; i++) {
@@ -64,7 +83,7 @@ double forager::eval(life::entity org) {
 
     // read its outputs
     auto output = org.output();
-    auto out = static_cast<long>(output[0]) * 2 + static_cast<long>(output[1]);
+    auto out = util::Bit(output[0]) * 2 + util::Bit(output[1]);
     // interact with the environment
     switch (out) {
     case 0: // move

@@ -47,8 +47,10 @@ class forager {
   }
 
   std::initializer_list<location> neighbours(location p) {
-    return {p, move_in_dir(p, direction::up), move_in_dir(p, direction::down),
-            move_in_dir(p, direction::left), move_in_dir(p, direction::right)};
+    auto ret = {
+        p, move_in_dir(p, direction::up), move_in_dir(p, direction::down),
+        move_in_dir(p, direction::left), move_in_dir(p, direction::right)};
+    return ret;
   }
 
   location move_in_dir(location p, direction d) {
@@ -62,6 +64,8 @@ class forager {
   }
 
   void replace_resource_();
+  void initialize_resource_();
+  void remove_resource_();
   void refresh_signals();
   double eval(life::entity);
   std::vector<double> signals_at(location);
