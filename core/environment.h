@@ -5,7 +5,6 @@
 #include"configuration.h"
 #include"encoding.h"
 #include"entity.h"
-#include"eval_results.h"
 #include"signal.h"
 
 
@@ -36,11 +35,7 @@ public:
   environment &operator=(environment &&) noexcept = default;
 
   // public interface of environments - how environments can be used
-  eval_results evaluate(const std::vector<entity> &p) {
-  	return self_->evaluate_(p);
-  }
-
-
+  void evaluate(std::vector<entity> &p) { self_->evaluate_(p); }
 
   configuration publish_configuration() const {
    return  self_->publish_configuration_();
@@ -63,8 +58,8 @@ private:
 
     virtual configuration publish_configuration_() = 0;
     virtual void configure_(configuration ) = 0;
-    
-	virtual eval_results evaluate_(const std::vector<entity>&) = 0;
+
+    virtual void evaluate_(std::vector<entity> &) = 0;
   };
 
   // concept to test if method is provided by user
@@ -80,9 +75,9 @@ private:
 
 	// mandatory methods
 	//
-  eval_results evaluate_(const std::vector<entity> &p) {
-	  return data_.evaluate(p);
-  }
+    void evaluate_(std::vector<entity> &p) override {
+      return data_.evaluate(p);
+    }
 
    configuration publish_configuration_() override {
       return data_.publish_configuration(); 

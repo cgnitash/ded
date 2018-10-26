@@ -3,7 +3,6 @@
 
 #include"member_detection.h"
 #include "entity.h"
-#include "eval_results.h"
 
 #include <cassert>
 #include <iostream>
@@ -32,7 +31,7 @@ public:
   selector &operator=(selector &&) noexcept = default;
 
   // public interface of selectors - how selectors can be used
-  std::vector<entity> select(eval_results &p) {
+  std::vector<entity> select(std::vector<entity> &p) {
     return self_->select_(p);
   }
 
@@ -54,10 +53,9 @@ private:
     virtual ~selector_interface () = default;
     virtual selector_interface *copy_() const = 0;
 
-    virtual std::vector<entity>
-    select_( eval_results&) = 0;
+    virtual std::vector<entity> select_(std::vector<entity> &) = 0;
     virtual configuration publish_configuration_()const  = 0;
-    virtual void configure_(configuration )= 0;
+    virtual void configure_(configuration) = 0;
   };
 
   // concept to test if method is provided by user
@@ -71,12 +69,12 @@ private:
 
 	// mandatory methods
 	//
-    std::vector<entity>
-    select_( eval_results& p) override {
+    std::vector<entity> select_(std::vector<entity> &p) override {
       return data_.select(p);
     }
-   configuration publish_configuration_() const override {
-      return data_.publish_configuration(); 
+
+    configuration publish_configuration_() const override {
+      return data_.publish_configuration();
     }
     void configure_(configuration c) override { data_.configure(c); }
 

@@ -3,7 +3,6 @@
 
 #include "../../core/configuration.h"
 #include "../../core/entity.h"
-#include "../../core/eval_results.h"
 
 #include <algorithm>
 #include <iostream>
@@ -23,6 +22,5 @@ life::configuration publish_configuration() const  {
 }
   elite_replacement() { configure(publish_configuration()); }
 
-  std::vector<life::entity> select(life::eval_results &);
-                                   
+  std::vector<life::entity> select(std::vector<life::entity> &);
 };

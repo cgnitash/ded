@@ -14,15 +14,15 @@
 
 class flip_bits {
 
-	long size_ = 10;
+  long size_ = 10;
+  double eval(life::entity &);
+
 public:
-  flip_bits() {
-	  configure(publish_configuration());
-  }
+  flip_bits() { configure(publish_configuration()); }
 
   life::configuration publish_configuration() {
     life::configuration c;
-	c["size"] = size_;
+    c["size"] = size_;
     return c;
   }
 
@@ -30,8 +30,6 @@ public:
 	size_ = c["size"];
   }
 
-  life::eval_results evaluate(const std::vector<life::entity> &);
-
-  double eval(life::entity);
+  void evaluate(std::vector<life::entity> &);
 };
 

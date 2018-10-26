@@ -65,7 +65,7 @@ std::vector<double> forager::signals_at(location p) {
   return v;
 }
 
-double forager::eval(life::entity org) {
+double forager::eval(life::entity &org) {
 
   auto score = 0.0;
   auto p = location{std::rand() % grid_size_, std::rand() % grid_size_};
@@ -111,15 +111,9 @@ double forager::eval(life::entity org) {
   return score;
 }
 
-life::eval_results forager::evaluate(const std::vector<life::entity> &pop) {
+void forager::evaluate(std::vector<life::entity> &pop) {
 
-  life::eval_results scores;
-  std::transform(std::begin(pop), std::end(pop), std::back_inserter(scores),
-                 [this](auto &org) {
-                   std::map<std::string, std::string> m;
-                   m["score"] = std::to_string(eval(org));
-                   return std::make_pair(org, m);
-                 });
-  return scores;
+  for (auto &org : pop)
+    org.data["score"] = eval(org);
 }
 

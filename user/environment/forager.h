@@ -67,11 +67,10 @@ class forager {
   void initialize_resource_();
   void remove_resource_();
   void refresh_signals();
-  double eval(life::entity);
+  double eval(life::entity&);
   std::vector<double> signals_at(location);
 
-
-        public:
+public:
   forager() {
 	  configure(publish_configuration());
   }
@@ -94,6 +93,6 @@ class forager {
 
   }
 
-  life::eval_results evaluate(const std::vector<life::entity> &);
-  };
+  void evaluate(std::vector<life::entity> &);
+};
 

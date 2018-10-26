@@ -27,6 +27,6 @@ public:
   void configure(life::configuration ) {
   }
 
-  life::eval_results evaluate(const std::vector<life::entity> &);
+  void evaluate(std::vector<life::entity> &);
 };
 

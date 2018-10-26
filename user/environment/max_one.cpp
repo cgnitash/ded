@@ -11,17 +11,13 @@
 #include <vector>
 #include <utility>
 
-life::eval_results
-max_one::evaluate(const std::vector<life::entity> &pop) {
+void max_one::evaluate(std::vector<life::entity> &pop) {
 
-  life::eval_results scores;
   for (auto &org : pop) {
-    std::map<std::string, std::string> m;
-    auto o = org;
-    o.tick();
-    auto v = o.output();
-    m["score"] = std::to_string(std::count(std::begin(v), std::end(v), 1));
-    scores.push_back(make_pair(org, m));
+    org.tick();
+    auto out = org.output();
+	  org.data["score"] = 
+    std::count(std::begin(out), std::end(out), 1);
   }
 
           /*
@@ -36,6 +32,5 @@ max_one::evaluate(const std::vector<life::entity> &pop) {
                    return std::make_pair(o, m);
                  });
 				 */
-  return scores;
 }
 

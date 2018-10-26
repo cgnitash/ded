@@ -11,16 +11,8 @@
 #include <vector>
 #include <utility>
 
-life::eval_results
-null_environment::evaluate(const std::vector<life::entity> &pop) {
-
-  life::eval_results scores;
-  std::transform(std::begin(pop), std::end(pop), std::back_inserter(scores),
-                 [](auto &org) {
-                   std::map<std::string, std::string> m;
-                   m["score"] = "0.0"; 
-                   return std::make_pair(org, m);
-                 });
-  return scores;
+void null_environment::evaluate(std::vector<life::entity> &pop) {
+  for (auto &org : pop)
+    org.data["score"] = 0.0;
 }
 

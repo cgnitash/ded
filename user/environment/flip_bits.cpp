@@ -8,31 +8,25 @@
 #include <regex>
 #include <string>
 #include <string_view>
-#include <vector>
 #include <utility>
+#include <vector>
 
-double flip_bits::eval(life::entity org) {
+double flip_bits::eval(life::entity &org) {
 
-  life::signal s;
+  life::signal input;
   for (int i = 0; i < size_; i++)
-    s.push_back(std::rand() % 2);
-  org.input(s);
+    input.push_back(std::rand() % 2);
+  org.input(input);
   org.tick();
-  auto r = org.output();
-  return std::inner_product(std::begin(s), std::end(s), std::begin(r), 0,
-                            std::plus<>(),
+  auto output = org.output();
+  return std::inner_product(std::begin(input), std::end(input),
+                            std::begin(output), 0, std::plus<>(),
                             [](long a, long b) { return std::abs(a - b); });
 }
 
-life::eval_results flip_bits::evaluate(const std::vector<life::entity> &pop) {
+void flip_bits::evaluate(std::vector<life::entity> &pop) {
 
-  life::eval_results scores;
-  std::transform(std::begin(pop), std::end(pop), std::back_inserter(scores),
-                 [this](auto &org) {
-                   std::map<std::string, std::string> m;
-                   m["score"] = std::to_string(eval(org));
-                   return std::make_pair(org, m);
-                 });
-  return scores;
+  for (auto &org : pop)
+    org.data["score"] = eval(org);
 }
 

@@ -12,14 +12,17 @@
 #include <vector>
 
 void evolution::run() {
+
   std::vector<life::entity> pop;
   for (auto i = 0; i < pop_size_; i++) {
     auto org = life::make_entity(org_name_);
     org.configure(org_config_);
     pop.push_back(org);
   }
+
   auto optimiser = life::make_selector(sel_name_);
   optimiser.configure(sel_config_);
+
   auto world = life::make_environment(world_name_);
   world.configure(world_config_);
 
@@ -27,27 +30,24 @@ void evolution::run() {
   file << "avg,max\n";
   for (int i = 0; i < generations_; i++) {
 
-    auto scores = world.evaluate(pop);
+    world.evaluate(pop);
+
+    std::vector<double> scores;
+    std::transform(std::begin(pop), std::end(pop), std::back_inserter(scores),
+                   [](auto const& org) { return double{org.data["score"]}; });
 
     const auto avg =
-        std::accumulate(std::begin(scores), std::end(scores), 0.0,
-                        [](double total, auto &org) {
-                          return total + std::stod(org.second["score"]);
-                        }) /
-        scores.size();
+        std::accumulate(std::begin(scores), std::end(scores), 0.0) / pop.size();
 
-    auto max =
-        *std::max_element(std::begin(scores), std::end(scores), [](auto &a,auto &b) {
-          return std::stod(a.second["score"]) < std::stod(b.second["score"]);
-        });
+    const auto max = *std::max_element(std::begin(scores), std::end(scores));
 
     std::cout << "update: " << std::setw(3) << i << " avg: " << std::setw(3)
               << std::setprecision(2) << avg << "   max: " << std::setw(3)
-              << std::setprecision(2) << max.second["score"] << std::endl;
-	
-    file << avg << "," << max.second["score"] << '\n';
+              << std::setprecision(2) << max << std::endl;
 
-    pop = optimiser.select(scores);
+    file << avg << "," << max << '\n';
+
+    pop = optimiser.select(pop);
   }
   file.close();
 }

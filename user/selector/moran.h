@@ -3,7 +3,6 @@
 
 #include "../../core/configuration.h"
 #include "../../core/entity.h"
-#include "../../core/eval_results.h"
 
 #include <algorithm>
 #include <iostream>
@@ -25,5 +24,5 @@ public:
   }
   void configure(life::configuration c) { ran_ = c["random"]; }
 
-  std::vector<life::entity> select(life::eval_results  &pop) const;
+  std::vector<life::entity> select(std::vector<life::entity> &pop);
 };

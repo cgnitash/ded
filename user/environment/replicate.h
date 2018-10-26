@@ -35,6 +35,6 @@ public:
 	env_config_ = c["env"][1];
   }
 
-  life::eval_results evaluate(const std::vector<life::entity> &);
+  void evaluate(std::vector<life::entity> &);
 };
 

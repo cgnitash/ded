@@ -34,6 +34,8 @@ public:
   entity &operator=(entity &&) noexcept = default;
 
   // public interface of entitys - how entitys can be used
+  life::configuration data;
+
   void input(signal s) {
   	self_->input_(s);
   }
