@@ -2,7 +2,7 @@
     "evolution",
     {
         "entity": [
-            "markov2in1out",
+            "cppn",
             {
                 "hiddens": 2,
                 "inputs": 4,

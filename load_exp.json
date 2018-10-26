@@ -2,11 +2,11 @@
     "evolution",
     {
         "entity": [
-            "markov2in1out",
+            "cppn",
             {
                 "hiddens": 0,
-                "inputs": 10,
-                "outputs": 10
+                "inputs": 26,
+                "outputs": 26
             }
         ],
         "environment": [
@@ -15,13 +15,13 @@
                 "env": [
                     "flip_bits",
                     {
-                        "size": 10
+                        "size": 26
                     }
                 ],
                 "num": 5
             }
         ],
-        "generations": 5000,
+        "generations": 500,
         "population_size": 100,
         "selector": [
             "elite_replacement",
