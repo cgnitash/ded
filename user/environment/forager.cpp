@@ -1,7 +1,6 @@
 
 #include "forager.h"
 #include "../../core/utilities.h"
-#include "../../core/range-v3/all.hpp"
 
 #include <algorithm>
 #include <fstream>
@@ -26,8 +25,8 @@ void forager::replace_resource_() {
 
 void forager::initialize_resource_() {
 
-  for (size_t i : ranges::view::iota(0, grid_size_))
-    for (size_t j : ranges::view::iota(0, grid_size_))
+  for (size_t i : util::rv3v::iota(0, grid_size_))
+    for (size_t j : util::rv3v::iota(0, grid_size_))
       if ((std::rand() % 100) / 100.0 < density_)
         resources_.insert(location{i, j});
 
@@ -49,13 +48,13 @@ void forager::refresh_signals() {
 }
 
 std::vector<double> forager::signals_at(location p) {
-  return ranges::view::concat(
-      ranges::view::repeat_n(1.0, signal_strength_[p]),
-      ranges::view::repeat_n(0.0, sensor_range_ - signal_strength_[p]));
+  return util::rv3v::concat(
+      util::rv3v::repeat_n(1.0, signal_strength_[p]),
+      util::rv3v::repeat_n(0.0, sensor_range_ - signal_strength_[p]));
 }
 
-void forager::interact(life::signal output, location &p, direction &d,
-                       double &score) {
+void forager::interact(life::signal output, location &position,
+                       direction &facing, double &score) {
 
   if (output.size() != 2) {
     std::cout
@@ -69,16 +68,16 @@ void forager::interact(life::signal output, location &p, direction &d,
   // interact with the environment
   switch (out) {
   case 0: // move
-    p = move_in_dir(p, d);
+    position = move_in_dir(position, facing);
     break;
   case 1: // turn right
-    d = turn(d, 3);
+    facing  = turn(facing, 3);
     break;
   case 2: // turn left
-    d = turn(d, 1);
+    facing = turn(facing, 1);
     break;
   case 3: // eat
-    auto res = resources_.find(p);
+    auto res = resources_.find(position);
     if (res != std::end(resources_)) {
       resources_.erase(res);
       if (replace_) {
@@ -94,8 +93,8 @@ void forager::interact(life::signal output, location &p, direction &d,
 double forager::eval(life::entity &org) {
 
   auto score = 0.0;
-  auto p = location{std::rand() % grid_size_, std::rand() % grid_size_};
-  auto d = direction{std::rand() % 4};
+  auto position = location{std::rand() % grid_size_, std::rand() % grid_size_};
+  auto facing = direction{std::rand() % 4};
 
   resources_.clear();
   initialize_resource_();
@@ -103,11 +102,11 @@ double forager::eval(life::entity &org) {
 
   util::repeat(updates_, [&] {
     // feed input to org; inputs are 0s and 1s only
-    org.input(signals_at(p));
+    org.input(signals_at(position));
     // run the org once
     org.tick();
     // read its outputs and interact with the environment
-    interact(org.output(), p, d, score);
+    interact(org.output(), position, facing, score);
   });
 
   return score;

@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include"range-v3/all.hpp"
+
 #include<cmath>
 
 namespace util {
@@ -13,4 +15,6 @@ template <typename F> void repeat(size_t n, F f) {
     f();
 }
 
+namespace rv3v = ranges::view;
+namespace rv3a = ranges::action;
 } // namespace util

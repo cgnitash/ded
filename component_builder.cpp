@@ -72,7 +72,7 @@ void generate_makefile(const std::string &fname, opts build_options) {
   makefile << "\ncore_headers = core/experiment.h core/environment.h "
               "core/entity.h core/selector.h "
               "core/encoding.h core/configuration.h	"
-              "core/signal.h ";
+              "core/signal.h core/utilities.h ";
 
   for (auto &flags : {"", "debug"}) {
     makefile

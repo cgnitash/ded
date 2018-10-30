@@ -1,5 +1,6 @@
 
 #include"cppn.h"
+#include"../../core/utilities.h"
 
 #include <iostream>
 #include <iomanip>
@@ -19,7 +20,7 @@ void cppn::mutate() {
   nodes.clear();
 
   // create activation functions for all nodes other than inputs
-  for (auto i {0u}; i < output_ + hidden_; i++) {
+  for (size_t i : ranges::view::iota(0, output_ + hidden_)) {
     Node node;
     node.activation_function = genome_[9*i] % 6;
     for (auto j = 0; j < 4; j++)
