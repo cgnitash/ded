@@ -1,5 +1,6 @@
 
 #include "max_one.h"
+#include "../../core/utilities.h"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -13,24 +14,17 @@
 
 void max_one::evaluate(std::vector<life::entity> &pop) {
 
+  // no inputs
   for (auto &org : pop) {
+    // run single tick
     org.tick();
+	// output size can be determined by entity
     auto out = org.output();
-	  org.data["score"] = 
-    std::count(std::begin(out), std::end(out), 1);
-  }
 
-          /*
-  std::transform(std::begin(pop), std::end(pop), std::back_inserter(scores),
-                 [](auto &org) {
-                   std::map<std::string, std::string> m;
-                   auto o = org;
-				   o.tick();
-                   auto v = o.output();
-                   m["score"] = std::to_string(
-                       std::count(std::begin(v), std::end(v), 1));
-                   return std::make_pair(o, m);
-                 });
-				 */
+    // score is number of outputs that evaluate to Bit() == 1
+    org.data["score"] =
+        std::count_if(std::begin(out), std::end(out),
+                      [](const auto i) { return util::Bit(i); });
+  }
 }
 

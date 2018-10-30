@@ -14,9 +14,12 @@
 
 void cppn::mutate() {
 
+  // only point mutations since size of encoding can't change
   life::point_mutate(genome_);
   nodes.clear();
-  for (auto i = 0; i < output_ + hidden_; i++) {
+
+  // create activation functions for all nodes other than inputs
+  for (auto i {0u}; i < output_ + hidden_; i++) {
     Node node;
     node.activation_function = genome_[9*i] % 6;
     for (auto j = 0; j < 4; j++)
@@ -26,39 +29,70 @@ void cppn::mutate() {
   }
 }
 
-void cppn::input(life::signal in) { ins_ = in; }
+void cppn::input(life::signal in) {
+  if (in.size() != input_) {
+    std::cout
+        << "Error: entity-cppn must get an input range of the specified size\n";
+    exit(1);
+  }
+  ins_ = in;
+}
 
-life::signal cppn::output() { return outs_; }
+life::signal cppn::output() {
+
+  // This should not happen
+  if (outs_.size() != output_) {
+    std::cout << "Impl-Error: entity-cppn must deliver an output range of the "
+                 "specified size\nThis should never happen\n" << outs_.size() << " " << output_;
+    exit(1);
+  }
+  return outs_;
+}
 
 void cppn::tick() {
 
-  auto results = ins_;
+  if (ins_.empty())
+	  ins_ = life::signal(input_,0.0);
 
+  if (ins_.size() != input_) {
+    std::cout
+        << "Error: entity-cppn must get an input range of the specified size\n";
+    exit(1);
+  }
+  auto results = ins_;
+  
+  // for each node in order
   for (auto &node : nodes) {
+    // sum up the incoming weighted-outputs from other nodes
     auto const sum =
         std::accumulate(std::begin(node.in_node), std::end(node.in_node), 0.0,
                         [&results](auto const total, auto const value) {
                           return total + results[value.first] * value.second;
                         });
-
+    // fire the activation function
     results.push_back(activate(node.activation_function, sum));
   }
-  std::copy( std::begin(results) + input_ + hidden_,std::end(results),std::back_inserter(outs_));
+
+  outs_.clear();
+  // put the last output node results into the output buffer
+  std::copy(std::begin(results) + results.size() - output_, std::end(results),
+            std::back_inserter(outs_));
+
 }
 
+double cppn::activate(size_t c, double x) {
 
-double cppn::activate(long c, double x) {
-
+  // TODO activation function set needs to be thought out
+  // TODO  activation function set needs to be parameterised 
   auto xp = c == 0 ? std::sin(x)
                    : c == 1 ? std::cos(x)
                             : c == 2 ? std::tan(x)
                                      : c == 3 ? std::sqrt(std::abs(x))
                                               : c == 4 ? std::fmod(x, 1) : x;
-  return std::clamp(xp, -2 * PI, 2 * PI);
+  return std::clamp(xp, -2 * util::PI, 2 * util::PI);
 }
 
 // for debugging purposes
-
 void cppn::print() {
   for (auto &node : nodes) {
     std::cout << "af: " << node.activation_function << " ws: ";

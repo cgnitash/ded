@@ -4,7 +4,8 @@
         "entity": [
             "cppn",
             {
-                "outputs": 50
+                "outputs": 10,
+                "inputs": 10
             }
         ],
         "environment": [

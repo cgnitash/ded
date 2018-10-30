@@ -14,7 +14,7 @@
 
 class flip_bits {
 
-  long size_ = 10;
+  size_t  size_ = 10;
   double eval(life::entity &);
 
 public:

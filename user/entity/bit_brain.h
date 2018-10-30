@@ -10,18 +10,21 @@
 
 class bit_brain {
 
-  long size_;
-	life::encoding genome_;
+  size_t size_ = 8;
+  life::encoding genome_;
 
 public:
+  bit_brain() { configure(publish_configuration()); }
+
   void configure(life::configuration c) {
     size_ = c["size"];
+	// encoding is simply the modulo 2 values 
     genome_ = life::encoding(size_, 0);
   }
-  bit_brain() { configure(publish_configuration()) ;}
+
   life::configuration publish_configuration() {
     life::configuration c;
-    c["size"] = 8;
+    c["size"] = size_;
     return c;
   }
   void mutate();

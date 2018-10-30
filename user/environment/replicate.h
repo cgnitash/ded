@@ -14,13 +14,11 @@
 
 class replicate {
 
-	long num_ = 1;
+	size_t num_ = 1;
 	std::string env_name_ = "null_environment";
 	life::configuration env_config_;
 public:
-  replicate() {
-	  configure(publish_configuration());
-  }
+  replicate() { configure(publish_configuration()); }
 
   life::configuration publish_configuration() {
     life::configuration c;

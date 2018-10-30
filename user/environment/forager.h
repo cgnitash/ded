@@ -17,34 +17,29 @@
 
 class forager {
 
-  long grid_size_ = 10;
-  long updates_ = 100;
+  size_t grid_size_ = 10;
+  size_t updates_ = 100;
   bool replace_ = true;
   double density_ = 0.1;
 
   struct location {
-    long x_, y_;
+    size_t x_, y_;
     bool operator<(const location &A) const{
       return std::tie(x_, y_) < std::tie(A.x_, A.y_);
     }
   };
 
   enum class direction { up,  left, down, right };
-  std::map<location,long> signal_strength_;
+  std::map<location,size_t> signal_strength_;
   std::set<location> resources_;
 
-  long sense_range_ = 0;
+  size_t sense_range_ = 0;
 
   direction turn(direction d, long rate) {
     return static_cast<direction>((static_cast<long>(d) + rate) % 4);
   }
 
-  location wrap(location p) {
-    auto wrap_one = [this](long a) { 
-        return a >= grid_size_ ? a - grid_size_ : a < 0 ? a + grid_size_ : a;
-    };
-    return {wrap_one(p.x_), wrap_one(p.y_)};
-  }
+  location wrap(location p) { return {p.x_ % grid_size_, p.y_ % grid_size_}; }
 
   std::initializer_list<location> neighbours(location p) {
     auto ret = {
@@ -54,13 +49,13 @@ class forager {
   }
 
   location move_in_dir(location p, direction d) {
-    return d == direction::up
-               ? wrap({p.x_ - 1, p.y_})
-               : d == direction::down
-                     ? wrap({p.x_ + 1, p.y_})
-                     : d == direction::left ? wrap({p.x_, p.y_ - 1})
-                                            /* direction::right */
-                                            : wrap({p.x_, p.y_ + 1});
+    return d == direction::up ? wrap({p.x_ + grid_size_ - 1, p.y_})
+                              : d == direction::down
+                                    ? wrap({p.x_ + 1, p.y_})
+                                    : d == direction::left
+                                          ? wrap({p.x_, p.y_ + grid_size_ - 1})
+                                          /* direction::right */
+                                          : wrap({p.x_, p.y_ + 1});
   }
 
   void replace_resource_();

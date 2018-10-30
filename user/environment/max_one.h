@@ -19,13 +19,9 @@ public:
 	  configure(publish_configuration());
   }
 
-  life::configuration publish_configuration() {
-    life::configuration c;
-    return c;
-  }
+  life::configuration publish_configuration() { return life::configuration(); }
 
-  void configure(life::configuration ) {
-  }
+  void configure(life::configuration) {}
 
   void evaluate(std::vector<life::entity> &);
 };

@@ -8,16 +8,21 @@
 
 void markov2in1out::mutate() {
 
+  // go nuts with all kinds of mutations
   life::all_mutations(genome_);
-  gates_valid_ = false;
-  gates_.clear();
-  buffer_ = std::vector<long>(input_ + output_ + hidden_, 0);
+  compute_gates_();
 }
 
 void markov2in1out::input(life::signal v) {
-  // must convert double inputs to 1s and 0s 
-  std::transform(std::begin(v), std::begin(v) + input_,
-                 std::back_inserter(buffer_),
+
+  if (v.size() != input_) {
+    std::cout
+        << "Error: entity-cppn must get an input range of the specified size\n";
+    exit(1);
+  }
+
+  // must convert double inputs to 1s and 0s
+  std::transform(std::begin(v), std::end(v), std::begin(buffer_),
                  [](auto const value) { return util::Bit(value); });
 }
 
@@ -29,10 +34,8 @@ life::signal markov2in1out::output() {
 
 void markov2in1out::tick() {
 
-  if (!gates_valid_)
-    compute_gates_();
-
-  std::vector out_buffer(buffer_.size(), 0l);
+  // temporary buffer, since markov-brain logic updates must be synced
+  std::vector out_buffer(buffer_.size(), 0u);
 
   // sum up all logic outputs
   for (auto &g : gates_)
@@ -44,8 +47,9 @@ void markov2in1out::tick() {
                  [](auto const value) { return util::Bit(value); });
 }
 
-void markov2in1out::seed_gates(long n) {
-  for (int i = 0; i < n; i++) {
+void markov2in1out::seed_gates(size_t n) {
+
+  for (auto i{0u}; i < n; i++) {
     auto pos = std::rand() % (genome_.size() - 1);
     genome_[pos] = 2;
     genome_[pos + 1] = 8;
@@ -57,7 +61,7 @@ void markov2in1out::compute_gates_() {
   gates_.clear();
   auto addresses = input_ + output_ + hidden_;
   std::vector codon{2, 8};
-  for (auto pos = std::begin(genome_); pos < std::end(genome_) - 10; pos++) {
+  for (auto pos{std::begin(genome_)}; pos < std::end(genome_) - 10; pos++) {
     // find the next codon
     pos = std::search(pos, std::end(genome_) - 10, std::begin(codon),
                       std::end(codon));
@@ -66,9 +70,11 @@ void markov2in1out::compute_gates_() {
       gate g{*(pos + 2) % addresses,
              *(pos + 3) % addresses,
              *(pos + 4) % addresses,
-             {*(pos + 5) % 2, *(pos + 6) % 2, *(pos + 7) % 2, *(pos + 8) % 2}};
+             {static_cast<size_t>(*(pos + 5) % 2),
+              static_cast<size_t>(*(pos + 6) % 2),
+              static_cast<size_t>(*(pos + 7) % 2),
+              static_cast<size_t>(*(pos + 8) % 2)}};
       gates_.push_back(g);
     }
   }
-  gates_valid_ = true;
 }

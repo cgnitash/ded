@@ -31,14 +31,15 @@ void forager::replace_resource_() {
 
 void forager::initialize_resource_() {
 
+  // replace/remove based on density - just an efficiency
   if (density_ < 0.5) {
-    for (auto i = 0; i < density_ * grid_size_ * grid_size_; i++)
+    for (auto i{0}; i < density_ * grid_size_ * grid_size_; i++)
       replace_resource_();
   } else {
-    for (auto i = 0; i < grid_size_; i++)
-      for (auto j = 0; j < grid_size_; j++)
+    for (auto i{0u}; i < grid_size_; i++)
+      for (auto j{0u}; j < grid_size_; j++)
         resources_.insert(location{i, j});
-    for (auto i = 0; i < density_ * grid_size_ * grid_size_; i++)
+    for (auto i{0}; i < density_ * grid_size_ * grid_size_; i++)
       remove_resource_();
   }
 }
@@ -48,7 +49,7 @@ void forager::refresh_signals() {
   signal_strength_.clear();
   auto surface = resources_;
 
-  for (auto i = 0; i < 4; i++) {
+  for (auto i{0}; i < 4; i++) {
     auto boundary = surface;
     for (auto &point : surface) {
       signal_strength_[point]++;
@@ -59,9 +60,9 @@ void forager::refresh_signals() {
 }
 
 std::vector<double> forager::signals_at(location p) {
-  // inputs to be fed to org
-  auto v = std::vector<double>(4, 0);
-  std::fill_n(std::begin(v), signal_strength_[p], 1);
+  // inputs to be fed to org 
+  auto v = std::vector(4, 0.0);
+  std::fill_n(std::begin(v), signal_strength_[p], 1.0);
   return v;
 }
 
@@ -75,15 +76,18 @@ double forager::eval(life::entity &org) {
   initialize_resource_();
   refresh_signals();
 
-  for (auto i = 0; i < updates_; i++) {
-    // feed input to org
+  for (auto i{0u}; i < updates_; i++) {
+    // feed input to org; inputs are 0s and 1s only
     org.input(signals_at(p));
     // run the org once
     org.tick();
 
     // read its outputs
     auto output = org.output();
+
+	// outputs are interpreted as 0s and 1s only
     auto out = util::Bit(output[0]) * 2 + util::Bit(output[1]);
+
     // interact with the environment
     switch (out) {
     case 0: // move

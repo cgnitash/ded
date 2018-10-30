@@ -4,6 +4,7 @@
 #include "../../core/configuration.h"
 #include "../../core/encoding.h"
 #include "../../core/signal.h"
+#include "../../core/utilities.h"
 
 #include <algorithm>
 #include <cmath>
@@ -19,23 +20,24 @@
 class cppn {
 
 private:
-  const double PI = std::atan(1) * 4;
   struct Node {
-    long activation_function;
-    std::map<int, double> in_node;
+    size_t activation_function;
+    std::map<size_t, double> in_node;
   };
   std::vector<Node> nodes;
-  long input_ = 1;
-  long output_ = 1;
-  long hidden_ = 0;
+  size_t input_ = 1;
+  size_t output_ = 1;
+  size_t hidden_ = 0;
   life::encoding genome_ = life::generate(9 * (output_ + hidden_));
-  std::vector<double> ins_ = std::vector(input_, 0.0);
-  std::vector<double> outs_ = std::vector(output_, 0.0);
 
-  double activate(long, double);
+  std::vector<double> ins_ ;
+  std::vector<double> outs_ ;
+
+  double activate(size_t, double);
   void print();
 public:
   cppn() { configure(publish_configuration()); }
+
   life::configuration publish_configuration() {
     life::configuration c;
     c["inputs"] = input_;
@@ -43,11 +45,14 @@ public:
     c["hiddens"] = hidden_;
     return c;
   }
+
   void configure(life::configuration con) {
     input_ = con["inputs"];
     output_ = con["outputs"];
     hidden_ = con["hiddens"];
+    life::encoding genome_ = life::generate(9 * (output_ + hidden_));
   }
+
   void mutate();
   void input(life::signal);
   life::signal output();
