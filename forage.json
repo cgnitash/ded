@@ -16,13 +16,13 @@
                     "forager",
                     {
                         "density": 0.2,
-                        "grid-size": 8,
+                        "grid-size": 4,
                         "replace": true,
                         "sensor-range": 2,
-                        "updates": 90
+                        "updates": 20
                     }
                 ],
-                "num": 9
+                "num": 3
             }
         ],
         "generations": 500,

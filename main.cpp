@@ -3,6 +3,7 @@
 #include "components.h"
 
 #include "core/nlohmann/json.hpp"
+#include "core/range-v3/all.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -62,6 +63,7 @@ int main(int argc, char **argv) {
 
   {
   // if no arguments are passed 
+/*
   std::cout << " This is just random testing -- ignore\n";
   auto e = life::make_entity("markov2in1out");
   auto v = life::make_environment("flip_bits");
@@ -73,6 +75,8 @@ int main(int argc, char **argv) {
   std::vector<life::entity> pop;
   pop.push_back(e);
   v.evaluate(pop);
-}
+*/
+  std::cout << "nothing to see here\n";
+  }
 
 }

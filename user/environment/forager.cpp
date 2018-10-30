@@ -1,6 +1,8 @@
 
 #include "forager.h"
 #include "../../core/utilities.h"
+#include "../../core/range-v3/all.hpp"
+
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -24,8 +26,8 @@ void forager::replace_resource_() {
 
 void forager::initialize_resource_() {
 
-  for (auto i{0u}; i < grid_size_; i++)
-    for (auto j{0u}; j < grid_size_; j++)
+  for (size_t i : ranges::view::iota(0, grid_size_))
+    for (size_t j : ranges::view::iota(0, grid_size_))
       if ((std::rand() % 100) / 100.0 < density_)
         resources_.insert(location{i, j});
 
@@ -36,21 +38,57 @@ void forager::refresh_signals() {
   signal_strength_.clear();
   auto surface = resources_;
 
-  for (auto i{0u}; i < sensor_range_; i++) {
+  util::repeat(sensor_range_, [&] {
     auto boundary = surface;
     for (auto &point : surface) {
       signal_strength_[point]++;
       boundary.insert(neighbours(point));
     }
     surface = boundary;
-  }
+  });
 }
 
 std::vector<double> forager::signals_at(location p) {
-  // inputs to be fed to org 
-  auto v = std::vector(sensor_range_, 0.0);
-  std::fill_n(std::begin(v), signal_strength_[p], 1.0);
-  return v;
+  return ranges::view::concat(
+      ranges::view::repeat_n(1.0, signal_strength_[p]),
+      ranges::view::repeat_n(0.0, sensor_range_ - signal_strength_[p]));
+}
+
+void forager::interact(life::signal output, location &p, direction &d,
+                       double &score) {
+
+  if (output.size() != 2) {
+    std::cout
+        << "Error: environment-forager must recieve an output of size 2\n";
+    exit(1);
+  }
+
+  // outputs are interpreted as 0s and 1s only
+  auto out = util::Bit(output[0]) * 2 + util::Bit(output[1]);
+
+  // interact with the environment
+  switch (out) {
+  case 0: // move
+    p = move_in_dir(p, d);
+    break;
+  case 1: // turn right
+    d = turn(d, 3);
+    break;
+  case 2: // turn left
+    d = turn(d, 1);
+    break;
+  case 3: // eat
+    auto res = resources_.find(p);
+    if (res != std::end(resources_)) {
+      resources_.erase(res);
+      if (replace_) {
+        replace_resource_();
+      }
+      refresh_signals();
+      score++;
+    }
+    break;
+  }
 }
 
 double forager::eval(life::entity &org) {
@@ -63,47 +101,15 @@ double forager::eval(life::entity &org) {
   initialize_resource_();
   refresh_signals();
 
-  for (auto i{0u}; i < updates_; i++) {
+  util::repeat(updates_, [&] {
     // feed input to org; inputs are 0s and 1s only
     org.input(signals_at(p));
     // run the org once
     org.tick();
+    // read its outputs and interact with the environment
+    interact(org.output(), p, d, score);
+  });
 
-    // read its outputs
-    auto output = org.output();
-    if (output.size() != 2) {
-      std::cout
-          << "Error: environment-forager must recieve an output of size 2\n";
-      exit(1);
-    }
-
-        // outputs are interpreted as 0s and 1s only
-    auto out = util::Bit(output[0]) * 2 + util::Bit(output[1]);
-
-    // interact with the environment
-    switch (out) {
-    case 0: // move
-      p = move_in_dir(p, d);
-      break;
-    case 1: // turn right
-      d = turn(d, 3);
-      break;
-    case 2: // turn left
-      d = turn(d, 1);
-      break;
-    case 3: // eat
-      auto res = resources_.find(p);
-      if (res != std::end(resources_)) {
-        resources_.erase(res);
-        if (replace_) {
-          replace_resource_();
-        }
-        refresh_signals();
-        score++;
-      }
-      break;
-    }
-  }
   return score;
 }
 

@@ -60,6 +60,7 @@ class forager {
   void replace_resource_();
   void initialize_resource_();
   void refresh_signals();
+  void interact(life::signal, location &, direction &, double &);
   double eval(life::entity&);
   std::vector<double> signals_at(location);
 
