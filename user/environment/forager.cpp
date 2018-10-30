@@ -12,13 +12,6 @@
 #include <utility>
 #include <vector>
 
-void forager::remove_resource_() {
-  while (true) {
-    auto p = location{std::rand() % grid_size_, std::rand() % grid_size_};
-    if (resources_.erase(p))
-      break;
-  }
-}
 
 void forager::replace_resource_() {
   while (true) {
@@ -31,17 +24,11 @@ void forager::replace_resource_() {
 
 void forager::initialize_resource_() {
 
-  // replace/remove based on density - just an efficiency
-  if (density_ < 0.5) {
-    for (auto i{0}; i < density_ * grid_size_ * grid_size_; i++)
-      replace_resource_();
-  } else {
-    for (auto i{0u}; i < grid_size_; i++)
-      for (auto j{0u}; j < grid_size_; j++)
+  for (auto i{0u}; i < grid_size_; i++)
+    for (auto j{0u}; j < grid_size_; j++)
+      if ((std::rand() % 100) / 100.0 < density_)
         resources_.insert(location{i, j});
-    for (auto i{0}; i < density_ * grid_size_ * grid_size_; i++)
-      remove_resource_();
-  }
+
 }
 
 void forager::refresh_signals() {
@@ -49,7 +36,7 @@ void forager::refresh_signals() {
   signal_strength_.clear();
   auto surface = resources_;
 
-  for (auto i{0}; i < 4; i++) {
+  for (auto i{0u}; i < sensor_range_; i++) {
     auto boundary = surface;
     for (auto &point : surface) {
       signal_strength_[point]++;
@@ -61,7 +48,7 @@ void forager::refresh_signals() {
 
 std::vector<double> forager::signals_at(location p) {
   // inputs to be fed to org 
-  auto v = std::vector(4, 0.0);
+  auto v = std::vector(sensor_range_, 0.0);
   std::fill_n(std::begin(v), signal_strength_[p], 1.0);
   return v;
 }
@@ -84,8 +71,13 @@ double forager::eval(life::entity &org) {
 
     // read its outputs
     auto output = org.output();
+    if (output.size() != 2) {
+      std::cout
+          << "Error: environment-forager must recieve an output of size 2\n";
+      exit(1);
+    }
 
-	// outputs are interpreted as 0s and 1s only
+        // outputs are interpreted as 0s and 1s only
     auto out = util::Bit(output[0]) * 2 + util::Bit(output[1]);
 
     // interact with the environment

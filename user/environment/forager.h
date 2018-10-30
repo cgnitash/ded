@@ -18,6 +18,7 @@
 class forager {
 
   size_t grid_size_ = 10;
+  size_t sensor_range_ = 4;
   size_t updates_ = 100;
   bool replace_ = true;
   double density_ = 0.1;
@@ -32,8 +33,6 @@ class forager {
   enum class direction { up,  left, down, right };
   std::map<location,size_t> signal_strength_;
   std::set<location> resources_;
-
-  size_t sense_range_ = 0;
 
   direction turn(direction d, long rate) {
     return static_cast<direction>((static_cast<long>(d) + rate) % 4);
@@ -60,7 +59,6 @@ class forager {
 
   void replace_resource_();
   void initialize_resource_();
-  void remove_resource_();
   void refresh_signals();
   double eval(life::entity&);
   std::vector<double> signals_at(location);
@@ -76,6 +74,7 @@ public:
     ec["updates"] = updates_;
     ec["density"] = density_;
     ec["replace"] = replace_;
+    ec["sensor-range"] = sensor_range_	;
     return ec;
   }
 
@@ -85,6 +84,7 @@ public:
     updates_= (con["updates"]);
     density_ = (con["density"]);
     replace_ = (con["replace"]);
+    sensor_range_	= (con["sensor-range"]);
 
   }
 
