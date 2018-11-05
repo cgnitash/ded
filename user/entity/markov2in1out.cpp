@@ -16,51 +16,45 @@ void markov2in1out::mutate() {
 void markov2in1out::input(life::signal v) {
 
   if (v.size() != input_) {
-    std::cout
-        << "Error: entity-markov2in1out must get an input range of the specified size\n";
+    std::cout << "Error: entity-markov2in1out must get an input range of the "
+                 "specified size\n";
     exit(1);
   }
 
+  // must convert double inputs to 1s and 0s, overwrite only input range of
+  // buffer_
+  for (auto i{0u}; i < v.size(); i++)
+    buffer_[i] = util::Bit(v[i]);
 
-  // must convert double inputs to 1s and 0s
-  buffer_ = v | util::rv3::copy |
-            util::rv3::action::transform([](auto i) { return util::Bit(i); });
-  //  std::transform(std::begin(v), std::end(v), std::begin(buffer_),
-  //               [](auto const value) { return util::Bit(value); });
 }
 
 life::signal markov2in1out::output() {
-  // life::signal v =
+
   return buffer_ | util::rv3::copy |
          util::rv3::action::slice(input_, input_ + output_);
-
-  //	  std::copy_n(std::begin(buffer_) + input_, output_,
-  //std::back_inserter(v));
 }
 
 void markov2in1out::tick() {
 
-  //std::cout << buffer_.size() << std::endl;
-  // temporary buffer, since markov-brain logic updates must be synced
-  std::vector out_buffer(buffer_.size(), 0u);
+  std::vector out_buffer(buffer_.size(), 0.);
 
   // sum up all logic outputs
   for (auto &g : gates_)
     out_buffer[g.out_] += g.logic_[buffer_[g.in_1_] * 2 + buffer_[g.in_2_]];
 
   // make the buffer 1s and 0s again
-  std::transform(std::begin(out_buffer), std::end(out_buffer),
-                 std::begin(buffer_),
-                 [](auto const value) { return util::Bit(value); });
+  buffer_ = out_buffer | util::rv3::copy |
+            util::rv3::action::transform([](auto i) { return util::Bit(i); });
+
 }
 
 void markov2in1out::seed_gates(size_t n) {
 
-  for (auto i{0u}; i < n; i++) {
+  util::repeat(n, [&] {
     auto pos = std::rand() % (genome_.size() - 1);
     genome_[pos] = 2;
     genome_[pos + 1] = 8;
-  }
+  });
 }
 
 

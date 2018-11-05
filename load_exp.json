@@ -4,9 +4,9 @@
         "entity": [
             "cppn",
             {
-                "hiddens": 0,
-                "inputs": 26,
-                "outputs": 26
+                "hiddens": 8,
+                "inputs": 16,
+                "outputs": 16
             }
         ],
         "fitness": [
@@ -15,7 +15,7 @@
                 "env": [
                     "flip_bits",
                     {
-                        "size": 26
+                        "size": 16
                     }
                 ],
                 "num": 5

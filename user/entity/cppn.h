@@ -50,7 +50,7 @@ public:
     input_ = con["inputs"];
     output_ = con["outputs"];
     hidden_ = con["hiddens"];
-    life::encoding genome_ = life::generate(9 * (output_ + hidden_));
+    genome_ = life::generate(9 * (output_ + hidden_));
   }
 
   void mutate();

@@ -14,8 +14,7 @@ class markov2in1out {
   size_t hidden_ = 4;
   life::encoding genome_ = life::generate(100);
 
-  std::vector<double> buffer_ =
-      std::vector<double>(input_ + output_ + hidden_, 0u);
+  std::vector<double> buffer_;
 
   struct gate {
     size_t in_1_, in_2_, out_;
@@ -42,9 +41,10 @@ public:
     input_ = con["inputs"];
     output_ = con["outputs"];
     hidden_ = con["hiddens"];
-    life::encoding genome_ = life::generate(100);
-    buffer_ = std::vector<double>(input_ + output_ + hidden_, 0u);
+    genome_ = life::generate(100);
+    buffer_ = std::vector<double>(input_ + output_ + hidden_, 0.);
     seed_gates(4);
+	compute_gates_();
   }
 
   void mutate();

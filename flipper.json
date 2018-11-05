@@ -20,8 +20,8 @@
                 "num": 5
             }
         ],
-        "generations": 2,
-        "population_size": 100,
+        "generations": 20,
+        "population_size": 10,
         "selector": [
             "elite_replacement",
             {
