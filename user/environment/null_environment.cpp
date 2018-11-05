@@ -11,8 +11,11 @@
 #include <vector>
 #include <utility>
 
-void null_environment::evaluate(std::vector<life::entity> &pop) {
-  for (auto &org : pop)
+std::vector<life::entity>
+null_environment::evaluate(const std::vector<life::entity> &pop) {
+  auto new_pop = pop;
+  for (auto &org : new_pop)
     org.data["score"] = 0.0;
+  return new_pop;
 }
 

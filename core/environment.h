@@ -35,7 +35,9 @@ public:
   environment &operator=(environment &&) noexcept = default;
 
   // public interface of environments - how environments can be used
-  void evaluate(std::vector<entity> &p) { self_->evaluate_(p); }
+  std::vector<entity> evaluate(const std::vector<entity> &p) {
+    return self_->evaluate_(p);
+  }
 
   configuration publish_configuration() const {
    return  self_->publish_configuration_();
@@ -59,7 +61,7 @@ private:
     virtual configuration publish_configuration_() = 0;
     virtual void configure_(configuration ) = 0;
 
-    virtual void evaluate_(std::vector<entity> &) = 0;
+    virtual std::vector<entity> evaluate_(const std::vector<entity> &) = 0;
   };
 
   // concept to test if method is provided by user
@@ -75,7 +77,7 @@ private:
 
 	// mandatory methods
 	//
-    void evaluate_(std::vector<entity> &p) override {
+    std::vector<entity> evaluate_(const std::vector<entity> &p) override {
       return data_.evaluate(p);
     }
 

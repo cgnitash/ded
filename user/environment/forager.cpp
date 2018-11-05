@@ -25,8 +25,8 @@ void forager::replace_resource_() {
 
 void forager::initialize_resource_() {
 
-  for (size_t i : util::rv3v::iota(0, grid_size_))
-    for (size_t j : util::rv3v::iota(0, grid_size_))
+  for (size_t i : util::rv3::view::iota(0, grid_size_))
+    for (size_t j : util::rv3::view::iota(0, grid_size_))
       if ((std::rand() % 100) / 100.0 < density_)
         resources_.insert(location{i, j});
 
@@ -48,9 +48,9 @@ void forager::refresh_signals() {
 }
 
 std::vector<double> forager::signals_at(location p) {
-  return util::rv3v::concat(
-      util::rv3v::repeat_n(1.0, signal_strength_[p]),
-      util::rv3v::repeat_n(0.0, sensor_range_ - signal_strength_[p]));
+  return util::rv3::view::concat(
+      util::rv3::view::repeat_n(1.0, signal_strength_[p]),
+      util::rv3::view::repeat_n(0.0, sensor_range_ - signal_strength_[p]));
 }
 
 void forager::interact(life::signal output, location &position,
@@ -66,7 +66,7 @@ void forager::interact(life::signal output, location &position,
   auto out = util::Bit(output[0]) * 2 + util::Bit(output[1]);
 
   // interact with the environment
-  switch (out) {
+  switch (static_cast<int>(out)) {
   case 0: // move
     position = move_in_dir(position, facing);
     break;
@@ -112,9 +112,11 @@ double forager::eval(life::entity &org) {
   return score;
 }
 
-void forager::evaluate(std::vector<life::entity> &pop) {
-
-  for (auto &org : pop)
+std::vector<life::entity>
+forager::evaluate(const std::vector<life::entity> &pop) {
+  auto new_pop = pop;
+  for (auto &org : new_pop)
     org.data["score"] = eval(org);
+  return new_pop;
 }
 

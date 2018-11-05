@@ -32,7 +32,6 @@ void save_configs() {
 
   save(file, "experiment", life::experiment_list, life::make_experiment);
   save(file, "entity", life::entity_list, life::make_entity);
-  save(file, "selector", life::selector_list, life::make_selector);
   save(file, "environment", life::environment_list, life::make_environment);
   file.close();
 }

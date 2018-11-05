@@ -23,7 +23,7 @@ public:
   template <typename UserEntity>
   entity(UserEntity x) : self_(new entity_object<UserEntity>(std::move(x))) {}
 
-  entity(const entity &x) : self_(x.self_->copy_()) {}
+  entity(const entity &x) : data(x.data) ,self_(x.self_->copy_())  {}
   entity(entity &&) noexcept = default;
 
   entity &operator=(const entity &x) {

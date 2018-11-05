@@ -34,9 +34,11 @@ double flip_bits::eval(life::entity &org) {
       [](long a, long b) { return std::abs(a - util::Bit(b)); });
 }
 
-void flip_bits::evaluate(std::vector<life::entity> &pop) {
-
-  for (auto &org : pop)
+std::vector<life::entity>
+flip_bits::evaluate(const std::vector<life::entity> &pop) {
+  auto new_pop = pop;
+  for (auto &org : new_pop)
     org.data["score"] = eval(org);
+  return new_pop;
 }
 

@@ -17,7 +17,7 @@ class evolution {
   long generations_;
   //life::entity org ;
   std::string org_name_ = "null_entity";
-  std::string sel_name_ = "null_selector";
+  std::string sel_name_ = "null_environment";
   std::string world_name_ = "null_environment";
   life::configuration org_config_;
   life::configuration sel_config_;
@@ -31,7 +31,7 @@ public:
     life::configuration ec;
     ec["entity"] = {org_name_,{}};
     ec["selector"] = {sel_name_,{}};
-    ec["environment"] = {world_name_,{}};
+    ec["fitness"] = {world_name_,{}};
     ec["population_size"] = 100;
     ec["generations"] = 50;
     return ec;
@@ -44,8 +44,8 @@ public:
 	org_config_ = con["entity"][1];
 	sel_name_ = std::string(con["selector"][0]);
 	sel_config_ = con["selector"][1];
-	world_name_= std::string(con["environment"][0]);
-	world_config_ = con["environment"][1];
+	world_name_= std::string(con["fitness"][0]);
+	world_config_ = con["fitness"][1];
   }
 
   void run();

@@ -1,5 +1,6 @@
 
 #include "bit_brain.h"
+#include "../../core/utilities.h"
 
 #include <algorithm>
 #include <vector>
@@ -16,11 +17,6 @@ void bit_brain::mutate() {
 }
 
 life::signal bit_brain::output() {
-  life::signal v;
-  // encoding is simply the modulo 2 values
-  std::transform(std::begin(genome_), std::end(genome_), std::back_inserter(v),
-                 [](auto const value) { return value % 2; });
-  return v;
+  return genome_ | util::rv3::view::transform([](auto v) { return v % 2; });
 }
-
 

@@ -9,16 +9,18 @@
 #include <regex>
 #include <string>
 #include <string_view>
-#include <vector>
 #include <utility>
+#include <vector>
 
-void max_one::evaluate(std::vector<life::entity> &pop) {
+std::vector<life::entity>
+max_one::evaluate(const std::vector<life::entity> &pop) {
 
+  auto new_pop = pop;
   // no inputs
-  for (auto &org : pop) {
+  for (auto &org : new_pop) {
     // run single tick
     org.tick();
-	// output size can be determined by entity
+    // output size can be determined by entity
     auto out = org.output();
 
     // score is number of outputs that evaluate to Bit() == 1
@@ -26,5 +28,7 @@ void max_one::evaluate(std::vector<life::entity> &pop) {
         std::count_if(std::begin(out), std::end(out),
                       [](const auto i) { return util::Bit(i); });
   }
+
+  return new_pop;
 }
 

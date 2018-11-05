@@ -11,7 +11,7 @@
 class bit_brain {
 
   size_t size_ = 8;
-  life::encoding genome_;
+  life::encoding genome_ = life::encoding(size_, 0);
 
 public:
   bit_brain() { configure(publish_configuration()); }

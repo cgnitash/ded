@@ -6,7 +6,7 @@
 #include<cmath>
 
 namespace util {
-inline long Bit(double d) { return d > 0 ? 1 : 0; }
+inline double Bit(double d) { return d > 0. ? 1. : 0.; }
 
 const auto PI = std::atan(1) * 4;
 
@@ -15,6 +15,5 @@ template <typename F> void repeat(size_t n, F f) {
     f();
 }
 
-namespace rv3v = ranges::view;
-namespace rv3a = ranges::action;
+namespace rv3 = ranges;
 } // namespace util

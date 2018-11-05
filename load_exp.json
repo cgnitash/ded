@@ -9,7 +9,7 @@
                 "outputs": 26
             }
         ],
-        "environment": [
+        "fitness": [
             "replicate",
             {
                 "env": [

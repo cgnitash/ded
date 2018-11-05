@@ -1,5 +1,6 @@
 
 #include "evolution.h"
+#include "../../core/utilities.h"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -20,7 +21,7 @@ void evolution::run() {
     pop.push_back(org);
   }
 
-  auto optimiser = life::make_selector(sel_name_);
+  auto optimiser = life::make_environment(sel_name_);
   optimiser.configure(sel_config_);
 
   auto world = life::make_environment(world_name_);
@@ -30,7 +31,7 @@ void evolution::run() {
   file << "avg,max\n";
   for (int i = 0; i < generations_; i++) {
 
-    world.evaluate(pop);
+    pop = world.evaluate(pop);
 
     std::vector<double> scores;
     std::transform(std::begin(pop), std::end(pop), std::back_inserter(scores),
@@ -47,7 +48,7 @@ void evolution::run() {
 
     file << avg << "," << max << '\n';
 
-    pop = optimiser.select(pop);
+    pop = optimiser.evaluate(pop);
   }
   file.close();
 }

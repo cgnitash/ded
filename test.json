@@ -2,16 +2,15 @@
     "evolution",
     {
         "entity": [
-            "cppn",
+            "bit_brain",
             {
-                "outputs": 10,
-                "inputs": 10
+                "size": 50
             }
         ],
-        "environment": [
+        "fitness": [
             "max_one"
         ],
-        "generations": 5000,
+        "generations": 50,
         "population_size": 100,
         "selector": [
             "elite_replacement",

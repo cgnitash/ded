@@ -4,17 +4,23 @@
         "entity": [
             "markov2in1out",
             {
-                "inputs": 16,
-                "outputs": 16
+                "inputs": 8,
+                "outputs": 8
             }
         ],
-        "environment": [
-            "flip_bits",
+        "fitness": [
+            "replicate",
             {
-                "size": 16
+                "env": [
+                    "flip_bits",
+                    {
+                        "size": 8
+                    }
+                ],
+                "num": 5
             }
         ],
-        "generations": 20,
+        "generations": 2,
         "population_size": 100,
         "selector": [
             "elite_replacement",

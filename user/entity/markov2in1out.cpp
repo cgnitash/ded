@@ -17,23 +17,30 @@ void markov2in1out::input(life::signal v) {
 
   if (v.size() != input_) {
     std::cout
-        << "Error: entity-cppn must get an input range of the specified size\n";
+        << "Error: entity-markov2in1out must get an input range of the specified size\n";
     exit(1);
   }
 
+
   // must convert double inputs to 1s and 0s
-  std::transform(std::begin(v), std::end(v), std::begin(buffer_),
-                 [](auto const value) { return util::Bit(value); });
+  buffer_ = v | util::rv3::copy |
+            util::rv3::action::transform([](auto i) { return util::Bit(i); });
+  //  std::transform(std::begin(v), std::end(v), std::begin(buffer_),
+  //               [](auto const value) { return util::Bit(value); });
 }
 
 life::signal markov2in1out::output() {
-  life::signal v;
-  std::copy_n(std::begin(buffer_) + input_, output_, std::back_inserter(v));
-  return v;
+  // life::signal v =
+  return buffer_ | util::rv3::copy |
+         util::rv3::action::slice(input_, input_ + output_);
+
+  //	  std::copy_n(std::begin(buffer_) + input_, output_,
+  //std::back_inserter(v));
 }
 
 void markov2in1out::tick() {
 
+  //std::cout << buffer_.size() << std::endl;
   // temporary buffer, since markov-brain logic updates must be synced
   std::vector out_buffer(buffer_.size(), 0u);
 
@@ -56,6 +63,7 @@ void markov2in1out::seed_gates(size_t n) {
   }
 }
 
+
 void markov2in1out::compute_gates_() {
 
   gates_.clear();
@@ -70,10 +78,7 @@ void markov2in1out::compute_gates_() {
       gate g{*(pos + 2) % addresses,
              *(pos + 3) % addresses,
              *(pos + 4) % addresses,
-             {static_cast<size_t>(*(pos + 5) % 2),
-              static_cast<size_t>(*(pos + 6) % 2),
-              static_cast<size_t>(*(pos + 7) % 2),
-              static_cast<size_t>(*(pos + 8) % 2)}};
+             {*(pos + 5) % 2, *(pos + 6) % 2, *(pos + 7) % 2, *(pos + 8) % 2}};
       gates_.push_back(g);
     }
   }
