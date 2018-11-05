@@ -2,29 +2,25 @@
 
 #include "components.h"
 
-#include "core/nlohmann/json.hpp"
-
 #include <algorithm>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <numeric>
+#include <random>
+#include <regex>
 #include <string>
 #include <string_view>
-#include <vector>
-#include <random>
 #include <thread>
-#include <regex>
+#include <vector>
 
 template <typename L, typename M>
-void save(std::ofstream &f, std::string_view comp_type, L component_lister,
+void save(std::ofstream &ofs, std::string_view comp_type, L component_lister,
           M component_maker) {
 
-  for (auto &comp_name : component_lister()) {
-    auto n = component_maker(comp_name);
-    f << "\n"
-      << comp_type << " -- " << comp_name << "\n  " << std::setw(4)
-      << component_maker(comp_name).publish_configuration() << std::endl;
-  }
+  for (auto &comp_name : component_lister())
+    ofs << "\n"
+        << comp_type << " -- " << comp_name << "\n  " << std::setw(4)
+        << component_maker(comp_name).publish_configuration() << std::endl;
 }
 void save_configs() {
 
@@ -33,48 +29,37 @@ void save_configs() {
   save(file, "experiment", life::experiment_list, life::make_experiment);
   save(file, "entity", life::entity_list, life::make_entity);
   save(file, "environment", life::environment_list, life::make_environment);
-  file.close();
 }
 
 life::configuration load_user_experiment(std::string file_name) {
   life::configuration con;
-  std::ifstream ef(file_name);
-  ef >> con;
-//  std::cout << std::setw(4) << con << std::endl;
+  std::ifstream ifs(file_name);
+  ifs >> con;
   return con;
 }
 
 int main(int argc, char **argv) {
-  if (argc == 2 && std::string(argv[1]) == "-s") {
+  // TODO use an actual command-line library :P
+  //
+  if (argc == 2 && std::string(argv[1]) == "-h") {
+    std::cout << "-s : saves configuration files\n"
+              << "-f <file-name> <seed> : runs experiment in file-name "
+                 "with seed\n";
+  } else if (argc == 2 && std::string(argv[1]) == "-s") {
     std::cout << "saving configurations.cfg ... \n";
     save_configs();
-  }
-
-  if (argc == 4 && std::string(argv[1]) == "-f") {
-  srand(std::stol(argv[3]));
-    auto  con = load_user_experiment(argv[2]);
+  } else if (argc == 4 && std::string(argv[1]) == "-f") {
+    std::cout << "running experiment from file " << argv[2] << " with seed "
+              << argv[3] << " ... \n";
+    srand(std::stol(argv[3]));
+    auto con = load_user_experiment(argv[2]);
     std::string name = con[0];
-    auto ex = life::make_experiment(name);
-    ex.configure(con[1]);
-    ex.run();
-  }
+    auto exp = life::make_experiment(name);
+    exp.configure(con[1]);
+    exp.run();
+  } else
 
   {
-  // if no arguments are passed 
-/*
-  std::cout << " This is just random testing -- ignore\n";
-  auto e = life::make_entity("markov2in1out");
-  auto v = life::make_environment("flip_bits");
-
-  life::configuration c;
-  c["inputs"] = 10;
-  c["outputs"] = 10;
-  e.configure(c);
-  std::vector<life::entity> pop;
-  pop.push_back(e);
-  v.evaluate(pop);
-*/
-  std::cout << "nothing to see here\n";
+    std::cout << "ded: unknown command line arguments. try -h\n";
   }
-
 }
