@@ -1,6 +1,7 @@
 
 
 #include "elite_replacement.h"
+#include "../../core/utilities.h"
 
 #include <algorithm>
 #include <iostream>
@@ -9,32 +10,29 @@
 std::vector<life::entity>
 elite_replacement::evaluate(const std::vector<life::entity> &pop) {
 
-  auto temp_pop = pop;
+  // precondition: all entities have field"score" in data
   std::string name = "score";
-  int frac = pop.size() * strength_;
-  std::nth_element(std::begin(temp_pop), std::begin(temp_pop) + frac,
-                   std::end(temp_pop),
-                   [&name](const auto &org1, const auto &org2) {
-                     return org1.data[name] > org2.data[name];
-                   });
 
-  std::vector<life::entity> new_pop;
-  for (auto i = 0; i < frac; i++) {
-    auto org = pop[i];
-    new_pop.push_back(org);
-    for (auto j = 0; j < 1 / strength_ - 1; j++) {
-      auto mut_org{org};
-      mut_org.mutate();
-      new_pop.push_back(mut_org);
-    }
-  }
+  // find the strength_ fraction of highest "score"s
+  auto temp_pop = pop;
+  const auto fraction = temp_pop.size() * strength_;
 
-  new_pop.erase(std::begin(new_pop) + pop.size(), std::end(new_pop));
-  if (pop.size() > new_pop.size()) {
-    std::cout << "elite_replacement error  " << pop.size() << " "
-              << new_pop.size();
-    exit(1);
-  }
-  return new_pop;
+  util::rv3::nth_element(
+      util::rv3::begin(temp_pop), util::rv3::begin(temp_pop) + fraction,
+      util::rv3::end(temp_pop), [&name](const auto &org1, const auto &org2) {
+        return org1.data[name] > org2.data[name];
+      });
+
+  // get the best orgs from above
+  auto best_orgs = util::rv3::view::take(temp_pop, fraction);
+
+  // make roughly equal mutated copies of each best org
+  return util::rv3::view::concat(best_orgs,
+                                 best_orgs | util::rv3::view::cycle |
+                                     util::rv3::view::transform([](auto org) {
+                                       org.mutate();
+                                       return org;
+                                     })) |
+         util::rv3::view::take(pop.size());
 }
 

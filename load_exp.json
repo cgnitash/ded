@@ -2,26 +2,30 @@
     "evolution",
     {
         "entity": [
-            "cppn",
+            "markov2in1out",
             {
-                "hiddens": 8,
-                "inputs": 16,
-                "outputs": 16
+                "hiddens": 2,
+                "inputs": 2,
+                "outputs": 2
             }
         ],
         "fitness": [
             "replicate",
             {
                 "env": [
-                    "flip_bits",
+                    "forager",
                     {
-                        "size": 16
+                        "density": 0.2,
+                        "grid-size": 4,
+                        "replace": true,
+                        "sensor-range": 2,
+                        "updates": 100
                     }
                 ],
-                "num": 5
+                "num": 3
             }
         ],
-        "generations": 500,
+        "generations": 1001,
         "population_size": 100,
         "selector": [
             "elite_replacement",
