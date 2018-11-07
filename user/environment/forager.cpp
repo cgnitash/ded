@@ -25,9 +25,9 @@ void forager::replace_resource_() {
 
 void forager::initialize_resource_() {
 
-  for (size_t i : util::rv3::view::iota(0, grid_size_))
-    for (size_t j : util::rv3::view::iota(0, grid_size_))
-      if ((std::rand() % 100) / 100.0 < density_)
+  for (auto i : util::rv3::view::iota(0u, grid_size_))
+    for (auto j : util::rv3::view::iota(0u, grid_size_))
+      if ((std::rand() % 1000) / 1000.0 < density_)
         resources_.insert(location{i, j});
 
 }
@@ -93,7 +93,9 @@ void forager::interact(life::signal output, location &position,
 double forager::eval(life::entity &org) {
 
   auto score = 0.0;
+  // random starting position
   auto position = location{std::rand() % grid_size_, std::rand() % grid_size_};
+  // face in random direction
   auto facing = direction{std::rand() % 4};
 
   resources_.clear();
@@ -113,10 +115,9 @@ double forager::eval(life::entity &org) {
 }
 
 std::vector<life::entity>
-forager::evaluate(const std::vector<life::entity> &pop) {
-  auto new_pop = pop;
-  for (auto &org : new_pop)
+forager::evaluate( std::vector<life::entity> pop) {
+  for (auto &org : pop)
     org.data["score"] = eval(org);
-  return new_pop;
+  return pop;
 }
 

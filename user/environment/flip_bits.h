@@ -30,6 +30,6 @@ public:
 	size_ = c["size"];
   }
 
-  std::vector<life::entity> evaluate(const std::vector<life::entity> &);
+  std::vector<life::entity> evaluate(std::vector<life::entity>);
 };
 

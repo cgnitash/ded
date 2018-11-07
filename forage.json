@@ -25,7 +25,7 @@
                 "num": 3
             }
         ],
-        "generations": 2000,
+        "generations": 201,
         "population_size": 100,
         "selector": [
             "elite_replacement",
