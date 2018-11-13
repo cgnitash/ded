@@ -38,9 +38,11 @@ life::configuration load_user_experiment(std::string file_name) {
   return con;
 }
 
+long life::entity::entity_id_ = 0;
 int main(int argc, char **argv) {
   // TODO use an actual command-line library :P
   //
+
   if (argc == 2 && std::string(argv[1]) == "-h") {
     std::cout << "-s : saves configuration files\n"
               << "-f <file-name> <seed> : runs experiment in file-name "

@@ -17,6 +17,7 @@
 
 namespace life {
 
+
 // polymorphic wrapper for types that walk, talk, and quack like organisms
 class entity {
 public:
@@ -35,6 +36,8 @@ public:
 
   // public interface of entitys - how entitys can be used
   life::configuration data;
+
+  long get_id() const { return self_->get_id_(); }
 
   void input(signal s) {
   	self_->input_(s);
@@ -66,6 +69,7 @@ private:
     virtual ~entity_interface () = default;
     virtual entity_interface *copy_() const = 0;
 
+	virtual long get_id_() const = 0;
     virtual void mutate_() = 0;
     virtual configuration publish_configuration_() = 0;
 	virtual void tick_() = 0;
@@ -79,11 +83,14 @@ private:
 
   template <typename UserEntity> struct entity_object final : entity_interface {
 
-    entity_object(UserEntity x) : data_(std::move(x)) {}
- 
- 	entity_interface *copy_() const override {
+    // provided methods
+    entity_object(UserEntity x) : id_(++entity_id_), data_(std::move(x)) {}
+
+    entity_interface *copy_() const override {
       return new entity_object(*this);
     }
+ 
+	long get_id_() const override { return id_; } 
 
 	// mandatory methods
 	//
@@ -98,6 +105,7 @@ private:
     }
 
    void mutate_() override {
+	  id_ = ++entity_id_;
       data_.mutate(); 
     }
    
@@ -117,10 +125,11 @@ private:
         return " #unnamed entity??? ";
     }
 */
-
+    long id_;
     UserEntity data_;
   };
 
+  static long entity_id_;
   std::unique_ptr<entity_interface> self_;
 };
 
