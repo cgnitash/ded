@@ -36,7 +36,7 @@ public:
 
   // public interface of environments - how environments can be used
   std::vector<entity> evaluate( std::vector<entity> p) {
-    return self_->evaluate_(std::move(p));
+    return self_->evaluate_(p);
   }
 
   configuration publish_configuration() const {
@@ -61,7 +61,7 @@ private:
     virtual configuration publish_configuration_() = 0;
     virtual void configure_(configuration ) = 0;
 
-    virtual std::vector<entity> evaluate_(std::vector<entity> &&) = 0;
+    virtual std::vector<entity> evaluate_(std::vector<entity> ) = 0;
   };
 
   // concept to test if method is provided by user
@@ -77,8 +77,8 @@ private:
 
 	// mandatory methods
 	//
-    std::vector<entity> evaluate_(std::vector<entity> &&p) override {
-      return data_.evaluate(std::move(p));
+    std::vector<entity> evaluate_(std::vector<entity> p) override {
+      return data_.evaluate(p);
     }
 
    configuration publish_configuration_() override {
