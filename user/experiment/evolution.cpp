@@ -22,9 +22,6 @@ void evolution::run() {
     return org;
   });
 
-  for (auto &org : pop)
-  std::cout << org.get_id() << ":";
-  std::cout << std::endl; 
 
   auto optimiser = life::make_environment(sel_name_);
   optimiser.configure(sel_config_);
@@ -39,11 +36,6 @@ void evolution::run() {
 
     pop = world.evaluate(pop);
 
-  for (auto i : pop | util::rv3::view::transform([](auto const &org) {
-			 return org.get_id(); 
-			 }))
-  std::cout << i << " ";
-  std::cout << std::endl; 
     const auto scores = pop | util::rv3::view::transform([](auto const &org) {
                     return double{org.data["score"]};
                   });
@@ -60,11 +52,12 @@ void evolution::run() {
     file << avg << "," << max << '\n';
 
     pop = optimiser.evaluate(pop);
-  for (auto i : pop | util::rv3::view::transform([](auto const &org) {
-			 return org.get_id(); 
-			 }))
-  std::cout << i << " ";
+  for (auto i : pop ) {
+	  auto v = i.get_ancestor_list();
+    std::cout << i.get_id() << " "
+              << ( v | util::rv3::view::all);
   std::cout << std::endl; 
+  }
   }
 }
 

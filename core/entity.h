@@ -39,6 +39,10 @@ public:
 
   long get_id() const { return self_->get_id_(); }
 
+  std::vector<long> get_ancestor_list() const {
+    return self_->get_ancestor_list_();
+  }
+
   void input(signal s) {
   	self_->input_(s);
   }
@@ -70,6 +74,8 @@ private:
     virtual entity_interface *copy_() const = 0;
 
 	virtual long get_id_() const = 0;
+    virtual std::vector<long> get_ancestor_list_() const = 0;
+
     virtual void mutate_() = 0;
     virtual configuration publish_configuration_() = 0;
 	virtual void tick_() = 0;
@@ -89,11 +95,13 @@ private:
     entity_interface *copy_() const override {
       return new entity_object(*this);
     }
- 
-	long get_id_() const override { return id_; } 
 
-	// mandatory methods
-	//
+    long get_id_() const override { return id_; }
+
+    std::vector<long> get_ancestor_list_() const override { return ancestors_; }
+
+    // mandatory methods
+    //
     void input_(signal s) override {
       data_.input(s); 
     }
@@ -105,8 +113,9 @@ private:
     }
 
    void mutate_() override {
-	  id_ = ++entity_id_;
-      data_.mutate(); 
+     ancestors_.push_back(id_);
+     id_ = ++entity_id_;
+     data_.mutate(); 
     }
    
    configuration publish_configuration_() override {
@@ -126,6 +135,7 @@ private:
     }
 */
     long id_;
+	std::vector<long> ancestors_;
     UserEntity data_;
   };
 
