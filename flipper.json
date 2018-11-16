@@ -1,13 +1,6 @@
 [
     "evolution",
     {
-        "entity": [
-            "markov2in1out",
-            {
-                "inputs": 8,
-                "outputs": 8
-            }
-        ],
         "fitness": [
             "replicate",
             {
@@ -21,7 +14,19 @@
             }
         ],
         "generations": 5000,
-        "population_size": 10,
+        "population": [
+            "linear",
+            {
+                "entity": [
+                    "markov2in1out",
+                    {
+                        "inputs": 8,
+                        "outputs": 8
+                    }
+                ],
+                "size": 10
+            }
+        ],
         "selector": [
             "elite_replacement",
             {

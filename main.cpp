@@ -29,6 +29,7 @@ void save_configs() {
   save(file, "experiment", life::experiment_list, life::make_experiment);
   save(file, "entity", life::entity_list, life::make_entity);
   save(file, "environment", life::environment_list, life::make_environment);
+  save(file, "population", life::population_list, life::make_population);
 }
 
 life::configuration load_user_experiment(std::string file_name) {

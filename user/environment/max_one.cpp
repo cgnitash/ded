@@ -12,8 +12,10 @@
 #include <utility>
 #include <vector>
 
-std::vector<life::entity> max_one::evaluate(std::vector<life::entity> pop) {
+life::population max_one::evaluate(life::population p) {
 
+	auto pop = p.get_as_vector();
+  p.clear();
   for (auto &org : pop) {
     // no inputs
   
@@ -25,6 +27,7 @@ std::vector<life::entity> max_one::evaluate(std::vector<life::entity> pop) {
         util::rv3::count_if(org.output(), [](auto i) { return util::Bit(i); });
   }
 
-  return pop;
+  p.merge(pop);
+  return p;
 }
 

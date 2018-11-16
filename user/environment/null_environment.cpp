@@ -11,10 +11,12 @@
 #include <vector>
 #include <utility>
 
-std::vector<life::entity>
-null_environment::evaluate(std::vector<life::entity> pop) {
-  for (auto &org : pop)
+life::population null_environment::evaluate(life::population pop) {
+  auto p = pop.get_as_vector();
+  pop.clear();
+  for (auto &org : p)
     org.data["score"] = 0.0;
+  pop.merge(p);
   return pop;
 }
 

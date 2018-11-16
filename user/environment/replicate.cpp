@@ -12,19 +12,22 @@
 #include <utility>
 #include <vector>
 
-std::vector<life::entity> replicate::evaluate(std::vector<life::entity> pop) {
+life::population replicate::evaluate(life::population pop) {
 
   // make and configure nested environment
   auto env = life::make_environment(env_name_);
   env.configure(env_config_);
 
-  std::vector accumulated_scores(pop.size(), 0.0);
+  auto vec = pop.get_as_vector();
+
+  std::vector accumulated_scores(vec.size(), 0.0);
 
   util::repeat(num_, [&] {
     // evaluate the entire population
     auto ev_pop = env.evaluate(pop);
+  auto ev_vec = ev_pop.get_as_vector();
     // add scores to accumulated scores
-    util::rv3::transform(ev_pop, accumulated_scores,
+    util::rv3::transform(ev_vec, accumulated_scores,
                          util::rv3::begin(accumulated_scores),
                          [](const auto &org, auto score) {
                            return score + double{org.data["score"]};
@@ -32,12 +35,14 @@ std::vector<life::entity> replicate::evaluate(std::vector<life::entity> pop) {
   });
 
   // assign accumulate scores to each org
-  util::rv3::transform(pop, accumulated_scores, util::rv3::begin(pop),
+  util::rv3::transform(vec, accumulated_scores, util::rv3::begin(vec),
                        [this](auto org, const auto score) {
                          org.data["score"] = score / this->num_;
                          return org;
                        });
 
+  pop.clear();
+  pop.merge(vec);
   return pop;
 }
 

@@ -1,17 +1,22 @@
 [
     "evolution",
     {
-        "entity": [
-            "bit_brain",
-            {
-                "size": 500
-            }
-        ],
         "fitness": [
             "max_one"
         ],
-        "generations": 1000,
-        "population_size": 10,
+        "generations": 5,
+        "population": [
+            "linear",
+            {
+                "entity": [
+                    "bit_brain",
+                    {
+                        "size": 500
+                    }
+                ],
+                "size": 10
+            }
+        ],
         "selector": [
             "elite_replacement",
             {

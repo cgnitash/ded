@@ -33,6 +33,6 @@ public:
 	env_config_ = c["env"][1];
   }
 
-  std::vector<life::entity> evaluate(std::vector<life::entity>);
+  life::population evaluate(life::population);
 };
 

@@ -1,14 +1,6 @@
 [
     "evolution",
     {
-        "entity": [
-            "cppn",
-            {
-                "hiddens": 4,
-                "inputs": 2,
-                "outputs": 2
-            }
-        ],
         "fitness": [
             "replicate",
             {
@@ -25,8 +17,21 @@
                 "num": 3
             }
         ],
-        "generations": 201,
-        "population_size": 100,
+        "generations": 2,
+        "population": [
+            "linear",
+            {
+                "entity": [
+                    "cppn",
+                    {
+                        "hiddens": 4,
+                        "inputs": 2,
+                        "outputs": 2
+                    }
+                ],
+                "size": 2
+            }
+        ],
         "selector": [
             "elite_replacement",
             {

@@ -21,5 +21,5 @@ public:
   }
   elite_replacement() { configure(publish_configuration()); }
 
-  std::vector<life::entity> evaluate(std::vector<life::entity>);
+  life::population evaluate(life::population);
 };

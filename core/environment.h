@@ -6,6 +6,7 @@
 #include"encoding.h"
 #include"entity.h"
 #include"signal.h"
+#include"population.h"
 
 
 #include <cassert>
@@ -35,7 +36,7 @@ public:
   environment &operator=(environment &&) noexcept = default;
 
   // public interface of environments - how environments can be used
-  std::vector<entity> evaluate( std::vector<entity> p) {
+  population evaluate(population p) {
     return self_->evaluate_(p);
   }
 
@@ -61,7 +62,7 @@ private:
     virtual configuration publish_configuration_() = 0;
     virtual void configure_(configuration ) = 0;
 
-    virtual std::vector<entity> evaluate_(std::vector<entity> ) = 0;
+    virtual population evaluate_(population) = 0;
   };
 
   // concept to test if method is provided by user
@@ -77,7 +78,7 @@ private:
 
 	// mandatory methods
 	//
-    std::vector<entity> evaluate_(std::vector<entity> p) override {
+    population evaluate_(population p) override {
       return data_.evaluate(p);
     }
 

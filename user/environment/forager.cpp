@@ -114,10 +114,12 @@ double forager::eval(life::entity &org) {
   return score;
 }
 
-std::vector<life::entity>
-forager::evaluate( std::vector<life::entity> pop) {
+life::population forager::evaluate(life::population populate) {
+  auto pop = populate.get_as_vector();
+  populate.clear();
   for (auto &org : pop)
     org.data["score"] = eval(org);
-  return pop;
+  populate.merge(pop);
+  return populate;
 }
 

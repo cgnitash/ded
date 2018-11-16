@@ -44,9 +44,12 @@ double flip_bits::eval(life::entity &org) {
   return x;
 }
 
-std::vector<life::entity> flip_bits::evaluate(std::vector<life::entity> pop) {
+life::population flip_bits::evaluate(life::population p) {
+  auto pop = p.get_as_vector();
+  p.clear();
   for (auto &org : pop)
     org.data["score"] = eval(org);
-  return pop;
+  p.merge(pop);
+  return p;
 }
 

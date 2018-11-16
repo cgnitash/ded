@@ -15,13 +15,8 @@
 void evolution::run() {
 
   // generate the population
-  std::vector<life::entity> pop;
-  util::rv3::generate_n(util::rv3::back_inserter(pop), pop_size_, [&] {
-    auto org = life::make_entity(org_name_);
-    org.configure(org_config_);
-    return org;
-  });
-
+  auto pop = life::make_population(pop_name_);
+  pop.configure(pop_config_);
 
   auto optimiser = life::make_environment(sel_name_);
   optimiser.configure(sel_config_);
@@ -30,34 +25,22 @@ void evolution::run() {
   world.configure(world_config_);
 
   std::ofstream file("data.csv");
-  file << "avg,max\n";
+  file << "avg,max,\n";
 
   for (auto i : util::rv3::view::iota(0, generations_)) {
 
     pop = world.evaluate(pop);
 
-    const auto scores = pop | util::rv3::view::transform([](auto const &org) {
-                    return double{org.data["score"]};
-                  });
-
-    const auto avg = util::rv3::accumulate(scores, 0.0) / pop.size();
-
-    const auto max = *util::rv3::max_element(scores);
+    auto stats = pop.get_stats();
 
     if (!(i % 100))
-      std::cout << "update: " << std::setw(3) << i << " avg: " << std::setw(3)
-                << std::setprecision(2) << avg << "   max: " << std::setw(3)
-                << std::setprecision(2) << max << std::endl;
+      std::cout << stats << std::endl;
 
-    file << avg << "," << max << '\n';
+    for (auto &k : stats)
+      file << k << ",";
+    file << "\n";
 
     pop = optimiser.evaluate(pop);
-  for (auto i : pop ) {
-	  auto v = i.get_ancestor_list();
-    std::cout << i.get_id() << " "
-              << ( v | util::rv3::view::all);
-  std::cout << std::endl; 
-  }
   }
 }
 

@@ -23,6 +23,6 @@ public:
 
   void configure(life::configuration) {}
 
-  std::vector<life::entity> evaluate(std::vector<life::entity>);
+   life::population evaluate(life::population);
 };
 

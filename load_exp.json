@@ -1,32 +1,37 @@
 [
     "evolution",
     {
-        "entity": [
-            "markov2in1out",
-            {
-                "hiddens": 2,
-                "inputs": 2,
-                "outputs": 2
-            }
-        ],
         "fitness": [
             "replicate",
             {
                 "env": [
                     "forager",
                     {
-                        "density": 0.4,
+                        "density": 0.8,
                         "grid-size": 4,
-                        "replace": true,
+                        "replace": false,
                         "sensor-range": 2,
-                        "updates": 1000
+                        "updates": 30
                     }
                 ],
                 "num": 3
             }
         ],
         "generations": 1001,
-        "population_size": 100,
+        "population": [
+            "linear",
+            {
+                "entity": [
+                    "markov2in1out",
+                    {
+                        "hiddens": 2,
+                        "inputs": 2,
+                        "outputs": 2
+                    }
+                ],
+                "size": 50
+            }
+        ],
         "selector": [
             "elite_replacement",
             {

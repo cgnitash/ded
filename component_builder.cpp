@@ -19,7 +19,7 @@ opts get_build_options(const std::string &fname) {
   opts build_options;
   std::ifstream cfg(fname);
   std::regex r(
-      R"(^\s*(experiment|entity|environment)\s*:\s*(\w+)\s*$)");
+      R"(^\s*(experiment|entity|environment|population)\s*:\s*(\w+)\s*$)");
   for (std::string line; std::getline(cfg, line);) {
     std::smatch m;
     if (std::regex_match(line, m, r))
@@ -73,7 +73,7 @@ void generate_makefile(const std::string &fname, opts build_options) {
 
   makefile
       << "\ncore_headers = components.h core/experiment.h core/environment.h "
-         "core/entity.h core/encoding.h core/configuration.h	"
+         "core/entity.h core/population.h core/encoding.h core/configuration.h	"
          "core/signal.h core/utilities.h ";
 
   for (auto &flags : {"", "debug", "asan"}) {
