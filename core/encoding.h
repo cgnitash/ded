@@ -9,12 +9,12 @@
 
 namespace life {
 
-const auto al = 128;
+const auto alphabet = 128;
 using encoding = std::vector<long>;
 
 inline encoding generate(long len = 100) {
   encoding v(len);
-  std::generate(std::begin(v), std::end(v), [] { return std::rand() % al; });
+  std::generate(std::begin(v), std::end(v), [] { return std::rand() % alphabet; });
   return v;
 }
 
@@ -39,13 +39,13 @@ inline void del_chunk(encoding &v, long prob = 5, long len = 20) {
 inline void point_mutate(encoding &v, double prob = 0.001) {
   auto point_mut = v.size() * prob;
   for (auto i = 0; i < point_mut; i++)
-    v[std::rand() % v.size()] = std::rand() % al;
+    v[std::rand() % v.size()] = std::rand() % alphabet;
 }
 
 inline void point_insert(encoding &v, double prob = 0.001) {
   auto point_ins = v.size() * prob;
   for (auto i = 0; i < point_ins; i++)
-    v.insert(std::begin(v) + std::rand() % v.size(), std::rand() % al);
+    v.insert(std::begin(v) + std::rand() % v.size(), std::rand() % alphabet);
 }
 
 inline void point_delete(encoding &v, double prob = 0.001) {

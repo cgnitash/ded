@@ -7,29 +7,29 @@
                 "env": [
                     "forager",
                     {
-                        "density": 0.4,
-                        "grid-size": 4,
-                        "replace": false,
-                        "sensor-range": 2,
+                        "density": 0.2,
+                        "grid-size": 10,
+                        "replace": true,
+                        "sensor-range": 4,
                         "updates": 100
                     }
                 ],
                 "num": 3
             }
         ],
-        "generations": 2,
+        "generations": 1001,
         "population": [
             "linear",
             {
                 "entity": [
                     "cppn",
                     {
-                        "hiddens": 4,
-                        "inputs": 2,
+                        "hiddens": 2,
+                        "inputs": 4,
                         "outputs": 2
                     }
                 ],
-                "size": 2
+                "size": 100
             }
         ],
         "selector": [

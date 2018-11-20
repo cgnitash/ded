@@ -38,7 +38,7 @@ public:
     input_ = con["inputs"];
     output_ = con["outputs"];
     hidden_ = con["hiddens"];
-    genome_ = life::encoding(500, 0);
+    genome_ = life::generate(500);
     buffer_ = std::vector(input_ + output_ + hidden_, 0.);
     seed_gates_(4);
 	compute_gates_();

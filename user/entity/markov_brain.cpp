@@ -4,7 +4,6 @@
 
 #include <vector>
 #include <algorithm>
-#include <regex>
 
 void markov_brain::mutate() {
 
@@ -36,6 +35,7 @@ life::signal markov_brain::output() {
 
 void markov_brain::tick() {
 
+	// TODO fix some address bug from asan/valgrind report
   std::vector out_buffer(buffer_.size(), 0.);
 
   for (auto &g : gates_) {
@@ -46,7 +46,7 @@ void markov_brain::tick() {
     for (auto &i : g.outs_) 
       out_buffer[i] += out;
   }
-  buffer_ = out_buffer | util::rv3::copy |
+  buffer_ = out_buffer | util::rv3::move |
             util::rv3::action::transform([](auto i) { return util::Bit(i); });
 }
 
@@ -74,18 +74,18 @@ void markov_brain::compute_gates_() {
       // convert the gene into gate
       gate g;
 	  // translate input wires
-      auto in = *(pos + 2) % 3 + 1;
+      auto in = *(pos + 2) % 4 + 1;
       for (auto i : util::rv3::view::iota(0u, in))
         g.ins_.push_back(*(pos + 3 + i) % addresses);
 
 	  // translate output wires
-      auto out = *(pos + 7) % 3 + 1;
+      auto out = *(pos + 7) % 4 + 1;
       for (auto i : util::rv3::view::iota(0u, out))
         g.outs_.push_back(*(pos + 8 + i) % addresses);
 
 	  // translate logic 
       for (auto i : util::rv3::view::iota(0u, 16))
-        g.logic_.push_back(*(pos + 12 + i) % 2); 
+        g.logic_.push_back(*(pos + 13 + i) % 2); 
 
       gates_.push_back(g);
     }
