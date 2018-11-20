@@ -14,11 +14,13 @@
 
 double flip_bits::eval(life::entity &org) {
 
-	//TODO fix some wierd bug here
+  // TODO fix some wierd bug here
 
   // feed in input - input signals are 0s or 1s only
-  auto input = util::rv3::view::generate([] () -> double  { return std::rand() % 2; }) |
-               util::rv3::view::take(size_);
+  life::signal input;
+  util::rv3::generate_n(util::rv3::back_inserter(input), size_,
+                        []() -> double { return std::rand() % 2; });
+
   org.input(input);
 
   // give the org one tick
@@ -32,16 +34,10 @@ double flip_bits::eval(life::entity &org) {
     exit(1);
   }
   // score is the number of bit-wise matches between input and output
-// auto in = input; 
- std::cout << input << "\n";
- //auto out = output; 
- for (auto i: output) std::cout << i << " ";
-  auto x = util::rv3::inner_product(
+  return util::rv3::inner_product(
       input, output, 0.0, std::plus<>(),
       [](auto a, auto b) { return 1 - std::abs(a - util::Bit(b)); });
-  std::cout << x << " ";
-  std::cin>>x;
-  return x;
+
 }
 
 life::population flip_bits::evaluate(life::population p) {
