@@ -1,5 +1,6 @@
 
 #include"../../components.h"
+#include"../../core/utilities.h"
 #include <algorithm>
 #include <iostream>
 #include <fstream>
@@ -23,29 +24,28 @@ class forager {
   bool replace_ = true;
   double density_ = 0.1;
 
+  
   struct location {
     size_t x_, y_;
-    bool operator<(const location &A) const{
-      return std::tie(x_, y_) < std::tie(A.x_, A.y_);
-    }
   };
-
   enum class direction { up,  left, down, right };
-  std::map<location,size_t> signal_strength_;
-  std::set<location> resources_;
+
+  std::vector<std::vector<int>> resources_;
 
   direction turn(direction d, long rate) {
-    return static_cast<direction>((static_cast<long>(d) + rate) % 4);
+    util::repeat(rate, [&] {
+      d = d == direction::up ? direction::right
+                             : d == direction::down
+                                   ? direction::left
+                                   : d == direction::left ? direction::up :
+                                                          /* direction::right */
+                                         direction::down;
+    });
+    return d;
   }
 
   location wrap(location p) { return {p.x_ % grid_size_, p.y_ % grid_size_}; }
 
-  std::initializer_list<location> neighbours(location p) {
-    auto ret = {
-        p, move_in_dir(p, direction::up), move_in_dir(p, direction::down),
-        move_in_dir(p, direction::left), move_in_dir(p, direction::right)};
-    return ret;
-  }
 
   location move_in_dir(location p, direction d) {
     return d == direction::up ? wrap({p.x_ + grid_size_ - 1, p.y_})
@@ -59,10 +59,9 @@ class forager {
 
   void replace_resource_();
   void initialize_resource_();
-  void refresh_signals();
   void interact(life::signal, location &, direction &, double &);
   double eval(life::entity&);
-  std::vector<double> signals_at(location);
+  std::vector<double> signals_at(location,direction);
 
 public:
   forager() {
@@ -81,12 +80,12 @@ public:
 
   void configure(life::configuration con) {
 
-    grid_size_ = (con["grid-size"]);
-    updates_= (con["updates"]);
-    density_ = (con["density"]);
-    replace_ = (con["replace"]);
-    sensor_range_	= (con["sensor-range"]);
-
+    grid_size_ = con["grid-size"];
+    updates_= con["updates"];
+    density_ = con["density"];
+    replace_ = con["replace"];
+    sensor_range_	= con["sensor-range"];
+    resources_ = std::vector(grid_size_, std::vector(grid_size_, 0));
   }
 
   life::population evaluate(life::population);

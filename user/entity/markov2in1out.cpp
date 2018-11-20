@@ -22,7 +22,6 @@ void markov2in1out::input(life::signal v) {
   }
 
   // must convert double inputs to 1s and 0s, overwrite only input range of
-  // buffer_
   for (auto i{0u}; i < v.size(); i++)
     buffer_[i] = util::Bit(v[i]);
 
@@ -48,7 +47,7 @@ void markov2in1out::tick() {
 
 }
 
-void markov2in1out::seed_gates(size_t n) {
+void markov2in1out::seed_gates_(size_t n) {
 
   util::repeat(n, [&] {
     auto pos = std::rand() % (genome_.size() - 1);

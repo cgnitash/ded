@@ -24,7 +24,7 @@ class markov2in1out {
   std::vector<gate> gates_;
 
   void compute_gates_();
-  void seed_gates(size_t = 1);
+  void seed_gates_(size_t = 1);
 
 public:
   markov2in1out() { configure(publish_configuration()); }
@@ -43,7 +43,7 @@ public:
     hidden_ = con["hiddens"];
     genome_ = life::generate(100);
     buffer_ = std::vector<double>(input_ + output_ + hidden_, 0.);
-    seed_gates(4);
+    seed_gates_(4);
 	compute_gates_();
   }
 

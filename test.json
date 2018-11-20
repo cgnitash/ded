@@ -2,19 +2,30 @@
     "evolution",
     {
         "fitness": [
-            "max_one"
+            "replicate",
+            {
+                "env": [
+                    "flip_bits",
+                    {
+                        "size": 18
+                    }
+                ],
+                "num": 5
+            }
         ],
-        "generations": 5,
+        "generations": 5000,
         "population": [
             "linear",
             {
                 "entity": [
-                    "bit_brain",
+                    "markov_brain",
                     {
-                        "size": 500
+                        "hiddens": 2,
+                        "inputs": 18,
+                        "outputs": 18
                     }
                 ],
-                "size": 10
+                "size": 100
             }
         ],
         "selector": [
