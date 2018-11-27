@@ -35,13 +35,12 @@ life::signal markov_brain::output() {
 
 void markov_brain::tick() {
 
-	// TODO fix some address bug from asan/valgrind report
   std::vector out_buffer(buffer_.size(), 0.);
 
   for (auto &g : gates_) {
     auto in = 0;
     for (auto &i : g.ins_)
-      in += in * 2 + buffer_[i];
+      in = in * 2 + buffer_[i];
     auto out = g.logic_[in];
     for (auto &i : g.outs_) 
       out_buffer[i] += out;
