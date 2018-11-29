@@ -1,22 +1,20 @@
 
 #pragma once
 
-#include"member_detection.h"
-#include"configuration.h"
-#include"encoding.h"
-#include"signal.h"
-
+#include "configuration.h"
+#include "encoding.h"
+#include "member_detection.h"
+#include "signal.h"
 
 #include <cassert>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
-#include <vector>
 #include <type_traits>
-#include <map>
+#include <vector>
 
 namespace life {
-
 
 // polymorphic wrapper for types that walk, talk, and quack like organisms
 class entity {
@@ -24,7 +22,7 @@ public:
   template <typename UserEntity>
   entity(UserEntity x) : self_(new entity_object<UserEntity>(std::move(x))) {}
 
-  entity(const entity &x) : data(x.data) ,self_(x.self_->copy_())  {}
+  entity(const entity &x) : data(x.data), self_(x.self_->copy_()) {}
   entity(entity &&) noexcept = default;
 
   entity &operator=(const entity &x) {
@@ -35,26 +33,29 @@ public:
   entity &operator=(entity &&) noexcept = default;
 
   // public interface of entitys - how entitys can be used
+
+  bool operator==(const entity &e) const { return get_id() == e.get_id(); }
+
+  bool operator<(const entity &e) const { return get_id() < e.get_id(); }
+
   life::configuration data;
 
   long get_id() const { return self_->get_id_(); }
 
   std::vector<long> get_ancestor_list() const {
-    return self_->get_ancestor_list_();
+    return self_->get_ancestors_();
   }
 
-  void input(signal s) {
-  	self_->input_(s);
-  }
+  void prune_ancestors(long n) { self_->prune_ancestors_(n); }
 
-  signal output() {
-	  return self_->output_();
-  }
+  void input(signal s) { self_->input_(s); }
+
+  signal output() { return self_->output_(); }
 
   void mutate() { self_->mutate_(); }
 
   configuration publish_configuration() {
-   return  self_->publish_configuration_();
+    return self_->publish_configuration_();
   }
 
   void tick() { self_->tick_(); }
@@ -67,25 +68,26 @@ public:
   }
 
 private:
-
   // interface/ABC for an entity
-  struct entity_interface  {
-    virtual ~entity_interface () = default;
+  struct entity_interface {
+    virtual ~entity_interface() = default;
     virtual entity_interface *copy_() const = 0;
 
-	virtual long get_id_() const = 0;
-    virtual std::vector<long> get_ancestor_list_() const = 0;
+    virtual long get_id_() const = 0;
+    virtual void prune_ancestors_(long) = 0;
+    virtual std::vector<long> get_ancestors_() const = 0;
 
     virtual void mutate_() = 0;
     virtual configuration publish_configuration_() = 0;
-	virtual void tick_() = 0;
-	virtual void input_(signal) = 0;
-	virtual signal output_() = 0;
-    virtual void configure_(configuration ) = 0;
+    virtual void tick_() = 0;
+    virtual void input_(signal) = 0;
+    virtual signal output_() = 0;
+    virtual void configure_(configuration) = 0;
   };
 
   // concept to test if method is provided by user
-//  template <typename T> using nameable = decltype(std::declval<T&>().name());
+  //  template <typename T> using nameable =
+  //  decltype(std::declval<T&>().name());
 
   template <typename UserEntity> struct entity_object final : entity_interface {
 
@@ -96,46 +98,42 @@ private:
       return new entity_object(*this);
     }
 
-    long get_id_() const override { return id_; }
-
-    std::vector<long> get_ancestor_list_() const override { return ancestors_; }
-
     // mandatory methods
     //
-    void input_(signal s) override {
-      data_.input(s); 
-    }
-    signal output_() override {
-      return data_.output(); 
-    }
-    void tick_() override {
-      data_.tick(); 
+    void input_(signal s) override { data_.input(s); }
+    signal output_() override { return data_.output(); }
+    void tick_() override { data_.tick(); }
+
+    std::vector<long> get_ancestors_() const override { return ancestors_; }
+    long get_id_() const override { return id_; }
+
+    void mutate_() override {
+      ancestors_.push_back(id_);
+      id_ = ++entity_id_;
+      data_.mutate();
     }
 
-   void mutate_() override {
-     ancestors_.push_back(id_);
-     id_ = ++entity_id_;
-     data_.mutate(); 
-    }
-   
-   configuration publish_configuration_() override {
-      return data_.publish_configuration(); 
+    configuration publish_configuration_() override {
+      return data_.publish_configuration();
     }
 
     void configure_(configuration c) override { data_.configure(c); }
 
-/*
-	// optional methods
-	//
-    std::string name_() const override {
-      if constexpr (enhanced_type_traits::is_detected<UserEntity, nameable>{})
-        return "entity-name:" + data_.name();
-      else
-        return " #unnamed entity??? ";
+    void prune_ancestors_(long n) override {
+      ancestors_.erase(std::begin(ancestors_), std::begin(ancestors_) + n);
     }
-*/
+
+    /*
+            // optional methods
+            //
+        std::string name_() const override {
+          if constexpr (enhanced_type_traits::is_detected<UserEntity,
+       nameable>{}) return "entity-name:" + data_.name(); else return " #unnamed
+       entity??? ";
+        }
+    */
     long id_;
-	std::vector<long> ancestors_;
+    std::vector<long> ancestors_;
     UserEntity data_;
   };
 

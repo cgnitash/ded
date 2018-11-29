@@ -40,6 +40,7 @@ life::configuration load_user_experiment(std::string file_name) {
 }
 
 long life::entity::entity_id_ = 0;
+
 int main(int argc, char **argv) {
   // TODO use an actual command-line library :P
   //
@@ -58,6 +59,7 @@ int main(int argc, char **argv) {
     auto con = load_user_experiment(argv[2]);
     std::string name = con[0];
     auto exp = life::make_experiment(name);
+	con[1]["REP"] = argv[3];
     exp.configure(con[1]);
     exp.run();
   } else {

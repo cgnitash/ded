@@ -1,38 +1,44 @@
-# pragma once
+#pragma once
 
-#include"../../core/configuration.h"
-#include"../../core/signal.h"
-#include"../../core/encoding.h"
-#include"../../core/entity.h"
-#include"../../core/utilities.h"
+#include "../../core/configuration.h"
+#include "../../core/encoding.h"
+#include "../../core/entity.h"
+#include "../../core/signal.h"
+#include "../../core/utilities.h"
 
-#include <vector>
 #include <algorithm>
-
+#include <set>
+#include <vector>
 
 class linear {
 
-	std::vector<life::entity> pop_;
-	std::string entity_name_{"null_entity"};
-	life::configuration entity_config_;
-	long size_{10};
+  std::set<life::entity> bottled_;
+
+  std::vector<life::entity> pop_;
+  std::string entity_name_{"null_entity"};
+  life::configuration entity_config_;
+  long size_{0};
+
 public:
+  linear() { configure(publish_configuration()); }
+
   void configure(life::configuration con) {
     size_ = con["size"];
     entity_name_ = std::string(con["entity"][0]);
     entity_config_ = con["entity"][1];
-	pop_.clear();
+    pop_.clear();
     util::rv3::generate_n(util::rv3::back_inserter(pop_), size_, [&] {
       auto org = life::make_entity(entity_name_);
       org.configure(entity_config_);
       return org;
     });
+    bottled_.insert(std::begin(pop_), std::end(pop_));
   }
-  linear() { configure(publish_configuration()); }
+
   life::configuration publish_configuration() {
     life::configuration con;
     con["size"] = size_;
-    con["entity"] = {entity_name_,{}};
+    con["entity"] = {entity_name_, {}};
     return con;
   }
 
@@ -40,4 +46,5 @@ public:
   void merge(std::vector<life::entity>);
   void clear();
   life::configuration get_stats();
+  std::vector<life::entity> prune_lineage();
 };

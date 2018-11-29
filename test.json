@@ -7,13 +7,13 @@
                 "env": [
                     "flip_bits",
                     {
-                        "size": 18
+                        "size": 20
                     }
                 ],
-                "num": 5
+                "num": 2
             }
         ],
-        "generations": 5000,
+        "generations": 101,
         "population": [
             "linear",
             {
@@ -21,11 +21,11 @@
                     "markov_brain",
                     {
                         "hiddens": 2,
-                        "inputs": 18,
-                        "outputs": 18
+                        "inputs": 20,
+                        "outputs": 20
                     }
                 ],
-                "size": 100
+                "size": 20
             }
         ],
         "selector": [
