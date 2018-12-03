@@ -28,7 +28,7 @@ private:
   size_t input_ = 1;
   size_t output_ = 1;
   size_t hidden_ = 0;
-  life::encoding genome_ = life::generate(9 * (output_ + hidden_));
+  life::encoding genome_;
 
   std::vector<double> ins_ ;
   std::vector<double> outs_ ;
