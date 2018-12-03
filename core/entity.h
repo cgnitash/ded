@@ -48,6 +48,11 @@ public:
 
   void prune_ancestors(long n) { self_->prune_ancestors_(n); }
 
+  encoding get_encoding() const { return self_->get_encoding_(); }
+
+  void set_encoding(encoding e)  { self_->set_encoding_(e); }
+
+
   void input(signal s) { self_->input_(s); }
 
   signal output() { return self_->output_(); }
@@ -76,6 +81,9 @@ private:
     virtual long get_id_() const = 0;
     virtual void prune_ancestors_(long) = 0;
     virtual std::vector<long> get_ancestors_() const = 0;
+  virtual encoding get_encoding_() const =0;
+
+  virtual void set_encoding_(encoding) = 0; 
 
     virtual void mutate_() = 0;
     virtual configuration publish_configuration_() = 0;
@@ -107,6 +115,7 @@ private:
     std::vector<long> get_ancestors_() const override { return ancestors_; }
     long get_id_() const override { return id_; }
 
+
     void mutate_() override {
       ancestors_.push_back(id_);
       id_ = ++entity_id_;
@@ -123,12 +132,33 @@ private:
       ancestors_.erase(std::begin(ancestors_), std::begin(ancestors_) + n);
     }
 
+    // optional methods
+    template <typename T>
+    using EncodingGettable = decltype(std::declval<T &>().get_encoding());
+
+    template <typename T>
+    using EncodingSettable = decltype(std::declval<T &>().set_encoding());
+
+    encoding get_encoding_() const override {
+      if constexpr (enhanced_type_traits::is_detected<UserEntity,
+                                                      EncodingGettable>{})
+        return data_.get_encoding();
+      else
+        return encoding{};
+    }
+
+    void set_encoding_(encoding e) override {
+      if constexpr (enhanced_type_traits::is_detected<UserEntity,
+                                                      EncodingSettable>{})
+        data_.set_encoding(e);
+    }
     /*
             // optional methods
             //
         std::string name_() const override {
           if constexpr (enhanced_type_traits::is_detected<UserEntity,
-       nameable>{}) return "entity-name:" + data_.name(); else return " #unnamed
+       nameable>{}) 
+	   return "entity-name:" + data_.name(); else return " #unnamed
        entity??? ";
         }
     */

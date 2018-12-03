@@ -10,7 +10,8 @@ std::vector<life::entity> linear::get_as_vector() { return pop_; }
 void linear::merge(std::vector<life::entity> v) {
   pop_.insert(pop_.end(), std::make_move_iterator(std::begin(v)),
               std::make_move_iterator(std::end(v)));
-  bottled_.insert(std::begin(pop_), std::end(pop_));
+  if (track_lineage_)
+    bottled_.insert(std::begin(pop_), std::end(pop_));
 }
 
 void linear::clear() { pop_.clear(); }
@@ -30,9 +31,18 @@ life::configuration linear::get_stats() {
   return con;
 }
 
+void linear::snapshot(std::ofstream &o) const {
+  for (auto &org : pop_)
+    o << org.get_id() << "," << org.get_encoding().size() << ","
+      << org.get_encoding() << std::endl;
+}
+
 std::vector<life::entity> linear::prune_lineage() {
 
   std::vector<life::entity> pruned;
+
+  if (!track_lineage_)
+    return pruned;
 
   while (true) {
     const auto fronts =

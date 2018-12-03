@@ -11,15 +11,15 @@
 class bit_brain {
 
   size_t size_ = 8;
-  life::encoding genome_ = life::encoding(size_, 0);
+  life::encoding genome_ ; 
 
 public:
   bit_brain() { configure(publish_configuration()); }
 
   void configure(life::configuration c) {
     size_ = c["size"];
-	// encoding is simply the modulo 2 values 
-    genome_ = life::encoding(size_, 0);
+	// encoding is simply a random start sequence
+    genome_.generate(size_);
   }
 
   life::configuration publish_configuration() {

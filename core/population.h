@@ -47,6 +47,8 @@ public:
 
   void clear() { self_->clear_(); }
 
+  void snapshot(std::ofstream &o) { self_->snapshot_(o); }
+
   life::configuration get_stats() { return self_->get_stats_(); }
 
   configuration publish_configuration() {
@@ -69,6 +71,8 @@ private:
 
     virtual configuration publish_configuration_() = 0;
     virtual void configure_(configuration ) = 0;
+
+    virtual void snapshot_(std::ofstream &) const = 0;
 
     virtual std::vector<life::entity> get_as_vector_() = 0;
     virtual void merge_(std::vector<life::entity>) = 0;
@@ -98,6 +102,8 @@ private:
     std::vector<entity> get_as_vector_() override {  return data_.get_as_vector(); }
 
     void clear_() override { data_.clear(); }
+
+    void snapshot_(std::ofstream &o) const override { data_.snapshot(o); }
 
 	std::vector<life::entity> prune_lineage_() override {return  data_.prune_lineage(); }
 

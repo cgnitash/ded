@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "configuration.h"
+#include "utilities.h"
 #include <algorithm>
 #include <cstdlib>
 #include <iostream>
@@ -9,68 +11,135 @@
 
 namespace life {
 
-const auto alphabet = 128;
-using encoding = std::vector<long>;
+class encoding {
+  size_t alphabet_{128};
+  double copy_prob_{0.01};
+  size_t del_size_{20};
+  double del_prob_{0.01};
+  size_t copy_size_{20};
+  double point_insert_prob_{0.01};
+  double point_mutate_prob_{0.01};
+  double point_delete_prob_{0.01};
+  size_t min_length_{50};
+  size_t max_length_{2500};
 
-inline encoding generate(long len = 100) {
-  encoding v(len);
-  std::generate(std::begin(v), std::end(v), [] { return std::rand() % alphabet; });
-  return v;
-}
+  std::vector<long> enc_;
 
-inline void copy_chunk(encoding &v, long prob = 5, long len = 20) {
-  auto copy_prob = std::rand() % prob;
-  if (!copy_prob) {
-    auto copy_from_pos = std::rand() % (v.size() - len);
-    auto copy_to_pos = std::rand() % v.size();
-    life::encoding copy(std::begin(v) + copy_from_pos,
-                        std::begin(v) + copy_from_pos + len);
-    v.insert(std::begin(v) + copy_to_pos, std::begin(copy), std::end(copy));
+public:
+  encoding() { configure(publish_configuration()); }
+
+  configuration publish_configuration() {
+    configuration con;
+    con["alphabet"] = alphabet_;
+    con["copy-prob"] = copy_prob_;
+    con["copy-size"] = copy_size_;
+    con["del-prob"] = del_prob_;
+    con["del-size"] = del_size_;
+    con["point-insert-prob"] = point_insert_prob_;
+    con["point-mutate-prob"] = point_mutate_prob_;
+    con["point-delete-prob"] = point_delete_prob_;
+    con["min-length"] = min_length_;
+    con["max-length"] = max_length_;
+    return con;
   }
-}
 
-inline void del_chunk(encoding &v, long prob = 5, long len = 20) {
-  auto del_prob = std::rand() % prob;
-  auto del_pos = std::rand() % (v.size() - len);
-  if (!del_prob)
-    v.erase(std::begin(v) + del_pos, std::begin(v) + del_pos + len);
-}
+  void configure(configuration con) {
+    auto real = publish_configuration();
+    validate_subset(con, real);
+    merge_into(con, real);
 
-inline void point_mutate(encoding &v, double prob = 0.001) {
-  auto point_mut = v.size() * prob;
-  for (auto i = 0; i < point_mut; i++)
-    v[std::rand() % v.size()] = std::rand() % alphabet;
-}
+    alphabet_ = con["alphabet"];
+    copy_prob_ = con["copy-prob"];
+    copy_size_ = con["copy-size"];
+    del_prob_ = con["del-prob"];
+    del_size_ = con["del-size"];
+    point_insert_prob_ = con["point-insert-prob"];
+    point_mutate_prob_ = con["point-mutate-prob"];
+    point_delete_prob_ = con["point-delete-prob"];
+    min_length_ = con["min-length"];
+    max_length_ = con["max-length"];
 
-inline void point_insert(encoding &v, double prob = 0.001) {
-  auto point_ins = v.size() * prob;
-  for (auto i = 0; i < point_ins; i++)
-    v.insert(std::begin(v) + std::rand() % v.size(), std::rand() % alphabet);
-}
+	std::cout << copy_prob_ << std::endl;
+  }
 
-inline void point_delete(encoding &v, double prob = 0.001) {
-  auto point_del = v.size() * prob;
-  for (auto i = 0; i < point_del; i++)
-    v.erase(std::begin(v) + std::rand() % v.size());
-}
+  auto begin() { return std::begin(enc_); }
 
-inline void all_deletions(encoding &v) {
-  if (v.size() < 50)
-    return;
-  point_delete(v);
-  del_chunk(v);
-}
+  auto end() { return std::end(enc_); }
 
-inline void all_insertions(encoding &v) {
-  if (v.size() > 2500)
-    return;
-  point_insert(v);
-  copy_chunk(v);
-}
+  auto &operator[](size_t i) { return enc_[i]; }
 
-inline void all_mutations(encoding &v) {
-  all_insertions(v);
-  all_deletions(v);
-  point_mutate(v);
-}
+  void generate(long del_size_ = 100) {
+    util::rv3::generate_n(util::rv3::back_inserter(enc_), del_size_,
+                          [this] { return std::rand() % alphabet_; });
+  }
+
+  void copy_chunk() {
+    auto copy_prob = std::rand() % 100;
+    if (copy_prob < copy_prob_ * 100) {
+      auto copy_from_pos = std::rand() % (enc_.size() - copy_size_);
+      auto copy_to_pos = std::rand() % enc_.size();
+      auto copy_chunk =
+          enc_ |
+          util::rv3::view::slice(copy_from_pos, copy_from_pos + copy_size_) |
+          util::rv3::copy;
+      enc_.insert(std::begin(enc_) + copy_to_pos, util::rv3::begin(copy_chunk),
+                  util::rv3::end(copy_chunk));
+    }
+  }
+
+  void del_chunk() {
+    auto del_prob = std::rand() % 100;
+    auto del_pos = std::rand() % (enc_.size() - del_size_);
+    if (del_prob < del_prob_ * 100)
+      enc_.erase(std::begin(enc_) + del_pos,
+                 std::begin(enc_) + del_pos + del_size_);
+  }
+
+  void point_mutate() {
+    auto point_mut = enc_.size() * point_mutate_prob_;
+    for (auto i = 0; i < point_mut; i++)
+      enc_[std::rand() % enc_.size()] = std::rand() % alphabet_;
+  }
+
+  void point_insert() {
+    auto point_ins = enc_.size() * point_insert_prob_;
+    for (auto i = 0; i < point_ins; i++)
+      enc_.insert(std::begin(enc_) + std::rand() % enc_.size(),
+                  std::rand() % alphabet_);
+  }
+
+  void point_delete() {
+    auto point_del = enc_.size() * point_delete_prob_;
+    for (auto i = 0; i < point_del; i++)
+      enc_.erase(std::begin(enc_) + std::rand() % enc_.size());
+  }
+
+  void all_deletions() {
+    if (enc_.size() < min_length_)
+      return;
+    point_delete();
+    del_chunk();
+  }
+
+  inline void all_insertions() {
+    if (enc_.size() > max_length_)
+      return;
+    point_insert();
+    copy_chunk();
+  }
+
+  inline void all_mutations() {
+    all_insertions();
+    all_deletions();
+    point_mutate();
+  }
+
+  size_t size() { return enc_.size(); }
+
+  friend std::ostream &operator<<(std::ostream &o, const encoding &e) {
+    for (auto &site : e.enc_)
+      o << site << ":";
+    return o;
+  }
+};
 } // namespace life

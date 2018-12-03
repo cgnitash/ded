@@ -21,6 +21,7 @@ public:
   }
   void merge(std::vector<life::entity>) {}
   void clear() {}
+  void snapshot(std::ofstream&)const {}
   life::configuration get_stats(){ return {}; }
   std::vector<life::entity> prune_lineage() { return {}; }
 };

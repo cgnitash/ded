@@ -7,11 +7,11 @@
 
 void markov_brain::mutate() {
 
-  life::point_delete(genome_);
-  life::point_insert(genome_);
-  life::point_mutate(genome_);
-  life::copy_chunk(genome_);
-  life::del_chunk(genome_);
+  genome_.point_delete();
+  genome_.point_insert();
+  genome_.point_mutate();
+  genome_.copy_chunk();
+  genome_.del_chunk();
   compute_gates_();
   buffer_ = std::vector(input_ + output_ + hidden_, 0.);
 }

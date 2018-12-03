@@ -10,10 +10,10 @@
                         "size": 20
                     }
                 ],
-                "num": 2
+                "num": 5
             }
         ],
-        "generations": 101,
+        "generations": 501,
         "population": [
             "linear",
             {

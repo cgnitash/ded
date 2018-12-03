@@ -13,6 +13,8 @@ class markov_brain {
   size_t input_ = 10;
   size_t output_ = 10;
   size_t hidden_ = 10;
+  
+  life::configuration genome_config_;
 
   std::vector<double> buffer_;
 
@@ -28,17 +30,20 @@ class markov_brain {
 public:
   markov_brain() { configure(publish_configuration()); }
   life::configuration publish_configuration() {
-    life::configuration c;
-    c["inputs"] = input_;
-    c["outputs"] = output_;
-    c["hiddens"] = hidden_;
-    return c;
+    life::configuration con;
+    con["inputs"] = input_;
+    con["outputs"] = output_;
+    con["hiddens"] = hidden_;
+    con["genome-params"] = genome_config_;
+    return con;
   }
   void configure(life::configuration con) {
     input_ = con["inputs"];
     output_ = con["outputs"];
     hidden_ = con["hiddens"];
-    genome_ = life::generate(500);
+    genome_config_ = con["genome-params"];
+    genome_.configure(genome_config_);
+    genome_.generate(500);
     buffer_ = std::vector(input_ + output_ + hidden_, 0.);
     seed_gates_(4);
 	compute_gates_();
@@ -49,4 +54,5 @@ public:
   void input(life::signal);
   life::signal output();
   void tick();
+  life::encoding get_encoding() const { return genome_; }
 };

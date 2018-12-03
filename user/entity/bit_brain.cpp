@@ -13,7 +13,7 @@ void bit_brain::tick() {}
 
 void bit_brain::mutate() {
   // only point mutations since the size of the encoding can't change
-  life::point_mutate(genome_);
+  genome_.point_mutate();
 }
 
 life::signal bit_brain::output() {

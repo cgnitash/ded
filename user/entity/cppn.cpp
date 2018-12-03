@@ -16,7 +16,7 @@
 void cppn::mutate() {
 
   // only point mutations since size of encoding can't change
-  life::point_mutate(genome_);
+  genome_.point_mutate();
   nodes.clear();
 
   // create activation functions for all nodes other than inputs

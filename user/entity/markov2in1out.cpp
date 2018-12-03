@@ -9,7 +9,7 @@
 void markov2in1out::mutate() {
 
   // go nuts with all kinds of mutations
-  life::all_mutations(genome_);
+  genome_.all_mutations();
   compute_gates_();
 }
 
