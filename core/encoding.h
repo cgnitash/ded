@@ -58,8 +58,6 @@ public:
     point_delete_prob_ = con["point-delete-prob"];
     min_length_ = con["min-length"];
     max_length_ = con["max-length"];
-
-	std::cout << copy_prob_ << std::endl;
   }
 
   auto begin() { return std::begin(enc_); }

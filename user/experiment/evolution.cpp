@@ -11,6 +11,7 @@
 #include <string_view>
 #include <utility>
 #include <vector>
+#include <experimental/filesystem>
 
 void evolution::run() {
 
@@ -24,10 +25,13 @@ void evolution::run() {
   auto world = life::make_environment(world_name_);
   world.configure(world_config_);
 
-  std::ofstream pop_file(Dir_ + "pop_" + Rep_ + ".csv");
+  auto dir = Dir_  + Rep_ + "/"; 
+  std::experimental::filesystem::create_directory(dir);
+
+  std::ofstream pop_file(dir + "pop_"+ ".csv");
   pop_file << "avg,max,update\n";
 
-  std::ofstream lineage_file(Dir_ + "lineage_" + Rep_ + ".csv");
+  std::ofstream lineage_file(dir + "lineage_"+ ".csv");
   lineage_file << "id,coalesced_at,encoding_size,encoding\n";
 
   for (auto i : util::rv3::view::iota(0, generations_)) {
@@ -39,7 +43,7 @@ void evolution::run() {
 
     if (!(i % 10)) {
       std::cout << stats << std::endl;
-      std::ofstream snapshot_file(Dir_ + "snapshot_" + Rep_ + "_" +
+      std::ofstream snapshot_file(dir+ "snapshot_" +
                                   std::to_string(i) + ".csv");
       snapshot_file << "id,size,encoding\n";
 
