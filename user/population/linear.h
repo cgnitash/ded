@@ -9,10 +9,14 @@
 #include <algorithm>
 #include <set>
 #include <vector>
+#include <unordered_map>
+#include <utility>
+
 
 class linear {
 
-  std::set<life::entity> bottled_;
+  // count of descendants per entity
+  std::vector<std::pair<life::entity,long>> fossils_;
 
   bool track_lineage_{false};
   std::vector<life::entity> pop_;
@@ -28,14 +32,15 @@ public:
     track_lineage_ = con["track-lineage"];
     entity_name_ = std::string(con["entity"][0]);
     entity_config_ = con["entity"][1];
+
     pop_.clear();
     util::rv3::generate_n(util::rv3::back_inserter(pop_), size_, [&] {
       auto org = life::make_entity(entity_name_);
       org.configure(entity_config_);
+      if (track_lineage_) 
+		fossils_.push_back({org,1});
       return org;
     });
-    if (track_lineage_)
-      bottled_.insert(std::begin(pop_), std::end(pop_));
   }
 
   life::configuration publish_configuration() {
@@ -52,4 +57,5 @@ public:
   void snapshot(std::ofstream&)const;
   life::configuration get_stats();
   std::vector<life::entity> prune_lineage();
+  void update_tree(long p, int count);
 };

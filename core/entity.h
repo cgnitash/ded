@@ -13,6 +13,7 @@
 #include <string>
 #include <type_traits>
 #include <vector>
+#include <deque>
 
 namespace life {
 
@@ -42,11 +43,9 @@ public:
 
   long get_id() const { return self_->get_id_(); }
 
-  std::vector<long> get_ancestor_list() const {
-    return self_->get_ancestors_();
-  }
+  long get_ancestor() const { return self_->get_ancestor_(); }
 
-  void prune_ancestors(long n) { self_->prune_ancestors_(n); }
+  //void prune_ancestors(long n) { self_->prune_ancestors_(n); }
 
   encoding get_encoding() const { return self_->get_encoding_(); }
 
@@ -79,8 +78,8 @@ private:
     virtual entity_interface *copy_() const = 0;
 
     virtual long get_id_() const = 0;
-    virtual void prune_ancestors_(long) = 0;
-    virtual std::vector<long> get_ancestors_() const = 0;
+  //  virtual void prune_ancestors_(long) = 0;
+    virtual long get_ancestor_() const = 0;
   virtual encoding get_encoding_() const =0;
 
   virtual void set_encoding_(encoding) = 0; 
@@ -100,7 +99,8 @@ private:
   template <typename UserEntity> struct entity_object final : entity_interface {
 
     // provided methods
-    entity_object(UserEntity x) : id_(++entity_id_), data_(std::move(x)) {}
+    entity_object(UserEntity x)
+        : id_(++entity_id_), ancestor_(0), data_(std::move(x)) {}
 
     entity_interface *copy_() const override {
       return new entity_object(*this);
@@ -112,12 +112,12 @@ private:
     signal output_() override { return data_.output(); }
     void tick_() override { data_.tick(); }
 
-    std::vector<long> get_ancestors_() const override { return ancestors_; }
+    long get_ancestor_() const override { return ancestor_; }
     long get_id_() const override { return id_; }
 
 
     void mutate_() override {
-      ancestors_.push_back(id_);
+      ancestor_ = id_;
       id_ = ++entity_id_;
       data_.mutate();
     }
@@ -128,9 +128,13 @@ private:
 
     void configure_(configuration c) override { data_.configure(c); }
 
+	/*
     void prune_ancestors_(long n) override {
-      ancestors_.erase(std::begin(ancestors_), std::begin(ancestors_) + n);
+      //    ancestors_.erase(std::begin(ancestors_), std::begin(ancestors_) +
+      //    n);
+      util::repeat(n, [&] { ancestors_.pop_front(); });
     }
+	*/
 
     // optional methods
     template <typename T>
@@ -163,7 +167,7 @@ private:
         }
     */
     long id_;
-    std::vector<long> ancestors_;
+    long ancestor_;
     UserEntity data_;
   };
 

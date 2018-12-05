@@ -2,19 +2,13 @@
     "evolution",
     {
         "fitness": [
-            "replicate",
+            "forager",
             {
-                "env": [
-                    "forager",
-                    {
-                        "density": 0.4,
-                        "grid-size": 5,
-                        "replace": false,
-                        "sensor-range": 3,
-                        "updates": 50
-                    }
-                ],
-                "num": 1
+                "density": 0.4,
+                "grid-size": 5,
+                "replace": false,
+                "sensor-range": 3,
+                "updates": 50
             }
         ],
         "generations": 501,
@@ -33,13 +27,13 @@
                     }
                 ],
                 "size": 100,
-                "track-lineage": false
+                "track-lineage": true
             }
         ],
         "selector": [
             "elite_replacement",
             {
-                "strength": 0.2
+                "strength": 0.5
             }
         ]
     }
