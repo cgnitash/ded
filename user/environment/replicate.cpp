@@ -24,10 +24,8 @@ life::population replicate::evaluate(life::population pop) {
 
   util::repeat(num_, [&] {
     // evaluate the entire population
-    auto ev_pop = env.evaluate(pop);
-  auto ev_vec = ev_pop.get_as_vector();
     // add scores to accumulated scores
-    util::rv3::transform(ev_vec, accumulated_scores,
+    util::rv3::transform(env.evaluate(pop).get_as_vector(), accumulated_scores,
                          util::rv3::begin(accumulated_scores),
                          [](const auto &org, auto score) {
                            return score + double{org.data["score"]};
@@ -41,7 +39,6 @@ life::population replicate::evaluate(life::population pop) {
                          return org;
                        });
 
-  pop.clear();
   pop.merge(vec);
   return pop;
 }

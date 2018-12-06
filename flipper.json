@@ -13,7 +13,7 @@
                 "num": 3
             }
         ],
-        "generations": 5001,
+        "generations": 101,
         "population": [
             "linear",
             {

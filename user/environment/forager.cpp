@@ -45,7 +45,6 @@ void forager::initialize_resource_() {
         resources_[i][j] = 1;
 }
 
-
 void forager::interact(life::signal output, location &position,
                        direction &facing, double &score) {
 
@@ -64,7 +63,7 @@ void forager::interact(life::signal output, location &position,
     position = move_in_dir(position, facing);
     break;
   case 1: // turn right
-    facing  = turn(facing, 3);
+    facing = turn(facing, 3);
     break;
   case 2: // turn left
     facing = turn(facing, 1);
@@ -73,7 +72,7 @@ void forager::interact(life::signal output, location &position,
     auto &pos = resources_[position.x_][position.y_];
     if (pos) {
       pos = 0;
-	  if (replace_) {
+      if (replace_) {
         replace_resource_();
       }
       score++;
@@ -95,7 +94,7 @@ double forager::eval(life::entity &org) {
 
   util::repeat(updates_, [&] {
     // feed input to org; inputs are 0s and 1s only
-    org.input(signals_at(position,facing));
+    org.input(signals_at(position, facing));
     // run the org once
     org.tick();
     // read its outputs and interact with the environment
@@ -105,12 +104,12 @@ double forager::eval(life::entity &org) {
   return score;
 }
 
-life::population forager::evaluate(life::population populate) {
-  auto pop = populate.get_as_vector();
-  populate.clear();
-  for (auto &org : pop)
-    org.data["score"] = eval(org);
-  populate.merge(pop);
-  return populate;
+life::population forager::evaluate(life::population pop) {
+  pop.merge(pop.get_as_vector() |
+            util::rv3::action::transform([this](auto &org) {
+              org.data["score"] = eval(org);
+              return org;
+            }));
+  return pop;
 }
 

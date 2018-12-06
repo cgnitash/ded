@@ -24,31 +24,40 @@ void linear::update_tree(long org_id, int count) {
 }
 
 void linear::merge(std::vector<life::entity> v) {
-  pop_.insert(pop_.end(), std::make_move_iterator(std::begin(v)),
-              std::make_move_iterator(std::end(v)));
 
   if (track_lineage_) {
+    util::rv3::sort(v, std::less<int>(), &life::entity::get_id);
+    std::vector<life::entity> new_orgs, del_orgs;
+    util::rv3::set_difference(pop_, v, util::rv3::back_inserter(del_orgs),
+                              std::less<int>(), &life::entity::get_id,
+                              &life::entity::get_id);
+    for (auto &org : del_orgs)
+      update_tree(org.get_id(), -1);
 
-    for (auto &org : pop_) {
-      if (std::lower_bound(std::begin(fossils_), std::end(fossils_),
-                           org.get_id(), [](auto &fossil, auto id) {
-                             return fossil.first.get_id() < id;
-                           }) == std::end(fossils_))
+    util::rv3::set_difference(v, pop_, util::rv3::back_inserter(new_orgs),
+                              std::less<int>(), &life::entity::get_id,
+                              &life::entity::get_id);
+
+    for (auto &org : new_orgs) {
+      if (auto l = std::lower_bound(
+              std::begin(fossils_), std::end(fossils_), org.get_ancestor(),
+              [](auto &fossil, auto id) { return fossil.first.get_id() < id; });
+          l == std::end(fossils_) || l->first.get_id() != org.get_ancestor()) {
+        std::cout
+            << "warning: unknown ancestor - lineage tracking turned off\n";
+        fossils_.clear();
+        track_lineage_ = false;
+		break;
+      }
+      if (org.get_id() > fossils_.back().first.get_id())
         fossils_.push_back({org, 0});
 
       update_tree(org.get_id(), 1);
     }
   }
+  pop_ = v;
 }
 
-void linear::clear() {
-
-  if (track_lineage_)
-    for (auto &org : pop_)
-      update_tree(org.get_id(), -1);
-
-  pop_.clear();
-}
 
 life::configuration linear::get_stats() {
 

@@ -53,7 +53,6 @@ public:
 
   std::vector<life::entity> get_as_vector();
   void merge(std::vector<life::entity>);
-  void clear();
   void snapshot(std::ofstream&)const;
   life::configuration get_stats();
   std::vector<life::entity> prune_lineage();

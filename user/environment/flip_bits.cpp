@@ -14,8 +14,6 @@
 
 double flip_bits::eval(life::entity &org) {
 
-  // TODO fix some wierd bug here
-
   // feed in input - input signals are 0s or 1s only
   life::signal input;
   util::rv3::generate_n(util::rv3::back_inserter(input), size_,
@@ -40,12 +38,12 @@ double flip_bits::eval(life::entity &org) {
 
 }
 
-life::population flip_bits::evaluate(life::population p) {
-  auto pop = p.get_as_vector();
-  p.clear();
-  for (auto &org : pop)
-    org.data["score"] = eval(org);
-  p.merge(pop);
-  return p;
+life::population flip_bits::evaluate(life::population pop) {
+  pop.merge(pop.get_as_vector() |
+            util::rv3::action::transform([this](auto &org) {
+              org.data["score"] = eval(org);
+              return org;
+            }));
+  return pop;
 }
 
