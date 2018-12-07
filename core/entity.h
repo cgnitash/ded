@@ -37,7 +37,15 @@ public:
 
   bool operator==(const entity &e) const { return get_id() == e.get_id(); }
 
+  bool operator!=(const entity &e) const { return get_id() != e.get_id(); }
+
   bool operator<(const entity &e) const { return get_id() < e.get_id(); }
+
+  bool operator>(const entity &e) const { return get_id() > e.get_id(); }
+
+  bool operator<=(const entity &e) const { return get_id() <= e.get_id(); }
+
+  bool operator>=(const entity &e) const { return get_id() >= e.get_id(); }
 
   life::configuration data;
 
