@@ -65,14 +65,7 @@ int main(int argc, char **argv) {
   } else {
     std::cout << "ded: unknown command line arguments. try -h\n";
 	auto e = life::make_entity("bit_brain");
-	e.data["hi"] = 42;
-	std::cout << e.data["hi"] << "\n";
-	std::cout << e.data["bi"] << "\n";
-	auto x { e};
-	std::cout << x.data["hi"] << "\n";
-	std::cout << x.data["bi"] << "\n";
-	auto&y { e};
-	std::cout << y.data["hi"] << "\n";
-	std::cout << y.data["bi"] << "\n";
+	auto b = e;
+	std::cout << (b < e);
   }
 }
