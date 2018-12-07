@@ -25,15 +25,15 @@ life::population replicate::evaluate(life::population pop) {
   util::repeat(num_, [&] {
     // evaluate the entire population
     // add scores to accumulated scores
-    util::rv3::transform(env.evaluate(pop).get_as_vector(), accumulated_scores,
-                         util::rv3::begin(accumulated_scores),
+    ranges::transform(env.evaluate(pop).get_as_vector(), accumulated_scores,
+                         ranges::begin(accumulated_scores),
                          [](const auto &org, auto score) {
                            return score + double{org.data["score"]};
                          });
   });
 
   // assign accumulate scores to each org
-  util::rv3::transform(vec, accumulated_scores, util::rv3::begin(vec),
+  ranges::transform(vec, accumulated_scores, ranges::begin(vec),
                        [this](auto org, const auto score) {
                          org.data["score"] = score / this->num_;
                          return org;

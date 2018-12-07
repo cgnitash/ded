@@ -29,8 +29,8 @@ void markov2in1out::input(life::signal v) {
 
 life::signal markov2in1out::output() {
 
-  return buffer_ | util::rv3::copy |
-         util::rv3::action::slice(input_, input_ + output_);
+  return buffer_ | ranges::copy |
+         ranges::action::slice(input_, input_ + output_);
 }
 
 void markov2in1out::tick() {
@@ -42,8 +42,8 @@ void markov2in1out::tick() {
     out_buffer[g.out_] += g.logic_[buffer_[g.in_1_] * 2 + buffer_[g.in_2_]];
 
   // make the buffer 1s and 0s again
-  buffer_ = out_buffer | util::rv3::copy |
-            util::rv3::action::transform([](auto i) { return util::Bit(i); });
+  buffer_ = out_buffer | ranges::copy |
+            ranges::action::transform([](auto i) { return util::Bit(i); });
 
 }
 

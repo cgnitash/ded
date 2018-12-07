@@ -65,7 +65,7 @@ void cppn::tick() {
   // for each node in order
   for (auto &node : nodes) {
     // sum up the incoming weighted-outputs from other nodes
-    auto const sum = util::rv3::accumulate(
+    auto const sum = ranges::accumulate(
         node.in_node, 0.0, [&results](auto const total, auto const value) {
           return total + results[value.first] * value.second;
         });
@@ -75,7 +75,7 @@ void cppn::tick() {
 
   auto res_size = results.size();
   // put the last output node results into the output buffer
-  outs_ = results | util::rv3::move | util::rv3::action::slice(res_size - output_, res_size);
+  outs_ = results | ranges::move | ranges::action::slice(res_size - output_, res_size);
 //  outs_.clear();
 //  std::copy(std::begin(results) + results.size() - output_, std::end(results),
 //            std::back_inserter(outs_));

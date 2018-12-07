@@ -29,8 +29,8 @@ void markov_brain::input(life::signal v) {
 
 life::signal markov_brain::output() {
 
-  return buffer_ | util::rv3::copy |
-         util::rv3::action::slice(input_, input_ + output_);
+  return buffer_ | ranges::copy |
+         ranges::action::slice(input_, input_ + output_);
 }
 
 void markov_brain::tick() {
@@ -45,8 +45,8 @@ void markov_brain::tick() {
     for (auto &i : g.outs_) 
       out_buffer[i] += out;
   }
-  buffer_ = out_buffer | util::rv3::move |
-            util::rv3::action::transform([](auto i) { return util::Bit(i); });
+  buffer_ = out_buffer | ranges::move |
+            ranges::action::transform([](auto i) { return util::Bit(i); });
 }
 
 void markov_brain::seed_gates_(size_t n) {
@@ -74,16 +74,16 @@ void markov_brain::compute_gates_() {
       gate g;
 	  // translate input wires
       auto in = *(pos + 2) % 4 + 1;
-      for (auto i : util::rv3::view::iota(0u, in))
+      for (auto i : ranges::view::iota(0u, in))
         g.ins_.push_back(*(pos + 3 + i) % addresses);
 
 	  // translate output wires
       auto out = *(pos + 7) % 4 + 1;
-      for (auto i : util::rv3::view::iota(0u, out))
+      for (auto i : ranges::view::iota(0u, out))
         g.outs_.push_back(*(pos + 8 + i) % addresses);
 
 	  // translate logic 
-      for (auto i : util::rv3::view::iota(0u, 16))
+      for (auto i : ranges::view::iota(0u, 16))
         g.logic_.push_back(*(pos + 13 + i) % 2); 
 
       gates_.push_back(g);

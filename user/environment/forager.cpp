@@ -26,7 +26,7 @@ void forager::replace_resource_() {
 std::vector<double> forager::signals_at(location loc, direction facing) {
 
   std::vector out(sensor_range_, 1.);
-  for (auto i : util::rv3::view::iota(0u, sensor_range_)) {
+  for (auto i : ranges::view::iota(0u, sensor_range_)) {
     if (!resources_[loc.x_][loc.y_])
       out[i] = 0.;
     else
@@ -39,8 +39,8 @@ std::vector<double> forager::signals_at(location loc, direction facing) {
 void forager::initialize_resource_() {
 
   resources_ = std::vector(grid_size_, std::vector(grid_size_, 0));
-  for (auto i : util::rv3::view::iota(0u, grid_size_))
-    for (auto j : util::rv3::view::iota(0u, grid_size_))
+  for (auto i : ranges::view::iota(0u, grid_size_))
+    for (auto j : ranges::view::iota(0u, grid_size_))
       if ((std::rand() % 1000) / 1000.0 < density_)
         resources_[i][j] = 1;
 }
@@ -106,7 +106,7 @@ double forager::eval(life::entity &org) {
 
 life::population forager::evaluate(life::population pop) {
   pop.merge(pop.get_as_vector() |
-            util::rv3::action::transform([this](auto &org) {
+            ranges::action::transform([this](auto &org) {
               org.data["score"] = eval(org);
               return org;
             }));

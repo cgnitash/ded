@@ -15,5 +15,4 @@ template <typename F> void repeat(size_t n, F f) {
     f();
 }
 
-namespace rv3 = ranges;
 } // namespace util

@@ -16,7 +16,7 @@ double flip_bits::eval(life::entity &org) {
 
   // feed in input - input signals are 0s or 1s only
   life::signal input;
-  util::rv3::generate_n(util::rv3::back_inserter(input), size_,
+  ranges::generate_n(ranges::back_inserter(input), size_,
                         []() -> double { return std::rand() % 2; });
 
   org.input(input);
@@ -32,7 +32,7 @@ double flip_bits::eval(life::entity &org) {
     exit(1);
   }
   // score is the number of bit-wise matches between input and output
-  return util::rv3::inner_product(
+  return ranges::inner_product(
       input, output, 0.0, std::plus<>(),
       [](auto a, auto b) { return 1 - std::abs(a - util::Bit(b)); });
 
@@ -40,7 +40,7 @@ double flip_bits::eval(life::entity &org) {
 
 life::population flip_bits::evaluate(life::population pop) {
   pop.merge(pop.get_as_vector() |
-            util::rv3::action::transform([this](auto &org) {
+            ranges::action::transform([this](auto &org) {
               org.data["score"] = eval(org);
               return org;
             }));

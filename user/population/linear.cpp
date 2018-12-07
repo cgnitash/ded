@@ -27,20 +27,20 @@ void linear::merge(std::vector<life::entity> v) {
 
   if (track_lineage_) {
 
-    util::rv3::sort(v);
+    ranges::sort(v);
 
     std::vector<life::entity> new_orgs, del_orgs;
-    util::rv3::set_difference(pop_, v, util::rv3::back_inserter(del_orgs));
+    ranges::set_difference(pop_, v, ranges::back_inserter(del_orgs));
     for (auto &org : del_orgs)
       update_tree(org.get_id(), -1);
 
-    util::rv3::set_difference(v, pop_, util::rv3::back_inserter(new_orgs));
+    ranges::set_difference(v, pop_, ranges::back_inserter(new_orgs));
 
     for (auto &org : new_orgs) {
       if (auto l = std::lower_bound(
               std::begin(fossils_),std::end(fossils_), org.get_ancestor(),
               [](auto &org, long n) { return org.first.get_id() < n; });
-          l == util::rv3::end(fossils_) ||
+          l == ranges::end(fossils_) ||
           l->first.get_id() != org.get_ancestor()) {
         std::cout
             << "warning: unknown ancestor - lineage tracking turned off\n";
@@ -62,13 +62,13 @@ life::configuration linear::get_stats() {
 
   // precondition: "score" must be in org.data
   life::configuration con;
-  const auto scores = pop_ | util::rv3::view::transform([](auto const &org) {
+  const auto scores = pop_ | ranges::view::transform([](auto const &org) {
                         return double{org.data["score"]};
                       });
 
-  con["avg"] = util::rv3::accumulate(scores, 0.0) / pop_.size();
+  con["avg"] = ranges::accumulate(scores, 0.0) / pop_.size();
 
-  con["max"] = *util::rv3::max_element(scores);
+  con["max"] = *ranges::max_element(scores);
 
   return con;
 }

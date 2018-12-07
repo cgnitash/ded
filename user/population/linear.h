@@ -34,7 +34,7 @@ public:
     entity_config_ = con["entity"][1];
 
     pop_.clear();
-    util::rv3::generate_n(util::rv3::back_inserter(pop_), size_, [&] {
+    ranges::generate_n(ranges::back_inserter(pop_), size_, [&] {
       auto org = life::make_entity(entity_name_);
       org.configure(entity_config_);
       if (track_lineage_) 
