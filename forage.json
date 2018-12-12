@@ -11,7 +11,7 @@
                 "updates": 50
             }
         ],
-        "generations": 501,
+        "generations": 101,
         "population": [
             "linear",
             {
@@ -26,7 +26,7 @@
                         "outputs": 2
                     }
                 ],
-                "size": 100,
+                "size": 10,
                 "track-lineage": true
             }
         ],

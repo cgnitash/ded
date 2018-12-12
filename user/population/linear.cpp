@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <vector>
+#include <experimental/filesystem>
 
 std::vector<life::entity> linear::get_as_vector() { return pop_; }
 
@@ -23,6 +24,19 @@ void linear::update_tree(long org_id, int count) {
   }
 }
 
+bool linear::found_in_fossils(long n) const {
+  auto l = std::lower_bound(
+      std::begin(fossils_), std::end(fossils_), n,
+      [](auto &org, long n) { return org.first.get_id() < n; });
+  return l != std::end(fossils_) && l->first.get_id() == n;
+}
+
+bool linear::found_in_pop(long n) const {
+  auto l = std::lower_bound(std::begin(pop_), std::end(pop_), n,
+                            [](auto &org, long n) { return org.get_id() < n; });
+  return l != ranges::end(pop_) && l->get_id() == n;
+}
+
 void linear::merge(std::vector<life::entity> v) {
 
   if (track_lineage_) {
@@ -37,11 +51,8 @@ void linear::merge(std::vector<life::entity> v) {
     ranges::set_difference(v, pop_, ranges::back_inserter(new_orgs));
 
     for (auto &org : new_orgs) {
-      if (auto l = std::lower_bound(
-              std::begin(fossils_),std::end(fossils_), org.get_ancestor(),
-              [](auto &org, long n) { return org.first.get_id() < n; });
-          l == ranges::end(fossils_) ||
-          l->first.get_id() != org.get_ancestor()) {
+
+      if (!found_in_fossils(org.get_ancestor())) {
         std::cout
             << "warning: unknown ancestor - lineage tracking turned off\n";
         fossils_.clear();
@@ -58,32 +69,59 @@ void linear::merge(std::vector<life::entity> v) {
 }
 
 
-void linear::get_stats(std::ostream &stats_file, long i) const {
-
+life::configuration linear::get_stats(long i) const {
   // precondition: "score" must be in org.data
   const auto scores = pop_ | ranges::view::transform([](auto const &org) {
                         return double{org.data["score"]};
                       });
 
-  stats_file << ranges::accumulate(scores, 0.0) / pop_.size() << ","
-             << *ranges::max_element(scores) << "," << i << std::endl;
+  auto pop_stats_file =
+      open_or_append(dir_name_ + "pop.csv", "avg,max,update\n");
+
+  life::configuration con;
+  con["max"] = *ranges::max_element(scores);
+  con["avg"] = ranges::accumulate(scores, 0.0) / pop_.size();
+
+  pop_stats_file << con["avg"] << "," << con["max"] << "," << i << std::endl;
+
+  return con;
 }
 
-void linear::snapshot(std::ostream &snapshot_file, long) const {
-  snapshot_file << "id,size,encoding\n";
+void linear::snapshot(long i) const {
+  auto snapshot_file =
+      open_or_append(dir_name_ + "snapshot_" + std::to_string(i) + ".csv",
+                     "id,size,encoding\n");
   for (auto &org : pop_)
     snapshot_file << org.get_id() << "," << org.get_encoding().size() << ","
       << org.get_encoding() << std::endl;
 }
 
-void linear::prune_lineage(std::ostream &lineage_file,
-                           std::ostream &lineage_organisms_file, long i) {
+std::ofstream linear::open_or_append(std::string file_name,
+                                     std::string header) const {
+  std::ofstream file; 
+  if (!std::experimental::filesystem::exists(file_name
+                                             )) {
+    file.open(file_name);
+    file << header;
+  } else
+    file.open(file_name, std::ios::app);
+  return file;
+}
+
+void linear::prune_lineage(long i) {
 
   if (!track_lineage_)
     return;
 
+  auto lineage_organisms_file =
+      open_or_append(dir_name_ + "lineage_organisms.csv",
+                     "id,recorded_at,encoding_size,encoding\n");
+
+  auto lineage_file = open_or_append(dir_name_ + "lineage.csv",
+                                     "id,recorded_at,on_lod,ancestor_id\n");
+
   for (auto &org : fossils_) {
-    if (org.second == size_) {
+    if (org.second == size_ && !found_in_pop(org.first.get_id())) {
       lineage_organisms_file  << org.first.get_id() << "," << i << ","
                    << org.first.get_encoding().size() << "," << org.first.get_encoding()
                    << std::endl;
@@ -98,10 +136,19 @@ void linear::prune_lineage(std::ostream &lineage_file,
   fossils_.erase(std::remove_if(std::begin(fossils_), std::end(fossils_),
                                 [this](auto &fossil) {
                                   return !fossil.second ||
-                                         fossil.second == size_;
+                                         (fossil.second == size_ &&
+                                          !found_in_pop(fossil.first.get_id()));
                                 }),
                  std::end(fossils_));
 
   return ;
 }
 
+linear::~linear() {
+  std::ofstream unrec_file(dir_name_ + "unpruned.csv");
+  unrec_file << "id,recorded_at,on_lod,ancestor_id\n";
+  for (auto &org : fossils_) {
+    unrec_file << org.first.get_id() << ",-1," << 0 << ","
+               << org.first.get_ancestor() << std::endl;
+  }
+}

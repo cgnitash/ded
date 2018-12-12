@@ -41,15 +41,15 @@ public:
 
   void merge(std::vector<entity> v) { self_->merge_(v); }
 
-  void prune_lineage(std::ostream &lineage_file,std::ostream &lod_org_file, long i) {
-    self_->prune_lineage_(lineage_file,lod_org_file,i);
+  void prune_lineage(long i) {
+    self_->prune_lineage_(i);
   }
 
   std::vector<entity> get_as_vector() { return self_->get_as_vector_(); }
 
-  void snapshot(std::ostream &o, long i) const { self_->snapshot_(o,i); }
+  void snapshot( long i) const { self_->snapshot_(i); }
 
-  void get_stats(std::ostream& o, long i) const {  self_->get_stats_(o,i); }
+  life::configuration get_stats(long i) const { return self_->get_stats_(i); }
 
   configuration publish_configuration() {
    return  self_->publish_configuration_();
@@ -72,13 +72,13 @@ private:
     virtual configuration publish_configuration_() = 0;
     virtual void configure_(configuration ) = 0;
 
-    virtual void snapshot_(std::ostream &,long i) const = 0;
+    virtual void snapshot_(long i) const = 0;
 
     virtual std::vector<life::entity> get_as_vector_() = 0;
     virtual void merge_(std::vector<life::entity>) = 0;
     virtual 
-		void prune_lineage_(std::ostream &lineage,std::ostream &lod_org_file, long i) = 0;
-    virtual void get_stats_(std::ostream&,long) const = 0;
+		void prune_lineage_(long) = 0;
+    virtual life::configuration get_stats_(long) const = 0;
   };
 
   // concept to test if method is provided by user
@@ -101,14 +101,13 @@ private:
 
     std::vector<entity> get_as_vector_() override {  return data_.get_as_vector(); }
 
-    void snapshot_(std::ostream &o,long i) const override { data_.snapshot(o,i); }
+    void snapshot_(long i) const override { data_.snapshot(i); }
 
-    void prune_lineage_(std::ostream &lineage_file,
-                        std::ostream &lod_org_file, long i) override {
-      data_.prune_lineage(lineage_file,lod_org_file,i);
+    void prune_lineage_(long i) override { data_.prune_lineage(i); }
+
+    life::configuration get_stats_(long i) const override {
+      return data_.get_stats(i);
     }
-
-    void get_stats_(std::ostream& o, long i) const override{  data_.get_stats(o,i); }
 
     configuration publish_configuration_() override {
       return data_.publish_configuration(); 
