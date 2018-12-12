@@ -58,36 +58,41 @@ void linear::merge(std::vector<life::entity> v) {
 }
 
 
-life::configuration linear::get_stats() {
+void linear::get_stats(std::ostream &stats_file, long i) const {
 
   // precondition: "score" must be in org.data
-  life::configuration con;
   const auto scores = pop_ | ranges::view::transform([](auto const &org) {
                         return double{org.data["score"]};
                       });
 
-  con["avg"] = ranges::accumulate(scores, 0.0) / pop_.size();
-
-  con["max"] = *ranges::max_element(scores);
-
-  return con;
+  stats_file << ranges::accumulate(scores, 0.0) / pop_.size() << ","
+             << *ranges::max_element(scores) << "," << i << std::endl;
 }
 
-void linear::snapshot(std::ofstream &o) const {
+void linear::snapshot(std::ostream &snapshot_file, long) const {
+  snapshot_file << "id,size,encoding\n";
   for (auto &org : pop_)
-    o << org.get_id() << "," << org.get_encoding().size() << ","
+    snapshot_file << org.get_id() << "," << org.get_encoding().size() << ","
       << org.get_encoding() << std::endl;
 }
 
-std::vector<life::entity> linear::prune_lineage() {
+void linear::prune_lineage(std::ostream &lineage_file,
+                           std::ostream &lineage_organisms_file, long i) {
 
-  std::vector<life::entity> pruned;
   if (!track_lineage_)
-    return pruned;
+    return;
 
-  for (auto &fossil : fossils_) {
-    if (fossil.second == size_)
-      pruned.push_back(fossil.first);
+  for (auto &org : fossils_) {
+    if (org.second == size_) {
+      lineage_organisms_file  << org.first.get_id() << "," << i << ","
+                   << org.first.get_encoding().size() << "," << org.first.get_encoding()
+                   << std::endl;
+      lineage_file << org.first.get_id() << "," << i << "," << 1 << ","
+                   << org.first.get_ancestor() << std::endl;
+    }
+    if (!org.second )
+      lineage_file << org.first.get_id() << "," << i << "," << 0 << ","
+                   << org.first.get_ancestor() << std::endl;
   }
 
   fossils_.erase(std::remove_if(std::begin(fossils_), std::end(fossils_),
@@ -97,6 +102,6 @@ std::vector<life::entity> linear::prune_lineage() {
                                 }),
                  std::end(fossils_));
 
-  return pruned;
+  return ;
 }
 

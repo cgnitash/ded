@@ -24,6 +24,8 @@ class linear {
   life::configuration entity_config_;
   long size_{0};
 
+  void update_tree(long p, int count);
+
 public:
   linear() { configure(publish_configuration()); }
 
@@ -53,8 +55,7 @@ public:
 
   std::vector<life::entity> get_as_vector();
   void merge(std::vector<life::entity>);
-  void snapshot(std::ofstream&)const;
-  life::configuration get_stats();
-  std::vector<life::entity> prune_lineage();
-  void update_tree(long p, int count);
+  void snapshot(std::ostream&,long)const;
+  void get_stats(std::ostream &, long) const;
+  void prune_lineage(std::ostream &, std::ostream &, long);
 };

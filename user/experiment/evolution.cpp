@@ -28,38 +28,33 @@ void evolution::run() {
   auto dir = Dir_  + Rep_ + "/"; 
   std::experimental::filesystem::create_directory(dir);
 
-  std::ofstream pop_file(dir + "pop_"+ ".csv");
+  std::ofstream pop_file(dir + "pop.csv");
   pop_file << "avg,max,update\n";
 
-  std::ofstream lineage_file(dir + "lineage_"+ ".csv");
-  lineage_file << "id,coalesced_at,encoding_size,encoding\n";
+  std::ofstream lineage_organisms_file(dir + "lineage_organisms.csv");
+  lineage_organisms_file << "id,recorded_at,encoding_size,encoding\n";
+
+  std::ofstream lineage_file(dir + "lineage"+ ".csv");
+  lineage_file << "id,recorded_at,on_lod,ancestor_id\n";
 
   for (auto i : ranges::view::iota(0, generations_)) {
 
     pop = world.evaluate(pop);
 
-    auto stats =
-	   	pop.get_stats();
+    pop.get_stats(pop_file, i);
 
-    if (!(i % 10)) {
-      std::cout << stats << std::endl;
+    if (!(i % 25)) {
+      pop.get_stats(std::cout, i);
       std::ofstream snapshot_file(dir+ "snapshot_" +
                                   std::to_string(i) + ".csv");
-      snapshot_file << "id,size,encoding\n";
 
-      pop.snapshot(snapshot_file);
+      pop.snapshot(snapshot_file,i);
     }
 
-    for (auto &k : stats)
-      pop_file << k << ",";
-    pop_file << i << std::endl;
 
     pop = optimiser.evaluate(pop);
 
-    for (auto &org : pop.prune_lineage())
-      lineage_file << org.get_id() << "," << i << ","
-                   << org.get_encoding().size() << "," << org.get_encoding()
-                   << std::endl;
+    pop.prune_lineage(lineage_file,lineage_organisms_file,i);
   }
 }
 
