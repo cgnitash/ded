@@ -49,6 +49,8 @@ public:
 
   void snapshot( long i) const { self_->snapshot_(i); }
 
+  void flush_unpruned() { self_->flush_unpruned(); }
+
   life::configuration get_stats(long i) const { return self_->get_stats_(i); }
 
   configuration publish_configuration() {
@@ -76,8 +78,8 @@ private:
 
     virtual std::vector<life::entity> get_as_vector_() = 0;
     virtual void merge_(std::vector<life::entity>) = 0;
-    virtual 
-		void prune_lineage_(long) = 0;
+    virtual void prune_lineage_(long) = 0;
+    virtual void flush_unpruned() = 0;
     virtual life::configuration get_stats_(long) const = 0;
   };
 
@@ -102,6 +104,8 @@ private:
     std::vector<entity> get_as_vector_() override {  return data_.get_as_vector(); }
 
     void snapshot_(long i) const override { data_.snapshot(i); }
+
+    void flush_unpruned() override { data_.flush_unpruned(); }
 
     void prune_lineage_(long i) override { data_.prune_lineage(i); }
 

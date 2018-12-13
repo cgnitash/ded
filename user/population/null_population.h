@@ -24,4 +24,5 @@ public:
   void snapshot(long) const {}
   life::configuration get_stats(long) const { return {}; }
   void prune_lineage(long) {}
+  void flush_unpruned() {}
 };

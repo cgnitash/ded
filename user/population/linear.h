@@ -59,10 +59,10 @@ public:
     return con;
   }
 
-  ~linear();
   std::vector<life::entity> get_as_vector();
   void merge(std::vector<life::entity>);
   void snapshot(long)const;
   life::configuration get_stats(long) const;
   void prune_lineage(long);
+  void flush_unpruned();
 };

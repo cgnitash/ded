@@ -144,11 +144,14 @@ void linear::prune_lineage(long i) {
   return ;
 }
 
-linear::~linear() {
+void linear::flush_unpruned() {
+  pop_.clear();
+  prune_lineage(-1);
   std::ofstream unrec_file(dir_name_ + "unpruned.csv");
   unrec_file << "id,recorded_at,on_lod,ancestor_id\n";
   for (auto &org : fossils_) {
     unrec_file << org.first.get_id() << ",-1," << 0 << ","
                << org.first.get_ancestor() << std::endl;
+	if (org.second == size_) std::cout << org.first.get_id();
   }
 }

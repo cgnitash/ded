@@ -58,5 +58,6 @@ void evolution::run() {
 
     pop.prune_lineage(i);
   }
+  pop.flush_unpruned();
 }
 
