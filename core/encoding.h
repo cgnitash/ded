@@ -68,7 +68,7 @@ public:
 
   void generate(long del_size_ = 100) {
     ranges::generate_n(ranges::back_inserter(enc_), del_size_,
-                          [this] { return std::rand() % alphabet_; });
+                       [this] { return std::rand() % alphabet_; });
   }
 
   void copy_chunk() {

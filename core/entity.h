@@ -7,13 +7,13 @@
 #include "signal.h"
 
 #include <cassert>
+#include <deque>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <string>
 #include <type_traits>
 #include <vector>
-#include <deque>
 
 namespace life {
 
@@ -53,12 +53,11 @@ public:
 
   long get_ancestor() const { return self_->get_ancestor_(); }
 
-  //void prune_ancestors(long n) { self_->prune_ancestors_(n); }
+  // void prune_ancestors(long n) { self_->prune_ancestors_(n); }
 
   encoding get_encoding() const { return self_->get_encoding_(); }
 
-  void set_encoding(encoding e)  { self_->set_encoding_(e); }
-
+  void set_encoding(encoding e) { self_->set_encoding_(e); }
 
   void input(signal s) { self_->input_(s); }
 
@@ -86,11 +85,11 @@ private:
     virtual entity_interface *copy_() const = 0;
 
     virtual long get_id_() const = 0;
-  //  virtual void prune_ancestors_(long) = 0;
+    //  virtual void prune_ancestors_(long) = 0;
     virtual long get_ancestor_() const = 0;
-  virtual encoding get_encoding_() const =0;
+    virtual encoding get_encoding_() const = 0;
 
-  virtual void set_encoding_(encoding) = 0; 
+    virtual void set_encoding_(encoding) = 0;
 
     virtual void mutate_() = 0;
     virtual configuration publish_configuration_() = 0;
@@ -99,10 +98,6 @@ private:
     virtual signal output_() = 0;
     virtual void configure_(configuration) = 0;
   };
-
-  // concept to test if method is provided by user
-  //  template <typename T> using nameable =
-  //  decltype(std::declval<T&>().name());
 
   template <typename UserEntity> struct entity_object final : entity_interface {
 
@@ -113,16 +108,16 @@ private:
     entity_interface *copy_() const override {
       return new entity_object(*this);
     }
-
-    // mandatory methods
-    //
-    void input_(signal s) override { data_.input(s); }
-    signal output_() override { return data_.output(); }
-    void tick_() override { data_.tick(); }
-
     long get_ancestor_() const override { return ancestor_; }
     long get_id_() const override { return id_; }
 
+    // mandatory methods
+	 
+    void input_(signal s) override { data_.input(s); }
+
+    signal output_() override { return data_.output(); }
+
+    void tick_() override { data_.tick(); }
 
     void mutate_() override {
       ancestor_ = id_;
@@ -135,14 +130,6 @@ private:
     }
 
     void configure_(configuration c) override { data_.configure(c); }
-
-	/*
-    void prune_ancestors_(long n) override {
-      //    ancestors_.erase(std::begin(ancestors_), std::begin(ancestors_) +
-      //    n);
-      util::repeat(n, [&] { ancestors_.pop_front(); });
-    }
-	*/
 
     // optional methods
     template <typename T>
@@ -164,18 +151,11 @@ private:
                                                       EncodingSettable>{})
         data_.set_encoding(e);
     }
-    /*
-            // optional methods
-            //
-        std::string name_() const override {
-          if constexpr (enhanced_type_traits::is_detected<UserEntity,
-       nameable>{}) 
-	   return "entity-name:" + data_.name(); else return " #unnamed
-       entity??? ";
-        }
-    */
+
+    // data
     long id_;
     long ancestor_;
+
     UserEntity data_;
   };
 

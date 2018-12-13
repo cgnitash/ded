@@ -1,32 +1,31 @@
 
 #pragma once
 
-#include"member_detection.h"
-#include"configuration.h"
-#include"encoding.h"
-#include"signal.h"
-#include"entity.h"
-
+#include "configuration.h"
+#include "encoding.h"
+#include "entity.h"
+#include "member_detection.h"
+#include "signal.h"
 
 #include <cassert>
+#include <functional>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
-#include <vector>
 #include <type_traits>
-#include <map>
-#include <functional>
+#include <vector>
 
 namespace life {
-
 
 // polymorphic wrapper for types that walk, talk, and quack like organisms
 class population {
 public:
   template <typename UserPopulation>
-  population(UserPopulation x) : self_(new population_object<UserPopulation>(std::move(x))) {}
+  population(UserPopulation x)
+      : self_(new population_object<UserPopulation>(std::move(x))) {}
 
-  population(const population &x) : data(x.data) ,self_(x.self_->copy_())  {}
+  population(const population &x) : data(x.data), self_(x.self_->copy_()) {}
   population(population &&) noexcept = default;
 
   population &operator=(const population &x) {
@@ -41,20 +40,18 @@ public:
 
   void merge(std::vector<entity> v) { self_->merge_(v); }
 
-  void prune_lineage(long i) {
-    self_->prune_lineage_(i);
-  }
+  void prune_lineage(long i) { self_->prune_lineage_(i); }
 
   std::vector<entity> get_as_vector() { return self_->get_as_vector_(); }
 
-  void snapshot( long i) const { self_->snapshot_(i); }
+  void snapshot(long i) const { self_->snapshot_(i); }
 
   void flush_unpruned() { self_->flush_unpruned(); }
 
   life::configuration get_stats(long i) const { return self_->get_stats_(i); }
 
   configuration publish_configuration() {
-   return  self_->publish_configuration_();
+    return self_->publish_configuration_();
   }
 
   void configure(configuration con) {
@@ -65,14 +62,13 @@ public:
   }
 
 private:
-
   // interface/ABC for an population
-  struct population_interface  {
-    virtual ~population_interface () = default;
+  struct population_interface {
+    virtual ~population_interface() = default;
     virtual population_interface *copy_() const = 0;
 
     virtual configuration publish_configuration_() = 0;
-    virtual void configure_(configuration ) = 0;
+    virtual void configure_(configuration) = 0;
 
     virtual void snapshot_(long i) const = 0;
 
@@ -83,10 +79,8 @@ private:
     virtual life::configuration get_stats_(long) const = 0;
   };
 
-  // concept to test if method is provided by user
-//  template <typename T> using nameable = decltype(std::declval<T&>().name());
-
-  template <typename UserPopulation> struct population_object final : population_interface {
+  template <typename UserPopulation>
+  struct population_object final : population_interface {
 
     // provided methods
     population_object(UserPopulation x) : data_(std::move(x)) {}
@@ -95,13 +89,14 @@ private:
       return new population_object(*this);
     }
 
-
     // mandatory methods
     //
 
-    void merge_(std::vector<entity> v) override {  data_.merge(v); }
+    void merge_(std::vector<entity> v) override { data_.merge(v); }
 
-    std::vector<entity> get_as_vector_() override {  return data_.get_as_vector(); }
+    std::vector<entity> get_as_vector_() override {
+      return data_.get_as_vector();
+    }
 
     void snapshot_(long i) const override { data_.snapshot(i); }
 
@@ -114,22 +109,14 @@ private:
     }
 
     configuration publish_configuration_() override {
-      return data_.publish_configuration(); 
+      return data_.publish_configuration();
     }
 
     void configure_(configuration c) override { data_.configure(c); }
 
-/*
-	// optional methods
-	//
-    std::string name_() const override {
-      if constexpr (enhanced_type_traits::is_detected<UserPopulation, nameable>{})
-        return "entity-name:" + data_.name();
-      else
-        return " #unnamed entity??? ";
-    }
-*/
-	std::vector<long> common_ancestors_;
+    // optional methods
+
+    // data
     UserPopulation data_;
   };
 
