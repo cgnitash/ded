@@ -23,8 +23,8 @@ namespace life {
 // polymorphic wrapper for types that walk, talk, and quack like organisms
 class population {
 public:
-  template <typename UserEntity>
-  population(UserEntity x) : self_(new population_object<UserEntity>(std::move(x))) {}
+  template <typename UserPopulation>
+  population(UserPopulation x) : self_(new population_object<UserPopulation>(std::move(x))) {}
 
   population(const population &x) : data(x.data) ,self_(x.self_->copy_())  {}
   population(population &&) noexcept = default;
@@ -86,10 +86,10 @@ private:
   // concept to test if method is provided by user
 //  template <typename T> using nameable = decltype(std::declval<T&>().name());
 
-  template <typename UserEntity> struct population_object final : population_interface {
+  template <typename UserPopulation> struct population_object final : population_interface {
 
     // provided methods
-    population_object(UserEntity x) : data_(std::move(x)) {}
+    population_object(UserPopulation x) : data_(std::move(x)) {}
 
     population_interface *copy_() const override {
       return new population_object(*this);
@@ -123,14 +123,14 @@ private:
 	// optional methods
 	//
     std::string name_() const override {
-      if constexpr (enhanced_type_traits::is_detected<UserEntity, nameable>{})
+      if constexpr (enhanced_type_traits::is_detected<UserPopulation, nameable>{})
         return "entity-name:" + data_.name();
       else
         return " #unnamed entity??? ";
     }
 */
 	std::vector<long> common_ancestors_;
-    UserEntity data_;
+    UserPopulation data_;
   };
 
   std::unique_ptr<population_interface> self_;
