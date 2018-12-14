@@ -15,9 +15,9 @@
 double flip_bits::eval(life::entity &org) {
 
   // feed in input - input signals are 0s or 1s only
-  life::signal input;
+  std::vector<double> input;
   ranges::generate_n(ranges::back_inserter(input), size_,
-                        []() -> double { return std::rand() % 2; });
+                     []() -> double { return std::rand() % 2; });
 
   org.input(input);
 
@@ -25,17 +25,23 @@ double flip_bits::eval(life::entity &org) {
   org.tick();
 
   // get the output
-  auto output = org.output();
-  if (output.size() != size_) {
-    std::cout << "Error: environment-flip_bits must receive an ouput of same "
-                 "size as input\n";
+  auto s = org.output();
+  if (auto vp = std::get_if<std::vector<double>>(&s)) {
+    auto output = *vp;
+    if (output.size() != size_) {
+      std::cout << "Error: environment-flip_bits must receive an ouput of same "
+                   "size as input\n";
+      exit(1);
+    }
+    // score is the number of bit-wise matches between input and output
+    return ranges::inner_product(
+        input, output, 0.0, std::plus<>(),
+        [](auto a, auto b) { return 1 - std::abs(a - util::Bit(b)); });
+  } else {
+    std::cout
+        << "Error: entity-flip-bits cannot handle this payload type \n";
     exit(1);
   }
-  // score is the number of bit-wise matches between input and output
-  return ranges::inner_product(
-      input, output, 0.0, std::plus<>(),
-      [](auto a, auto b) { return 1 - std::abs(a - util::Bit(b)); });
-
 }
 
 life::population flip_bits::evaluate(life::population pop) {

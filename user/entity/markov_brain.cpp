@@ -16,15 +16,21 @@ void markov_brain::mutate() {
   buffer_ = std::vector(input_ + output_ + hidden_, 0.);
 }
 
-void markov_brain::input(life::signal v) {
-  if (v.size() != input_) {
-    std::cout << "Error: entity-markov2in1out must get an input range of the "
-                 "specified size\n";
+void markov_brain::input(life::signal s) {
+  if (auto vp = std::get_if<std::vector<double>>(&s)) {
+    auto v = *vp;
+    if (v.size() != input_) {
+      std::cout << "Error: entity-markovbrain must get an input range of the "
+                   "specified size\n";
+      exit(1);
+    }
+    for (auto i{0u}; i < input_; i++)
+      buffer_[i] = util::Bit(v[i]);
+  } else {
+    std::cout
+        << "Error: entity-markovbrain cannot handle this payload type \n";
     exit(1);
   }
-
-  for (auto i{0u}; i < input_; i++)
-    buffer_[i] = util::Bit(v[i]);
 }
 
 life::signal markov_brain::output() {

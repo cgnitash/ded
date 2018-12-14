@@ -45,39 +45,46 @@ void forager::initialize_resource_() {
         resources_[i][j] = 1;
 }
 
-void forager::interact(life::signal output, location &position,
-                       direction &facing, double &score) {
+void forager::interact(life::signal s, location &position, direction &facing,
+                       double &score) {
 
-  if (output.size() != 2) {
-    std::cout
-        << "Error: environment-forager must recieve an output of size 2\n";
-    exit(1);
-  }
-
-  // outputs are interpreted as 0s and 1s only
-  auto out = util::Bit(output[0]) * 2 + util::Bit(output[1]);
-
-  // interact with the environment
-  switch (static_cast<int>(out)) {
-  case 0: // move
-    position = move_in_dir(position, facing);
-    break;
-  case 1: // turn right
-    facing = turn(facing, 3);
-    break;
-  case 2: // turn left
-    facing = turn(facing, 1);
-    break;
-  case 3: // eat
-    auto &pos = resources_[position.x_][position.y_];
-    if (pos) {
-      pos = 0;
-      if (replace_) {
-        replace_resource_();
-      }
-      score++;
+  if (auto vp = std::get_if<std::vector<double>>(&s)) {
+    auto output = *vp;
+    if (output.size() != 2) {
+      std::cout
+          << "Error: environment-forager must recieve an output of size 2\n";
+      exit(1);
     }
-    break;
+
+    // outputs are interpreted as 0s and 1s only
+    auto out = util::Bit(output[0]) * 2 + util::Bit(output[1]);
+
+    // interact with the environment
+    switch (static_cast<int>(out)) {
+    case 0: // move
+      position = move_in_dir(position, facing);
+      break;
+    case 1: // turn right
+      facing = turn(facing, 3);
+      break;
+    case 2: // turn left
+      facing = turn(facing, 1);
+      break;
+    case 3: // eat
+      auto &pos = resources_[position.x_][position.y_];
+      if (pos) {
+        pos = 0;
+        if (replace_) {
+          replace_resource_();
+        }
+        score++;
+      }
+      break;
+    }
+  } else {
+    std::cout
+        << "Error: environment-forager cannot handle this payload type \n";
+    exit(1);
   }
 }
 

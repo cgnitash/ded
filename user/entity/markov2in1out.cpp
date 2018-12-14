@@ -13,18 +13,24 @@ void markov2in1out::mutate() {
   compute_gates_();
 }
 
-void markov2in1out::input(life::signal v) {
+void markov2in1out::input(life::signal s) {
 
-  if (v.size() != input_) {
-    std::cout << "Error: entity-markov2in1out must get an input range of the "
-                 "specified size\n";
+  if (auto vp = std::get_if<std::vector<double>>(&s)) {
+    auto v = *vp;
+    if (v.size() != input_) {
+      std::cout << "Error: entity-markov2in1out must get an input range of the "
+                   "specified size\n";
+      exit(1);
+    }
+  // must convert double inputs to 1s and 0s, overwrite only input range of
+    for (auto i{0u}; i < v.size(); i++)
+      buffer_[i] = util::Bit(v[i]);
+
+  } else {
+    std::cout
+        << "Error: entity-markov2in1out cannot handle this payload type \n";
     exit(1);
   }
-
-  // must convert double inputs to 1s and 0s, overwrite only input range of
-  for (auto i{0u}; i < v.size(); i++)
-    buffer_[i] = util::Bit(v[i]);
-
 }
 
 life::signal markov2in1out::output() {

@@ -30,13 +30,20 @@ void cppn::mutate() {
   }
 }
 
-void cppn::input(life::signal in) {
-  if (in.size() != input_) {
+void cppn::input(life::signal s) {
+  if (auto vp = std::get_if<std::vector<double>>(&s)) {
+    auto in = *vp;
+    if (in.size() != input_) {
+      std::cout << "Error: entity-cppn must get an input range of the "
+                   "specified size\n";
+      exit(1);
+    }
+    ins_ = in;
+  } else {
     std::cout
-        << "Error: entity-cppn must get an input range of the specified size\n";
+        << "Error: entity-cppn cannot handle this payload type \n";
     exit(1);
   }
-  ins_ = in;
 }
 
 life::signal cppn::output() {
@@ -53,7 +60,7 @@ life::signal cppn::output() {
 void cppn::tick() {
 
   if (ins_.empty())
-	  ins_ = life::signal(input_,0.0);
+	  ins_ = std::vector<double>(input_,0.0);
 
   if (ins_.size() != input_) {
     std::cout
