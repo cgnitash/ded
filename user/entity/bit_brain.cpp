@@ -17,6 +17,7 @@ void bit_brain::mutate() {
 }
 
 life::signal bit_brain::output() {
-  return genome_ | ranges::view::transform([](auto v) { return v % 2; });
+  return std::vector<double>{
+      genome_ | ranges::view::transform([](auto v) { return v % 2; })};
 }
 

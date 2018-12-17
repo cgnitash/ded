@@ -62,9 +62,15 @@ public:
 
   auto begin() { return std::begin(enc_); }
 
+  auto clear() { enc_.clear(); }
+
+  auto push_back(long n) { enc_.push_back(n); }
+
   auto end() { return std::end(enc_); }
 
   auto &operator[](size_t i) { return enc_[i]; }
+
+  size_t size() { return enc_.size(); }
 
   void generate(long del_size_ = 100) {
     ranges::generate_n(ranges::back_inserter(enc_), del_size_,
@@ -131,8 +137,6 @@ public:
     all_deletions();
     point_mutate();
   }
-
-  size_t size() { return enc_.size(); }
 
   friend std::ostream &operator<<(std::ostream &o, const encoding &e) {
     for (auto &site : e.enc_)

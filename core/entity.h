@@ -59,6 +59,8 @@ public:
 
   void set_encoding(encoding e) { self_->set_encoding_(e); }
 
+  encoding parse_encoding(std::string s) { return self_->parse_encoding_(s); }
+
   void input(signal s) { self_->input_(s); }
 
   signal output() { return self_->output_(); }
@@ -85,11 +87,10 @@ private:
     virtual entity_interface *copy_() const = 0;
 
     virtual long get_id_() const = 0;
-    //  virtual void prune_ancestors_(long) = 0;
     virtual long get_ancestor_() const = 0;
     virtual encoding get_encoding_() const = 0;
-
     virtual void set_encoding_(encoding) = 0;
+    virtual encoding parse_encoding_(std::string) = 0;
 
     virtual void mutate_() = 0;
     virtual configuration publish_configuration_() = 0;
@@ -135,9 +136,6 @@ private:
     template <typename T>
     using EncodingGettable = decltype(std::declval<T &>().get_encoding());
 
-    template <typename T>
-    using EncodingSettable = decltype(std::declval<T &>().set_encoding());
-
     encoding get_encoding_() const override {
       if constexpr (enhanced_type_traits::is_detected<UserEntity,
                                                       EncodingGettable>{})
@@ -146,10 +144,24 @@ private:
         return encoding{};
     }
 
+    template <typename T>
+    using EncodingSettable = decltype(std::declval<T &>().set_encoding());
+
     void set_encoding_(encoding e) override {
       if constexpr (enhanced_type_traits::is_detected<UserEntity,
                                                       EncodingSettable>{})
         data_.set_encoding(e);
+    }
+
+    template <typename T>
+    using EncodingParsable = decltype(std::declval<T &>().parse_encoding());
+
+    encoding parse_encoding_(std::string s) override {
+      if constexpr (enhanced_type_traits::is_detected<UserEntity,
+                                                      EncodingParsable>{})
+        return data_.parse_encoding(s);
+      else
+        return encoding{};
     }
 
     // data

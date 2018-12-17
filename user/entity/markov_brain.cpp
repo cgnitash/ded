@@ -59,8 +59,7 @@ void markov_brain::seed_gates_(size_t n) {
 
   util::repeat(n, [&] {
     auto pos = std::rand() % (genome_.size() - 1);
-    genome_[pos] = 7;
-    genome_[pos + 1] = 14;
+    std::copy(std::begin(codon_), std::end(codon_), std::begin(genome_) + pos);
   });
 }
 
@@ -68,14 +67,12 @@ void markov_brain::compute_gates_() {
 
   gates_.clear();
   auto addresses = input_ + output_ + hidden_;
-  std::vector codon{7, 14};
-  auto gene_length = 28;
-  for (auto pos{std::begin(genome_)}; pos < std::end(genome_) - gene_length;
+  for (auto pos{std::begin(genome_)}; pos < std::end(genome_) - gene_length_;
        pos++) {
     // find the next codon
-    pos = std::search(pos, std::end(genome_) - gene_length, std::begin(codon),
-                      std::end(codon));
-    if (pos != std::end(genome_) - gene_length) {
+    pos = std::search(pos, std::end(genome_) - gene_length_, std::begin(codon_),
+                      std::end(codon_));
+    if (pos != std::end(genome_) - gene_length_) {
       // convert the gene into gate
       gate g;
 	  // translate input wires

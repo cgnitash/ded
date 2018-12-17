@@ -13,21 +13,36 @@
 #include <utility>
 #include <map>
 
-void cppn::mutate() {
+life::encoding cppn::parse_encoding(std::string s) {
+  std::smatch m;
+  life::encoding e;
+  while (std::regex_match(s, m, encoding_parser_)) {
+    auto site = m[1].str();
+    if (!site.empty())
+      e.push_back(std::stol(site));
+  }
+  return e;
+}
 
-  // only point mutations since size of encoding can't change
-  genome_.point_mutate();
-  nodes.clear();
+void cppn::compute_nodes_() {
 
+  nodes_.clear();
   // create activation functions for all nodes other than inputs
   for (size_t i : ranges::view::iota(0, output_ + hidden_)) {
     Node node;
     node.activation_function = genome_[9*i] % 6;
     for (auto j = 0; j < 4; j++)
-      node.in_node[genome_[9 * i + j * 2 + 1] % (i + 1)] =
+      node.in_node[genome_[9 * i + j * 2 + 1] % (input_ + i + 1)] =
           (genome_[9 * i + j * 2 + 2] % 1000) / 1000.0;
-    nodes.push_back(node);
+    nodes_.push_back(node);
   }
+}
+
+void cppn::mutate() {
+
+  // only point mutations since size of encoding can't change
+  genome_.point_mutate();
+  compute_nodes_();
 }
 
 void cppn::input(life::signal s) {
@@ -70,7 +85,7 @@ void cppn::tick() {
   auto results = ins_;
   
   // for each node in order
-  for (auto &node : nodes) {
+  for (auto &node : nodes_) {
     // sum up the incoming weighted-outputs from other nodes
     auto const sum = ranges::accumulate(
         node.in_node, 0.0, [&results](auto const total, auto const value) {
@@ -83,9 +98,6 @@ void cppn::tick() {
   auto res_size = results.size();
   // put the last output node results into the output buffer
   outs_ = results | ranges::move | ranges::action::slice(res_size - output_, res_size);
-//  outs_.clear();
-//  std::copy(std::begin(results) + results.size() - output_, std::end(results),
-//            std::back_inserter(outs_));
 
 }
 
@@ -103,7 +115,7 @@ double cppn::activate(size_t c, double x) {
 
 // for debugging purposes
 void cppn::print() {
-  for (auto &node : nodes) {
+  for (auto &node : nodes_) {
     std::cout << "af: " << node.activation_function << " ws: ";
     for (auto &w : node.in_node)
       std::cout << "{" << w.first << "," << w.second << "} ";

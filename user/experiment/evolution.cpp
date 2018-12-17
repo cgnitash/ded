@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <experimental/filesystem>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <numeric>
 #include <random>
@@ -49,7 +50,8 @@ void evolution::run() {
     auto stats = pop.get_stats(i);
 
     if (!(i % 25)) {
-	  std::cout << "update: " << i << stats << std::endl;
+      std::cout << "update:" << std::setw(6) << i << "   " << stats
+                << std::endl;
       pop.snapshot(i);
     }
 

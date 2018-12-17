@@ -18,6 +18,9 @@ class markov_brain {
 
   std::vector<double> buffer_;
 
+  std::vector<long> codon_{7, 14};
+  long gene_length_ = 28;
+
   struct gate {
     std::vector<long> logic_, ins_, outs_;
   };
