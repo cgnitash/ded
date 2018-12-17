@@ -13,32 +13,35 @@ void markov_cppn::mutate() {
   genome_.copy_chunk();
   genome_.del_chunk();
 
-  if (mutate_acfns_) {
-    auto cppn_con = my_cppn_.publish_configuration();
-    auto e = my_cppn_.get_encoding();
-    for (auto i{0u}; i < e.size(); i += 9)
-      e[i * 9] = std::rand();
-    my_cppn_.set_encoding(e);
-  }
+  if (mutate_cppn_) {
+    my_cppn_.mutate();
+  } else {
+    if (mutate_acfns_) {
+      auto cppn_con = my_cppn_.publish_configuration();
+      auto e = my_cppn_.get_encoding();
+      for (auto i{0u}; i < e.size(); i += 9)
+        e[i] = std::rand();
+      my_cppn_.set_encoding(e);
+    }
 
-  if (mutate_wires_) {
-    auto cppn_con = my_cppn_.publish_configuration();
-    auto e = my_cppn_.get_encoding();
-    for (auto i{0u}; i < e.size(); i += 9)
-      for (auto j{0u}; j < 4; j++)
-        e[i * 9 + j * 2 + 1] = std::rand();
-    my_cppn_.set_encoding(e);
-  }
+    if (mutate_wires_) {
+      auto cppn_con = my_cppn_.publish_configuration();
+      auto e = my_cppn_.get_encoding();
+      for (auto i{0u}; i < e.size(); i += 9)
+        for (auto j{0u}; j < 4; j++)
+          e[i + j * 2 + 1] = std::rand();
+      my_cppn_.set_encoding(e);
+    }
 
-  if (mutate_weights_) {
-    auto cppn_con = my_cppn_.publish_configuration();
-    auto e = my_cppn_.get_encoding();
-    for (auto i{0u}; i < e.size(); i += 9)
-      for (auto j{0u}; j < 4; j++)
-        e[i * 9 + j * 2 + 2] = std::rand();
-    my_cppn_.set_encoding(e);
+    if (mutate_weights_) {
+      auto cppn_con = my_cppn_.publish_configuration();
+      auto e = my_cppn_.get_encoding();
+      for (auto i{0u}; i < e.size(); i += 9)
+        for (auto j{0u}; j < 4; j++)
+          e[i + j * 2 + 2] = std::rand();
+      my_cppn_.set_encoding(e);
+    }
   }
-
   compute_gates_();
   buffer_ = std::vector(input_ + output_ + hidden_, 0.);
 }

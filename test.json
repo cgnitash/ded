@@ -26,7 +26,8 @@
                     {
                         "hiddens": 2,
                         "inputs": 2,
-                        "outputs": 2
+                        "outputs": 2,
+                        "mutate-acfns": true
                     }
                 ],
                 "size": 50,

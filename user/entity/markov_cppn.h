@@ -18,6 +18,7 @@ class markov_cppn {
   bool mutate_wires_{false};
   bool mutate_weights_{false};
   bool mutate_acfns_{false};
+  bool mutate_cppn_{false};
   
   life::configuration genome_config_;
 
@@ -47,6 +48,7 @@ public:
     con["mutate-wires"] = mutate_wires_;
     con["mutate-weights"] = mutate_weights_;
     con["mutate-acfns"] = mutate_acfns_;
+    con["mutate-cppn"] = mutate_cppn_;
     con["genome-params"] = genome_config_;
     return con;
   }
@@ -57,6 +59,7 @@ public:
     mutate_wires_ = con["mutate-wires"];
     mutate_weights_ = con["mutate-weights"];
     mutate_acfns_ = con["mutate-acfns"];
+    mutate_cppn_ = con["mutate-cppn"];
     genome_config_ = con["genome-params"];
     genome_.configure(genome_config_);
     genome_.generate(200);
