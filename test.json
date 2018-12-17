@@ -30,7 +30,7 @@
                         "mutate-acfns": true
                     }
                 ],
-                "size": 50,
+                "size": 10,
                 "track-lineage": true
             }
         ],
