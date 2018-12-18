@@ -138,30 +138,44 @@ private:
 
     encoding get_encoding_() const override {
       if constexpr (enhanced_type_traits::is_detected<UserEntity,
-                                                      EncodingGettable>{})
+                                                      EncodingGettable>{}) {
+		//std::cout << "in entity get_encoding\n";
         return data_.get_encoding();
+	  }
       else
+		//std::cout << "no entity get_encoding\n";
         return encoding{};
     }
 
     template <typename T>
-    using EncodingSettable = decltype(std::declval<T &>().set_encoding());
+    using EncodingSettable =
+        decltype(std::declval<T &>().set_encoding(std::declval<encoding>()));
 
     void set_encoding_(encoding e) override {
       if constexpr (enhanced_type_traits::is_detected<UserEntity,
-                                                      EncodingSettable>{})
+                                                      EncodingSettable>{}) {
+		//std::cout << "in entity set_encoding\n";
         data_.set_encoding(e);
+	  }
+	  else {
+		  //std::cout << "no entity set_encoding\n";
+	  }
     }
 
     template <typename T>
-    using EncodingParsable = decltype(std::declval<T &>().parse_encoding());
+    using EncodingParsable =
+        decltype(std::declval<T &>().parse_encoding(std::declval<std::string>()));
 
     encoding parse_encoding_(std::string s) override {
       if constexpr (enhanced_type_traits::is_detected<UserEntity,
-                                                      EncodingParsable>{})
+                                                      EncodingParsable>{}) {
+		//std::cout << "in entity parse_encoding\n";
         return data_.parse_encoding(s);
-      else
+	  }
+      else {
+		  //std::cout << "no entity parse_encoding\n";
         return encoding{};
+	  }
     }
 
     // data
