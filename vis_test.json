@@ -1,0 +1,32 @@
+[
+    "visualizer",
+    {
+        "population": [
+            "linear",
+            {
+                "entity": [
+                    "markov_brain",
+                    {
+                        "hiddens": 2,
+                        "inputs": 4,
+                        "outputs": 2
+                    }
+                ],
+                "load-from": "data/data_1/lineage_organisms.csv",
+                "size": 1
+            }
+        ],
+        "world": [
+            "forager",
+            {
+                "density": 0.2,
+                "grid-size": 10,
+                "replace": true,
+                "sensor-range": 4,
+                "updates": 50,
+                "visualize": true,
+                "vis-dir": "data/vis_1/"
+            }
+        ]
+    }
+]

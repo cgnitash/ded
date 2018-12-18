@@ -5,6 +5,20 @@
 #include <vector>
 #include <algorithm>
 
+life::encoding markov_brain::parse_encoding(std::string s) {
+  life::encoding e;
+  std::cout << "##" << s.size() << std::endl;
+  for (std::sregex_iterator end,
+       i(std::begin(s), std::end(s), encoding_parser_);
+       i != end; i++) {
+    auto site = (*i)[1].str();
+    if (!site.empty())
+      e.push_back(std::stol(site));
+  }
+  std::cout << "##" << e.size() << std::endl;
+  return e;
+}
+
 void markov_brain::mutate() {
 
   genome_.point_delete();

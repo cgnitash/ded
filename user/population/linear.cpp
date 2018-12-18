@@ -6,6 +6,40 @@
 #include <vector>
 #include <experimental/filesystem>
 
+void linear::initialize() {
+
+  if (load_spec_.empty()) {
+    pop_.clear();
+    ranges::generate_n(ranges::back_inserter(pop_), size_, [&] {
+      auto org = life::make_entity(entity_name_);
+      org.configure(entity_config_);
+      if (track_lineage_)
+        fossils_.push_back({org, 1});
+      return org;
+    });
+  } else {
+
+    if (!std::experimental::filesystem::exists(load_spec_)) {
+      std::cout << "error: path \"" << load_spec_ << "\" does not exist";
+      std::exit(1);
+    }
+    CSV csv(load_spec_);
+    auto ids = csv.singleColumn("id");
+    ranges::sort(ids,
+                 [](auto a, auto b) { return std::stol(a) > std::stol(b); });
+    pop_.clear();
+    auto org = life::make_entity(entity_name_);
+    org.configure(entity_config_);
+
+    //std::cout << org.get_encoding().size() << "\n";
+    //std::cout << ids[0] << " " << csv.lookUp("id", ids[0], "recorded_at") << " "
+              //<< csv.lookUp("id", ids[0], "encoding_size");
+    org.set_encoding(org.parse_encoding(csv.lookUp("id", ids[0], "encoding")));
+    //std::cout << org.get_encoding().size();
+    pop_.push_back(org);
+  }
+}
+
 std::vector<life::entity> linear::get_as_vector() { return pop_; }
 
 void linear::update_tree(long org_id, int count) {

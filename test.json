@@ -7,11 +7,11 @@
                 "env": [
                     "forager",
                     {
-                        "density": 0.4,
-                        "grid-size": 5,
-                        "replace": true,
-                        "sensor-range": 2,
-                        "updates": 50
+                        "density": 0.2,
+                        "grid-size": 10,
+                        "replace": false,
+                        "sensor-range": 4,
+                        "updates": 100
                     }
                 ],
                 "num": 1
@@ -22,15 +22,14 @@
             "linear",
             {
                 "entity": [
-                    "markov_cppn",
+                    "markov_brain",
                     {
                         "hiddens": 2,
-                        "inputs": 2,
-                        "outputs": 2,
-                        "mutate-acfns": true
+                        "inputs": 4,
+                        "outputs": 2
                     }
                 ],
-                "size": 10,
+                "size": 50,
                 "track-lineage": true
             }
         ],

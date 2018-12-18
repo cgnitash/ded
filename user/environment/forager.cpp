@@ -3,6 +3,7 @@
 #include "../../core/utilities.h"
 
 #include <algorithm>
+#include <experimental/filesystem>
 #include <fstream>
 #include <iostream>
 #include <numeric>
@@ -45,6 +46,18 @@ void forager::initialize_resource_() {
         resources_[i][j] = 1;
 }
 
+void forager::visualize(std::ofstream &out, location position, direction facing,
+                        double score) {
+
+  out << position.x_ << "," << position.y_ << " " << static_cast<int>(facing)
+      << " " << score << " ";
+  for (auto i : ranges::view::iota(0u, grid_size_))
+    for (auto j : ranges::view::iota(0u, grid_size_))
+      if (resources_[i][j])
+        out << i << "," << j << " ";
+  out << std::endl;
+}
+
 void forager::interact(life::signal s, location &position, direction &facing,
                        double &score) {
 
@@ -59,6 +72,7 @@ void forager::interact(life::signal s, location &position, direction &facing,
     // outputs are interpreted as 0s and 1s only
     auto out = util::Bit(output[0]) * 2 + util::Bit(output[1]);
 
+	//std::cout << out <<  " " <<position.x_ << " " << position.y_ << std::endl;
     // interact with the environment
     switch (static_cast<int>(out)) {
     case 0: // move
@@ -99,6 +113,18 @@ double forager::eval(life::entity &org) {
   resources_.clear();
   initialize_resource_();
 
+  std::ofstream vis_file;
+  if (visualize_) {
+    if (!std::experimental::filesystem::exists(visualize_dir_)) {
+      std::cout << "error: invalid directory \"" << visualize_dir_
+                << "\" does not exist";
+      std::exit(1);
+    }
+    std::cout << "saving to file \"" << visualize_dir_ << "\"\n";
+    vis_file.open(visualize_dir_ + "org_" + std::to_string(org.get_id()) +
+                  ".txt");
+  }
+
   util::repeat(updates_, [&] {
     // feed input to org; inputs are 0s and 1s only
     org.input(signals_at(position, facing));
@@ -106,6 +132,8 @@ double forager::eval(life::entity &org) {
     org.tick();
     // read its outputs and interact with the environment
     interact(org.output(), position, facing, score);
+	if(visualize_)
+	  visualize(vis_file,position,facing,score);
   });
 
   return score;

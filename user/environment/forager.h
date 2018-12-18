@@ -1,6 +1,7 @@
 
 #include"../../components.h"
 #include"../../core/utilities.h"
+
 #include <algorithm>
 #include <iostream>
 #include <fstream>
@@ -22,6 +23,8 @@ class forager {
   size_t sensor_range_ = 4;
   size_t updates_ = 100;
   bool replace_ = true;
+  bool visualize_ = false;
+  std::string visualize_dir_ = "./vis/";
   double density_ = 0.1;
 
   
@@ -62,6 +65,7 @@ class forager {
   void interact(life::signal, location &, direction &, double &);
   double eval(life::entity&);
   std::vector<double> signals_at(location,direction);
+  void visualize(std::ofstream &, location , direction , double );
 
 public:
   forager() {
@@ -74,6 +78,8 @@ public:
     ec["updates"] = updates_;
     ec["density"] = density_;
     ec["replace"] = replace_;
+    ec["visualize"] = visualize_;
+    ec["vis-dir"] = visualize_dir_;
     ec["sensor-range"] = sensor_range_	;
     return ec;
   }
@@ -84,6 +90,8 @@ public:
     updates_= con["updates"];
     density_ = con["density"];
     replace_ = con["replace"];
+    visualize_ = con["visualize"];
+    visualize_dir_ = con["vis-dir"];
     sensor_range_	= con["sensor-range"];
     resources_ = std::vector(grid_size_, std::vector(grid_size_, 0));
   }
