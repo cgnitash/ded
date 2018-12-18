@@ -11,6 +11,8 @@
 class markov_cppn {
 
   life::encoding genome_;
+  std::regex encoding_parser_{R"(([^:]):)"};
+
   size_t input_ = 10;
   size_t output_ = 10;
   size_t hidden_ = 10;
@@ -79,6 +81,9 @@ public:
   life::signal output();
   void tick();
   life::encoding get_encoding() const { return genome_; }
-  //void set_encoding(life::encoding);
-  //life::encoding parse_encoding(std::string);
+  void set_encoding(life::encoding e) {
+    genome_ = e;
+    compute_gates_();
+  }
+  life::encoding parse_encoding(std::string);
 };

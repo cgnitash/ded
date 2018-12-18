@@ -16,8 +16,10 @@
 life::encoding cppn::parse_encoding(std::string s) {
   std::smatch m;
   life::encoding e;
-  while (std::regex_match(s, m, encoding_parser_)) {
-    auto site = m[1].str();
+  for (std::sregex_iterator end,
+       i(std::begin(s), std::end(s), encoding_parser_);
+       i != end; i++) {
+    auto site = (*i)[1].str();
     if (!site.empty())
       e.push_back(std::stol(site));
   }

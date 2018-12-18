@@ -5,6 +5,19 @@
 #include <algorithm>
 #include <vector>
 
+life::encoding markov_cppn::parse_encoding(std::string s) {
+  std::smatch m;
+  life::encoding e;
+  for (std::sregex_iterator end,
+       i(std::begin(s), std::end(s), encoding_parser_);
+       i != end; i++) {
+    auto site = (*i)[1].str();
+    if (!site.empty())
+      e.push_back(std::stol(site));
+  }
+  return e;
+}
+
 void markov_cppn::mutate() {
 
   genome_.point_delete();
