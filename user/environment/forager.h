@@ -1,6 +1,6 @@
+#pragma once
 
 #include"../../components.h"
-#include"../../core/utilities.h"
 
 #include <algorithm>
 #include <iostream>

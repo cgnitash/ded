@@ -1,6 +1,6 @@
 
 #include "evolution.h"
-#include "../../core/utilities.h"
+
 #include <algorithm>
 #include <experimental/filesystem>
 #include <fstream>
@@ -18,21 +18,15 @@ void evolution::run() {
 
   // generate the population
   auto pop = life::make_population(pop_name_);
-  auto dir = Dir_  + Rep_ + "/";
-  if (std::experimental::filesystem::exists(dir)) {
-    std::cout << "warning: directory \"" << dir
-              << "\" already contains data. This will be overwritten. Do you "
-                 "want to continue? [y,n] ";
-    std::string option;
-    std::cin >> option;
-    if (option != "y") {
-      std::cout << "aborting..." << std::endl;
-      exit(0);
-    }
-    std::experimental::filesystem::remove_all(dir);
+  if (std::experimental::filesystem::exists(life::global_path)) {
+    std::cout
+        << "error: directory \"" << life::global_path
+        << "\" already contains data. This will be overwritten. aborting..."
+        << std::endl;
+    exit(1);
   }
-  std::experimental::filesystem::create_directory(dir);
-  pop_config_["DIR"] = dir;
+  std::experimental::filesystem::create_directory(life::global_path);
+  // pop_config_["DIR"] = Dir_;
   pop.configure(pop_config_);
 
   auto optimiser = life::make_environment(sel_name_);
@@ -40,8 +34,6 @@ void evolution::run() {
 
   auto world = life::make_environment(world_name_);
   world.configure(world_config_);
-
-
 
   for (auto i : ranges::view::iota(0, generations_)) {
 
@@ -54,7 +46,6 @@ void evolution::run() {
                 << std::endl;
       pop.snapshot(i);
     }
-
 
     pop = optimiser.evaluate(pop);
 

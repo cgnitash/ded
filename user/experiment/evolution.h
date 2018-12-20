@@ -1,5 +1,8 @@
 
+#pragma once
+
 #include "../../components.h"
+
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -19,8 +22,8 @@ class evolution {
   life::configuration pop_config_;
   life::configuration sel_config_;
   life::configuration world_config_;
-  std::string Rep_ = "arch";
-  std::string Dir_ = "./data/data_";
+  long Seed_ = 0;
+  //std::string Dir_ = "./data/";
 public:
   evolution() {
 	  configure(publish_configuration());
@@ -32,15 +35,15 @@ public:
     ec["selector"] = {sel_name_,{}};
     ec["fitness"] = {world_name_,{}};
     ec["generations"] = generations_;
-    ec["REP"] = Rep_;
-    ec["DIR"] = Dir_;
+    ec["SEED"] = Seed_;
+    //ec["DIR"] = Dir_;
     return ec;
   }
 
   void configure(life::configuration con) {
     generations_ = con["generations"];
-    Rep_ = con["REP"];
-    Dir_ = con["DIR"] ;
+    Seed_ = con["SEED"];
+    //Dir_ = con["DIR"] ;
 	pop_name_ = std::string(con["population"][0]);
 	pop_config_ = con["population"][1];
 	sel_name_ = std::string(con["selector"][0]);

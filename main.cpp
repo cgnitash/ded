@@ -41,6 +41,8 @@ life::configuration load_user_experiment(std::string file_name) {
 
 long life::entity::entity_id_ = 0;
 
+std::string life::global_path = "./";
+
 int main(int argc, char **argv) {
   // TODO use an actual command-line library :P
   //
@@ -52,15 +54,16 @@ int main(int argc, char **argv) {
   } else if (argc == 2 && std::string(argv[1]) == "-s") {
     std::cout << "saving configurations.cfg ... \n";
     save_configs();
-  } else if (argc == 4 && std::string(argv[1]) == "-f") {
-    std::cout << "running experiment from file " << argv[2] << " with seed "
-              << argv[3] << " ... \n";
-    srand(std::stol(argv[3]));
+  } else if (argc == 3 && std::string(argv[1]) == "-f") {
+    std::string p = argv[2];
+	life::global_path = p.substr(0, p.find_last_of('/')) + "/data/";
     auto con = load_user_experiment(argv[2]);
     std::string name = con[0];
     auto exp = life::make_experiment(name);
-	con[1]["REP"] = argv[3];
+    srand(con[1]["SEED"]);
     exp.configure(con[1]);
+    std::cout << "running experiment from file " << argv[2] << " with seed "
+              << con[1]["SEED"] << " ... \n";
     exp.run();
   } else {
     std::cout << "ded: unknown command line arguments. try -h\n";

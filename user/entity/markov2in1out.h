@@ -1,8 +1,6 @@
 #pragma once
 
-#include "../../core/configuration.h"
-#include "../../core/encoding.h"
-#include "../../core/signal.h"
+#include "../../components.h"
 
 #include <algorithm>
 #include <vector>

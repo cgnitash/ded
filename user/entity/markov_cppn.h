@@ -1,9 +1,6 @@
 # pragma once
 
-#include"../../core/configuration.h"
-#include"../../core/signal.h"
-#include"../../core/encoding.h"
-#include"../../core/entity.h"
+#include"../../components.h"
 
 #include <vector>
 #include <algorithm>

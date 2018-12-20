@@ -1,10 +1,6 @@
 #pragma once
 
-#include "../../core/configuration.h"
-#include "../../core/encoding.h"
-#include "../../core/entity.h"
-#include "../../core/signal.h"
-#include "../../core/utilities.h"
+#include "../../components.h"
 
 #include <algorithm>
 #include <set>
@@ -21,7 +17,7 @@ class linear {
   bool track_lineage_{false};
   std::vector<life::entity> pop_;
   std::string entity_name_{"null_entity"};
-  std::string dir_name_{"./"};
+  //std::string dir_name_{"./"};
   std::string load_spec_{""};
   life::configuration entity_config_;
   long size_{0};
@@ -29,7 +25,6 @@ class linear {
   void update_tree(long p, int count);
   bool found_in_fossils(long) const;
   bool found_in_pop(long) const;
-  std::ofstream open_or_append(std::string, std::string) const;
   void initialize();
 
 public:
@@ -37,7 +32,7 @@ public:
 
   void configure(life::configuration con) {
     size_ = con["size"];
-    dir_name_ = con["DIR"];
+    //dir_name_ = con["DIR"];
     load_spec_ = con["load-from"];
     track_lineage_ = con["track-lineage"];
     entity_name_ = std::string(con["entity"][0]);
@@ -50,7 +45,7 @@ public:
     life::configuration con;
     con["track-lineage"] = track_lineage_;
     con["size"] = size_;
-    con["DIR"] = dir_name_;
+    //con["DIR"] = dir_name_;
     con["load-from"] = load_spec_;
     con["entity"] = {entity_name_, {}};
     return con;

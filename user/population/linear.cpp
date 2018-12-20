@@ -1,6 +1,5 @@
 
 #include "linear.h"
-#include "../../core/utilities.h"
 
 #include <algorithm>
 #include <vector>
@@ -102,7 +101,6 @@ void linear::merge(std::vector<life::entity> v) {
   pop_ = v;
 }
 
-
 life::configuration linear::get_stats(long i) const {
   // precondition: "score" must be in org.data
   const auto scores = pop_ | ranges::view::transform([](auto const &org) {
@@ -110,7 +108,7 @@ life::configuration linear::get_stats(long i) const {
                       });
 
   auto pop_stats_file =
-      open_or_append(dir_name_ + "pop.csv", "avg,max,update\n");
+      util::open_or_append(life::global_path + "pop.csv", "avg,max,update\n");
 
   life::configuration con;
   con["max"] = *ranges::max_element(scores);
@@ -123,23 +121,11 @@ life::configuration linear::get_stats(long i) const {
 
 void linear::snapshot(long i) const {
   auto snapshot_file =
-      open_or_append(dir_name_ + "snapshot_" + std::to_string(i) + ".csv",
+      util::open_or_append(life::global_path + "snapshot_" + std::to_string(i) + ".csv",
                      "id,size,encoding\n");
   for (auto &org : pop_)
     snapshot_file << org.get_id() << "," << org.get_encoding().size() << ","
       << org.get_encoding() << std::endl;
-}
-
-std::ofstream linear::open_or_append(std::string file_name,
-                                     std::string header) const {
-  std::ofstream file; 
-  if (!std::experimental::filesystem::exists(file_name
-                                             )) {
-    file.open(file_name);
-    file << header;
-  } else
-    file.open(file_name, std::ios::app);
-  return file;
 }
 
 void linear::prune_lineage(long i) {
@@ -148,10 +134,10 @@ void linear::prune_lineage(long i) {
     return;
 
   auto lineage_organisms_file =
-      open_or_append(dir_name_ + "lineage_organisms.csv",
+      util::open_or_append(life::global_path + "lineage_organisms.csv",
                      "id,recorded_at,encoding_size,encoding\n");
 
-  auto lineage_file = open_or_append(dir_name_ + "lineage.csv",
+  auto lineage_file = util::open_or_append(life::global_path + "lineage.csv",
                                      "id,recorded_at,on_lod,ancestor_id\n");
 
   for (auto &org : fossils_) {
@@ -181,8 +167,8 @@ void linear::prune_lineage(long i) {
 void linear::flush_unpruned() {
   pop_.clear();
   prune_lineage(-1);
-  std::ofstream unrec_file(dir_name_ + "unpruned.csv");
-  unrec_file << "id,recorded_at,on_lod,ancestor_id\n";
+  auto unrec_file = util::open_or_append(life::global_path + "unpruned.csv",
+                                         "id,recorded_at,on_lod,ancestor_id\n");
   for (auto &org : fossils_) {
     unrec_file << org.first.get_id() << ",-1," << 0 << ","
                << org.first.get_ancestor() << std::endl;

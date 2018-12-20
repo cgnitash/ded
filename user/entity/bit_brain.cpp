@@ -1,6 +1,5 @@
 
 #include "bit_brain.h"
-#include "../../core/utilities.h"
 
 #include <algorithm>
 #include <vector>

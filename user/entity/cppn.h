@@ -1,10 +1,7 @@
 
 #pragma once
 
-#include "../../core/configuration.h"
-#include "../../core/encoding.h"
-#include "../../core/signal.h"
-#include "../../core/utilities.h"
+#include "../../components.h"
 
 #include <algorithm>
 #include <cmath>
