@@ -27,15 +27,15 @@ void linear::initialize() {
     ranges::sort(ids,
                  [](auto a, auto b) { return std::stol(a) > std::stol(b); });
     pop_.clear();
-    auto org = life::make_entity(entity_name_);
-    org.configure(entity_config_);
-
-    //std::cout << org.get_encoding().size() << "\n";
-    //std::cout << ids[0] << " " << csv.lookUp("id", ids[0], "recorded_at") << " "
-              //<< csv.lookUp("id", ids[0], "encoding_size");
-    org.set_encoding(org.parse_encoding(csv.lookUp("id", ids[0], "encoding")));
-    //std::cout << org.get_encoding().size();
-    pop_.push_back(org);
+    ranges::transform(ids, ranges::back_inserter(pop_), [&](auto id) {
+      auto org = life::make_entity(entity_name_);
+      org.configure(entity_config_);
+      org.set_encoding(
+          org.parse_encoding(csv.lookUp("id", id, "encoding")));
+      if (track_lineage_)
+        fossils_.push_back({org, 1});
+      return org;
+    });
   }
 }
 

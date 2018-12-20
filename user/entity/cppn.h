@@ -28,7 +28,7 @@ private:
   size_t hidden_ = 0;
 
   life::encoding genome_;
-  std::regex encoding_parser_{R"(([^:]):)"};
+  std::regex encoding_parser_{R"(([^:]+):)"};
 
   std::vector<double> ins_ ;
   std::vector<double> outs_ ;

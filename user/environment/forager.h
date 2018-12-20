@@ -36,27 +36,28 @@ class forager {
 
   direction turn(direction d, long rate) {
     util::repeat(rate, [&] {
-      d = d == direction::up ? direction::right
+      d = d == direction::up ? direction::left
                              : d == direction::down
-                                   ? direction::left
-                                   : d == direction::left ? direction::up :
+                                   ? direction::right
+                                   : d == direction::left ? direction::down :
                                                           /* direction::right */
-                                         direction::down;
+                                         direction::up;
     });
     return d;
   }
 
-  location wrap(location p) { return {p.x_ % grid_size_, p.y_ % grid_size_}; }
-
+  location wrap(location p) {
+    return {(p.x_ + grid_size_) % grid_size_, (p.y_ + grid_size_) % grid_size_};
+  }
 
   location move_in_dir(location p, direction d) {
-    return d == direction::up ? wrap({p.x_ + grid_size_ - 1, p.y_})
-                              : d == direction::down
-                                    ? wrap({p.x_ + 1, p.y_})
-                                    : d == direction::left
-                                          ? wrap({p.x_, p.y_ + grid_size_ - 1})
-                                          /* direction::right */
-                                          : wrap({p.x_, p.y_ + 1});
+    return d == direction::up
+               ? wrap({p.x_ - 1, p.y_})
+               : d == direction::down
+                     ? wrap({p.x_ + 1, p.y_})
+                     : d == direction::left ? wrap({p.x_, p.y_ - 1})
+                                            /* direction::right */
+                                            : wrap({p.x_, p.y_ + 1});
   }
 
   void replace_resource_();

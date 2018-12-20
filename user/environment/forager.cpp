@@ -27,9 +27,9 @@ void forager::replace_resource_() {
 std::vector<double> forager::signals_at(location loc, direction facing) {
 
   std::vector out(sensor_range_, 1.);
-  for (auto i : ranges::view::iota(0u, sensor_range_)) {
-    if (!resources_[loc.x_][loc.y_])
-      out[i] = 0.;
+  for (auto &sensor : out) {
+    if (!resources_[loc.x_][loc.y_]) 
+      sensor = 0.;
     else
       break;
     loc = move_in_dir(loc, facing);
@@ -49,8 +49,8 @@ void forager::initialize_resource_() {
 void forager::visualize(std::ofstream &out, location position, direction facing,
                         double score) {
 
-  out << position.x_ << "," << position.y_ << " " << static_cast<int>(facing)
-      << " " << score << " ";
+  out << position.x_ << " " << position.y_ << " " << static_cast<int>(facing)
+      << " " << score << " " << grid_size_ << " ";
   for (auto i : ranges::view::iota(0u, grid_size_))
     for (auto j : ranges::view::iota(0u, grid_size_))
       if (resources_[i][j])
@@ -118,15 +118,15 @@ double forager::eval(life::entity &org) {
     auto vis_file_name =
         life::global_path + "org_" + std::to_string(org.get_id());
     if (std::experimental::filesystem::exists(vis_file_name)) {
-    std::cout
-        << "error: directory \"" << vis_file_name
-        << "\" already contains data. This will be overwritten. aborting..."
-        << std::endl;
-    exit(1);
-  }
-  std::experimental::filesystem::create_directory(vis_file_name);
-   // std::cout << "saving to file \"" << visualize_dir_ << "\"\n";
-  vis_file.open(vis_file_name + "/visualization.txt");
+      std::cout
+          << "error: directory \"" << vis_file_name
+          << "\" already contains data. This will be overwritten. aborting..."
+          << std::endl;
+      exit(1);
+    }
+    std::experimental::filesystem::create_directory(vis_file_name);
+    // std::cout << "saving to file \"" << visualize_dir_ << "\"\n";
+    vis_file.open(vis_file_name + "/visualization.txt");
   }
 
   util::repeat(updates_, [&] {

@@ -8,7 +8,7 @@
 class markov_brain {
 
   life::encoding genome_;
-  std::regex encoding_parser_{R"(([^:]):)"};
+  std::regex encoding_parser_{R"(([^:]+):)"};
 
   size_t input_ = 10;
   size_t output_ = 10;
@@ -59,9 +59,9 @@ public:
   void tick();
   life::encoding get_encoding() const { return genome_; }
   void set_encoding(life::encoding e) {
-	std::cout << "::" << genome_.size() << std::endl;
+	//std::cout << "::" << genome_.size() << std::endl;
     genome_ = e;
-	std::cout << "::" << genome_.size() << std::endl;
+	//std::cout << "::" << genome_.size() << std::endl;
     compute_gates_();
   }
   life::encoding parse_encoding(std::string);

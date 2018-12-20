@@ -72,8 +72,9 @@ public:
 
   size_t size() { return enc_.size(); }
 
-  void generate(long del_size_ = 100) {
-    ranges::generate_n(ranges::back_inserter(enc_), del_size_,
+  void generate(long size = 100) {
+    enc_.clear();
+    ranges::generate_n(ranges::back_inserter(enc_), size,
                        [this] { return std::rand() % alphabet_; });
   }
 

@@ -8,7 +8,7 @@
 class markov_cppn {
 
   life::encoding genome_;
-  std::regex encoding_parser_{R"(([^:]):)"};
+  std::regex encoding_parser_{R"(([^:]+):)"};
 
   size_t input_ = 10;
   size_t output_ = 10;
