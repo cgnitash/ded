@@ -55,20 +55,19 @@ int main(int argc, char **argv) {
     std::cout << "saving configurations.cfg ... \n";
     save_configs();
   } else if (argc == 3 && std::string(argv[1]) == "-f") {
-    std::string p = argv[2];
-	life::global_path = p.substr(0, p.find_last_of('/')) + "/data/";
-    auto con = load_user_experiment(argv[2]);
+    std::string exp_path = argv[2];
+    life::global_path = exp_path.substr(0, exp_path.find_last_of('/') + 1);
+    auto con = load_user_experiment(exp_path);
     std::string name = con[0];
     auto exp = life::make_experiment(name);
-    srand(con[1]["SEED"]);
     exp.configure(con[1]);
-    std::cout << "running experiment from file " << argv[2] << " with seed "
-              << con[1]["SEED"] << " ... \n";
+    std::cout << "running experiment from file \"" << exp_path << "\" ... \n";
     exp.run();
+    std::cout << "\nSuccessfully Completed!\n";
   } else {
     std::cout << "ded: unknown command line arguments. try -h\n";
-	auto e = life::make_entity("bit_brain");
-	auto b = e;
-	std::cout << (b < e);
+	//auto e = life::make_entity("bit_brain");
+	//auto b = e;
+	//std::cout << (b < e);
   }
 }

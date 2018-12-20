@@ -115,14 +115,18 @@ double forager::eval(life::entity &org) {
 
   std::ofstream vis_file;
   if (visualize_) {
-    if (!std::experimental::filesystem::exists(visualize_dir_)) {
-      std::cout << "error: invalid directory \"" << visualize_dir_
-                << "\" does not exist";
-      std::exit(1);
-    }
-    std::cout << "saving to file \"" << visualize_dir_ << "\"\n";
-    vis_file.open(visualize_dir_ + "org_" + std::to_string(org.get_id()) +
-                  ".txt");
+    auto vis_file_name =
+        life::global_path + "org_" + std::to_string(org.get_id());
+    if (std::experimental::filesystem::exists(vis_file_name)) {
+    std::cout
+        << "error: directory \"" << vis_file_name
+        << "\" already contains data. This will be overwritten. aborting..."
+        << std::endl;
+    exit(1);
+  }
+  std::experimental::filesystem::create_directory(vis_file_name);
+   // std::cout << "saving to file \"" << visualize_dir_ << "\"\n";
+  vis_file.open(vis_file_name + "/visualization.txt");
   }
 
   util::repeat(updates_, [&] {

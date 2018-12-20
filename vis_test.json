@@ -12,7 +12,7 @@
                         "outputs": 2
                     }
                 ],
-                "load-from": "data/data_1/lineage_organisms.csv",
+                "load-from": "exps/exp_1/data/lineage_organisms.csv",
                 "size": 1
             }
         ],

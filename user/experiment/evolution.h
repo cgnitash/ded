@@ -23,7 +23,7 @@ class evolution {
   life::configuration sel_config_;
   life::configuration world_config_;
   long Seed_ = 0;
-  //std::string Dir_ = "./data/";
+
 public:
   evolution() {
 	  configure(publish_configuration());
@@ -36,20 +36,20 @@ public:
     ec["fitness"] = {world_name_,{}};
     ec["generations"] = generations_;
     ec["SEED"] = Seed_;
-    //ec["DIR"] = Dir_;
     return ec;
   }
 
   void configure(life::configuration con) {
     generations_ = con["generations"];
     Seed_ = con["SEED"];
-    //Dir_ = con["DIR"] ;
 	pop_name_ = std::string(con["population"][0]);
 	pop_config_ = con["population"][1];
 	sel_name_ = std::string(con["selector"][0]);
 	sel_config_ = con["selector"][1];
 	world_name_= std::string(con["fitness"][0]);
 	world_config_ = con["fitness"][1];
+
+	std::srand(Seed_);
   }
 
   void run();

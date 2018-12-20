@@ -24,7 +24,6 @@ class forager {
   size_t updates_ = 100;
   bool replace_ = true;
   bool visualize_ = false;
-  std::string visualize_dir_ = "./vis/";
   double density_ = 0.1;
 
   
@@ -79,7 +78,6 @@ public:
     ec["density"] = density_;
     ec["replace"] = replace_;
     ec["visualize"] = visualize_;
-    ec["vis-dir"] = visualize_dir_;
     ec["sensor-range"] = sensor_range_	;
     return ec;
   }
@@ -91,7 +89,6 @@ public:
     density_ = con["density"];
     replace_ = con["replace"];
     visualize_ = con["visualize"];
-    visualize_dir_ = con["vis-dir"];
     sensor_range_	= con["sensor-range"];
     resources_ = std::vector(grid_size_, std::vector(grid_size_, 0));
   }

@@ -16,17 +16,19 @@
 
 void visualizer::run() {
 
+  // ONLY life::experiments can do this
+  life::global_path += "visualizer_data/";
+
   // generate the population
   auto pop = life::make_population(pop_name_);
-  auto dir = Dir_ + Rep_ + "/";
-  if (std::experimental::filesystem::exists(dir)) {
-    std::cout << "warning: directory \"" << dir
-              << "\" already contains data. rm this directory to write new "
-                 "visualization results\n";
-    std::exit(1);
+  if (std::experimental::filesystem::exists(life::global_path)) {
+    std::cout
+        << "error: directory \"" << life::global_path
+        << "\" already contains data. This will be overwritten. aborting..."
+        << std::endl;
+    exit(1);
   }
-  std::experimental::filesystem::create_directory(dir);
-  pop_config_["DIR"] = dir;
+  std::experimental::filesystem::create_directory(life::global_path);
   pop.configure(pop_config_);
 
   auto world = life::make_environment(world_name_);

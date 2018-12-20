@@ -21,6 +21,7 @@ class linear {
   std::string load_spec_{""};
   life::configuration entity_config_;
   long size_{0};
+  long snapshot_frequency_{0};
 
   void update_tree(long p, int count);
   bool found_in_fossils(long) const;
@@ -32,7 +33,7 @@ public:
 
   void configure(life::configuration con) {
     size_ = con["size"];
-    //dir_name_ = con["DIR"];
+    snapshot_frequency_ = con["snapshot-freq"];
     load_spec_ = con["load-from"];
     track_lineage_ = con["track-lineage"];
     entity_name_ = std::string(con["entity"][0]);
@@ -45,7 +46,7 @@ public:
     life::configuration con;
     con["track-lineage"] = track_lineage_;
     con["size"] = size_;
-    //con["DIR"] = dir_name_;
+    con["snapshot-freq"] = snapshot_frequency_;
     con["load-from"] = load_spec_;
     con["entity"] = {entity_name_, {}};
     return con;

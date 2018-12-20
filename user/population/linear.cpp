@@ -18,11 +18,11 @@ void linear::initialize() {
     });
   } else {
 
-    if (!std::experimental::filesystem::exists(load_spec_)) {
-      std::cout << "error: path \"" << load_spec_ << "\" does not exist";
+    if (!std::experimental::filesystem::exists(life::global_path + load_spec_)) {
+      std::cout << "error: path \"" << life::global_path + load_spec_ << "\" does not exist";
       std::exit(1);
     }
-    CSV csv(load_spec_);
+    CSV csv(life::global_path + load_spec_);
     auto ids = csv.singleColumn("id");
     ranges::sort(ids,
                  [](auto a, auto b) { return std::stol(a) > std::stol(b); });
@@ -120,12 +120,14 @@ life::configuration linear::get_stats(long i) const {
 }
 
 void linear::snapshot(long i) const {
-  auto snapshot_file =
-      util::open_or_append(life::global_path + "snapshot_" + std::to_string(i) + ".csv",
-                     "id,size,encoding\n");
-  for (auto &org : pop_)
-    snapshot_file << org.get_id() << "," << org.get_encoding().size() << ","
-      << org.get_encoding() << std::endl;
+  if (snapshot_frequency_ && !(i % snapshot_frequency_)) {
+    auto snapshot_file = util::open_or_append(life::global_path + "snapshot_" +
+                                                  std::to_string(i) + ".csv",
+                                              "id,size,encoding\n");
+    for (auto &org : pop_)
+      snapshot_file << org.get_id() << "," << org.get_encoding().size() << ","
+                    << org.get_encoding() << std::endl;
+  }
 }
 
 void linear::prune_lineage(long i) {

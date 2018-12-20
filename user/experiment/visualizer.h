@@ -16,8 +16,6 @@ class visualizer {
   std::string world_name_ = "null_environment";
   life::configuration pop_config_;
   life::configuration world_config_;
-  std::string Rep_ = "arch";
-  std::string Dir_ = "./data/vis_";
 public:
   visualizer() {
 	  configure(publish_configuration());
@@ -27,18 +25,15 @@ public:
     life::configuration ec;
     ec["population"] = {pop_name_,{}};
     ec["world"] = {world_name_,{}};
-    ec["REP"] = Rep_;
-    ec["DIR"] = Dir_;
     return ec;
   }
 
   void configure(life::configuration con) {
-    Rep_ = con["REP"];
-    Dir_ = con["DIR"] ;
 	pop_name_ = std::string(con["population"][0]);
 	pop_config_ = con["population"][1];
 	world_name_= std::string(con["world"][0]);
 	world_config_ = con["world"][1];
+
   }
 
   void run();
