@@ -10,9 +10,7 @@
 
 namespace life{
 
-using configuration =
-//    std::map<std::string, std::pair<std::string, std::string>>;
-nlohmann::json;
+using configuration = nlohmann::json;
 
 inline void validate_subset(const configuration &in, const configuration &real) {
     for (auto it = in.begin(); it != in.end(); ++it) {
@@ -31,4 +29,4 @@ inline void merge_into(configuration &in, const configuration &real) {
     }
   }
 }
-}
+} // namespace life
