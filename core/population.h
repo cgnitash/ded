@@ -123,7 +123,4 @@ private:
   std::unique_ptr<population_interface> self_;
 };
 
-std::vector<std::string> population_list();
-population make_population(std::string_view);
-population configure_population(std::string_view, configuration);
 } // namespace life

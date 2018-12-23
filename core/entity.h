@@ -189,7 +189,4 @@ private:
   std::unique_ptr<entity_interface> self_;
 };
 
-std::vector<std::string> entity_list();
-entity make_entity(std::string_view);
-entity configure_entity(std::string_view, configuration);
 } // namespace life

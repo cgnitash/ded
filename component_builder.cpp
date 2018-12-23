@@ -42,23 +42,27 @@ void generate_components(const std::string &fname, opts build_options) {
   header << "\n#include<string_view>\n\nnamespace life {\n\n";
 
   for (auto &[type, names] : build_options) {
-    header << type << " make_" << type << "(std::string_view choice) {\n";
+    header << type << " make_" << type
+           << "(std::string_view choice, configuration con) {\n";
     for (auto &name : names)
-      header << "  if (choice == \"" << name << "\")\n    return " << name
-             << "();\n";
+      header << "  if (choice == \"" << name << "\") {\n    auto e = " << type
+             << "{" << name
+             << "()};\n    e.configure(con);\n    return e;\n  }\n";
     header << "  std::cout << \"unknown-" << type
            << ": \" << choice;\n  exit(1);\n}\n\n";
   }
 
+  header << "void generate_all_configs() {\n";
   for (auto &[type, names] : build_options) {
-    header << "std::vector<std::string> " << type << "_list() {\n  return {";
-    std::string vec_list;
+    header << "  generate_config(\"" << type << "\",life::make_" << type
+           << ", {";
+    std::string name_list;
     for (auto &name : names)
-      vec_list += "\"" + name + "\",";
-    vec_list.pop_back();
-    header << vec_list << "};\n}\n\n";
+      name_list += "\"" + name + "\",";
+    name_list.pop_back();
+    header << name_list << "});\n";
   }
-  header << "}\n";
+  header << "}\n\n} // namespace life";
 }
 
 void generate_makefile(const std::string &fname, opts build_options,

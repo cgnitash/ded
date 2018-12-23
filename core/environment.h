@@ -90,7 +90,4 @@ private:
   std::unique_ptr<environment_interface> self_;
 };
 
-std::vector<std::string> environment_list();
-environment make_environment(std::string_view);
-environment configure_environment(std::string_view, configuration);
 } // namespace life

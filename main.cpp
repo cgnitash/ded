@@ -16,16 +16,16 @@
 
 
 
-using ModuleInstancePair = std::pair<std::string, std::string>;
-std::map<ModuleInstancePair, life::configuration> all_configs;
+//using ModuleInstancePair = std::pair<std::string, std::string>;
+//std::map<ModuleInstancePair, life::configuration> all_configs;
 
-auto missing_module_instance_error(ModuleInstancePair mip) {
+auto missing_module_instance_error(life::ModuleInstancePair mip) {
   auto &true_mod = mip.first;
   auto &attempted_inst = mip.second;
   std::cout << "Error: Non-existent <Module>::Instance -- \033[31m<" << true_mod
             << ">::" << attempted_inst << "\033[0m\n";
   // for ([[maybe_unused]] auto &[type_name, config] : all_configs)
-  for (auto &type_name_config_pair : all_configs) {
+  for (auto &type_name_config_pair : life::all_configs) {
     auto &[mod, inst] = type_name_config_pair.first;
     if (mod == true_mod &&
         ranges::any_of(ranges::view::single(inst) | util::all_edits() |
@@ -36,14 +36,14 @@ auto missing_module_instance_error(ModuleInstancePair mip) {
   std::exit(1);
 }
 
-life::configuration true_parameters(ModuleInstancePair mip) {
-  auto real_con_it = all_configs.find(mip);
-  if (all_configs.end() == real_con_it)
+life::configuration true_parameters(life::ModuleInstancePair mip) {
+  auto real_con_it = life::all_configs.find(mip);
+  if (life::all_configs.end() == real_con_it)
 	 missing_module_instance_error(mip); 
   return real_con_it->second;
 }
 
-void config_mismatch_error(std::string key, ModuleInstancePair mip) {
+void config_mismatch_error(std::string key, life::ModuleInstancePair mip) {
 
   std::cout << "Error: Configuration mismatch -- \033[33m<" << mip.first
             << ">::" << mip.second
@@ -60,7 +60,7 @@ void config_mismatch_error(std::string key, ModuleInstancePair mip) {
 }
 
 void type_mismatch_error(std::string real, std::string fake,
-                         ModuleInstancePair mip) {
+                         life::ModuleInstancePair mip) {
   std::cout << "Error: Type mismatch -- \033[33m<" << mip.first
             << ">::" << mip.second << "\033[0m must have type \033[32m'"
             << real << "'\033[0m but has type \033[31m'" << fake
@@ -68,7 +68,7 @@ void type_mismatch_error(std::string real, std::string fake,
   std::exit(1);
 }
 
-life::configuration true_object(ModuleInstancePair mip,
+life::configuration true_object(life::ModuleInstancePair mip,
                                 life::configuration con) {
 
   auto real_con = true_parameters(mip);
@@ -110,46 +110,31 @@ life::configuration true_user_experiment(std::string file_name) {
 void save_configs() {
 
   std::ofstream file("configurations.cfg");
-  for (auto &[type_name, config] : all_configs)
+  for (auto &[type_name, config] : life::all_configs)
     file << "\n<"
          << type_name.first << ">::" << type_name.second << "\n  "
          << std::setw(4) << config << std::endl;
-}
-
-template <typename L, typename M>
-void generate_config(std::string comp_type, L component_lister,
-                     M component_maker) {
-
-  for (auto &comp_name : component_lister())
-    all_configs[{comp_type, comp_name}] =
-        component_maker(comp_name).publish_configuration();
-}
-void generate_all_configs() {
-  generate_config("experiment", life::experiment_list, life::make_experiment);
-  generate_config("entity", life::entity_list, life::make_entity);
-  generate_config("environment", life::environment_list,
-                  life::make_environment);
-  generate_config("population", life::population_list, life::make_population);
 }
 
 long life::entity::entity_id_ = 0;
 
 std::string life::global_path = "./";
 
+std::map<life::ModuleInstancePair, life::configuration> life::all_configs;
+
 int main(int argc, char **argv) {
   // TODO use an actual command-line library :P
   //
 
+  life::generate_all_configs();
 
   if (argc == 2 && std::string(argv[1]) == "-h") {
     std::cout << "-s : saves configuration files\n"
               << "-f <file-name> : runs experiment in file-name\n";
   } else if (argc == 2 && std::string(argv[1]) == "-s") {
     std::cout << "saving configurations.cfg ... \n";
-    generate_all_configs();
     save_configs();
   } else if (argc == 3 && std::string(argv[1]) == "-f") {
-    generate_all_configs();
     std::string exp_path = argv[2];
     life::global_path = exp_path.substr(0, exp_path.find_last_of('/') + 1);
 
@@ -166,6 +151,17 @@ int main(int argc, char **argv) {
     std::cout << "running experiment from file \"" << exp_path << "\" ... \n";
     exp.run();
     std::cout << "\nSuccessfully Completed!\n";
+  } else if (argc == 3 && std::string(argv[1]) == "-g") {
+    std::string exp_path = argv[2];
+    life::global_path = exp_path.substr(0, exp_path.find_last_of('/') + 1);
+    auto gen = life::make_experiment("generator");
+    std::cout << "generating sub-experiments from file \"" << exp_path << "\" ... \n";
+	life::configuration con;
+	con["file"] = exp_path;
+    gen.configure(con);
+    gen.run();
+    std::cout << "\nSuccessfully Generated!\n";
+
   } else {
     std::cout << "ded: unknown command line arguments. try -h\n";
     // auto e = life::make_entity("bit_brain");

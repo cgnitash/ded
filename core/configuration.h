@@ -11,6 +11,8 @@
 namespace life{
 
 using configuration = nlohmann::json;
+using ModuleInstancePair = std::pair<std::string, std::string>;
+extern std::map<ModuleInstancePair, life::configuration> all_configs;
 
 inline void validate_subset(const configuration &in, const configuration &real) {
     for (auto it = in.begin(); it != in.end(); ++it) {

@@ -80,7 +80,4 @@ private:
   std::unique_ptr<experiment_interface> self_;
 };
 
-experiment make_experiment(std::string_view);
-experiment configure_experiment(std::string_view, configuration);
-std::vector<std::string> experiment_list();
 } // namespace life
