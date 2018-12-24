@@ -18,7 +18,9 @@
 
 //using ModuleInstancePair = std::pair<std::string, std::string>;
 //std::map<ModuleInstancePair, life::configuration> all_configs;
-
+/*
+ *
+ *
 auto missing_module_instance_error(life::ModuleInstancePair mip) {
   auto &true_mod = mip.first;
   auto &attempted_inst = mip.second;
@@ -92,6 +94,8 @@ life::configuration true_object(life::ModuleInstancePair mip,
   return real_con;
 }
 
+*/
+
 
 life::configuration true_user_experiment(std::string file_name) {
   life::configuration con;
@@ -104,7 +108,7 @@ life::configuration true_user_experiment(std::string file_name) {
   ifs >> con;
 
   return life::configuration::array(
-      {con[0], true_object({"experiment", con[0]}, con[1])});
+      {con[0], life::config::true_object({"experiment", con[0]}, con[1])});
 }
 
 void save_configs() {

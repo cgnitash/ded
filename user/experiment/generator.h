@@ -18,12 +18,30 @@ class generator {
   std::vector<life::configuration> parse();
   std::vector<life::configuration> all_exps_;
 
+  std::regex comment_{R"(^\s*#.*)"};
   std::regex vary_command_{R"(^\s*vary\s+(.+)$)"};
+  std::regex vary_with_{R"(^\s*with\s+(.+)$)"};
 
+  auto check_lines() {
+    return ranges::view::transform([this](auto line) {
+      if (!(std::regex_match(line, vary_command_) ||
+            std::regex_match(line, comment_) ||
+            std::regex_match(line, vary_with_) || line.empty())) {
+        std::cout << "error: unable to parse qst command " << line << "\n";
+        std::exit(1);
+      }
+      return line;
+    });
+  }
   auto clean_lines() {
-    return ranges::view::filter([](auto line) {
-      auto f = line.find_first_not_of(' ');
-      return f != std::string::npos && line[f] != '#';
+    return ranges::view::filter([this](auto line) {
+      if (!(std::regex_match(line, vary_command_) ||
+            std::regex_match(line, comment_) ||
+            std::regex_match(line, vary_with_) || line.empty())) {
+        std::cout << "error: unable to parse qst command " << line << "\n";
+        std::exit(1);
+      }
+      return !(std::regex_match(line, comment_) || line.empty());
     });
   }
 
@@ -34,15 +52,41 @@ class generator {
     }) | ranges::view::chunk(2);
   }
 
+  auto hash_experiment(std::string exp) {
+    std::hash<std::string> h;
+    return h(exp);
+  }
+
   /*
-  auto expand_experiment() {
-	  return ranges::view::transform([this](auto vary) {
-			  std::smatch m;
-			  std::regex_match(vary.first,m,vary_command_);
-			  return {true_user_experiment(m[1].str()),vary.second};
-			  });
+  auto check_overrides() {
+    return ranges::view::transform([this](auto over) {
+      life::configuration true_exp = ranges::front(over);
+      if (!ranges::all_of(
+              *ranges::next(ranges::begin(over), 1),
+              [this](auto with) { return can_override(true_exp, with); })) {
+        std::cout << "error: some mismatch";
+        exit(1);
+      }
+      return over;
+    });
   }
   */
+
+  auto expand_true_experiment() {
+    return ranges::view::transform([this](auto vary) {
+      std::smatch m;
+      std::regex_match(ranges::front(ranges::front(vary)), m, vary_command_);
+      auto p = life::global_path + m[1].str();
+      return ranges::view::concat(
+          ranges::view::single(true_user_experiment(p).dump()),
+          *ranges::next(ranges::begin(vary), 1));
+      //
+      // vary ); 
+    }) ;
+  }
+  
+
+  life::configuration true_user_experiment(std::string);
 
 public:
   generator() {
