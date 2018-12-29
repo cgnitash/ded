@@ -1,6 +1,5 @@
 
 #include "forager.h"
-#include "../../core/utilities.h"
 
 #include <algorithm>
 #include <experimental/filesystem>
@@ -146,7 +145,7 @@ double forager::eval(life::entity &org) {
 life::population forager::evaluate(life::population pop) {
   pop.merge(pop.get_as_vector() |
             ranges::action::transform([this](auto &org) {
-              org.data["score"] = eval(org);
+              org.data.set_value("score", eval(org));
               return org;
             }));
   return pop;

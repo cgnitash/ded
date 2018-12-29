@@ -16,8 +16,12 @@ using ModuleInstancePair = std::pair<std::string, std::string>;
 extern std::map<ModuleInstancePair, life::configuration> all_configs;
 
 inline void validate_subset(const configuration &in, const configuration &real) {
-    for (auto it = in.begin(); it != in.end(); ++it) {
-      if (real.find(it.key()) == real.end()) {
+	if (in.empty()) 
+		return;
+	const auto &in_params = in["parameters"];
+	const auto &real_params = real["parameters"];
+    for (auto it = in_params.begin(); it != in_params.end(); ++it) {
+      if (real_params.find(it.key()) == real_params.end()) {
         std::cout << "Error: Configuration mismatch -- \"" << it.key()
                   << "\" is not a valid parameter\n";
         exit(1);
@@ -26,9 +30,15 @@ inline void validate_subset(const configuration &in, const configuration &real) 
 }
 
 inline void merge_into(configuration &in, const configuration &real) {
-  for (auto &[key, value] : real.items()) 
-    if (in.find(key) == in.end()) 
-      in[key] = value;
+	if (in.empty()) 
+	{ in = real;
+	} else {
+	auto& in_params = in["parameters"];
+	const auto &real_params = real["parameters"];
+  for (const auto &[key, value] : real_params.items()) 
+    if (in_params.find(key) == in_params.end()) 
+      in_params[key] = value;
+	}
 }
 
 namespace config {

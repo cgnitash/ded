@@ -12,11 +12,11 @@ class elite_replacement {
   double strength_ = 0.1;
 
 public:
-  void configure(life::configuration c) { strength_ = c["strength"]; }
+  void configure(life::configuration c) { strength_ = c["parameters"]["strength"]; }
 
   life::configuration publish_configuration() const {
     life::configuration c;
-    c["strength"] = strength_;
+    c["parameters"]["strength"] = strength_;
     return c;
   }
   elite_replacement() { configure(publish_configuration()); }

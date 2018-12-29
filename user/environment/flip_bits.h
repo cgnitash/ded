@@ -32,6 +32,9 @@ public:
 	size_ = c["size"];
   }
 
+// requires org.input("some-bits","vector<bool,size>")
+// requires org.output("flipped-bits","vector<bool,size>")
   life::population evaluate(life::population);
+// guarantess org.data["flippiness"] exists and is double
 };
 

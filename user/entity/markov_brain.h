@@ -34,17 +34,17 @@ public:
   markov_brain() { configure(publish_configuration()); }
   life::configuration publish_configuration() {
     life::configuration con;
-    con["inputs"] = input_;
-    con["outputs"] = output_;
-    con["hiddens"] = hidden_;
-    con["genome-params"] = genome_config_;
+    con["parameters"]["inputs"] = input_;
+    con["parameters"]["outputs"] = output_;
+    con["parameters"]["hiddens"] = hidden_;
+    con["parameters"]["genome-params"] = genome_config_;
     return con;
   }
   void configure(life::configuration con) {
-    input_ = con["inputs"];
-    output_ = con["outputs"];
-    hidden_ = con["hiddens"];
-    genome_config_ = con["genome-params"];
+    input_ = con["parameters"]["inputs"];
+    output_ = con["parameters"]["outputs"];
+    hidden_ = con["parameters"]["hiddens"];
+    genome_config_ = con["parameters"]["genome-params"];
     genome_.configure(genome_config_);
     genome_.generate(500);
     buffer_ = std::vector(input_ + output_ + hidden_, 0.);

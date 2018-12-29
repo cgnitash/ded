@@ -32,23 +32,23 @@ public:
   linear() { configure(publish_configuration()); }
 
   void configure(life::configuration con) {
-    size_ = con["size"];
-    snapshot_frequency_ = con["snapshot-freq"];
-    load_spec_ = con["load-from"];
-    track_lineage_ = con["track-lineage"];
-    entity_name_ = std::string(con["entity"][0]);
-    entity_config_ = con["entity"][1];
+    size_ = con["parameters"]["size"];
+    snapshot_frequency_ = con["parameters"]["snapshot-freq"];
+    load_spec_ = std::string(con["parameters"]["load-from"]);
+    track_lineage_ = con["parameters"]["track-lineage"];
+    entity_name_ = std::string(con["parameters"]["entity"][0]);
+    entity_config_ = con["parameters"]["entity"][1];
 
 	initialize();
   }
 
   life::configuration publish_configuration() {
     life::configuration con;
-    con["track-lineage"] = track_lineage_;
-    con["size"] = size_;
-    con["snapshot-freq"] = snapshot_frequency_;
-    con["load-from"] = load_spec_;
-    con["entity"] = {entity_name_, {}};
+    con["parameters"]["track-lineage"] = track_lineage_;
+    con["parameters"]["size"] = size_;
+    con["parameters"]["snapshot-freq"] = snapshot_frequency_;
+    con["parameters"]["load-from"] = load_spec_;
+    con["parameters"]["entity"] = {entity_name_, {}};
     return con;
   }
 

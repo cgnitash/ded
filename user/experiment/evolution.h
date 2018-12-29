@@ -31,23 +31,23 @@ public:
 
   life::configuration publish_configuration() {
     life::configuration ec;
-    ec["population"] = {pop_name_,{}};
-    ec["selector"] = {sel_name_,{}};
-    ec["fitness"] = {world_name_,{}};
-    ec["generations"] = generations_;
-    ec["SEED"] = Seed_;
+    ec["parameters"]["population"] = {pop_name_,{}};
+    ec["parameters"]["selector"] = {sel_name_,{}};
+    ec["parameters"]["fitness"] = {world_name_,{}};
+    ec["parameters"]["generations"] = generations_;
+    ec["parameters"]["SEED"] = Seed_;
     return ec;
   }
 
   void configure(life::configuration con) {
-    generations_ = con["generations"];
-    Seed_ = con["SEED"];
-	pop_name_ = std::string(con["population"][0]);
-	pop_config_ = con["population"][1];
-	sel_name_ = std::string(con["selector"][0]);
-	sel_config_ = con["selector"][1];
-	world_name_= std::string(con["fitness"][0]);
-	world_config_ = con["fitness"][1];
+    generations_ = con["parameters"]["generations"];
+    Seed_ = con["parameters"]["SEED"];
+	pop_name_ = std::string(con["parameters"]["population"][0]);
+	pop_config_ = con["parameters"]["population"][1];
+	sel_name_ = std::string(con["parameters"]["selector"][0]);
+	sel_config_ = con["parameters"]["selector"][1];
+	world_name_= std::string(con["parameters"]["fitness"][0]);
+	world_config_ = con["parameters"]["fitness"][1];
 
 	std::srand(Seed_);
   }

@@ -10,7 +10,7 @@
 life::population elite_replacement::evaluate(life::population populate) {
 
   // precondition: all entities have field"score" in data
-  std::string name = "score";
+//  std::string name = "score";
 
   auto pop = populate.get_as_vector();
   // find the strength_ fraction of highest "score"s
@@ -20,8 +20,8 @@ life::population elite_replacement::evaluate(life::population populate) {
       ranges::begin(pop),
       ranges::begin(pop) +
           std::max(size_t{1}, static_cast<size_t>(fraction)),
-      ranges::end(pop), [&name](const auto &org1, const auto &org2) {
-        return org1.data[name] > org2.data[name];
+      ranges::end(pop), [](const auto &org1, const auto &org2) {
+        return  org1.data.get_value("score") > org2.data.get_value("score");
       });
 
   // get the sorted best fraction of orgs from above

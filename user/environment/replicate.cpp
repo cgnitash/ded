@@ -1,6 +1,6 @@
 
 #include "replicate.h"
-#include "../../core/utilities.h"
+
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -28,14 +28,14 @@ life::population replicate::evaluate(life::population pop) {
     ranges::transform(env.evaluate(pop).get_as_vector(), accumulated_scores,
                          ranges::begin(accumulated_scores),
                          [](const auto &org, auto score) {
-                           return score + double{org.data["score"]};
+                           return score + double{org.data.get_value("score")};
                          });
   });
 
   // assign accumulate scores to each org
   ranges::transform(vec, accumulated_scores, ranges::begin(vec),
                        [this](auto org, const auto score) {
-                         org.data["score"] = score / this->num_;
+                         org.data.set_value("score" , score / this->num_);
                          return org;
                        });
 

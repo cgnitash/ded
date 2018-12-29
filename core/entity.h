@@ -47,7 +47,14 @@ public:
 
   bool operator>=(const entity &e) const { return get_id() >= e.get_id(); }
 
-  life::configuration data;
+  struct data_store {
+   
+   life::configuration data;
+   auto get_value(std::string i) const { return data[i]; }
+   auto set_value(std::string i, life::configuration v) {  data[i]  = v; }
+
+  };
+  data_store data;
 
   long get_id() const { return self_->get_id_(); }
 

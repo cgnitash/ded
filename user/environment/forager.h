@@ -74,26 +74,29 @@ public:
 
   life::configuration publish_configuration() {
     life::configuration ec;
-    ec["grid-size"] = grid_size_;
-    ec["updates"] = updates_;
-    ec["density"] = density_;
-    ec["replace"] = replace_;
-    ec["visualize"] = visualize_;
-    ec["sensor-range"] = sensor_range_	;
+    ec["parameters"]["grid-size"] = grid_size_;
+    ec["parameters"]["updates"] = updates_;
+    ec["parameters"]["density"] = density_;
+    ec["parameters"]["replace"] = replace_;
+    ec["parameters"]["visualize"] = visualize_;
+    ec["parameters"]["sensor-range"] = sensor_range_	;
     return ec;
   }
 
   void configure(life::configuration con) {
 
-    grid_size_ = con["grid-size"];
-    updates_= con["updates"];
-    density_ = con["density"];
-    replace_ = con["replace"];
-    visualize_ = con["visualize"];
-    sensor_range_	= con["sensor-range"];
+    grid_size_ = con["parameters"]["grid-size"];
+    updates_= con["parameters"]["updates"];
+    density_ = con["parameters"]["density"];
+    replace_ = con["parameters"]["replace"];
+    visualize_ = con["parameters"]["visualize"];
+    sensor_range_	= con["parameters"]["sensor-range"];
     resources_ = std::vector(grid_size_, std::vector(grid_size_, 0));
   }
 
+// requires org.input("sensors","vector<bool,sensor-range>")
+// requires org.output("flipped-bits","vector<bool,size>")
   life::population evaluate(life::population);
+// guarantess org.data["food-eaten"] exists and is integer
 };
 

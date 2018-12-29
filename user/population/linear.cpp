@@ -104,7 +104,7 @@ void linear::merge(std::vector<life::entity> v) {
 life::configuration linear::get_stats(long i) const {
   // precondition: "score" must be in org.data
   const auto scores = pop_ | ranges::view::transform([](auto const &org) {
-                        return double{org.data["score"]};
+                        return double{org.data.get_value("score")};
                       });
 
   auto pop_stats_file =
