@@ -11,7 +11,11 @@ class null_entity {
 public:
   void configure(life::configuration) {}
   null_entity() { configure(publish_configuration()) ;}
-  life::configuration publish_configuration() { return life::configuration(); }
+  life::configuration publish_configuration() {
+    life::configuration con;
+    con["parameters"] = nullptr;
+    return con;
+  }
 
   void mutate();
   void input(life::signal);

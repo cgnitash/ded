@@ -22,8 +22,9 @@ public:
   }
 
   life::configuration publish_configuration() {
-    life::configuration c;
-    return c;
+    life::configuration con;
+    con["parameters"] = nullptr;
+    return con;
   }
 
   void configure(life::configuration ) {

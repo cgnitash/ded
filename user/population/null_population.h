@@ -14,8 +14,11 @@ class null_population {
 public:
   void configure(life::configuration) {}
   null_population() { configure(publish_configuration()) ;}
-  life::configuration publish_configuration() { return life::configuration(); }
-
+  life::configuration publish_configuration() {
+    life::configuration con;
+    con["parameters"] = nullptr;
+    return con;
+  }
   std::vector<life::entity> get_as_vector() {
 	  return {};
   }

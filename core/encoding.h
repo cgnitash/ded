@@ -30,16 +30,16 @@ public:
 
   configuration publish_configuration() {
     configuration con;
-    con["alphabet"] = alphabet_;
-    con["copy-prob"] = copy_prob_;
-    con["copy-size"] = copy_size_;
-    con["del-prob"] = del_prob_;
-    con["del-size"] = del_size_;
-    con["point-insert-prob"] = point_insert_prob_;
-    con["point-mutate-prob"] = point_mutate_prob_;
-    con["point-delete-prob"] = point_delete_prob_;
-    con["min-length"] = min_length_;
-    con["max-length"] = max_length_;
+    con["parameters"]["alphabet"] = alphabet_;
+    con["parameters"]["copy-prob"] = copy_prob_;
+    con["parameters"]["copy-size"] = copy_size_;
+    con["parameters"]["del-prob"] = del_prob_;
+    con["parameters"]["del-size"] = del_size_;
+    con["parameters"]["point-insert-prob"] = point_insert_prob_;
+    con["parameters"]["point-mutate-prob"] = point_mutate_prob_;
+    con["parameters"]["point-delete-prob"] = point_delete_prob_;
+    con["parameters"]["min-length"] = min_length_;
+    con["parameters"]["max-length"] = max_length_;
     return con;
   }
 
@@ -48,16 +48,16 @@ public:
     validate_subset(con, real);
     merge_into(con, real);
 
-    alphabet_ = con["alphabet"];
-    copy_prob_ = con["copy-prob"];
-    copy_size_ = con["copy-size"];
-    del_prob_ = con["del-prob"];
-    del_size_ = con["del-size"];
-    point_insert_prob_ = con["point-insert-prob"];
-    point_mutate_prob_ = con["point-mutate-prob"];
-    point_delete_prob_ = con["point-delete-prob"];
-    min_length_ = con["min-length"];
-    max_length_ = con["max-length"];
+    alphabet_ = con["parameters"]["alphabet"];
+    copy_prob_ = con["parameters"]["copy-prob"];
+    copy_size_ = con["parameters"]["copy-size"];
+    del_prob_ = con["parameters"]["del-prob"];
+    del_size_ = con["parameters"]["del-size"];
+    point_insert_prob_ = con["parameters"]["point-insert-prob"];
+    point_mutate_prob_ = con["parameters"]["point-mutate-prob"];
+    point_delete_prob_ = con["parameters"]["point-delete-prob"];
+    min_length_ = con["parameters"]["min-length"];
+    max_length_ = con["parameters"]["max-length"];
   }
 
   auto begin() { return std::begin(enc_); }

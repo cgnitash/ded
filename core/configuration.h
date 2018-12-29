@@ -16,7 +16,7 @@ using ModuleInstancePair = std::pair<std::string, std::string>;
 extern std::map<ModuleInstancePair, life::configuration> all_configs;
 
 inline void validate_subset(const configuration &in, const configuration &real) {
-	if (in.empty()) 
+	if (in.find("parameters") == in.end()) 
 		return;
 	const auto &in_params = in["parameters"];
 	const auto &real_params = real["parameters"];
@@ -30,7 +30,7 @@ inline void validate_subset(const configuration &in, const configuration &real) 
 }
 
 inline void merge_into(configuration &in, const configuration &real) {
-	if (in.empty()) 
+	if (in.find("parameters") == in.end()) 
 	{ in = real;
 	} else {
 	auto& in_params = in["parameters"];
