@@ -18,10 +18,10 @@ life::population elite_replacement::evaluate(life::population populate) {
 
   ranges::partial_sort(
       ranges::begin(pop),
-      ranges::begin(pop) +
-          std::max(size_t{1}, static_cast<size_t>(fraction)),
-      ranges::end(pop), [](const auto &org1, const auto &org2) {
-        return  org1.data.get_value("score") > org2.data.get_value("score");
+      ranges::begin(pop) + std::max(size_t{1}, static_cast<size_t>(fraction)),
+      ranges::end(pop), [this](const auto &org1, const auto &org2) {
+        return org1.data.get_value(value_tag_) >
+               org2.data.get_value(value_tag_);
       });
 
   // get the sorted best fraction of orgs from above

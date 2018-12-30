@@ -15,6 +15,30 @@
 #include <thread>
 #include <vector>
 
+life::configuration true_user_population(std::string file_name) {
+  life::configuration con;
+  std::ifstream ifs(file_name);
+  if (!ifs.is_open()) {
+    std::cout << "Error: population file \"" << file_name
+              << "\" does not exist\n";
+    std::exit(1);
+  }
+  ifs >> con;
+    return con;
+}
+
+life::configuration true_user_environment(std::string file_name) {
+  life::configuration con;
+  std::ifstream ifs(file_name);
+  if (!ifs.is_open()) {
+    std::cout << "Error: environment file \"" << file_name
+              << "\" does not exist\n";
+    std::exit(1);
+  }
+  ifs >> con;
+    return con;
+}
+
 life::configuration true_user_experiment(std::string file_name) {
   life::configuration con;
   std::ifstream ifs(file_name);
@@ -83,6 +107,42 @@ int main(int argc, char **argv) {
     gen.configure(con);
     gen.run();
     std::cout << "\nSuccessfully Generated!\n";
+
+  } else if (argc == 4 && std::string(argv[1]) == "-t") {
+    std::string pop_exp_path = argv[2];
+    life::global_path = pop_exp_path.substr(0, pop_exp_path.find_last_of('/') + 1);
+    std::string env_exp_path = argv[3];
+	std::string env_path = env_exp_path.substr(0, env_exp_path.find_last_of('/') + 1);
+	if( env_path != life::global_path) {
+    	std::cout << "error: both pop and env must come from same dir\n";
+		std::exit(1);
+	}
+    std::hash<std::string> hash_fn;
+
+    auto pop_con = true_user_population(pop_exp_path);
+    std::cout << std::setw(4) << pop_con << std::endl;
+    std::cout << "\nNot yet Tested! Generated unique population "
+              << hash_fn(pop_con.dump()) << std::endl;
+
+    std::string pop_name = pop_con[0];
+    auto pop = life::make_population(pop_name);
+    pop.configure(pop_con[1]);
+    std::cout << "loaded experiment with population from file \"" << pop_exp_path << "\" ... \n";
+
+    auto env_con = true_user_environment(env_exp_path);
+    std::cout << std::setw(4) << env_con << std::endl;
+    std::cout << "\nNot yet Tested! Generated unique environment "
+              << hash_fn(env_con.dump()) << std::endl;
+
+    std::string env_name = env_con[0];
+    auto env = life::make_environment(env_name);
+    env.configure(env_con[1]);
+    std::cout << "loaded experiment with environment from file \"" << env_exp_path << "\" ... \n";
+
+	auto res_pop = env.evaluate(pop);
+
+
+    std::cout << "\nYay?? Ran succesfully?\n";
 
   } else {
     std::cout << "ded: unknown command line arguments. try -h\n";

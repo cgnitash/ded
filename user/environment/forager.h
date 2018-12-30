@@ -19,6 +19,8 @@
 
 class forager {
 
+	std::string food_eaten_tag_ = "food-eaten";
+
   size_t grid_size_ = 10;
   size_t sensor_range_ = 4;
   size_t updates_ = 100;
@@ -80,7 +82,14 @@ public:
     ec["parameters"]["replace"] = replace_;
     ec["parameters"]["visualize"] = visualize_;
     ec["parameters"]["sensor-range"] = sensor_range_	;
-    return ec;
+
+	// o:in:P has no tags
+    ec["pre-tags"] = nullptr;
+    
+    //  o:in:P' must handle these tags
+    ec["post-tags"]["food-eaten"] = food_eaten_tag_;
+
+	return ec;
   }
 
   void configure(life::configuration con) {
@@ -91,7 +100,10 @@ public:
     replace_ = con["parameters"]["replace"];
     visualize_ = con["parameters"]["visualize"];
     sensor_range_	= con["parameters"]["sensor-range"];
+
     resources_ = std::vector(grid_size_, std::vector(grid_size_, 0));
+
+      food_eaten_tag_=con["post-tags"]["food-eaten"];
   }
 
 // requires org.input("sensors","vector<bool,sensor-range>")

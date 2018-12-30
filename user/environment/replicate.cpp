@@ -26,16 +26,16 @@ life::population replicate::evaluate(life::population pop) {
     // evaluate the entire population
     // add scores to accumulated scores
     ranges::transform(env.evaluate(pop).get_as_vector(), accumulated_scores,
-                         ranges::begin(accumulated_scores),
-                         [](const auto &org, auto score) {
-                           return score + double{org.data.get_value("score")};
-                         });
+                      ranges::begin(accumulated_scores),
+                      [this](const auto &org, auto score) {
+                        return score + double{org.data.get_value(used_x_tag_)};
+                      });
   });
 
   // assign accumulate scores to each org
   ranges::transform(vec, accumulated_scores, ranges::begin(vec),
                        [this](auto org, const auto score) {
-                         org.data.set_value("score" , score / this->num_);
+                         org.data.set_value(fx_tag_, score / this->num_);
                          return org;
                        });
 
