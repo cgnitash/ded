@@ -24,6 +24,8 @@ public:
   life::configuration publish_configuration() {
     life::configuration con;
     con["parameters"] = nullptr;
+    con["pre-tags"] = nullptr;
+    con["post-tags"] = nullptr;
     return con;
   }
 

@@ -31,7 +31,7 @@ public:
     c["parameters"]["message"] = message_;
 
     //  o:in:P must handle these tags
-    c["pre-tags"] = used_score_tag_;
+    c["pre-tags"] = nullptr;
 
 	// o:in:P' has no tags
     c["post-tags"] = nullptr;
@@ -41,7 +41,7 @@ public:
         env_name_,
         {},
         {},
-        used_score_tag_}; // as well as propogate population requirements
+		{used_score_tag_}}; // as well as propogate population requirements
 
     return c;
   }

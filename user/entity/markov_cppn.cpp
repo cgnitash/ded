@@ -55,7 +55,7 @@ void markov_cppn::mutate() {
       my_cppn_.set_encoding(e);
     }
   }
-  compute_gates_();
+  gates_are_computed_ = false;
   buffer_ = std::vector(input_ + output_ + hidden_, 0.);
 }
 
@@ -83,6 +83,11 @@ life::signal markov_cppn::output() {
 
 void markov_cppn::tick() {
 
+  if (!gates_are_computed_) {
+    compute_gates_();
+    gates_are_computed_ = true;
+  }
+
   std::vector out_buffer(buffer_.size(), 0.);
 
   for (auto &g : gates_) {
@@ -103,6 +108,7 @@ void markov_cppn::seed_gates_(size_t n) {
     auto pos = std::rand() % (genome_.size() - codon_.size() + 1);
     std::copy(std::begin(codon_), std::end(codon_), std::begin(genome_) + pos);
   });
+  gates_are_computed_ = false;
 }
 
 void markov_cppn::compute_gates_() {

@@ -1,25 +1,25 @@
 #pragma once
 
-#include"../../components.h"
+#include "../../components.h"
 
 #include <algorithm>
-#include <iostream>
 #include <fstream>
+#include <initializer_list>
+#include <iostream>
+#include <map>
 #include <numeric>
-#include <string>
-#include <string_view>
-#include <vector>
 #include <random>
 #include <regex>
 #include <set>
-#include <map>
-#include <initializer_list>
+#include <string>
+#include <string_view>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 class forager {
 
-	std::string food_eaten_tag_ = "food-eaten";
+  std::string food_eaten_tag_ = "food-eaten";
 
   size_t grid_size_ = 10;
   size_t sensor_range_ = 4;
@@ -28,11 +28,10 @@ class forager {
   bool visualize_ = false;
   double density_ = 0.1;
 
-  
   struct location {
     size_t x_, y_;
   };
-  enum class direction { up,  left, down, right };
+  enum class direction { up, left, down, right };
 
   std::vector<std::vector<int>> resources_;
 
@@ -65,14 +64,12 @@ class forager {
   void replace_resource_();
   void initialize_resource_();
   void interact(life::signal, location &, direction &, double &);
-  double eval(life::entity&);
-  std::vector<double> signals_at(location,direction);
-  void visualize(std::ofstream &, location , direction , double );
+  double eval(life::entity &);
+  std::vector<double> signals_at(location, direction);
+  void visualize(std::ofstream &, location, direction, double);
 
 public:
-  forager() {
-	  configure(publish_configuration());
-  }
+  forager() { configure(publish_configuration()); }
 
   life::configuration publish_configuration() {
     life::configuration ec;
@@ -81,34 +78,34 @@ public:
     ec["parameters"]["density"] = density_;
     ec["parameters"]["replace"] = replace_;
     ec["parameters"]["visualize"] = visualize_;
-    ec["parameters"]["sensor-range"] = sensor_range_	;
+    ec["parameters"]["sensor-range"] = sensor_range_;
 
-	// o:in:P has no tags
+    // o:in:P has no tags
     ec["pre-tags"] = nullptr;
-    
+
     //  o:in:P' must handle these tags
     ec["post-tags"]["food-eaten"] = food_eaten_tag_;
 
-	return ec;
+    return ec;
   }
 
   void configure(life::configuration con) {
 
     grid_size_ = con["parameters"]["grid-size"];
-    updates_= con["parameters"]["updates"];
+    updates_ = con["parameters"]["updates"];
     density_ = con["parameters"]["density"];
     replace_ = con["parameters"]["replace"];
     visualize_ = con["parameters"]["visualize"];
-    sensor_range_	= con["parameters"]["sensor-range"];
+    sensor_range_ = con["parameters"]["sensor-range"];
 
     resources_ = std::vector(grid_size_, std::vector(grid_size_, 0));
 
-      food_eaten_tag_=con["post-tags"]["food-eaten"];
+    food_eaten_tag_ = con["post-tags"]["food-eaten"];
   }
 
-// requires org.input("sensors","vector<bool,sensor-range>")
-// requires org.output("flipped-bits","vector<bool,size>")
+  // requires org.input("sensors","vector<bool,sensor-range>")
+  // requires org.output("flipped-bits","vector<bool,size>")
   life::population evaluate(life::population);
-// guarantess org.data["food-eaten"] exists and is integer
+  // guarantess org.data["food-eaten"] exists and is integer
 };
 

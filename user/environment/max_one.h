@@ -16,12 +16,24 @@
 
 class max_one {
 
+	std::string ones_tag_ = "ones";
 public:
   max_one() {
 	  configure(publish_configuration());
   }
 
-  life::configuration publish_configuration() { return life::configuration(); }
+  life::configuration publish_configuration() { 
+	life::configuration c;  
+    c["parameters"] = nullptr;
+
+    //  o:in:P must handle these tags
+    c["pre-tags"] = nullptr;
+
+	// o:in:P' must handle these tags 
+    c["post-tags"]["ones"] = ones_tag_;
+
+    return c;
+	  return life::configuration(); }
 
   void configure(life::configuration) {}
 

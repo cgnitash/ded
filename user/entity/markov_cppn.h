@@ -34,6 +34,7 @@ class markov_cppn {
 
   std::vector<gate> gates_;
 
+  bool gates_are_computed_ = false;
   void compute_gates_();
   void seed_gates_(size_t = 1);
 
@@ -69,7 +70,6 @@ public:
                                 "0:66:59:28:92:93:38:123:101:"));
     buffer_ = std::vector(input_ + output_ + hidden_, 0.);
     seed_gates_(4);
-    compute_gates_();
   }
 
   void seed_gates(size_t);

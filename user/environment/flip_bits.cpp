@@ -45,9 +45,8 @@ double flip_bits::eval(life::entity &org) {
 }
 
 life::population flip_bits::evaluate(life::population pop) {
-  pop.merge(pop.get_as_vector() |
-            ranges::action::transform([this](auto &org) {
-              org.data["score"] = eval(org);
+  pop.merge(pop.get_as_vector() | ranges::action::transform([this](auto &org) {
+              org.data.set_value(flippiness_tag_, eval(org));
               return org;
             }));
   return pop;

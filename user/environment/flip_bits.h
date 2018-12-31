@@ -16,6 +16,7 @@
 
 class flip_bits {
 
+  std::string flippiness_tag_ = "flippiness";
   size_t  size_ = 10;
   double eval(life::entity &);
 
@@ -24,12 +25,19 @@ public:
 
   life::configuration publish_configuration() {
     life::configuration c;
-    c["size"] = size_;
+    c["parameters"]["size"] = size_;
+
+    //  o:in:P must handle these tags
+    c["pre-tags"] = nullptr;
+
+	// o:in:P' must handle these tags 
+    c["post-tags"]["flippiness"] = flippiness_tag_;
+
     return c;
   }
 
   void configure(life::configuration c) {
-	size_ = c["size"];
+	size_ = c["parameters"]["size"];
   }
 
 // requires org.input("some-bits","vector<bool,size>")

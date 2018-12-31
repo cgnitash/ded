@@ -42,10 +42,10 @@ public:
     ec["post-tags"] = nullptr;
 
 	// o:in:selector(P) must handle these tags
-    ec["parameters"]["selector"] = {sel_name_, {}, score_tag_, {}};
+    ec["parameters"]["selector"] = {sel_name_, {}, {score_tag_}, {}};
 
     // o:in:fitness(P) must provide these tags
-    ec["parameters"]["fitness"] = {world_name_, {}, {}, score_tag_};
+    ec["parameters"]["fitness"] = {world_name_, {}, {}, {score_tag_}};
 
     return ec;
   }
