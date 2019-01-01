@@ -29,16 +29,16 @@ public:
 
   life::configuration publish_configuration() {
     life::configuration c;
-    c["inputs"] = input_;
-    c["outputs"] = output_;
-    c["hiddens"] = hidden_;
+    c["parameters"]["inputs"] = input_;
+    c["parameters"]["outputs"] = output_;
+    c["parameters"]["hiddens"] = hidden_;
     return c;
   }
 
   void configure(life::configuration con) {
-    input_ = con["inputs"];
-    output_ = con["outputs"];
-    hidden_ = con["hiddens"];
+    input_ = con["parameters"]["inputs"];
+    output_ = con["parameters"]["outputs"];
+    hidden_ = con["parameters"]["hiddens"];
     genome_.generate(100);
     buffer_ = std::vector<double>(input_ + output_ + hidden_, 0.);
     seed_gates_(4);

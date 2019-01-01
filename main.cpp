@@ -15,75 +15,80 @@
 #include <thread>
 #include <vector>
 
-life::configuration true_user_population(std::string file_name) {
-  life::configuration con;
-  std::ifstream ifs(file_name);
-  if (!ifs.is_open()) {
-    std::cout << "Error: population file \"" << file_name
-              << "\" does not exist\n";
-    std::exit(1);
-  }
-  ifs >> con;
-    return con;
-}
 
-void check_env_correct(life::ModuleInstancePair type_name,
+void check_environment_correct(life::ModuleInstancePair type_name,
                        life::configuration config) {
   if (config.find("parameters") == config.end()) {
-    std::cout << "error: all user modules must provide 'parameters' group\n"
-              << type_name.first << ">::" << type_name.second << "\n";
+    std::cout << "User publication error: user module<"
+              << type_name.first << ">::'" << type_name.second
+              << "' must publish 'parameters' group"
+              << "\n";
     exit(1);
   }
 
   if (config.find("pre-tags") == config.end()) {
-    std::cout << "error: all user modules must provide 'pre-tags' group\n"
-              << type_name.first << ">::" << type_name.second << "\n";
+    std::cout << "User publication error: user module<"
+              << type_name.first << ">::'" << type_name.second
+              << "' must publish 'pre-tags' group"
+              << "\n";
     exit(1);
   }
 
   if (config.find("post-tags") == config.end()) {
-    std::cout << "error: all user modules must provide 'post-tags' group\n"
-              << type_name.first << ">::" << type_name.second << "\n";
+    std::cout << "User publication error: user module<"
+              << type_name.first << ">::'" << type_name.second
+              << "' must publish 'post-tag' group"
+              << "\n";
     exit(1);
   }
 
   if (config.size() != 3) {
-    std::cout << "error: module" << type_name.first << ">::" << type_name.second
-              << " has extra keys\n";
+    std::cout << "User publication error: user module<"
+              << type_name.first << ">::'" << type_name.second
+              << "' must not publish unspecified groups"
+              << "\n";
     exit(1);
   }
   return;
 }
+void check_population_correct(life::ModuleInstancePair type_name,
+                       life::configuration config) {
+  if (config.find("parameters") == config.end()) {
+    std::cout << "User publication error: user module<"
+              << type_name.first << ">::'" << type_name.second
+              << "' must publish 'parameters' group"
+              << "\n";
+    exit(1);
+  }
 
-/*
-void missing_pre_tag_error(std::string pre_tag, life::ModuleInstancePair mip) {
-
-  std::cout << "error: " << pre_tag << " does not override any pre-tags of "
-            << mip.first << ">::" << mip.second << "\n";
-  exit(1);
+  if (config.size() != 1) {
+    std::cout << "User publication error: user module<"
+              << type_name.first << ">::'" << type_name.second
+              << "' must not publish unspecified groups"
+              << "\n";
+    exit(1);
+  }
+  return;
 }
+void check_entity_correct(life::ModuleInstancePair type_name,
+                       life::configuration config) {
+  if (config.find("parameters") == config.end()) {
+    std::cout << "User publication error: user module<"
+              << type_name.first << ">::'" << type_name.second
+              << "' must publish 'parameters' group"
+              << "\n";
+    exit(1);
+  }
 
-void extra_pre_tag_error(std::string pre_tag, life::ModuleInstancePair mip) {
-
-  std::cout << "error: pre-tag " << pre_tag << " needs to be over-ridden explicitly\n" 
-            << mip.first << ">::" << mip.second << "\n";
-  exit(1);
+  if (config.size() != 1) {
+    std::cout << "User publication error: user module<"
+              << type_name.first << ">::'" << type_name.second
+              << "' must not publish unspecified groups"
+              << "\n";
+    exit(1);
+  }
+  return;
 }
-
-void missing_post_tag_error(std::string post_tag, life::ModuleInstancePair mip) {
-
-  std::cout << "error: " << post_tag << " does not override any post-tags of "
-            << mip.first << ">::" << mip.second << "\n";
-  exit(1);
-}
-
-void extra_post_tag_error(std::string post_tag, life::ModuleInstancePair mip) {
-
-  std::cout << "error: post-tag " << post_tag << " needs to be over-ridden explicitly\n" 
-            << mip.first << ">::" << mip.second << "\n";
-  exit(1);
-}
-*/
 
 life::configuration check_pre_tag_overrides(std::string name, std::string nested_name,
                               life::configuration reqs,
@@ -163,23 +168,36 @@ life::configuration check_post_tag_overrides(std::string name, std::string neste
               << attempted_over << " is available\n";
     exit(1);
   }
+  std::cout << "still in post " << attempted_over << "\n";
 
   return attempted_over;
 }
 
 /*
-      //check_both_tag_overrides(it.key(), it.value(), rit.value());
-void check_both_tag_overrides(std::string name, life::configuration provided,
-                         life::configuration reqs) {
-  auto nested_con =
-      life::config::true_parameters({"environment", provided[0]});
+life::configuration true_population_object(life::ModuleInstancePair mip,
+                                life::configuration con) {
 
-  //std::cout << "<environment>::" << name << " --- tags\n";
-  check_post_tag_overrides(name,provided[0],reqs[3], provided[1]["post-tags"],
-                           nested_con["post-tags"]);
-  check_pre_tag_overrides(name,provided[0],reqs[2], provided[1]["pre-tags"],
-                          nested_con["pre-tags"]);
-  //std::cout << "\n<environment>::" << name << " --- tags\n";
+  auto real_con = life::config::true_parameters(mip);
+
+  life::configuration attempted_pre_tags;
+  for (auto it = con["parameters"].begin(); it != con["parameters"].end();
+       it++) {
+    auto rit = real_con["parameters"].find(it.key());
+    if (rit == real_con["parameters"].end())
+      life::config::config_mismatch_error(it.key(), mip);
+
+    if (rit->type_name() != it->type_name())
+      life::config::type_mismatch_error(it.key(), rit->type_name(), it->type_name(), mip);
+
+    if (it->type_name() == std::string{"array"}) {
+      rit.value() = life::configuration::array(
+          {it.value()[0], true_population_object(
+                              {"population", it.value()[0]}, it.value()[1])});
+    } else {
+      rit.value() = it.value();
+    }
+  }
+  return real_con;
 }
 */
 
@@ -188,35 +206,7 @@ life::configuration true_environment_object(life::ModuleInstancePair mip,
 
   auto real_con = life::config::true_parameters(mip);
 
-  check_env_correct(mip,con);
-
   life::configuration attempted_pre_tags;
-  /*
-  for (auto it = con["pre-tags"].begin(); it != con["pre-tags"].end(); it++) {
-    auto rit = real_con["pre-tags"].find(it.key());
-    if (rit == real_con["pre-tags"].end())
-      missing_pre_tag_error(it.key(), mip);
-	attempted_pre_tags[it.key()] = rit.value();
-  }
-  for (auto it = real_con["pre-tags"].begin(); it != real_con["pre-tags"].end(); it++) {
-    auto rit = con["pre-tags"].find(it.key());
-    if (rit == con["pre-tags"].end())
-	  extra_pre_tag_error(it.key(),mip);
-  }
-
-  life::configuration attempted_post_tags;
-  for (auto it = con["post-tags"].begin(); it != con["post-tags"].end(); it++) {
-    auto rit = real_con["post-tags"].find(it.key());
-    if (rit == real_con["post-tags"].end())
-      missing_post_tag_error(it.key(), mip);
-	attempted_post_tags[it.key()] = rit.value();
-  }
-  for (auto it = real_con["post-tags"].begin(); it != real_con["post-tags"].end(); it++) {
-    auto rit = con["post-tags"].find(it.key());
-    if (rit == con["post-tags"].end())
-	  extra_post_tag_error(it.key(),mip);
-  }
-  */
   for (auto it = con["parameters"].begin(); it != con["parameters"].end();
        it++) {
     auto rit = real_con["parameters"].find(it.key());
@@ -228,28 +218,39 @@ life::configuration true_environment_object(life::ModuleInstancePair mip,
 
     if (it->type_name() == std::string{"array"} &&
         rit.value()[0] == "null_environment") {
-  //    check_both_tag_overrides(it.key(), it.value(), rit.value());
-  auto nested_con =
-      life::config::true_parameters({"environment", it.value()[0]});
-  it.value()[1]["pre-tags"] = check_pre_tag_overrides(
-      it.key(), it.value()[0], rit.value()[2], it.value()[1]["pre-tags"],
-      nested_con["pre-tags"]);
-  it.value()[1]["post-tags"] = check_post_tag_overrides(
-      it.key(), it.value()[0], rit.value()[3], it.value()[1]["post-tags"],
-      nested_con["post-tags"]);
-  rit.value() = life::configuration::array(
-      {it.value()[0],
-       true_environment_object({"environment", it.value()[0]}, it.value()[1])});
+      auto nested_con =
+          life::config::true_parameters({"environment", it.value()[0]});
+      auto pre_tags = check_pre_tag_overrides(
+          it.key(), it.value()[0], rit.value()[2], it.value()[1]["pre-tags"],
+          nested_con["pre-tags"]);
+      auto post_tags = check_post_tag_overrides(
+          it.key(), it.value()[0], rit.value()[3], it.value()[1]["post-tags"],
+          nested_con["post-tags"]);
+      rit.value() = life::configuration::array(
+          {it.value()[0], true_environment_object(
+                              {"environment", it.value()[0]}, it.value()[1])});
+	  rit.value()[1]["pre-tags"] = pre_tags;
+	  rit.value()[1]["post-tags"] = post_tags;
     } else {
       rit.value() = it.value();
     }
   }
-//void check_both_tag_overrides(std::string name, life::configuration provided,
-//                         life::configuration reqs) {
-//  check_pre_tag_overrides(name,provided[0],reqs[2], provided[1]["pre-tags"],
-//                          nested_con["pre-tags"]);
   return real_con;
 }
+
+life::configuration true_user_population(std::string file_name) {
+  life::configuration con;
+  std::ifstream ifs(file_name);
+  if (!ifs.is_open()) {
+    std::cout << "Error: population file \"" << file_name
+              << "\" does not exist\n";
+    std::exit(1);
+  }
+  ifs >> con;
+  return life::configuration::array(
+      {con[0], life::config::true_object({"population", con[0]}, con[1])});
+}
+
 life::configuration true_user_environment(std::string file_name) {
   life::configuration con;
   std::ifstream ifs(file_name);
@@ -280,14 +281,184 @@ life::configuration true_user_experiment(std::string file_name) {
 void save_configs() {
 
   std::ofstream file("configurations.cfg");
-  for (auto &[type_name, config] : life::all_configs) {
-    if (type_name.first == "environment") 
-		check_env_correct(type_name,config);
-
+  for (auto &[type_name, config] : life::all_configs) 
     file << "\n<"
          << type_name.first << ">::" << type_name.second << "\n  "
          << std::setw(4) << config << std::endl;
+  
+}
+
+void check_all_configs_correct() {
+
+  for (auto &[type_name, config] : life::all_configs) {
+    if (type_name.first == "environment") 
+		check_environment_correct(type_name,config);
+    if (type_name.first == "entity") 
+		check_entity_correct(type_name,config);
+    if (type_name.first == "population") 
+		check_population_correct(type_name,config);
   }
+}
+
+auto missing_module_instance_error(life::ModuleInstancePair mip) {
+  auto &true_mod = mip.first;
+  auto &attempted_inst = mip.second;
+  std::cout << "Error: Non-existent <Module>::Instance -- \033[31m<" << true_mod
+            << ">::" << attempted_inst << "\033[0m\n";
+  for (auto &type_name_config_pair : life::all_configs) {
+    auto &[mod, inst] = type_name_config_pair.first;
+    if (mod == true_mod && life::config::match(attempted_inst,inst))
+      std::cout << "Did you mean \033[32m'" << inst << "'\033[0m?\n";
+  }
+  std::exit(1);
+}
+
+
+life::configuration check_config_exists(life::ModuleInstancePair mip) {
+  auto real_con_it = life::all_configs.find(mip);
+  if (life::all_configs.end() == real_con_it)
+	 missing_module_instance_error(mip); 
+  return real_con_it->second;
+}
+
+auto parse_qst(std::string file_name) {
+
+  std::regex comments{R"~~(^\s*#.*)~~"};
+  std::regex spurious_commas{R"~~(,(]|}))~~"};
+  //std::regex spaces{R"~~(\s+)~~"};
+  std::regex close_brace{R"~~(^\s*}\s*$)~~"};
+  std::regex parameter{R"~~(^\s*p\s*([-\w\d]+)\s*=\s*([-\w\d]+)\s*$)~~"};
+  // std::regex nested_parameter{
+  //  R"~~(^\s*p\s*:\s*([-\w]+)\s*=\s*\$([\w\d])\s*(\{)?\s*$)~~"};
+  //std::regex object{R"~~(\$([-\w\d]+))~~"};
+  std::regex new_variable{
+      R"~~(^\s*(P|E|p)\s*([-\w\d]+)?\s*=\s*\$([-\w\d]+)\s*(\{)?\s*$)~~"};
+
+  std::ifstream ifs(file_name);
+  if (!ifs.is_open()) {
+    std::cout << "Error: qst file \"" << file_name << "\" does not exist\n";
+    std::exit(1);
+  }
+
+  std::map<std::string, std::string> all_variables;
+  std::vector<std::pair<std::string, std::string>> command_stack;
+  std::string line;
+  std::smatch m;
+  for (auto line_num{0}; std::getline(ifs, line); line_num++) {
+
+    if (line.empty() || std::regex_match(line, comments))
+      continue;
+
+    if (std::regex_match(line, m, new_variable)) {
+      std::cout << "matched new variable regex with - " << line << std::endl;
+      for (auto x : m)
+        std::cout << x << std::endl;
+
+      if (m[1].str() == "p") {
+        if (command_stack.empty()) {
+          std::cout
+              << "qst<syntax>error: parameters must be nested within some "
+                 "user component! line "
+              << line_num << "\n";
+          std::exit(1);
+        }
+        if (m[4].str().empty())
+          command_stack.push_back({m[2].str(),"\"parameters\":{\"" + m[3].str() + "\",{}]"});
+        else {
+          command_stack.push_back(
+              {m[2].str(), "[\"" + m[3].str() + "\",{\"parameters\":{"});
+        }
+      } else {
+        if (!command_stack.empty()) {
+          std::cout
+              << "qst<syntax>error: new user variable cannot be nested within "
+                 "other components! line "
+              << line_num << "\n";
+          std::exit(1);
+        }
+        if (m[4].str().empty())
+          all_variables[m[1].str()] = "[\"" + m[3].str() + "\",{}]";
+        else {
+          all_variables[m[1].str()] =
+              "[\"" + m[3].str() + "\",{\"parameters\":{";
+          command_stack.push_back(
+              {m[1].str(), "[\"" + m[3].str() + "\",{\"parameters\":{"});
+        }
+      }
+      continue;
+    }
+
+    if (command_stack.empty()) {
+      std::cout << "qst<syntax>error: a new user variable must be declared "
+                   "from here! line "
+                << line_num << "\n";
+      std::exit(1);
+    }
+
+    if (std::regex_match(line, m, parameter)) {
+      std::cout << "matched parameter regex with - " << line << std::endl;
+      command_stack.back().second +=
+          std::regex_replace(line, parameter, "\"$1\":$2,");
+	  continue;
+	}
+
+    if (std::regex_match(line, m, close_brace)) {
+      std::cout << "matched closed brace regex with - " << line << std::endl;
+      if (command_stack.empty()) {
+        std::cout << "qst<syntax>error: dangling closing brace! line "
+                  << line_num << "\n";
+        std::exit(1);
+      }
+      auto [name, config] = command_stack.back();
+      command_stack.pop_back();
+      if (command_stack.empty())
+        all_variables[name] += config + "}}]";
+      else
+        command_stack.back().second = "\"" + name + "\":" + config + "}}],";
+	  continue;
+    }
+
+    std::cout << "qst<syntax>error: unable to parse! line " << line_num << "\n"
+              << line << "\n";
+    std::exit(1);
+
+  }
+  /*
+            auto env_con =
+                std::regex_replace(all_variables["E"], close_brace, "}]");
+            env_con =
+                std::regex_replace(env_con, parameter,
+     "\"parameters\":{\"$1\":"); env_con = std::regex_replace(env_con, object,
+     "[\"$1\","); env_con = std::regex_replace(env_con, spaces, "");
+
+            auto pop_con =
+                std::regex_replace(all_variables["P"], close_brace, "}]");
+            pop_con = std::regex_replace(pop_con, parameter,
+                                         "\"parameters\":{\"$1\"},");
+            pop_con = std::regex_replace(pop_con, object, "[\"$1\",");
+            pop_con = std::regex_replace(pop_con, spaces, "");
+  */
+  auto env_con = std::regex_replace(all_variables["E"], spurious_commas, "$1");
+  auto pop_con = std::regex_replace(all_variables["P"], spurious_commas, "$1");
+  //std::cout << env_con << "\n" << pop_con << std::endl;
+  std::stringstream es, ps;
+  es << env_con;
+  ps << pop_con;
+
+  life::configuration env, pop;
+  es >> env;
+  ps >> pop;
+  // life::configuration env_pop;
+   
+  //std::cout << env.dump(4) << "\n" << pop.dump(4) << std::endl;
+  return std::make_pair(pop, env);
+  /*
+  for(auto &[k,v] : all_variables)
+          std::cout << k << "\n" << v << "\n";
+*/
+  // auto pop_con = true_user_population(pop_exp_path);
+  // auto env_con = true_user_environment(env_exp_path);
+  //
 }
 
 long life::entity::entity_id_ = 0;
@@ -301,6 +472,7 @@ int main(int argc, char **argv) {
   //
 
   life::generate_all_configs();
+  check_all_configs_correct();
 
   if (argc == 2 && std::string(argv[1]) == "-h") {
     std::cout << "-s : saves configuration files\n"
@@ -367,9 +539,47 @@ int main(int argc, char **argv) {
     env.configure(env_con[1]);
     std::cout << "loaded experiment with environment from file \"" << env_exp_path << "\" ... \n";
 
-	//auto res_pop = env.evaluate(pop);
+	auto res_pop = env.evaluate(pop);
+	for (auto o : res_pop.get_as_vector())
+          std::cout << o.get_id() << " ";
+	
+    std::cout << "\nYay?? Ran succesfully?\n";
 
+  } else if (argc == 3 && std::string(argv[1]) == "-b") {
+    std::string qst_path = argv[2];
+    life::global_path = qst_path.substr(0, qst_path.find_last_of('/') + 1);
 
+    std::hash<std::string> hash_fn;
+
+    auto [pop_con, env_con] = parse_qst(qst_path);
+
+    auto true_pop = life::configuration::array(
+        {pop_con[0],
+         life::config::true_object({"population", pop_con[0]}, pop_con[1])});
+    auto true_env = life::configuration::array(
+        {env_con[0],
+         true_environment_object({"environment", env_con[0]}, env_con[1])});
+
+    std::cout << std::setw(4) << true_pop << std::endl;
+    std::cout << "\nNot yet Tested! Generated unique population "
+              << hash_fn(true_pop.dump()) << std::endl;
+
+    std::cout << std::setw(4) << true_env << std::endl;
+    std::cout << "\nNot yet Tested! Generated unique environment "
+              << hash_fn(true_env.dump()) << std::endl;
+
+    std::string pop_name = true_pop[0];
+    auto pop = life::make_population(pop_name);
+    pop.configure(true_pop[1]);
+
+    std::string env_name = true_env[0];
+    auto env = life::make_environment(env_name);
+    env.configure(true_env[1]);
+
+    auto res_pop = env.evaluate(pop);
+    for (auto o : res_pop.get_as_vector())
+      std::cout << o.get_id() << " ";
+	
     std::cout << "\nYay?? Ran succesfully?\n";
 
   } else {

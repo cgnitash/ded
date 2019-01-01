@@ -43,73 +43,66 @@ inline void merge_into(configuration &in, const configuration &real) {
 
 namespace config {
 
+inline auto closeness(std::string w1, std::string w2) {
+
+  return ranges::inner_product(
+      w1, w2, 0, std::plus<int>(),
+      [](auto c1, auto c2) { return c1 != c2 ? 1 : 0; });
+}
+
+inline auto min_max_distance(std::string w1, std::string w2) {
+
+  int l1 = w1.length();
+  int l2 = w2.length();
+
+  if (l1 < l2)
+    return std::make_tuple(w1, w2, l2 - l1);
+  if (l1 > l2)
+    return std::make_tuple(w2, w1, l1 - l2);
+  return std::make_tuple(w1, w2, 0);
+}
+
+inline auto match(std::string attempt, std::string word) {
+
 // In : abc
-// Out : [bc,ac,ab]
-inline auto deletes(std::string word) {
-  return ranges::view::repeat_n(word, word.size()) |
-         ranges::view::transform([n = 0](auto str) mutable {
+// Out : [" abc","a bc","ab c","abc "]
+auto all_spaces = [](std::string word) {
+  return ranges::view::repeat_n(word, word.size() + 1) |
+         ranges::view::transform([n = -1](auto str) mutable {
            n++;
-           return str.substr(0, n - 1) + str.substr(n);
+           return str.substr(0, n) + " " + str.substr(n);
          });
-}
+};
 
-// In : xabc
-// Out : [xabc,axbc,abxc,abcx]
-inline auto rotated_inserts(std::string word) {
-  return ranges::view::repeat_n(word, word.size()) |
-         ranges::view::transform([n = 0](auto str) mutable {
-           n++;
-           return str.substr(1, n - 1) + std::string{str[0]} + str.substr(n);
-         });
-}
+  auto tolerance = 3;
+  auto [min, max, distance] = min_max_distance(attempt, word);
 
-// In : pqr
-// Out : [apqr,bpqr,cpqr ... zpqr]
-inline auto pad_words(std::string word) {
-  return ranges::view::zip_with(
-      [](auto l, auto w) { return l + w; },
-      ranges::view::concat(ranges::view::closed_iota('a', 'z'),
-                           ranges::view::closed_iota('A', 'Z'),
-                           ranges::view::closed_iota('0', '9'),
-                           ranges::view::single('-')),
-      ranges::view::single(word) | ranges::view::cycle);
-}
+  if (distance == 0) {
+    // at most deletion + insertion, or at most 2 changes
+    for (auto space_one : all_spaces(min))
+      for (auto space_two : all_spaces(max))
+        if (closeness(space_one, space_two) < tolerance)
+          return true;
+  }
 
-// In: hi
-// Out : [ahi,hai,hia,bhi ... hiz]
-inline auto inserts(std::string word) {
-  return pad_words(word) | ranges::view::transform([](auto padded_word) {
-           return rotated_inserts(padded_word);
-         }) |
-         ranges::view::join;
-}
+  if (distance == 1) {
+    // at most symmetrically (deletion + change, or insertion + change)
+    for (auto spaced : all_spaces(min ))
+      if (closeness(spaced, max) < tolerance)
+        return true;
+  }
+  if (distance == 2) {
+    // at most symmetrically ( 2 deletions , or 2 insertions)
+    for (auto spaced : all_spaces(min) | ranges::view::transform([all_spaces](auto r) {
+                         return all_spaces(r);
+                       }) | ranges::view::join)
+      if (closeness(spaced, max) < tolerance)
+        return true;
+  }
 
-// In : xabc
-// Out : [xbc,axc,abx]
-inline auto rotated_changes(std::string word) {
-  return ranges::view::repeat_n(word, word.size() - 1) |
-         ranges::view::transform([n = 0](auto str) mutable {
-           n++;
-           return str.substr(1, n - 1) + std::string{str[0]} +
-                  str.substr(n + 1);
-         });
-}
+  // if (distance >= tolerance)
+  return false;
 
-// In: hi
-// Out : [ai,ha,bi ... hz]
-inline auto changes(std::string word) {
-  return pad_words(word) | ranges::view::transform([](auto padded_word) {
-           return rotated_changes(padded_word);
-         }) |
-         ranges::view::join;
-}
-
-inline auto all_edits() {
-  return ranges::view::transform([](auto word) {
-           return ranges::view::concat(deletes(word), changes(word),
-                                       inserts(word));
-         }) |
-         ranges::view::join;
 }
 
 inline auto missing_module_instance_error(life::ModuleInstancePair mip) {
@@ -119,10 +112,7 @@ inline auto missing_module_instance_error(life::ModuleInstancePair mip) {
             << ">::" << attempted_inst << "\033[0m\n";
   for (auto &type_name_config_pair : life::all_configs) {
     auto &[mod, inst] = type_name_config_pair.first;
-    if (mod == true_mod &&
-        ranges::any_of(ranges::view::single(inst) | all_edits() |
-                           all_edits(),
-                       [=](auto i) { return i == attempted_inst; }))
+    if (mod == true_mod && match(attempted_inst,inst))
       std::cout << "Did you mean \033[32m'" << inst << "'\033[0m?\n";
   }
   std::exit(1);
@@ -143,10 +133,8 @@ inline void config_mismatch_error(std::string key, life::ModuleInstancePair mip)
             << "\033[0m does not have parameter named \033[31m'" << key
             << "'\033[0m\n";
   auto con = true_parameters(mip);
-  for (auto it : con.items())
-    if (ranges::any_of(ranges::view::single(key) | all_edits() |
-                           all_edits(),
-                       [=](auto s) { return s == it.key(); }))
+  for (auto it : con["parameters"].items())
+	  if (match(key,it.key()))
       std::cout << "Did you mean \033[32m'" << it.key() << "'\033[0m?\n";
 
   std::exit(1);

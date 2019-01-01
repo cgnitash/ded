@@ -42,25 +42,25 @@ public:
   markov_cppn() { configure(publish_configuration()); }
   life::configuration publish_configuration() {
     life::configuration con;
-    con["inputs"] = input_;
-    con["outputs"] = output_;
-    con["hiddens"] = hidden_;
-    con["mutate-wires"] = mutate_wires_;
-    con["mutate-weights"] = mutate_weights_;
-    con["mutate-acfns"] = mutate_acfns_;
-    con["mutate-cppn"] = mutate_cppn_;
-    con["genome-params"] = genome_config_;
+    con["parameters"]["inputs"] = input_;
+    con["parameters"]["outputs"] = output_;
+    con["parameters"]["hiddens"] = hidden_;
+    con["parameters"]["mutate-wires"] = mutate_wires_;
+    con["parameters"]["mutate-weights"] = mutate_weights_;
+    con["parameters"]["mutate-acfns"] = mutate_acfns_;
+    con["parameters"]["mutate-cppn"] = mutate_cppn_;
+    con["parameters"]["genome-params"] = genome_config_;
     return con;
   }
   void configure(life::configuration con) {
-    input_ = con["inputs"];
-    output_ = con["outputs"];
-    hidden_ = con["hiddens"];
-    mutate_wires_ = con["mutate-wires"];
-    mutate_weights_ = con["mutate-weights"];
-    mutate_acfns_ = con["mutate-acfns"];
-    mutate_cppn_ = con["mutate-cppn"];
-    genome_config_ = con["genome-params"];
+    input_ = con["parameters"]["inputs"];
+    output_ = con["parameters"]["outputs"];
+    hidden_ = con["parameters"]["hiddens"];
+    mutate_wires_ = con["parameters"]["mutate-wires"];
+    mutate_weights_ = con["parameters"]["mutate-weights"];
+    mutate_acfns_ = con["parameters"]["mutate-acfns"];
+    mutate_cppn_ = con["parameters"]["mutate-cppn"];
+    genome_config_ = con["parameters"]["genome-params"];
     genome_.configure(genome_config_);
     genome_.generate(200);
     my_cppn_.configure({{"inputs", 2}, {"outputs", 1}, {"hiddens", 2}});
