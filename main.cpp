@@ -200,13 +200,39 @@ life::configuration true_population_object(life::ModuleInstancePair mip,
   return real_con;
 }
 */
+life::configuration true_any_object(life::ModuleInstancePair mip,
+                                life::configuration con) {
+
+  auto real_con = life::config::true_parameters(mip);
+
+  for (auto it = con["parameters"].begin(); it != con["parameters"].end();
+       it++) {
+    auto rit = real_con["parameters"].find(it.key());
+    if (rit == real_con["parameters"].end())
+      life::config::config_mismatch_error(it.key(), mip);
+
+    if (rit->type_name() != it->type_name())
+      life::config::type_mismatch_error(it.key(), rit->type_name(),
+                                        it->type_name(), mip);
+
+    rit.value() =
+        it->type_name() == std::string{"array"}
+            ? life::configuration::array(
+                  {it.value()[0],
+                   true_any_object(
+                       {std::string{rit.value()[0]}.substr(5), it.value()[0]},
+                       it.value()[1])})
+            : it.value();
+  }
+  return real_con;
+}
+
 
 life::configuration true_environment_object(life::ModuleInstancePair mip,
                                 life::configuration con) {
 
   auto real_con = life::config::true_parameters(mip);
 
-  life::configuration attempted_pre_tags;
   for (auto it = con["parameters"].begin(); it != con["parameters"].end();
        it++) {
     auto rit = real_con["parameters"].find(it.key());
@@ -323,16 +349,20 @@ life::configuration check_config_exists(life::ModuleInstancePair mip) {
 
 auto parse_qst(std::string file_name) {
 
-  std::regex comments{R"~~(^\s*#.*)~~"};
-  std::regex spurious_commas{R"~~(,(]|}))~~"};
+  std::regex comments{R"~~(#.*$)~~"};
   //std::regex spaces{R"~~(\s+)~~"};
   std::regex close_brace{R"~~(^\s*}\s*$)~~"};
   std::regex parameter{R"~~(^\s*p\s*([-\w\d]+)\s*=\s*([-\w\d]+)\s*$)~~"};
+  //std::regex param{R"~~(^\s*p\s*([-\w\d]+)\s*=\s*([-\w\d]+)\s*$)~~"};
   // std::regex nested_parameter{
   //  R"~~(^\s*p\s*:\s*([-\w]+)\s*=\s*\$([\w\d])\s*(\{)?\s*$)~~"};
   //std::regex object{R"~~(\$([-\w\d]+))~~"};
   std::regex new_variable{
-      R"~~(^\s*(P|E|p)\s*([-\w\d]+)?\s*=\s*\$([-\w\d]+)\s*(\{)?\s*$)~~"};
+      R"~~(^\s*([\w\d]+)\s*=\s*\$([-\w\d]+)\s*(\{)?\s*$)~~"};
+  std::regex nested_parameter{
+      R"~~(^\s*p\s+([-\w\d]+)\s*=\s*\$([-\w\d]+)\s*(\{)?\s*$)~~"};
+
+  std::regex spurious_commas{R"~~(,(]|}))~~"};
 
   std::ifstream ifs(file_name);
   if (!ifs.is_open()) {
@@ -341,87 +371,78 @@ auto parse_qst(std::string file_name) {
   }
 
   std::map<std::string, std::string> all_variables;
-  std::vector<std::pair<std::string, std::string>> command_stack;
+//  std::vector<std::pair<std::string, std::string>> command_stack;
   std::string line;
+  std::string current_variable_name;
   std::smatch m;
-  for (auto line_num{0}; std::getline(ifs, line); line_num++) {
+  auto brace_count{0};
+  for (auto line_num{1}; std::getline(ifs, line); line_num++) {
 
-    if (line.empty() || std::regex_match(line, comments))
+    line = std::regex_replace(line, comments, "");
+
+    if (line.empty()) 
       continue;
 
     if (std::regex_match(line, m, new_variable)) {
-      std::cout << "matched new variable regex with - " << line << std::endl;
-      for (auto x : m)
-        std::cout << x << std::endl;
-
-      if (m[1].str() == "p") {
-        if (command_stack.empty()) {
-          std::cout
-              << "qst<syntax>error: parameters must be nested within some "
-                 "user component! line "
-              << line_num << "\n";
-          std::exit(1);
-        }
-        if (m[4].str().empty())
-          command_stack.push_back({m[2].str(),"\"parameters\":{\"" + m[3].str() + "\",{}]"});
-        else {
-          command_stack.push_back(
-              {m[2].str(), "[\"" + m[3].str() + "\",{\"parameters\":{"});
-        }
-      } else {
-        if (!command_stack.empty()) {
-          std::cout
-              << "qst<syntax>error: new user variable cannot be nested within "
-                 "other components! line "
-              << line_num << "\n";
-          std::exit(1);
-        }
-        if (m[4].str().empty())
-          all_variables[m[1].str()] = "[\"" + m[3].str() + "\",{}]";
-        else {
-          all_variables[m[1].str()] =
-              "[\"" + m[3].str() + "\",{\"parameters\":{";
-          command_stack.push_back(
-              {m[1].str(), "[\"" + m[3].str() + "\",{\"parameters\":{"});
-        }
-      }
+      brace_count += !m[3].str().empty();
+      if (!current_variable_name.empty()) {
+        std::cout << "qst<syntax>error: new user variable cannot be nested "
+                     "within "
+                     "other components! line "
+                  << line_num << "\n";
+        std::exit(1);
+          }
+                  current_variable_name = m[1].str();
+	  all_variables[current_variable_name] = "[\"" + m[2].str() + "\",{\"parameters\":{"; 
       continue;
     }
 
-    if (command_stack.empty()) {
-      std::cout << "qst<syntax>error: a new user variable must be declared "
-                   "from here! line "
-                << line_num << "\n";
-      std::exit(1);
+    if (std::regex_match(line, m, nested_parameter)) {
+      brace_count += !m[3].str().empty();
+      if (current_variable_name.empty()) {
+        std::cout << "qst<syntax>error: new user variable cannot be nested "
+                     "within "
+                     "other components! line "
+                  << line_num << "\n";
+        std::exit(1);
+          }
+          all_variables[current_variable_name] += "\"" + m[1].str() + "\":[\"" +
+                                                  m[2].str() +
+                                                  "\",{\"parameters\":{";
+          continue;
     }
-
     if (std::regex_match(line, m, parameter)) {
       std::cout << "matched parameter regex with - " << line << std::endl;
-      command_stack.back().second +=
+      all_variables[current_variable_name] +=
           std::regex_replace(line, parameter, "\"$1\":$2,");
-	  continue;
+      continue;
 	}
 
     if (std::regex_match(line, m, close_brace)) {
       std::cout << "matched closed brace regex with - " << line << std::endl;
-      if (command_stack.empty()) {
+      if (current_variable_name.empty()) {
         std::cout << "qst<syntax>error: dangling closing brace! line "
                   << line_num << "\n";
         std::exit(1);
       }
-      auto [name, config] = command_stack.back();
-      command_stack.pop_back();
-      if (command_stack.empty())
-        all_variables[name] += config + "}}]";
-      else
-        command_stack.back().second = "\"" + name + "\":" + config + "}}],";
-	  continue;
+        all_variables[current_variable_name] += "}}],";
+      brace_count--;
+      if (!brace_count) {
+        all_variables[current_variable_name] += "}}]";
+        current_variable_name.clear();
+      } 
+      continue;
     }
 
     std::cout << "qst<syntax>error: unable to parse! line " << line_num << "\n"
               << line << "\n";
     std::exit(1);
 
+  }
+
+  if (!current_variable_name.empty()) {
+    std::cout << "qst<syntax>error: braces need to be added\n";
+    std::exit(1);
   }
   /*
             auto env_con =
@@ -440,7 +461,7 @@ auto parse_qst(std::string file_name) {
   */
   auto env_con = std::regex_replace(all_variables["E"], spurious_commas, "$1");
   auto pop_con = std::regex_replace(all_variables["P"], spurious_commas, "$1");
-  //std::cout << env_con << "\n" << pop_con << std::endl;
+  std::cout << env_con << "\n" << pop_con << std::endl;
   std::stringstream es, ps;
   es << env_con;
   ps << pop_con;
@@ -450,7 +471,7 @@ auto parse_qst(std::string file_name) {
   ps >> pop;
   // life::configuration env_pop;
    
-  //std::cout << env.dump(4) << "\n" << pop.dump(4) << std::endl;
+  std::cout << env.dump(4) << "\n" << pop.dump(4) << std::endl;
   return std::make_pair(pop, env);
   /*
   for(auto &[k,v] : all_variables)
@@ -555,7 +576,7 @@ int main(int argc, char **argv) {
 
     auto true_pop = life::configuration::array(
         {pop_con[0],
-         life::config::true_object({"population", pop_con[0]}, pop_con[1])});
+         true_any_object({"population", pop_con[0]}, pop_con[1])});
     auto true_env = life::configuration::array(
         {env_con[0],
          true_environment_object({"environment", env_con[0]}, env_con[1])});
