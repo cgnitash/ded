@@ -95,7 +95,8 @@ life::configuration check_pre_tag_overrides(std::string name, std::string nested
                               life::configuration overs,
                               life::configuration published) {
 
-  std::cout << "in pre " << reqs << " " << reqs.size() << "\n"
+  std::cout << "in pre of " << name << " :required " <<
+	  reqs << " " << reqs.size() << "\n and :published " 
             << published << " " << published.size() << "\n";
   if (reqs.size() < published.size()) {
     std::cout << "error: environment::" << name
@@ -127,6 +128,8 @@ life::configuration check_pre_tag_overrides(std::string name, std::string nested
     exit(1);
   }
 
+  std::cout << "still in pre " << attempted_over << "\n";
+
   return attempted_over;
 
 }
@@ -136,7 +139,8 @@ life::configuration check_post_tag_overrides(std::string name, std::string neste
                               life::configuration overs,
                               life::configuration published) {
 
-  std::cout << "in post " << reqs << " " << reqs.size() << "\n"
+  std::cout << "in post of " << name << " :required " <<
+	  reqs << " " << reqs.size() << "\n and :published " 
             << published << " " << published.size() << "\n";
   if (reqs.size() < published.size()) {
     std::cout << "error: environment::" << name
@@ -173,33 +177,6 @@ life::configuration check_post_tag_overrides(std::string name, std::string neste
   return attempted_over;
 }
 
-/*
-life::configuration true_population_object(life::ModuleInstancePair mip,
-                                life::configuration con) {
-
-  auto real_con = life::config::true_parameters(mip);
-
-  life::configuration attempted_pre_tags;
-  for (auto it = con["parameters"].begin(); it != con["parameters"].end();
-       it++) {
-    auto rit = real_con["parameters"].find(it.key());
-    if (rit == real_con["parameters"].end())
-      life::config::config_mismatch_error(it.key(), mip);
-
-    if (rit->type_name() != it->type_name())
-      life::config::type_mismatch_error(it.key(), rit->type_name(), it->type_name(), mip);
-
-    if (it->type_name() == std::string{"array"}) {
-      rit.value() = life::configuration::array(
-          {it.value()[0], true_population_object(
-                              {"population", it.value()[0]}, it.value()[1])});
-    } else {
-      rit.value() = it.value();
-    }
-  }
-  return real_con;
-}
-*/
 life::configuration true_any_object(life::ModuleInstancePair mip,
                                 life::configuration con) {
 
@@ -227,9 +204,25 @@ life::configuration true_any_object(life::ModuleInstancePair mip,
   return real_con;
 }
 
+void check_unmentioned_tag_overrides(life::ModuleInstancePair mip,
+                                     life::configuration key,
+                                     life::configuration value) {
+  if (value[2] != nullptr) {
+    std::cout << "error: environment" << value[0]
+              << " does not handle the pre-tags that " << mip.second
+              << "::" << key << " needs to handle\n";
+    std::exit(1);
+  }
+  if (value[3] != nullptr) {
+    std::cout << "error: environment" << value[0]
+              << " does not provide the post-tags that " << mip.second
+              << "::" << key << " needs to provide\n";
+    std::exit(1);
+  }
+}
 
 life::configuration true_environment_object(life::ModuleInstancePair mip,
-                                life::configuration con) {
+                                            life::configuration con) {
 
   auto real_con = life::config::true_parameters(mip);
 
@@ -240,25 +233,38 @@ life::configuration true_environment_object(life::ModuleInstancePair mip,
       life::config::config_mismatch_error(it.key(), mip);
 
     if (rit->type_name() != it->type_name())
-      life::config::type_mismatch_error(it.key(), rit->type_name(), it->type_name(), mip);
+      life::config::type_mismatch_error(it.key(), rit->type_name(),
+                                        it->type_name(), mip);
 
-    if (it->type_name() == std::string{"array"} &&
-        rit.value()[0] == "null_environment") {
-      auto nested_con =
-          life::config::true_parameters({"environment", it.value()[0]});
-      auto pre_tags = check_pre_tag_overrides(
-          it.key(), it.value()[0], rit.value()[2], it.value()[1]["pre-tags"],
-          nested_con["pre-tags"]);
-      auto post_tags = check_post_tag_overrides(
-          it.key(), it.value()[0], rit.value()[3], it.value()[1]["post-tags"],
-          nested_con["post-tags"]);
-      rit.value() = life::configuration::array(
-          {it.value()[0], true_environment_object(
-                              {"environment", it.value()[0]}, it.value()[1])});
-	  rit.value()[1]["pre-tags"] = pre_tags;
-	  rit.value()[1]["post-tags"] = post_tags;
-    } else {
+    if (it->type_name() != std::string{"array"} ||
+        rit.value()[0] != "null_environment") {
       rit.value() = it.value();
+    }
+  }
+
+  for (auto rit = real_con["parameters"].begin();
+       rit != real_con["parameters"].end(); rit++) {
+    if (rit->type_name() == std::string{"array"} &&
+        rit.value()[0] == "null_environment") {
+      auto it = con["parameters"].find(rit.key());
+      if (it != con["parameters"].end()) {
+        auto nested_con =
+            life::config::true_parameters({"environment", it.value()[0]});
+        auto pre_tags = check_pre_tag_overrides(
+            it.key(), it.value()[0], rit.value()[2], it.value()[1]["pre-tags"],
+            nested_con["pre-tags"]);
+        auto post_tags = check_post_tag_overrides(
+            it.key(), it.value()[0], rit.value()[3], it.value()[1]["post-tags"],
+            nested_con["post-tags"]);
+        rit.value() = life::configuration::array(
+            {it.value()[0],
+             true_environment_object({"environment", it.value()[0]},
+                                     it.value()[1])});
+        rit.value()[1]["pre-tags"] = pre_tags;
+        rit.value()[1]["post-tags"] = post_tags;
+      } else {
+        check_unmentioned_tag_overrides(mip, rit.key(), rit.value());
+      }
     }
   }
   return real_con;
@@ -288,20 +294,6 @@ life::configuration true_user_environment(std::string file_name) {
   ifs >> con;
   return life::configuration::array(
       {con[0], true_environment_object({"environment", con[0]}, con[1])});
-}
-
-life::configuration true_user_experiment(std::string file_name) {
-  life::configuration con;
-  std::ifstream ifs(file_name);
-  if (!ifs.is_open()) {
-    std::cout << "Error: experiment file \"" << file_name
-              << "\" does not exist\n";
-    std::exit(1);
-  }
-  ifs >> con;
-
-  return life::configuration::array(
-      {con[0], life::config::true_object({"experiment", con[0]}, con[1])});
 }
 
 void save_configs() {
@@ -350,19 +342,14 @@ life::configuration check_config_exists(life::ModuleInstancePair mip) {
 auto parse_qst(std::string file_name) {
 
   std::regex comments{R"~~(#.*$)~~"};
-  //std::regex spaces{R"~~(\s+)~~"};
   std::regex close_brace{R"~~(^\s*}\s*$)~~"};
-  std::regex parameter{R"~~(^\s*p\s*([-\w\d]+)\s*=\s*([-\w\d]+)\s*$)~~"};
-  //std::regex param{R"~~(^\s*p\s*([-\w\d]+)\s*=\s*([-\w\d]+)\s*$)~~"};
-  // std::regex nested_parameter{
-  //  R"~~(^\s*p\s*:\s*([-\w]+)\s*=\s*\$([\w\d])\s*(\{)?\s*$)~~"};
-  //std::regex object{R"~~(\$([-\w\d]+))~~"};
+  std::regex spurious_commas{R"~~(,(]|}))~~"};
   std::regex new_variable{
       R"~~(^\s*([\w\d]+)\s*=\s*\$([-\w\d]+)\s*(\{)?\s*$)~~"};
   std::regex nested_parameter{
       R"~~(^\s*p\s+([-\w\d]+)\s*=\s*\$([-\w\d]+)\s*(\{)?\s*$)~~"};
+  std::regex parameter{R"~~(^\s*p\s*([-\w\d]+)\s*=\s*([-\w\d]+)\s*$)~~"};
 
-  std::regex spurious_commas{R"~~(,(]|}))~~"};
 
   std::ifstream ifs(file_name);
   if (!ifs.is_open()) {
@@ -371,7 +358,6 @@ auto parse_qst(std::string file_name) {
   }
 
   std::map<std::string, std::string> all_variables;
-//  std::vector<std::pair<std::string, std::string>> command_stack;
   std::string line;
   std::string current_variable_name;
   std::smatch m;
@@ -391,9 +377,10 @@ auto parse_qst(std::string file_name) {
                      "other components! line "
                   << line_num << "\n";
         std::exit(1);
-          }
-                  current_variable_name = m[1].str();
-	  all_variables[current_variable_name] = "[\"" + m[2].str() + "\",{\"parameters\":{"; 
+      }
+      current_variable_name = m[1].str();
+      all_variables[current_variable_name] =
+          std::regex_replace(line, new_variable, "[\"$2\",{\"parameters\":{"); 
       continue;
     }
 
@@ -406,9 +393,8 @@ auto parse_qst(std::string file_name) {
                   << line_num << "\n";
         std::exit(1);
           }
-          all_variables[current_variable_name] += "\"" + m[1].str() + "\":[\"" +
-                                                  m[2].str() +
-                                                  "\",{\"parameters\":{";
+          all_variables[current_variable_name] += std::regex_replace(
+              line, nested_parameter, "\"$1\":[\"$2\",{\"parameters\":{");
           continue;
     }
     if (std::regex_match(line, m, parameter)) {
@@ -444,21 +430,7 @@ auto parse_qst(std::string file_name) {
     std::cout << "qst<syntax>error: braces need to be added\n";
     std::exit(1);
   }
-  /*
-            auto env_con =
-                std::regex_replace(all_variables["E"], close_brace, "}]");
-            env_con =
-                std::regex_replace(env_con, parameter,
-     "\"parameters\":{\"$1\":"); env_con = std::regex_replace(env_con, object,
-     "[\"$1\","); env_con = std::regex_replace(env_con, spaces, "");
 
-            auto pop_con =
-                std::regex_replace(all_variables["P"], close_brace, "}]");
-            pop_con = std::regex_replace(pop_con, parameter,
-                                         "\"parameters\":{\"$1\"},");
-            pop_con = std::regex_replace(pop_con, object, "[\"$1\",");
-            pop_con = std::regex_replace(pop_con, spaces, "");
-  */
   auto env_con = std::regex_replace(all_variables["E"], spurious_commas, "$1");
   auto pop_con = std::regex_replace(all_variables["P"], spurious_commas, "$1");
   std::cout << env_con << "\n" << pop_con << std::endl;
@@ -469,17 +441,9 @@ auto parse_qst(std::string file_name) {
   life::configuration env, pop;
   es >> env;
   ps >> pop;
-  // life::configuration env_pop;
    
   std::cout << env.dump(4) << "\n" << pop.dump(4) << std::endl;
   return std::make_pair(pop, env);
-  /*
-  for(auto &[k,v] : all_variables)
-          std::cout << k << "\n" << v << "\n";
-*/
-  // auto pop_con = true_user_population(pop_exp_path);
-  // auto env_con = true_user_environment(env_exp_path);
-  //
 }
 
 long life::entity::entity_id_ = 0;
@@ -501,23 +465,6 @@ int main(int argc, char **argv) {
   } else if (argc == 2 && std::string(argv[1]) == "-s") {
     std::cout << "saving configurations.cfg ... \n";
     save_configs();
-  } else if (argc == 3 && std::string(argv[1]) == "-f") {
-    std::string exp_path = argv[2];
-    life::global_path = exp_path.substr(0, exp_path.find_last_of('/') + 1);
-
-    std::hash<std::string> hash_fn;
-    auto con = true_user_experiment(exp_path);
-    std::cout << std::setw(4) << con << std::endl;
-    std::cout << "\nSuccessfully Tested! Generated unique experiment "
-              << hash_fn(con.dump()) << std::endl;
-
-    // auto con = true_user_experiment(exp_path);
-    std::string name = con[0];
-    auto exp = life::make_experiment(name);
-    exp.configure(con[1]);
-    std::cout << "running experiment from file \"" << exp_path << "\" ... \n";
-    exp.run();
-    std::cout << "\nSuccessfully Completed!\n";
   } else if (argc == 3 && std::string(argv[1]) == "-g") {
     std::string exp_path = argv[2];
     life::global_path = exp_path.substr(0, exp_path.find_last_of('/') + 1);
