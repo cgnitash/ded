@@ -21,7 +21,7 @@ class markov_cppn {
   
   life::configuration genome_config_;
 
-  life::entity my_cppn_ = life::make_entity("cppn");
+  life::entity my_cppn_ = life::make_entity({"cppn",{}});
 
   std::vector<double> buffer_;
 

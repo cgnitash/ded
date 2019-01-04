@@ -43,13 +43,13 @@ void generate_components(const std::string &fname, opts build_options) {
 
   for (auto &[type, names] : build_options) {
     header << type << " make_" << type
-           << "(std::string_view choice, configuration con) {\n";
+           << "(configuration con) {\n";
     for (auto &name : names)
-      header << "  if (choice == \"" << name << "\") {\n    auto e = " << type
+      header << "  if (con[0] == \"" << name << "\") {\n    auto e = " << type
              << "{" << name
-             << "()};\n    e.configure(con);\n    return e;\n  }\n";
+             << "()};\n    e.configure(con[1]);\n    return e;\n  }\n";
     header << "  std::cout << \"unknown-" << type
-           << ": \" << choice;\n  exit(1);\n}\n\n";
+           << ": \" << con[0];\n  exit(1);\n}\n\n";
   }
 
   header << "void generate_all_configs() {\n";

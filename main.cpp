@@ -468,7 +468,7 @@ int main(int argc, char **argv) {
   } else if (argc == 3 && std::string(argv[1]) == "-g") {
     std::string exp_path = argv[2];
     life::global_path = exp_path.substr(0, exp_path.find_last_of('/') + 1);
-    auto gen = life::make_experiment("generator");
+    auto gen = life::make_experiment({"generator"});
     std::cout << "generating sub-experiments from file \"" << exp_path << "\" ... \n";
 	life::configuration con;
 	con["file"] = exp_path;
@@ -536,13 +536,13 @@ int main(int argc, char **argv) {
     std::cout << "\nNot yet Tested! Generated unique environment "
               << hash_fn(true_env.dump()) << std::endl;
 
-    std::string pop_name = true_pop[0];
-    auto pop = life::make_population(pop_name);
-    pop.configure(true_pop[1]);
+    //std::string pop_name = true_pop[0];
+    auto pop = life::make_population(true_pop);
+    //pop.configure(true_pop[1]);
 
-    std::string env_name = true_env[0];
-    auto env = life::make_environment(env_name);
-    env.configure(true_env[1]);
+    //std::string env_name = true_env[0];
+    auto env = life::make_environment(true_env);
+    //env.configure(true_env[1]);
 
     auto res_pop = env.evaluate(pop);
     for (auto o : res_pop.get_as_vector())

@@ -27,8 +27,8 @@ life::population cycle::evaluate(life::population pop) {
   }
   std::experimental::filesystem::create_directory(life::global_path);
 
-  auto world = life::make_environment(world_name_);
-  world.configure(world_config_);
+  auto world = life::make_environment(world_);
+  //world.configure(world_config_);
 
   for (auto i : ranges::view::iota(0, count_)) {
 

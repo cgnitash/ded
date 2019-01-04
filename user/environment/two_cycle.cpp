@@ -27,11 +27,11 @@ life::population two_cycle::evaluate(life::population pop) {
   }
   std::experimental::filesystem::create_directory(life::global_path);
 
-  auto optimiser = life::make_environment(sel_name_);
-  optimiser.configure(sel_config_);
+  auto optimiser = life::make_environment(sel_);
+//  optimiser.configure(sel_config_);
 
-  auto fit_fun = life::make_environment(fitn_name_);
-  fit_fun.configure(fitn_config_);
+  auto fit_fun = life::make_environment(fitn_);
+//  fit_fun.configure(fitn_config_);
 
   for (auto i : ranges::view::iota(0, count_)) {
 

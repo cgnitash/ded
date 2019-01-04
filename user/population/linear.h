@@ -16,11 +16,12 @@ class linear {
 
   bool track_lineage_{false};
   std::vector<life::entity> pop_;
-  std::string entity_name_{"null_entity"};
+  //std::string entity_name_{"null_entity"};
   //std::string dir_name_{"./"};
   std::string load_spec_{""};
-  life::configuration entity_config_;
   long size_{0};
+
+  life::configuration entity_{"null_entity",{}};
 
   void update_tree(long p, int count);
   bool found_in_fossils(long) const;
@@ -34,8 +35,8 @@ public:
     size_ = con["parameters"]["size"];
     load_spec_ = std::string(con["parameters"]["load-from"]);
     track_lineage_ = con["parameters"]["track-lineage"];
-    entity_name_ = std::string(con["parameters"]["entity"][0]);
-    entity_config_ = con["parameters"]["entity"][1];
+    //entity_name_ = std::string(con["parameters"]["entity"][0]);
+    entity_= con["parameters"]["entity"];
 
 	initialize();
   }
@@ -45,7 +46,8 @@ public:
     con["parameters"]["track-lineage"] = track_lineage_;
     con["parameters"]["size"] = size_;
     con["parameters"]["load-from"] = load_spec_;
-    con["parameters"]["entity"] = {entity_name_, {}};
+
+    con["parameters"]["entity"] = {entity_[0], {}};
     return con;
   }
 

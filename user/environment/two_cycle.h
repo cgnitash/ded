@@ -22,10 +22,10 @@ class two_cycle {
 
   std::string score_tag_  = "score";
   
-  std::string sel_name_ = "null_environment";
-  std::string fitn_name_ = "null_environment";
-  life::configuration sel_config_;
-  life::configuration fitn_config_;
+//  std::string sel_name_ = "null_environment";
+//  std::string fitn_name_ = "null_environment";
+  life::configuration sel_ {"null_environment",{}};
+  life::configuration fitn_ {"null_environment",{}};
 
   // not here??
   long Seed_ = 0;
@@ -50,10 +50,10 @@ public:
     ec["post-tags"] = nullptr;
 
 	// o:in:selector(P) must handle these tags
-    ec["parameters"]["selector"] = {sel_name_, {}, {score_tag_}, {}};
+    ec["parameters"]["selector"] = {sel_[0], {}, {score_tag_}, {}};
 
     // o:in:fitness(P) must provide these tags
-    ec["parameters"]["fitness"] = {fitn_name_, {}, {}, {score_tag_}};
+    ec["parameters"]["fitness"] = {fitn_[0], {}, {}, {score_tag_}};
 
     return ec;
   }
@@ -65,10 +65,10 @@ public:
     pop_av_freq_ = con["parameters"]["pop-avmax-frequency"];
     //Seed_ = con["parameters"]["SEED"];
 	
-	sel_name_ = std::string(con["parameters"]["selector"][0]);
-	sel_config_ = con["parameters"]["selector"][1];
-	fitn_name_ = std::string(con["parameters"]["fitness"][0]);
-	fitn_config_ = con["parameters"]["fitness"][1];
+	//sel_name_ = std::string(con["parameters"]["selector"][0]);
+	sel_= con["parameters"]["selector"];
+	//fitn_name_ = std::string(con["parameters"]["fitness"][0]);
+	fitn_= con["parameters"]["fitness"];
 
 	//std::srand(Seed_);
   }

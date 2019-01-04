@@ -20,8 +20,8 @@ class cycle {
 
   std::string score_tag_  = "score";
   
-  std::string world_name_ = "null_environment";
-  life::configuration world_config_;
+//  std::string world_name_ = "null_environment";
+  life::configuration world_{"null_environment", {}};
 
   // not here??
   long Seed_ = 0;
@@ -44,7 +44,7 @@ public:
     ec["post-tags"] = nullptr;
 
     // o:in:fitness(P) must provide these tags
-    ec["parameters"]["world"] = {world_name_, {}, {}, {score_tag_}};
+    ec["parameters"]["world"] = {world_[0], {}, {}, {score_tag_}};
 
     return ec;
   }
@@ -54,8 +54,8 @@ public:
     snap_freq_ = con["parameters"]["snapshot-frequency"];
     //Seed_ = con["parameters"]["SEED"];
 	
-	world_name_= std::string(con["parameters"]["world"][0]);
-	world_config_ = con["parameters"]["world"][1];
+	//world_name_= std::string(con["parameters"]["world"][0]);
+	world_= con["parameters"]["world"];
 
 	//std::srand(Seed_);
   }

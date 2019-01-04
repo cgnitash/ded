@@ -20,9 +20,9 @@ class replicate {
   std::string used_x_tag_ = "x";
 
   size_t num_ = 1;
-  std::string env_name_ = "null_environment";
-  life::configuration env_config_;
-  life::configuration env_reqs_;
+  //std::string env_name_ =;
+  life::configuration env_ {"null_environment",{}};
+  //life::configuration env_reqs_;
 
 public:
   replicate() { configure(publish_configuration()); }
@@ -39,7 +39,7 @@ public:
 
     //  o:in:env(P) must provide these tags
     c["parameters"]["env"] = {
-        env_name_,
+        env_[0],
         {},
         {},
         {used_x_tag_}}; // as well as propogate population requirements
@@ -49,8 +49,8 @@ public:
 
   void configure(life::configuration con) {
     num_ = con["parameters"]["num"];
-    env_name_ = con["parameters"]["env"][0];
-    env_config_ = con["parameters"]["env"][1];
+    //env_name_ = con["parameters"]["env"][0];
+    env_= con["parameters"]["env"];
 
     fx_tag_ = con["post-tags"]["fx"];
   }

@@ -15,8 +15,8 @@
 life::population replicate::evaluate(life::population pop) {
 
   // make and configure nested environment
-  auto env = life::make_environment(env_name_);
-  env.configure(env_config_);
+  auto env = life::make_environment(env_);
+  //env.configure(env_config_);
 
   auto vec = pop.get_as_vector();
 
