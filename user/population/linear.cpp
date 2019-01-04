@@ -101,33 +101,13 @@ void linear::merge(std::vector<life::entity> v) {
   pop_ = v;
 }
 
-life::configuration linear::get_stats(long i) const {
-  // precondition: "score" must be in org.data
-  const auto scores = pop_ | ranges::view::transform([](auto const &org) {
-                        return double{org.data.get_value("score")};
-                      });
-
-  auto pop_stats_file =
-      util::open_or_append(life::global_path + "pop.csv", "avg,max,update\n");
-
-  life::configuration con;
-  con["max"] = *ranges::max_element(scores);
-  con["avg"] = ranges::accumulate(scores, 0.0) / pop_.size();
-
-  pop_stats_file << con["avg"] << "," << con["max"] << "," << i << std::endl;
-
-  return con;
-}
-
 void linear::snapshot(long i) const {
-  if (snapshot_frequency_ && !(i % snapshot_frequency_)) {
-    auto snapshot_file = util::open_or_append(life::global_path + "snapshot_" +
-                                                  std::to_string(i) + ".csv",
-                                              "id,size,encoding\n");
-    for (auto &org : pop_)
-      snapshot_file << org.get_id() << "," << org.get_encoding().size() << ","
-                    << org.get_encoding() << std::endl;
-  }
+  auto snapshot_file = util::open_or_append(life::global_path + "snapshot_" +
+                                                std::to_string(i) + ".csv",
+                                            "id,size,encoding\n");
+  for (auto &org : pop_)
+    snapshot_file << org.get_id() << "," << org.get_encoding().size() << ","
+                  << org.get_encoding() << std::endl;
 }
 
 void linear::prune_lineage(long i) {

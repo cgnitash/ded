@@ -22,10 +22,11 @@ public:
   std::vector<life::entity> get_as_vector() {
 	  return {};
   }
+
+  size_t size() const { return {}; }
   void merge(std::vector<life::entity>) {}
   void clear() {}
-  void snapshot(long) const {}
-  life::configuration get_stats(long) const { return {}; }
   void prune_lineage(long) {}
+  void snapshot(long) {}
   void flush_unpruned() {}
 };

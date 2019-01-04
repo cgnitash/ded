@@ -38,17 +38,17 @@ public:
   // public interface of populations - how populations can be used
   life::configuration data;
 
+  size_t size() const { return self_->size_(); }
+
   void merge(std::vector<entity> v) { self_->merge_(v); }
 
   void prune_lineage(long i) { self_->prune_lineage_(i); }
 
+  void snapshot(long i) { self_->snapshot_(i); }
+
   std::vector<entity> get_as_vector() { return self_->get_as_vector_(); }
 
-  void snapshot(long i) const { self_->snapshot_(i); }
-
   void flush_unpruned() { self_->flush_unpruned(); }
-
-  life::configuration get_stats(long i) const { return self_->get_stats_(i); }
 
   configuration publish_configuration() {
     return self_->publish_configuration_();
@@ -70,13 +70,12 @@ private:
     virtual configuration publish_configuration_() = 0;
     virtual void configure_(configuration) = 0;
 
-    virtual void snapshot_(long i) const = 0;
-
+	virtual size_t size_() const = 0;
     virtual std::vector<life::entity> get_as_vector_() = 0;
     virtual void merge_(std::vector<life::entity>) = 0;
     virtual void prune_lineage_(long) = 0;
+    virtual void snapshot_(long) = 0;
     virtual void flush_unpruned() = 0;
-    virtual life::configuration get_stats_(long) const = 0;
   };
 
   template <typename UserPopulation>
@@ -98,15 +97,13 @@ private:
       return data_.get_as_vector();
     }
 
-    void snapshot_(long i) const override { data_.snapshot(i); }
+    size_t size_() const override { return data_.size(); }
 
     void flush_unpruned() override { data_.flush_unpruned(); }
 
     void prune_lineage_(long i) override { data_.prune_lineage(i); }
 
-    life::configuration get_stats_(long i) const override {
-      return data_.get_stats(i);
-    }
+    void snapshot_(long i) override { data_.snapshot(i); }
 
     configuration publish_configuration_() override {
       return data_.publish_configuration();

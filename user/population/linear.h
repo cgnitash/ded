@@ -21,7 +21,6 @@ class linear {
   std::string load_spec_{""};
   life::configuration entity_config_;
   long size_{0};
-  long snapshot_frequency_{0};
 
   void update_tree(long p, int count);
   bool found_in_fossils(long) const;
@@ -33,7 +32,6 @@ public:
 
   void configure(life::configuration con) {
     size_ = con["parameters"]["size"];
-    snapshot_frequency_ = con["parameters"]["snapshot-freq"];
     load_spec_ = std::string(con["parameters"]["load-from"]);
     track_lineage_ = con["parameters"]["track-lineage"];
     entity_name_ = std::string(con["parameters"]["entity"][0]);
@@ -46,16 +44,15 @@ public:
     life::configuration con;
     con["parameters"]["track-lineage"] = track_lineage_;
     con["parameters"]["size"] = size_;
-    con["parameters"]["snapshot-freq"] = snapshot_frequency_;
     con["parameters"]["load-from"] = load_spec_;
     con["parameters"]["entity"] = {entity_name_, {}};
     return con;
   }
 
+  size_t size() const { return pop_.size(); }
   std::vector<life::entity> get_as_vector();
   void merge(std::vector<life::entity>);
   void snapshot(long)const;
-  life::configuration get_stats(long) const;
   void prune_lineage(long);
   void flush_unpruned();
 };
