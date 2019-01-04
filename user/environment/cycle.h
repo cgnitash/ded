@@ -20,7 +20,6 @@ class cycle {
 
   std::string score_tag_  = "score";
   
-//  std::string world_name_ = "null_environment";
   life::configuration world_{"null_environment", {}};
 
   // not here??
@@ -54,7 +53,6 @@ public:
     snap_freq_ = con["parameters"]["snapshot-frequency"];
     //Seed_ = con["parameters"]["SEED"];
 	
-	//world_name_= std::string(con["parameters"]["world"][0]);
 	world_= con["parameters"]["world"];
 
 	//std::srand(Seed_);

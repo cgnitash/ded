@@ -16,8 +16,6 @@ class linear {
 
   bool track_lineage_{false};
   std::vector<life::entity> pop_;
-  //std::string entity_name_{"null_entity"};
-  //std::string dir_name_{"./"};
   std::string load_spec_{""};
   long size_{0};
 
@@ -35,7 +33,6 @@ public:
     size_ = con["parameters"]["size"];
     load_spec_ = std::string(con["parameters"]["load-from"]);
     track_lineage_ = con["parameters"]["track-lineage"];
-    //entity_name_ = std::string(con["parameters"]["entity"][0]);
     entity_= con["parameters"]["entity"];
 
 	initialize();

@@ -22,8 +22,6 @@ class two_cycle {
 
   std::string score_tag_  = "score";
   
-//  std::string sel_name_ = "null_environment";
-//  std::string fitn_name_ = "null_environment";
   life::configuration sel_ {"null_environment",{}};
   life::configuration fitn_ {"null_environment",{}};
 
@@ -65,9 +63,7 @@ public:
     pop_av_freq_ = con["parameters"]["pop-avmax-frequency"];
     //Seed_ = con["parameters"]["SEED"];
 	
-	//sel_name_ = std::string(con["parameters"]["selector"][0]);
 	sel_= con["parameters"]["selector"];
-	//fitn_name_ = std::string(con["parameters"]["fitness"][0]);
 	fitn_= con["parameters"]["fitness"];
 
 	//std::srand(Seed_);
