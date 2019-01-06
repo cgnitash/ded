@@ -18,7 +18,7 @@ class score_cout_printer {
 
 	bool message_ = true;
 
-	std::string used_score_tag_ = "score";
+	std::string used_score_tag_ = "score,double";
 
 	std::string env_name_ = "null_environment";
 	life::configuration env_config_;

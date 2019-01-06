@@ -19,7 +19,7 @@
 
 class forager {
 
-  std::string food_eaten_tag_ = "food-eaten";
+  std::string food_eaten_tag_ = "food-eaten,double";
 
   size_t grid_size_ = 10;
   size_t sensor_range_ = 4;

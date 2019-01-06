@@ -20,7 +20,7 @@ class two_cycle {
   long snap_freq_ = 0;
   long pop_av_freq_ = 0;
 
-  std::string score_tag_  = "score";
+  std::string score_tag_  = "score,double";
   
   life::configuration sel_ {"null_environment",{}};
   life::configuration fitn_ {"null_environment",{}};

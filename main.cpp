@@ -349,6 +349,8 @@ auto parse_qst(std::string file_name) {
   std::regex nested_parameter{
       R"~~(^\s*p\s+([-\w\d]+)\s*=\s*\$([-\w\d]+)\s*(\{)?\s*$)~~"};
   std::regex parameter{R"~~(^\s*p\s*([-\w\d]+)\s*=\s*([-\w\d]+)\s*$)~~"};
+  std::regex pre_tag{R"~~(^\s*tre\s*([-\w\d]+)\s*=\s*([-\w\d]+)\s*$)~~"};
+  std::regex post_tag{R"~~(^\s*tos\s*([-\w\d]+)\s*=\s*([-\w\d]+)\s*$)~~"};
 
 
   std::ifstream ifs(file_name);
@@ -358,10 +360,12 @@ auto parse_qst(std::string file_name) {
   }
 
   std::map<std::string, std::string> all_variables;
+  struct component_spec {
+    std::string variable_or_comp_name, comp, params, pres, posts;
+  };
+  std::vector<component_spec> component_stack;
   std::string line;
-  std::string current_variable_name;
   std::smatch m;
-  auto brace_count{0};
   for (auto line_num{1}; std::getline(ifs, line); line_num++) {
 
     line = std::regex_replace(line, comments, "");
@@ -370,53 +374,81 @@ auto parse_qst(std::string file_name) {
       continue;
 
     if (std::regex_match(line, m, new_variable)) {
-      brace_count += !m[3].str().empty();
-      if (!current_variable_name.empty()) {
+      if (!component_stack.empty()) {
         std::cout << "qst<syntax>error: new user variable cannot be nested "
                      "within "
                      "other components! line "
                   << line_num << "\n";
         std::exit(1);
       }
-      current_variable_name = m[1].str();
-      all_variables[current_variable_name] =
-          std::regex_replace(line, new_variable, "[\"$2\",{\"parameters\":{"); 
+      if (m[3].str().empty()) {
+        all_variables[m[1].str()] = "[\"" + m[2].str() +
+                                    "\",{\"parameters\":null,\"pre-tags\":"
+                                    "null,\"post-tags\":null}]";
+      } else {
+        component_stack.push_back({m[1].str(), m[2].str(), "", "", ""});
+      }
       continue;
     }
 
     if (std::regex_match(line, m, nested_parameter)) {
-      brace_count += !m[3].str().empty();
-      if (current_variable_name.empty()) {
+      if (component_stack.empty()) {
         std::cout << "qst<syntax>error: new user variable cannot be nested "
                      "within "
                      "other components! line "
                   << line_num << "\n";
         std::exit(1);
-          }
-          all_variables[current_variable_name] += std::regex_replace(
-              line, nested_parameter, "\"$1\":[\"$2\",{\"parameters\":{");
-          continue;
+      }
+      if(m[3].str().empty()) {
+        component_stack.back().params += "\"" + m[1].str() + "\":[\"" + m[2].str() +
+                                     "\",{\"parameters\":null,\"pre-tags\":"
+                                     "null,\"post-tags\":null}],";
+      } else {
+        component_stack.push_back({m[1].str(), m[2].str(), "", "", ""});
+      }
+      continue;
     }
+
     if (std::regex_match(line, m, parameter)) {
       std::cout << "matched parameter regex with - " << line << std::endl;
-      all_variables[current_variable_name] +=
-          std::regex_replace(line, parameter, "\"$1\":$2,");
+      component_stack.back().params += "\"" + m[1].str() + "\":" + m[2].str() + ",";
       continue;
-	}
+    }
+
+    if (std::regex_match(line, m, pre_tag)) {
+      std::cout << "matched pre-tag regex with - " << line << std::endl;
+      component_stack.back().pres +=
+          "\"" + m[1].str() + "\":\"" + m[2].str() + "\",";
+      continue;
+    }
+
+    if (std::regex_match(line, m, post_tag)) {
+      std::cout << "matched post-tag regex with - " << line << std::endl;
+      component_stack.back().posts +=
+          "\"" + m[1].str() + "\":\"" + m[2].str() + "\",";
+      continue;
+    }
 
     if (std::regex_match(line, m, close_brace)) {
       std::cout << "matched closed brace regex with - " << line << std::endl;
-      if (current_variable_name.empty()) {
+      if (component_stack.empty()) {
         std::cout << "qst<syntax>error: dangling closing brace! line "
                   << line_num << "\n";
         std::exit(1);
       }
-        all_variables[current_variable_name] += "}}],";
-      brace_count--;
-      if (!brace_count) {
-        all_variables[current_variable_name] += "}}]";
-        current_variable_name.clear();
-      } 
+      auto current = component_stack.back();
+      component_stack.pop_back();
+      if (component_stack.empty()) {
+        all_variables[current.variable_or_comp_name] =
+            "[\"" + current.comp + "\",{\"parameters\":{" + current.params +
+            "},\"pre-tags\":{" + current.pres + "},\"post-tags\":{" +
+            current.posts + "}}]";
+      } else {
+        component_stack.back().params +=
+            "\"" + current.variable_or_comp_name + "\":[\"" + current.comp +
+            "\",{\"parameters\":{" + current.params + "},\"pre-tags\":{" +
+            current.pres + "},\"post-tags\":{" + current.posts + "}}],";
+      }
       continue;
     }
 
@@ -426,7 +458,7 @@ auto parse_qst(std::string file_name) {
 
   }
 
-  if (!current_variable_name.empty()) {
+  if (!component_stack.empty()) {
     std::cout << "qst<syntax>error: braces need to be added\n";
     std::exit(1);
   }
@@ -536,13 +568,9 @@ int main(int argc, char **argv) {
     std::cout << "\nNot yet Tested! Generated unique environment "
               << hash_fn(true_env.dump()) << std::endl;
 
-    //std::string pop_name = true_pop[0];
     auto pop = life::make_population(true_pop);
-    //pop.configure(true_pop[1]);
 
-    //std::string env_name = true_env[0];
     auto env = life::make_environment(true_env);
-    //env.configure(true_env[1]);
 
     auto res_pop = env.evaluate(pop);
     for (auto o : res_pop.get_as_vector())

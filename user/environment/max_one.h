@@ -16,7 +16,7 @@
 
 class max_one {
 
-	std::string ones_tag_ = "ones";
+	std::string ones_tag_ = "ones,double";
 public:
   max_one() {
 	  configure(publish_configuration());

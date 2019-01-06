@@ -16,7 +16,7 @@ life::population couter::evaluate(life::population pop) {
 
   for (const auto &org : pop.get_as_vector())
     std::cout << (message_ ? "\nhi " : "\n ") << org.get_id() << " "
-              << org.data.get_value(score_tag_);
+              << std::get<double>(org.data.get_value(score_tag_));
 
   return pop;
 }

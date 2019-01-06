@@ -18,8 +18,8 @@ class replicate {
 
   size_t num_ = 1;
 
-  std::string fx_tag_ = "fx";
-  std::string used_x_tag_ = "x";
+  std::string fx_tag_ = "fx,double";
+  std::string used_x_tag_ = "x,double";
 
   life::configuration env_ {"null_environment",{}};
 

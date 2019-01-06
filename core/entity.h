@@ -48,10 +48,10 @@ public:
   bool operator>=(const entity &e) const { return get_id() >= e.get_id(); }
 
   struct data_store {
-   
-   life::configuration data;
-   auto get_value(std::string i) const { return data[i]; }
-   auto set_value(std::string i, life::configuration v) {  data[i]  = v; }
+
+    std::map<std::string, signal> m;
+    signal get_value(std::string i) const { return m.at(i); }
+    auto set_value(std::string i, signal v) { m[i] = v; }
 
   };
   data_store data;

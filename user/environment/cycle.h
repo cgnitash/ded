@@ -18,7 +18,7 @@ class cycle {
   long count_ = 1;
   long snap_freq_ = 0;
 
-  std::string score_tag_  = "score";
+  std::string score_tag_  = "score,double";
   
   life::configuration world_{"null_environment", {}};
 

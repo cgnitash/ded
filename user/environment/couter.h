@@ -18,7 +18,7 @@ class couter {
 
 	bool message_ = true;
 
-	std::string score_tag_ = "score";
+	std::string score_tag_ = "score,double";
 
 public:
   couter() { configure(publish_configuration()); }

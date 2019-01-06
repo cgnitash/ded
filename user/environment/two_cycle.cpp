@@ -38,9 +38,10 @@ life::population two_cycle::evaluate(life::population pop) {
     auto fitnesses = [this](const auto &vec) {
       life::configuration cout_con;
 
-      const auto scores = vec | ranges::view::transform([this](const auto &org) {
-                        return double{org.data.get_value(score_tag_)};
-                      });
+      const auto scores =
+          vec | ranges::view::transform([this](const auto &org) {
+            return std::get<double>(org.data.get_value(score_tag_));
+          });
 
       cout_con["max"] = *ranges::max_element(scores);
       cout_con["avg"] = ranges::accumulate(scores, 0.0) / vec.size();

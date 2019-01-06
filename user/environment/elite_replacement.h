@@ -9,7 +9,7 @@
 
 class elite_replacement {
 
-  std::string value_tag_ = "value";
+  std::string value_tag_ = "value,double";
   double strength_ = 0.1;
 
 public:

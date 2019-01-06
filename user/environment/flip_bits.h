@@ -16,7 +16,7 @@
 
 class flip_bits {
 
-  std::string flippiness_tag_ = "flippiness";
+  std::string flippiness_tag_ = "flippiness,double";
   size_t  size_ = 10;
   double eval(life::entity &);
 
