@@ -17,7 +17,7 @@ E = $two_cycle {
  			              }
 					p x2 = $forager {
 			  	          p  sensor-range = 5
-			 	          p replace = true
+			 	          p replace = false
  			              }
 				  }
     p count = 301 
