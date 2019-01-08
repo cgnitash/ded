@@ -37,7 +37,9 @@ public:
   }
 
   void configure(life::configuration c) {
-	size_ = c["parameters"]["size"];
+    size_ = c["parameters"]["size"];
+
+    flippiness_tag_ = c["post-tags"]["flippiness"];
   }
 
 // requires org.input("some-bits","vector<bool,size>")

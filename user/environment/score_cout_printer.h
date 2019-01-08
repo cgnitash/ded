@@ -20,9 +20,8 @@ class score_cout_printer {
 
 	std::string used_score_tag_ = "score,double";
 
-	std::string env_name_ = "null_environment";
-	life::configuration env_config_;
-	life::configuration env_reqs_;
+	life::configuration env_{ "null_environment",{}};
+
 public:
   score_cout_printer() { configure(publish_configuration()); }
 
@@ -38,7 +37,7 @@ public:
 
     //  o:in:env(P) must provide these tags
     c["parameters"]["env"] = {
-        env_name_,
+        env_[0],
         {},
         {},
 		{used_score_tag_}}; // as well as propogate population requirements
@@ -48,8 +47,7 @@ public:
 
   void configure(life::configuration con) {
     message_ = con["parameters"]["message"];
-    env_name_ = con["parameters"]["env"][0];
-    env_config_ = con["parameters"]["env"][1];
+    env_= con["parameters"]["env"];
 
   }
 

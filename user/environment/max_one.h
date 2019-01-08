@@ -35,8 +35,8 @@ public:
     return c;
 	  return life::configuration(); }
 
-  void configure(life::configuration) {}
+  void configure(life::configuration c) { ones_tag_ = c["post-tags"]["ones"]; }
 
-   life::population evaluate(life::population);
+  life::population evaluate(life::population);
 };
 

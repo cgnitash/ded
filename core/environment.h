@@ -36,7 +36,28 @@ public:
   environment &operator=(environment &&) noexcept = default;
 
   // public interface of environments - how environments can be used
-  population evaluate(population p) { return self_->evaluate_(p); }
+  population evaluate(population p) { 
+	  {
+	  auto pcheck = p;
+	  auto current = publish_configuration();
+	  for (auto &o : pcheck.get_as_vector())
+		  if (o.data.size() != current["pre-tags"].size()) {
+			  std::cout << "prewtf";
+			  std::exit(1);
+		  }
+	  }
+	  auto p_r =  self_->evaluate_(p); 
+	  {
+	  auto pcheck = p_r;
+	  auto current = publish_configuration();
+	  for (auto &o : pcheck.get_as_vector())
+		  if (o.data.size() != current["post-tags"].size()) {
+			  std::cout << "postwtf";
+			  std::exit(1);
+		  }
+	  }
+	  return p_r;
+  }
 
   configuration publish_configuration() const {
     return self_->publish_configuration_();

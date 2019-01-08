@@ -27,8 +27,8 @@ public:
     life::configuration c;
     c["parameters"]["message"] = message_;
 
-    //  o:in:P must handle these tags
-    c["pre-tags"] = nullptr;
+    //  o:in:P must provide these tags
+    c["pre-tags"]["score"] = score_tag_;
 
 	// o:in:P' has no tags
     c["post-tags"] = nullptr;
@@ -38,7 +38,7 @@ public:
 
   void configure(life::configuration con) {
     message_ = con["parameters"]["message"];
-
+    score_tag_ = con["pre-tags"]["score"];
   }
 
   life::population evaluate(life::population);

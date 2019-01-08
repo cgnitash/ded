@@ -52,6 +52,8 @@ public:
     std::map<std::string, signal> m;
     signal get_value(std::string i) const { return m.at(i); }
     auto set_value(std::string i, signal v) { m[i] = v; }
+	size_t size() const { return m.size(); }
+	void clear(std::string i) { m.erase(i); }
 
   };
   data_store data;
@@ -59,8 +61,6 @@ public:
   long get_id() const { return self_->get_id_(); }
 
   long get_ancestor() const { return self_->get_ancestor_(); }
-
-  // void prune_ancestors(long n) { self_->prune_ancestors_(n); }
 
   encoding get_encoding() const { return self_->get_encoding_(); }
 

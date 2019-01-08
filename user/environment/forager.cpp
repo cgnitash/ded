@@ -143,11 +143,10 @@ double forager::eval(life::entity &org) {
 }
 
 life::population forager::evaluate(life::population pop) {
-  pop.merge(pop.get_as_vector() |
-            ranges::action::transform([this](auto &org) {
-              org.data.set_value(food_eaten_tag_, eval(org));
-              return org;
-            }));
+  auto vec = pop.get_as_vector();
+  for(auto &org:vec)
+	  org.data.set_value(food_eaten_tag_, eval(org));
+  pop.merge(vec);
   return pop;
 }
 

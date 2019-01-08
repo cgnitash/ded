@@ -35,6 +35,8 @@ life::population two_cycle::evaluate(life::population pop) {
 
     pop = fit_fun.evaluate(pop);
 
+	auto v = pop;
+
     auto fitnesses = [this](const auto &vec) {
       life::configuration cout_con;
 
@@ -50,7 +52,7 @@ life::population two_cycle::evaluate(life::population pop) {
     };
 
     if (pop_av_freq_ && !(i % pop_av_freq_)) {
-      auto cout_con = fitnesses(pop.get_as_vector());
+      auto cout_con = fitnesses(v.get_as_vector());
       auto pop_stats_file = util::open_or_append(life::global_path + "pop.csv",
                                                  "avg,max,update\n");
       pop_stats_file << cout_con["avg"] << "," << cout_con["max"] << "," << i
@@ -58,7 +60,7 @@ life::population two_cycle::evaluate(life::population pop) {
     }
 
     if (cout_freq_ && !(i % cout_freq_)) {
-      auto cout_con = fitnesses(pop.get_as_vector());
+      auto cout_con = fitnesses(v.get_as_vector());
       std::cout << "update:" << std::setw(6) << i << "   " << cout_con
                 << std::endl;
     }
