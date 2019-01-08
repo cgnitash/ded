@@ -1,0 +1,17 @@
+
+P = $linear {
+	p entity = $markov_brain {
+				 p inputs = 5
+				 p outputs = 2
+				 p hiddens = 2
+				}
+	p size = 50
+	}
+
+E = $score_cout_printer {
+	p env = $forager {
+			 p sensor-range = 5
+			 p replace = true
+ 			}
+	} 
+

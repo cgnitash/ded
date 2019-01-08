@@ -1,0 +1,29 @@
+
+P = $linear {
+	p entity = $markov_brain {
+				 p inputs = 5
+				 p outputs = 2
+				 p hiddens = 2
+				}
+	p size = 50
+	p track-lineage = true
+	}
+
+E = $two_cycle {
+	p fitness =   $collate {
+					p x1 = $forager {
+			  	          p  sensor-range = 5
+			 	          p replace = true
+ 			              }
+					p x2 = $max_one 
+				  }
+    p count = 301 
+	p cout-frequency = 10
+	p snapshot-frequency = 50
+	p pop-avmax-frequency = 1
+    p selector = $elite_replacement {
+				tre value = score
+				p strength = 0.4
+				} 
+	} 
+
