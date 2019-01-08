@@ -15,7 +15,10 @@ E = $two_cycle {
 			  	          p  sensor-range = 5
 			 	          p replace = true
  			              }
-					p x2 = $max_one 
+					p x2 = $forager {
+			  	          p  sensor-range = 5
+			 	          p replace = true
+ 			              }
 				  }
     p count = 301 
 	p cout-frequency = 10
