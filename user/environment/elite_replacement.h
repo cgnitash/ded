@@ -26,6 +26,9 @@ public:
     //  o:in:P must handle these tags
     c["pre-tags"]["value"] = value_tag_;
 
+    c["org-inputs"] = nullptr;
+    c["org-outputs"] = nullptr;
+
 	// o:in:P' has no tags
 	c["post-tags"] = nullptr;
 

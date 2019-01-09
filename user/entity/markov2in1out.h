@@ -46,7 +46,7 @@ public:
   }
 
   void mutate();
-  void input(life::signal);
-  life::signal output();
+  void input(std::string, life::signal);
+  life::signal output(std::string );
   void tick();
 };

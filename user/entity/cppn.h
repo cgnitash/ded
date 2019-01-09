@@ -56,8 +56,8 @@ public:
   }
 
   void mutate();
-  void input(life::signal);
-  life::signal output();
+  void input(std::string, life::signal);
+  life::signal output(std::string );
   void tick();
   life::encoding get_encoding() const { return genome_; }
   void set_encoding(life::encoding e) {

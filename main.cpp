@@ -17,29 +17,17 @@
 
 void check_environment_correct(life::ModuleInstancePair type_name,
                                life::configuration config) {
-  if (config.find("parameters") == config.end()) {
-    std::cout << "User publication error: user module<" << type_name.first
-              << ">::'" << type_name.second
-              << "' must publish 'parameters' group"
-              << "\n";
-    exit(1);
-  }
 
-  if (config.find("pre-tags") == config.end()) {
-    std::cout << "User publication error: user module<" << type_name.first
-              << ">::'" << type_name.second << "' must publish 'pre-tags' group"
-              << "\n";
-    exit(1);
-  }
+  for (auto &group :
+       {"parameters", "pre-tags", "post-tags", "org-inputs", "org-outputs"})
+    if (config.find(group) == config.end()) {
+      std::cout << "User publication error: user module<" << type_name.first
+                << ">::'" << type_name.second << "' must publish '" << group
+                << "' group\n";
+      exit(1);
+    }
 
-  if (config.find("post-tags") == config.end()) {
-    std::cout << "User publication error: user module<" << type_name.first
-              << ">::'" << type_name.second << "' must publish 'post-tag' group"
-              << "\n";
-    exit(1);
-  }
-
-  if (config.size() != 3) {
+  if (config.size() != 5) {
     std::cout << "User publication error: user module<" << type_name.first
               << ">::'" << type_name.second
               << "' must not publish unspecified groups"
@@ -48,6 +36,7 @@ void check_environment_correct(life::ModuleInstancePair type_name,
   }
   return;
 }
+
 void check_population_correct(life::ModuleInstancePair type_name,
                               life::configuration config) {
   if (config.find("parameters") == config.end()) {
@@ -67,17 +56,19 @@ void check_population_correct(life::ModuleInstancePair type_name,
   }
   return;
 }
+
 void check_entity_correct(life::ModuleInstancePair type_name,
                           life::configuration config) {
-  if (config.find("parameters") == config.end()) {
-    std::cout << "User publication error: user module<" << type_name.first
-              << ">::'" << type_name.second
-              << "' must publish 'parameters' group"
-              << "\n";
-    exit(1);
-  }
 
-  if (config.size() != 1) {
+  for (auto &group : {"parameters", "input-tags", "output-tags"})
+    if (config.find(group) == config.end()) {
+      std::cout << "User publication error: user module<" << type_name.first
+                << ">::'" << type_name.second << "' must publish '" << group
+                << "' group\n";
+      exit(1);
+    }
+
+  if (config.size() != 3) {
     std::cout << "User publication error: user module<" << type_name.first
               << ">::'" << type_name.second
               << "' must not publish unspecified groups"
@@ -88,40 +79,93 @@ void check_entity_correct(life::ModuleInstancePair type_name,
 }
 
 auto signal_name_type(std::string s) {
-  std::regex r{R"~~(^([-\w\d]+),([-\w\d,]+)$)~~"};
+  std::regex r{R"~~(^([-\w\d]+),([-\>\<\w\d,]+)$)~~"};
   std::smatch m;
   std::regex_match(s, m, r);
   return std::make_pair(m[1].str(), m[2].str());
 }
 
-life::configuration check_pre_tag_overrides(std::string name,
+bool tag_converts_to(std::string pub, std::string req,
+                     life::configuration pop_config,
+                     life::configuration env_config) {
+  if (pub == req)
+    return true;
+  std::regex pod{R"~~(^(double|long|bool)$)~~"};
+  std::regex agg{R"~~(^A\<(double|long|bool)(,([\w\d]+))?\>$)~~"};
+
+  std::smatch m_req, m_pub;
+  // pub and req are pods
+  if (std::regex_match(pub, m_pub, pod) && std::regex_match(req, m_req, pod)) {
+	  if (m_pub[1].str() == "long" && m_req[1].str() == "double")
+		  return true;
+	  return false;
+  }
+
+  // exactly one of pub or req are pods
+  if (std::regex_match(pub, m_pub, pod) || std::regex_match(req, m_req, pod)) {
+	  return false;
+  }
+
+  // both pub and req must be aggs
+  if (std::regex_match(req, m_req, agg) && std::regex_match(pub, m_pub, agg)) {
+    // req is an unconstrained agg
+    if (m_req[2].str().empty()) 
+		// pub is primitive-convertible to req
+      if (m_pub[1].str() == "long" && m_req[1].str() == "double")
+        return true;
+
+    // req is a constrained agg
+	 
+	// pub and req type match or are primitive-convertible
+    if ((m_pub[1].str() != m_req[1].str()) &&
+        (m_pub[1].str() != "long" || m_req[1].str() != "double"))
+      return false;
+
+    // pub is unconstrained
+    if (m_pub[2].str().empty()) 
+		return false;
+
+    auto req_type = m_req[3].str();
+    auto pub_type = m_pub[3].str();
+	// req is constrained by number
+    if (ranges::all_of(req_type, [](auto c) { return std::isdigit(c); })) {
+      // pub is constrained by number
+      if (ranges::all_of(pub_type, [](auto c) { return std::isdigit(c); }))
+        return req_type == pub_type;
+      // pub is constrained by parameter
+	 auto val = pop_config["parameters"][pub_type];
+         return val == std::stoi(req_type);
+    }
+	// req is constrained by parameter
+    // pub is constrained by number
+      if (ranges::all_of(pub_type, [](auto c) { return std::isdigit(c); }))
+		  return false;
+// pub is constrained by parameter
+	 auto pub_val = pop_config["parameters"][pub_type];
+	 auto req_val = env_config["parameters"][req_type];
+         return pub_val == req_val;
+  }
+  return false;
+}
+
+life::configuration check_org_in_tag_overrides(std::string name,
                                             std::string nested_name,
                                             life::configuration reqs,
                                             life::configuration overs,
-                                            life::configuration published) {
+                                            life::configuration published,
+                                             life::configuration pop_config,
+                                             life::configuration env_config) {
 
-  std::cout << "in pre of " << name << " :required " << reqs << " "
+  if (published.empty())
+    return nullptr;
+
+  std::cout << "in org-in-tag of " << name << " :required " << reqs << " "
             << reqs.size() << "\n and :published " << published << " "
             << published.size() << "\n";
   if (reqs.size() < published.size()) {
-    std::cout << "error: environment::" << name
-              << " cannot handle all the tags supplied by environment::"
-              << nested_name << "\n";
-    exit(1);
-  }
-  if (reqs.size() > published.size()) {
-    std::cout << "error: environment::" << nested_name
-              << " does not provide sufficient tags needed by environment::"
+    std::cout << "error: Population cannot handle all the input-tags provided "
+                 "by environment::"
               << name << "\n";
-    exit(1);
-  }
-
-  if (reqs.empty())
-    return nullptr;
-
-  if (reqs.size() > 1) {
-
-    std::cout << "oops: ded does not support multiple pre-tag requirements \n";
     exit(1);
   }
 
@@ -152,7 +196,7 @@ life::configuration check_pre_tag_overrides(std::string name,
       std::exit(1);
     }
     // this should be more involved
-    if (find_req->second != find_pub->second) {
+    if (!tag_converts_to(find_pub->second, find_req->second,pop_config,env_config)) {
       std::cout << "error: " << find_req->first << " must be type "
                 << find_req->second << " but " << find_pub->first
                 << " has type " << find_pub->second << "'\n";
@@ -170,69 +214,50 @@ life::configuration check_pre_tag_overrides(std::string name,
                     ranges::end(pub_split));
   }
 
-  std::map<std::string, int> types;
-  for (auto &r : req_split)
-    types[r.second]++;
-  if (ranges::any_of(types, [](auto t) { return t.second > 1; })) {
-    std::cout << "error: ambiguity resulting from multiple tags with same type "
-                 "in requirements of "
-              << name << "\n";
-    std::exit(1);
-  }
-
-  for (auto &r : req_split) {
-    auto find_replacement = ranges::find(
-        pub_split, r.second, &std::pair<std::string, std::string>::second);
+  for (auto &pub : pub_split) {
+    if (ranges::count_if(req_split, [pub,pop_config,env_config](auto r) {
+          return tag_converts_to(pub.second, r.second,pop_config,env_config);
+        }) != 1) {
+      std::cout
+          << "error: ambiguity resulting from matching tags with convertible "
+             "type in requirements of "
+          << name << "\n";
+      std::exit(1);
+    }
+    auto find_replacement = ranges::find_if(req_split, [pub,pop_config,env_config](auto r) {
+      return tag_converts_to(pub.second, r.second,pop_config,env_config);
+    });
     if (find_replacement == ranges::end(pub_split)) {
       std::cout << "error: this should NEVER happen" << std::endl;
       std::exit(1);
     }
-    attempted_over[find_replacement->first] = r.first + "," + r.second;
+    attempted_over[pub.first] =
+        find_replacement->first + "," + find_replacement->second;
   }
 
-  std::cout << "still in pre " << attempted_over << "\n";
+  std::cout << "still in org-in-tags " << attempted_over << "\n";
 
   return attempted_over;
-  /*
-  auto attempted_over = published;
-  attempted_over.begin().value() = reqs[0];
-  if (!overs.empty() && attempted_over != overs) {
-    std::cout << "error: explicit overrides of pre-tags " << overs
-              << " is invalid.\nNote that an automatic application of "
-              << attempted_over << " is available\n";
-    exit(1);
-  }
-  */
 }
 
-life::configuration check_post_tag_overrides(std::string name,
+life::configuration check_org_out_tag_overrides(std::string name,
                                              std::string nested_name,
                                              life::configuration reqs,
                                              life::configuration overs,
-                                             life::configuration published) {
+                                             life::configuration published,
+                                             life::configuration pop_config,
+                                             life::configuration env_config) {
 
-  std::cout << "in post of " << name << " :required " << reqs << " "
+  if (published.empty())
+    return nullptr;
+
+  std::cout << "in org-out-tags of " << name << " :required " << reqs << " "
             << reqs.size() << "\n and :published " << published << " "
             << published.size() << "\n";
   if (reqs.size() < published.size()) {
-    std::cout << "error: environment::" << name
-              << " cannot handle all the tags supplied by environment::"
-              << nested_name << "\n";
-    exit(1);
-  }
-  if (reqs.size() > published.size()) {
-    std::cout << "error: environment::" << nested_name
-              << " does not provide sufficient tags needed by environment::"
+    std::cout << "error: Population cannot handle all the output-tags provided "
+                 "by environment::"
               << name << "\n";
-    exit(1);
-  }
-
-  if (reqs.empty())
-    return nullptr;
-
-  if (reqs.size() > 1) {
-
-    std::cout << "oops: ded does not support multiple post-tag requirements \n";
     exit(1);
   }
 
@@ -263,7 +288,7 @@ life::configuration check_post_tag_overrides(std::string name,
       std::exit(1);
     }
     // this should be more involved
-    if (find_req->second != find_pub->second) {
+    if (!tag_converts_to(find_pub->second , find_req->second,pop_config,env_config)) {
       std::cout << "error: " << find_req->first << " must be type "
                 << find_req->second << " but " << find_pub->first
                 << " has type " << find_pub->second << "'\n";
@@ -281,24 +306,201 @@ life::configuration check_post_tag_overrides(std::string name,
                     ranges::end(pub_split));
   }
 
-  std::map<std::string, int> types;
-  for (auto &r : req_split)
-    types[r.second]++;
-  if (ranges::any_of(types, [](auto t) { return t.second > 1; })) {
-    std::cout << "error: ambiguity resulting from multiple tags with same type "
-                 "in requirements of "
-              << name << "\n";
-    std::exit(1);
-  }
-
-  for (auto &r : req_split) {
-    auto find_replacement = ranges::find(
-        pub_split, r.second, &std::pair<std::string, std::string>::second);
+  for (auto &pub : req_split) {
+    if (ranges::count_if(req_split, [pub, pop_config, env_config](auto r) {
+          return tag_converts_to(pub.second, r.second,pop_config,env_config);
+        }) != 1) {
+      std::cout
+          << "error: ambiguity resulting from matching tags with convertible "
+             "type in requirements of "
+          << name << "\n";
+      std::exit(1);
+    }
+    auto find_replacement = ranges::find_if(req_split, [pub,pop_config,env_config](auto r) {
+      return tag_converts_to(pub.second, r.second,pop_config,env_config);
+    });
     if (find_replacement == ranges::end(pub_split)) {
       std::cout << "error: this should NEVER happen" << std::endl;
       std::exit(1);
     }
-    attempted_over[find_replacement->first] = r.first + "," + r.second;
+    attempted_over[pub.first] =
+        find_replacement->first + "," + find_replacement->second;
+  }
+
+  std::cout << "still in org-outs " << attempted_over << "\n";
+  return attempted_over;
+}
+
+life::configuration check_pre_tag_overrides(std::string name,
+                                            std::string nested_name,
+                                            life::configuration reqs,
+                                            life::configuration overs,
+                                            life::configuration published,
+                                             life::configuration pop_config,
+                                             life::configuration env_config) {
+
+  std::cout << "in pre of " << name << " :required " << reqs << " "
+            << reqs.size() << "\n and :published " << published << " "
+            << published.size() << "\n";
+  if (reqs.size() != published.size()) {
+    std::cout << "error: environment::" << name
+              << " cannot handle/provide all the tags supplied/needed by environment::"
+              << nested_name << "\n";
+    exit(1);
+  }
+
+  std::vector<std::pair<std::string, std::string>> req_split;
+  for (auto &r : reqs)
+    req_split.push_back(signal_name_type(r));
+
+  // try ::as_lvalue  ??
+  std::vector<std::pair<std::string, std::string>> pub_split;
+  for (auto &it : published.items())
+    pub_split.push_back(signal_name_type(it.value()));
+
+  life::configuration attempted_over = published;
+
+  for (auto &[key, value] : overs.items()) {
+    auto find_pub = ranges::find(pub_split, key,
+                                 &std::pair<std::string, std::string>::first);
+    if (find_pub == ranges::end(pub_split)) {
+      std::cout << "error: " << nested_name
+                << " does not require a pre-tag named '" << key << "'\n";
+      std::exit(1);
+    }
+    auto find_req = ranges::find(req_split, std::string{value},
+                                 &std::pair<std::string, std::string>::first);
+    if (find_req == ranges::end(req_split)) {
+      std::cout << "error: " << nested_name
+                << " does not publish a pre-tag named '" << value << "'\n";
+      std::exit(1);
+    }
+    if (!tag_converts_to(find_pub->second, find_req->second,pop_config,env_config)) {
+      std::cout << "error: " << find_req->first << " must be type "
+                << find_req->second << " but " << find_pub->first
+                << " has type " << find_pub->second << "'\n";
+      std::exit(1);
+    }
+    // all good -- assign
+    attempted_over[key] = find_req->first + "," + find_req->second;
+    req_split.erase(ranges::remove_if(req_split,
+                                      [v = value](auto r) {
+                                        return r.first == std::string{v};
+                                      }),
+                    ranges::end(req_split));
+    pub_split.erase(ranges::remove_if(
+                        pub_split, [k = key](auto p) { return p.first == k; }),
+                    ranges::end(pub_split));
+  }
+
+  for (auto &req : req_split) {
+    if (ranges::count_if(pub_split, [req,pop_config,env_config](auto p) {
+          return tag_converts_to(p.second, req.second,pop_config,env_config);
+        }) != 1) {
+      std::cout
+          << "error: ambiguity resulting from matching tags with convertible "
+             "type in requirements of "
+          << name << "\n";
+      std::exit(1);
+    }
+    auto find_replacement = ranges::find_if(pub_split, [req,pop_config,env_config](auto p) {
+      return tag_converts_to(p.second, req.second,pop_config,env_config);
+    });
+    if (find_replacement == ranges::end(pub_split)) {
+      std::cout << "error: this should NEVER happen" << std::endl;
+      std::exit(1);
+    }
+    attempted_over[find_replacement->first] = req.first + "," + req.second;
+  }
+
+  std::cout << "still in pre " << attempted_over << "\n";
+
+  return attempted_over;
+}
+
+life::configuration check_post_tag_overrides(std::string name,
+                                             std::string nested_name,
+                                             life::configuration reqs,
+                                             life::configuration overs,
+                                             life::configuration published,
+                                             life::configuration pop_config,
+                                             life::configuration env_config) {
+
+  std::cout << "in post of " << name << " :required " << reqs << " "
+            << reqs.size() << "\n and :published " << published << " "
+            << published.size() << "\n";
+  if (reqs.size() != published.size()) {
+    std::cout << "error: environment::" << name
+              << " cannot handle/provide all the tags supplied/needed by "
+                 "environment::"
+              << nested_name << "\n";
+    exit(1);
+  }
+
+  std::vector<std::pair<std::string, std::string>> req_split;
+  for (auto &r : reqs)
+    req_split.push_back(signal_name_type(r));
+
+  // try ::as_lvalue  ??
+  std::vector<std::pair<std::string, std::string>> pub_split;
+  for (auto &it : published.items())
+    pub_split.push_back(signal_name_type(it.value()));
+
+  life::configuration attempted_over = published;
+
+  for (auto &[key, value] : overs.items()) {
+    auto find_pub = ranges::find(pub_split, key,
+                                 &std::pair<std::string, std::string>::first);
+    if (find_pub == ranges::end(pub_split)) {
+      std::cout << "error: " << nested_name
+                << " does not publish a post-tag named '" << key << "'\n";
+      std::exit(1);
+    }
+    auto find_req = ranges::find(req_split, std::string{value},
+                                 &std::pair<std::string, std::string>::first);
+    if (find_req == ranges::end(req_split)) {
+      std::cout << "error: " << nested_name
+                << " does not require a post-tag named '" << value << "'\n";
+      std::exit(1);
+    }
+    // this should be more involved
+    if (!tag_converts_to(find_pub->second , find_req->second,pop_config,env_config)) {
+      std::cout << "error: " << find_req->first << " must be type '"
+                << find_req->second << "' but " << find_pub->first
+                << " has type '" << find_pub->second << "'\n";
+      std::exit(1);
+    }
+    // all good -- assign
+    attempted_over[key] = find_req->first + "," + find_req->second;
+    req_split.erase(ranges::remove_if(req_split,
+                                      [v = value](auto r) {
+                                        return r.first == std::string{v};
+                                      }),
+                    ranges::end(req_split));
+    pub_split.erase(ranges::remove_if(
+                        pub_split, [k = key](auto p) { return p.first == k; }),
+                    ranges::end(pub_split));
+  }
+
+  for (auto &req : req_split) {
+    if (ranges::count_if(pub_split, [req,pop_config,env_config](auto p) {
+          return tag_converts_to(p.second, req.second,pop_config,env_config);
+        }) != 1) {
+      std::cout
+          << "error: ambiguity resulting from matching tags with convertible "
+             "type in requirements of "
+          << name << "\n";
+      std::exit(1);
+    }
+    auto find_replacement =
+        ranges::find_if(pub_split, [req, pop_config, env_config](auto p) {
+          return tag_converts_to(p.second, req.second, pop_config, env_config);
+        });
+    if (find_replacement == ranges::end(pub_split)) {
+      std::cout << "error: this should NEVER happen" << std::endl;
+      std::exit(1);
+    }
+    attempted_over[find_replacement->first] = req.first + "," + req.second;
   }
   std::cout << "still in post " << attempted_over << "\n";
   return attempted_over;
@@ -349,7 +551,8 @@ void check_unmentioned_tag_overrides(life::ModuleInstancePair mip,
 }
 
 life::configuration true_environment_object(life::ModuleInstancePair mip,
-                                            life::configuration con) {
+                                            life::configuration con ,
+                                            life::configuration pop_config) {
 
   auto real_con = life::config::true_parameters(mip);
 
@@ -375,20 +578,28 @@ life::configuration true_environment_object(life::ModuleInstancePair mip,
         rit.value()[0] == "null_environment") {
       auto it = con["parameters"].find(rit.key());
       if (it != con["parameters"].end()) {
+        rit.value() = life::configuration::array(
+            {it.value()[0], true_environment_object(
+                                {"environment", it.value()[0]}, it.value()[1],
+                                pop_config)});
         auto nested_con =
             life::config::true_parameters({"environment", it.value()[0]});
         auto pre_tags = check_pre_tag_overrides(
             it.key(), it.value()[0], rit.value()[2], it.value()[1]["pre-tags"],
-            nested_con["pre-tags"]);
+            nested_con["pre-tags"],pop_config,rit.value());
         auto post_tags = check_post_tag_overrides(
             it.key(), it.value()[0], rit.value()[3], it.value()[1]["post-tags"],
-            nested_con["post-tags"]);
-        rit.value() = life::configuration::array(
-            {it.value()[0],
-             true_environment_object({"environment", it.value()[0]},
-                                     it.value()[1])});
+            nested_con["post-tags"],pop_config,rit.value());
+        auto org_in_tags = check_org_in_tag_overrides(
+            it.key(), it.value()[0], pop_config["org-inputs"], it.value()[1]["org-inputs"],
+            nested_con["org-inputs"],pop_config,rit.value());
+        auto org_out_tags = check_org_out_tag_overrides(
+            it.key(), it.value()[0], pop_config["org-outputs"], it.value()[1]["org-outputs"],
+            nested_con["org-outputs"],pop_config,rit.value());
         rit.value()[1]["pre-tags"] = pre_tags;
         rit.value()[1]["post-tags"] = post_tags;
+        rit.value()[1]["org-inputs"] = org_in_tags;
+        rit.value()[1]["org-outputs"] = org_out_tags;
       } else {
         check_unmentioned_tag_overrides(mip, rit.key(), rit.value());
       }
@@ -397,6 +608,7 @@ life::configuration true_environment_object(life::ModuleInstancePair mip,
   return real_con;
 }
 
+/*
 life::configuration true_user_population(std::string file_name) {
   life::configuration con;
   std::ifstream ifs(file_name);
@@ -409,7 +621,9 @@ life::configuration true_user_population(std::string file_name) {
   return life::configuration::array(
       {con[0], life::config::true_object({"population", con[0]}, con[1])});
 }
+*/
 
+/*
 life::configuration true_user_environment(std::string file_name) {
   life::configuration con;
   std::ifstream ifs(file_name);
@@ -422,6 +636,7 @@ life::configuration true_user_environment(std::string file_name) {
   return life::configuration::array(
       {con[0], true_environment_object({"environment", con[0]}, con[1])});
 }
+*/
 
 void pretty_show_entity(life::ModuleInstancePair mip, life::configuration con) {
   std::cout << mip.second << " is an entity\nDefault Parameters\n";
@@ -743,7 +958,9 @@ int main(int argc, char **argv) {
         {pop_con[0], true_any_object({"population", pop_con[0]}, pop_con[1])});
     auto true_env = life::configuration::array(
         {env_con[0],
-         true_environment_object({"environment", env_con[0]}, env_con[1])});
+         true_environment_object(
+             {"environment", env_con[0]}, env_con[1],
+             true_pop[1]["parameters"]["entity"][1])});
 
     std::cout << std::setw(4) << true_pop << std::endl;
     std::cout << "\nNot yet Tested! Generated unique population "

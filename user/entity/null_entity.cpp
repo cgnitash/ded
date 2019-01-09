@@ -5,8 +5,8 @@
 #include <algorithm>
 
   void null_entity::mutate() {}
-  void null_entity::input(life::signal) {}
-  life::signal null_entity::output() { return life::signal(); }
+  void null_entity::input(std::string, life::signal) {}
+  life::signal null_entity::output(std::string) { return life::signal(); }
   void null_entity::tick() {}
 
 

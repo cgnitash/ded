@@ -7,6 +7,9 @@
 
 class markov_cppn {
 
+  std::string in_sense_ = "in-sense,A<double,inputs>";
+  std::string out_sense_ = "out-sense,A<double,outputs>";
+
   life::encoding genome_;
   std::regex encoding_parser_{R"(([^:]+):)"};
 
@@ -50,6 +53,10 @@ public:
     con["parameters"]["mutate-acfns"] = mutate_acfns_;
     con["parameters"]["mutate-cppn"] = mutate_cppn_;
     con["parameters"]["genome-params"] = genome_config_;
+
+	con["input-tags"]["in-sense"] = in_sense_;
+	con["output-tags"]["out-sense"] = out_sense_;
+
     return con;
   }
   void configure(life::configuration con) {
@@ -61,6 +68,10 @@ public:
     mutate_acfns_ = con["parameters"]["mutate-acfns"];
     mutate_cppn_ = con["parameters"]["mutate-cppn"];
     genome_config_ = con["parameters"]["genome-params"];
+
+    in_sense_ = con["input-tags"]["in-sense"];
+    out_sense_ = con["output-tags"]["out-sense"]; 
+
     genome_.configure(genome_config_);
     genome_.generate(200);
     my_cppn_.configure({{"inputs", 2}, {"outputs", 1}, {"hiddens", 2}});
@@ -74,8 +85,8 @@ public:
 
   void seed_gates(size_t);
   void mutate();
-  void input(life::signal);
-  life::signal output();
+  void input(std::string, life::signal);
+  life::signal output(std::string );
   void tick();
   life::encoding get_encoding() const { return genome_; }
   void set_encoding(life::encoding e) {

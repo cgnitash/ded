@@ -21,6 +21,9 @@ class forager {
 
   std::string food_eaten_tag_ = "food-eaten,double";
 
+  std::string org_input_los_tag_ = "line-of-sight,A<double,sensor-range>";
+  std::string org_output_action_tag_ = "action,A<double,2>";
+
   size_t grid_size_ = 10;
   size_t sensor_range_ = 4;
   size_t updates_ = 100;
@@ -86,6 +89,8 @@ public:
     //  o:in:P' must handle these tags
     ec["post-tags"]["food-eaten"] = food_eaten_tag_;
 
+	ec["org-inputs"]["line-of-sight"] = org_input_los_tag_; 
+	ec["org-outputs"]["action"] = org_output_action_tag_; 
     return ec;
   }
 
@@ -101,6 +106,9 @@ public:
     resources_ = std::vector(grid_size_, std::vector(grid_size_, 0));
 
     food_eaten_tag_ = con["post-tags"]["food-eaten"];
+
+    org_input_los_tag_ = con["org-inputs"]["line-of-sight"];
+    org_output_action_tag_ = con["org-outputs"]["action"];
   }
 
   // requires org.input("sensors","vector<bool,sensor-range>")

@@ -50,8 +50,8 @@ public:
   struct data_store {
 
     std::map<std::string, signal> m;
-    signal get_value(std::string i) const { return m.at(i); }
-    auto set_value(std::string i, signal v) { m[i] = v; }
+    signal get_value(std::string n) const { return m.at(n); }
+    auto set_value(std::string n, signal v) { m[n] = v; }
 	size_t size() const { return m.size(); }
 	void clear(std::string i) { m.erase(i); }
 
@@ -68,9 +68,9 @@ public:
 
   encoding parse_encoding(std::string s) { return self_->parse_encoding_(s); }
 
-  void input(signal s) { self_->input_(s); }
+  void input(std::string n, signal s) { self_->input_(n,s); }
 
-  signal output() { return self_->output_(); }
+  signal output(std::string n) { return self_->output_(n); }
 
   void mutate() { self_->mutate_(); }
 
@@ -102,8 +102,8 @@ private:
     virtual void mutate_() = 0;
     virtual configuration publish_configuration_() = 0;
     virtual void tick_() = 0;
-    virtual void input_(signal) = 0;
-    virtual signal output_() = 0;
+    virtual void input_(std::string, signal) = 0;
+    virtual signal output_(std::string) = 0;
     virtual void configure_(configuration) = 0;
   };
 
@@ -120,10 +120,10 @@ private:
     long get_id_() const override { return id_; }
 
     // mandatory methods
-	 
-    void input_(signal s) override { data_.input(s); }
 
-    signal output_() override { return data_.output(); }
+    void input_(std::string n, signal s) override { data_.input(n, s); }
+
+    signal output_(std::string n) override { return data_.output(n); }
 
     void tick_() override { data_.tick(); }
 

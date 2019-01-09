@@ -24,15 +24,15 @@ void markov_brain::mutate() {
   genome_.point_mutate();
   genome_.copy_chunk();
   genome_.del_chunk();
-  compute_gates_();
+  gates_are_computed_ = false;
   buffer_ = std::vector(input_ + output_ + hidden_, 0.);
 }
 
-void markov_brain::input(life::signal s) {
-  if (auto vp = std::get_if<std::vector<double>>(&s)) {
-    auto v = *vp;
+void markov_brain::input(std::string n, life::signal s) {
+  if (n == in_sense_) {
+    auto v = std::get<std::vector<double>>(s);
     if (v.size() != input_) {
-      std::cout << "Error: entity-markovbrain must get an input range of the "
+      std::cout << "Impl-Error: entity-markovbrain must get an input range of the "
                    "specified size\n";
       exit(1);
     }
@@ -40,18 +40,29 @@ void markov_brain::input(life::signal s) {
       buffer_[i] = util::Bit(v[i]);
   } else {
     std::cout
-        << "Error: entity-markovbrain cannot handle this payload type \n";
+        << "Impl-Error: entity-markovbrain cannot handle this name-signal pair in input \n";
     exit(1);
   }
 }
 
-life::signal markov_brain::output() {
+life::signal markov_brain::output(std::string n) {
 
-  return buffer_ | ranges::copy |
-         ranges::action::slice(input_, input_ + output_);
+  if (n == out_sense_) {
+    return buffer_ | ranges::copy |
+           ranges::action::slice(input_, input_ + output_);
+  } else {
+    std::cout
+        << "Impl-Error: entity-markovbrain cannot handle this name-signal pair in output \n";
+    exit(1);
+  }
 }
 
 void markov_brain::tick() {
+
+  if (!gates_are_computed_) {
+    compute_gates_();
+    gates_are_computed_ = true;
+  }
 
   std::vector out_buffer(buffer_.size(), 0.);
 
@@ -73,6 +84,7 @@ void markov_brain::seed_gates_(size_t n) {
     auto pos = std::rand() % (genome_.size() - 1);
     std::copy(std::begin(codon_), std::end(codon_), std::begin(genome_) + pos);
   });
+  gates_are_computed_ = false;
 }
 
 void markov_brain::compute_gates_() {

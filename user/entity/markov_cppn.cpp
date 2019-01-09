@@ -1,6 +1,5 @@
 
 #include "markov_cppn.h"
-#include "../../core/utilities.h"
 
 #include <algorithm>
 #include <vector>
@@ -59,9 +58,9 @@ void markov_cppn::mutate() {
   buffer_ = std::vector(input_ + output_ + hidden_, 0.);
 }
 
-void markov_cppn::input(life::signal s) {
-  if (auto vp = std::get_if<std::vector<double>>(&s)) {
-    auto v = *vp;
+void markov_cppn::input(std::string n, life::signal s) {
+  if (n == in_sense_) {
+    auto v = std::get<std::vector<double>>(s);
     if (v.size() != input_) {
       std::cout << "Error: entity-markovbrain must get an input range of the "
                    "specified size\n";
@@ -70,15 +69,21 @@ void markov_cppn::input(life::signal s) {
     for (auto i{0u}; i < input_; i++)
       buffer_[i] = util::Bit(v[i]);
   } else {
-    std::cout << "Error: entity-markovbrain cannot handle this payload type \n";
+    std::cout << "Error: entity-markovbrain cannot handle this name-signal pair \n";
     exit(1);
   }
 }
 
-life::signal markov_cppn::output() {
+life::signal markov_cppn::output(std::string n) {
 
+  if (n == out_sense_) {
   return buffer_ | ranges::copy |
          ranges::action::slice(input_, input_ + output_);
+  } else {
+    std::cout
+        << "Impl-Error: entity-markovcppn cannot handle this name-signal pair \n";
+    exit(1);
+  }
 }
 
 void markov_cppn::tick() {

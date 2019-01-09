@@ -36,6 +36,9 @@ public:
     //  o:in:P' must handle these tags
     c["post-tags"]["fx"] = fx_tag_;
 
+    c["org-inputs"] = nullptr;
+    c["org-outputs"] = nullptr;
+
     //  o:in:env(P) must provide these tags
     c["parameters"]["env"] = {
         env_[0],

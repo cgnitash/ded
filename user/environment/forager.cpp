@@ -130,13 +130,13 @@ double forager::eval(life::entity &org) {
 
   util::repeat(updates_, [&] {
     // feed input to org; inputs are 0s and 1s only
-    org.input(signals_at(position, facing));
+    org.input(org_input_los_tag_,signals_at(position, facing));
     // run the org once
     org.tick();
     // read its outputs and interact with the environment
-    interact(org.output(), position, facing, score);
-	if(visualize_)
-	  visualize(vis_file,position,facing,score);
+    interact(org.output(org_output_action_tag_), position, facing, score);
+    if (visualize_)
+      visualize(vis_file, position, facing, score);
   });
 
   return score;
