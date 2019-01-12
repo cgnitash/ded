@@ -554,8 +554,12 @@ auto parse_qst(std::string file_name) {
   std::regex spurious_commas{R"~~(,(]|}))~~"};
   std::regex new_variable{
       R"~~(^\s*([\w\d]+)\s*=\s*\$([-\w\d]+)\s*(\{)?\s*$)~~"};
+  std::regex new_refactored_variable{
+      R"~~(^\s*([\w\d]+)\s*=\s*!([-\w\d]+)\s*$)~~"};
   std::regex nested_parameter{
       R"~~(^\s*vary\s+([-\w\d]+)\s*=\s*\$([-\w\d]+)\s*(\{)?\s*$)~~"};
+  std::regex nested_refactored_parameter{
+      R"~~(^\s*vary\s+([-\w\d]+)\s*=\s*!([-\w\d]+)\s*$)~~"};
   std::regex parameter{R"~~(^\s*vary\s*([-\w\d]+)\s*=\s*([\.\-\w\d]+)\s*$)~~"};
   std::regex pre_tag{R"~~(^\s*pre\s*([-\w\d]+)\s*=\s*([-\w\d]+)\s*$)~~"};
   std::regex post_tag{R"~~(^\s*pos\s*([-\w\d]+)\s*=\s*([-\w\d]+)\s*$)~~"};
@@ -601,9 +605,31 @@ auto parse_qst(std::string file_name) {
       continue;
     }
 
+    if (std::regex_match(line, m, new_refactored_variable)) {
+      if (!component_stack.empty()) {
+        std::cout << "qst<syntax>error: new-refactored-variable cannot be nested "
+                     "within "
+                     "other components! line "
+                  << line_num << "\n";
+        std::exit(1);
+      }
+
+      auto name = m[2].str();
+      auto variable = all_variables.find(name);
+      if (variable == all_variables.end()) {
+        std::cout << "error: refactored-variable " << name
+                  << " not found! line " << line_num << "\n";
+        std::exit(1);
+      }
+
+      all_variables[m[1].str()] = variable->second;
+
+      continue;
+    }
+
     if (std::regex_match(line, m, nested_parameter)) {
       if (component_stack.empty()) {
-        std::cout << "qst<syntax>error: new user variable cannot be nested "
+        std::cout << "qst<syntax>error: parameter must be nested "
                      "within "
                      "other components! line "
                   << line_num << "\n";
@@ -617,6 +643,29 @@ auto parse_qst(std::string file_name) {
       } else {
         component_stack.push_back({m[1].str(), m[2].str(), "", "", "", "", ""});
       }
+      continue;
+    }
+
+    if (std::regex_match(line, m, nested_refactored_parameter)) {
+      if (component_stack.empty()) {
+        std::cout << "qst<syntax>error: refactored-variable must be nested "
+                     "within "
+                     "other components! line "
+                  << line_num << "\n";
+        std::exit(1);
+      }
+
+	  auto name = m[2].str();
+	  auto variable = all_variables.find(name);
+	  if (variable == all_variables.end()) {
+        std::cout << "error: refactored-variable " << name <<
+                     " not found! line "
+                  << line_num << "\n";
+        std::exit(1);
+      }
+      component_stack.back().params +=
+          "\"" + m[1].str() + "\":" + variable->second + ",";
+
       continue;
     }
 
