@@ -1,30 +1,38 @@
 
 P = $linear {
-	p entity = $markov_brain {
-				 p inputs = 5
-				 p outputs = 2
-				 p hiddens = 2
-				}
-	p size = 50
-	p track-lineage = true
-	}
+		vary entity = $markov_brain {
+			vary inputs = 5
+			vary outputs = 2
+			vary hiddens = 2
+		}
+		vary size = 50
+		vary track-lineage = true
+}
 
-E = $two_cycle {
-	p fitness =   $replicate {
-					p env = $forager {
-			  	          p  sensor-range = 5
-			 	          p replace = true
-					      tos food-eaten = x
- 			              }
-					p num = 1
-				  }
-    p count = 301 
-	p cout-frequency = 10
-	p snapshot-frequency = 50
-	p pop-avmax-frequency = 1
-    p selector = $elite_replacement {
-				tre value = score
-				p strength = 0.4
-				} 
-	} 
+rep-for = $replicate {
+			vary env = $forager {
+				vary  sensor-range = 5
+				vary replace = true
+				pos food-eaten = x
+				ist line-of-sight = in-sense
+				ost action = out-sense
+			}
+			vary num = 1
+}
+
+elite = $elite_replacement {
+			vary strength = 0.4
+			pre value = score
+		} 
+
+ttc = $two_cycle {
+		vary fitness = !rep-for
+		vary count = 301 
+		vary cout-frequency = 10
+		vary snapshot-frequency = 50
+		vary pop-avmax-frequency = 1
+		vary selector = !elite
+} 
+
+E = !ttc 
 

@@ -60,13 +60,12 @@ void forager::visualize(std::ofstream &out, location position, direction facing,
 void forager::interact(life::signal s, location &position, direction &facing,
                        double &score) {
 
-  if (auto vp = std::get_if<std::vector<double>>(&s)) {
-    auto output = *vp;
-    if (output.size() != 2) {
-      std::cout
-          << "Error: environment-forager must recieve an output of size 2\n";
-      exit(1);
-    }
+  auto output = std::get<std::vector<double>>(s) ;
+  if (output.size() != 2) {
+    std::cout
+        << "Error: environment-forager must recieve an output of size 2\n";
+    exit(1);
+  }
 
     // outputs are interpreted as 0s and 1s only
     auto out = util::Bit(output[0]) * 2 + util::Bit(output[1]);
@@ -94,11 +93,6 @@ void forager::interact(life::signal s, location &position, direction &facing,
       }
       break;
     }
-  } else {
-    std::cout
-        << "Error: environment-forager cannot handle this payload type \n";
-    exit(1);
-  }
 }
 
 double forager::eval(life::entity &org) {

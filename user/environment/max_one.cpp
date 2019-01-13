@@ -10,19 +10,12 @@ life::population max_one::evaluate(life::population pop) {
               // run single tick
               org.tick();
               // score is number of outputs that evaluate to Bit() == 1
-              auto s = org.output();
-              if (auto vp = std::get_if<std::vector<double>>(&s)) {
-                auto output = *vp;
-                org.data.set_value(ones_tag_,
-                                   ranges::count_if(output, [](auto i) {
-                                     return util::Bit(i);
-                                   }));
-                return org;
-              } else {
-                std::cout << "Error: entity-max-one cannot handle this "
-                             "payload type \n";
-                exit(1);
-              }
+              auto s = org.output(org_output_ones_tag_);
+              auto output = std::get<std::vector<double>>(s);
+              org.data.set_value(
+                  ones_tag_, static_cast<double>(ranges::count_if(
+                                 output, [](auto i) { return util::Bit(i); })));
+              return org;
             }));
   return pop;
 }

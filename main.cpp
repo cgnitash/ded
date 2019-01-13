@@ -19,7 +19,7 @@ void check_environment_correct(life::ModuleInstancePair type_name,
                                life::configuration config) {
 
   for (auto &group :
-       {"parameters", "pre-tags", "post-tags", "org-inputs", "org-outputs"})
+       {"parameters", "pre-tags", "post-tags", "input-tags", "output-tags"})
     if (config.find(group) == config.end()) {
       std::cout << "User publication error: user module<" << type_name.first
                 << ">::'" << type_name.second << "' must publish '" << group
@@ -85,11 +85,17 @@ auto signal_name_type(std::string s) {
   return std::make_pair(m[1].str(), m[2].str());
 }
 
-bool tag_converts_to(std::string pub, std::string req,
+bool tag_converts_to(bool in_order, std::string pub, std::string req,
                      life::configuration pop_config,
                      life::configuration env_config) {
   if (pub == req)
     return true;
+
+  if (!in_order) {
+    std::swap(pub, req);
+    std::swap(pop_config, env_config);
+  }
+
   std::regex pod{R"~~(^(double|long|bool)$)~~"};
   std::regex agg{R"~~(^A\<(double|long|bool)(,([-\w\d]+))?\>$)~~"};
 
@@ -111,7 +117,8 @@ bool tag_converts_to(std::string pub, std::string req,
     // req is an unconstrained agg
     if (m_req[2].str().empty())
       // pub is primitive-convertible to req
-      if (m_pub[1].str() == "long" && m_req[1].str() == "double")
+      if (m_pub[1].str() == m_req[1].str() ||
+          (m_pub[1].str() == "long" && m_req[1].str() == "double"))
         return true;
 
     // req is a constrained agg
@@ -158,12 +165,12 @@ check_org_signal_tag_overrides(bool is_input, life::configuration::iterator it,
                                life::configuration env_config) {
 
   auto signal_category =
-      is_input ? std::string{"input"} : std::string{"output"};
+      is_input ? std::string{"input-tags"} : std::string{"output-tags"};
   auto name = it.key();
   auto nested_name = it.value()[0];
-  auto reqs = pop_config[signal_category + "-tags"];
-  auto overs = it.value()[1]["org-" + signal_category + "s"];
-  auto published = env_config["org-" + signal_category + "s"];
+  auto reqs = pop_config[signal_category];
+  auto overs = it.value()[1][signal_category];
+  auto published = env_config[signal_category];
 
   if (reqs.size() < published.size()) {
     std::cout << "error: Population<entity cannot handle all the "
@@ -200,8 +207,8 @@ check_org_signal_tag_overrides(bool is_input, life::configuration::iterator it,
                 << "'. This cannot be overridden\n";
       std::exit(1);
     }
-    if (!tag_converts_to(find_pub->second, find_req->second, pop_config,
-                         nested_con)) {
+    if (!tag_converts_to(is_input, find_pub->second, find_req->second,
+                         pop_config, nested_con)) {
       std::cout << "error: " << find_req->first << " must be type "
                 << find_req->second << " but " << find_pub->first
                 << " has type " << find_pub->second << "'\n";
@@ -216,8 +223,8 @@ check_org_signal_tag_overrides(bool is_input, life::configuration::iterator it,
   // apply remaining tags
   for (auto &[pub_name, pub_type] : pub_split) {
     auto find_replacement = ranges::find_if(
-        req_split, [p = pub_type, pop_config, nested_con](auto r) {
-          return tag_converts_to(p, r.second, pop_config, nested_con);
+        req_split, [p = pub_type, pop_config, nested_con, is_input](auto r) {
+          return tag_converts_to(is_input, p, r.second, pop_config, nested_con);
         });
     if (find_replacement == ranges::end(req_split)) {
       std::cout
@@ -231,8 +238,8 @@ check_org_signal_tag_overrides(bool is_input, life::configuration::iterator it,
         find_replacement->first + "," + find_replacement->second;
     find_replacement = ranges::find_if(
         find_replacement + 1, ranges::end(req_split),
-        [p = pub_type, pop_config, nested_con](auto r) {
-          return tag_converts_to(p, r.second, pop_config, nested_con);
+        [p = pub_type, pop_config, nested_con, is_input](auto r) {
+          return tag_converts_to(is_input, p, r.second, pop_config, nested_con);
         });
     if (find_replacement != ranges::end(req_split)) {
       std::cout << "error: for published " << signal_category << "-signal "
@@ -296,7 +303,7 @@ life::configuration check_tag_overrides(bool is_pre,
                 << tag_category << " named '" << value << "'\n";
       std::exit(1);
     }
-    if (!tag_converts_to(find_pub->second, find_req->second, pop_config,
+    if (!tag_converts_to(is_pre, find_pub->second, find_req->second, pop_config,
                          nested_con)) {
       std::cout << "error: " << find_req->first << " must be type "
                 << find_req->second << " but " << find_pub->first
@@ -312,8 +319,8 @@ life::configuration check_tag_overrides(bool is_pre,
   // apply remaining tags
   for (auto &[req_name, req_type] : req_split) {
     auto find_replacement = ranges::find_if(
-        pub_split, [r = req_type, pop_config, nested_con](auto p) {
-          return tag_converts_to(p.second, r, pop_config, nested_con);
+        pub_split, [r = req_type, pop_config, nested_con, is_pre](auto p) {
+          return tag_converts_to(is_pre, p.second, r, pop_config, nested_con);
         });
     if (find_replacement == ranges::end(pub_split)) {
       std::cout << "error: in requirements of " << name
@@ -323,8 +330,8 @@ life::configuration check_tag_overrides(bool is_pre,
     attempted_over[find_replacement->first] = req_name + "," + req_type;
     find_replacement = ranges::find_if(
         find_replacement + 1, ranges::end(pub_split),
-        [r = req_type, pop_config, nested_con](auto p) {
-          return tag_converts_to(p.second, r, pop_config, nested_con);
+        [r = req_type, pop_config, nested_con, is_pre](auto p) {
+          return tag_converts_to(is_pre, p.second, r, pop_config, nested_con);
         });
     if (find_replacement != ranges::end(pub_split)) {
       std::cout << "error: ambiguity in requirements of " << name
@@ -426,8 +433,8 @@ life::configuration true_environment_object(life::ModuleInstancePair mip,
             false, it, rit.value()[1], pop_config, nested_con);
         rit.value()[1]["pre-tags"] = pre_tags;
         rit.value()[1]["post-tags"] = post_tags;
-        rit.value()[1]["org-inputs"] = org_in_tags;
-        rit.value()[1]["org-outputs"] = org_out_tags;
+        rit.value()[1]["input-tags"] = org_in_tags;
+        rit.value()[1]["output-tags"] = org_out_tags;
       } else {
         check_unmentioned_tag_overrides(mip, rit.key(), rit.value());
       }
@@ -446,20 +453,34 @@ void pretty_show_entity(life::ModuleInstancePair mip, life::configuration con) {
 
 void pretty_show_environment(life::ModuleInstancePair mip,
                              life::configuration con) {
+
   std::cout << "\033[31menvironment::" << mip.second
             << "\033[0m\n\033[33mDefault Parameters ----\033[0m\n";
   for (auto &[key, value] : con["parameters"].items())
     if (value.type_name() != std::string{"array"})
       std::cout << std::setw(26) << key << " : " << value << "\n";
   std::cout << "\033[33m                   ----\033[0m\n";
+
   std::cout << "\033[33mPre-Tags ----\033[0m\n";
   for (auto &[key, value] : con["pre-tags"].items())
     std::cout << std::setw(26) << key << " : " << value << "\n";
   std::cout << "\033[33m         ----\033[0m\n";
+
   std::cout << "\033[33mPost-Tags ----\033[0m\n";
   for (auto &[key, value] : con["post-tags"].items())
     std::cout << std::setw(26) << key << " : " << value << "\n";
   std::cout << "\033[33m          ----\033[0m\n";
+
+  std::cout << "\033[33mOrg-Input-Tags ----\033[0m\n";
+  for (auto &[key, value] : con["input-tags"].items())
+    std::cout << std::setw(26) << key << " : " << value << "\n";
+  std::cout << "\033[33m               ----\033[0m\n";
+
+  std::cout << "\033[33mOrg-Output-Tags ----\033[0m\n";
+  for (auto &[key, value] : con["output-tags"].items())
+    std::cout << std::setw(26) << key << " : " << value << "\n";
+  std::cout << "\033[33m                ----\033[0m\n";
+
   for (auto &[key, value] : con["parameters"].items())
     if (value.type_name() == std::string{"array"} &&
         value[0] == "null_environment") {
@@ -553,14 +574,14 @@ auto parse_qst(std::string file_name) {
   std::regex close_brace{R"~~(^\s*}\s*$)~~"};
   std::regex spurious_commas{R"~~(,(]|}))~~"};
   std::regex new_variable{
-      R"~~(^\s*([\w\d]+)\s*=\s*\$([-\w\d]+)\s*(\{)?\s*$)~~"};
+      R"~~(^\s*([-\w\d]+)\s*=\s*\$([-\w\d]+)\s*(\{)?\s*$)~~"};
   std::regex new_refactored_variable{
-      R"~~(^\s*([\w\d]+)\s*=\s*!([-\w\d]+)\s*$)~~"};
+      R"~~(^\s*([-\w\d]+)\s*=\s*!([-\w\d]+)\s*$)~~"};
   std::regex nested_parameter{
       R"~~(^\s*vary\s+([-\w\d]+)\s*=\s*\$([-\w\d]+)\s*(\{)?\s*$)~~"};
   std::regex nested_refactored_parameter{
       R"~~(^\s*vary\s+([-\w\d]+)\s*=\s*!([-\w\d]+)\s*$)~~"};
-  std::regex parameter{R"~~(^\s*vary\s*([-\w\d]+)\s*=\s*([\.\-\w\d]+)\s*$)~~"};
+  std::regex parameter{R"~~(^\s*vary\s*([-\w\d]+)\s*=\s*([-\.\w\d]+)\s*$)~~"};
   std::regex pre_tag{R"~~(^\s*pre\s*([-\w\d]+)\s*=\s*([-\w\d]+)\s*$)~~"};
   std::regex post_tag{R"~~(^\s*pos\s*([-\w\d]+)\s*=\s*([-\w\d]+)\s*$)~~"};
   std::regex in_signal_tag{R"~~(^\s*ist\s*([-\w\d]+)\s*=\s*([-\w\d]+)\s*$)~~"};
@@ -607,10 +628,11 @@ auto parse_qst(std::string file_name) {
 
     if (std::regex_match(line, m, new_refactored_variable)) {
       if (!component_stack.empty()) {
-        std::cout << "qst<syntax>error: new-refactored-variable cannot be nested "
-                     "within "
-                     "other components! line "
-                  << line_num << "\n";
+        std::cout
+            << "qst<syntax>error: new-refactored-variable cannot be nested "
+               "within "
+               "other components! line "
+            << line_num << "\n";
         std::exit(1);
       }
 
@@ -655,12 +677,11 @@ auto parse_qst(std::string file_name) {
         std::exit(1);
       }
 
-	  auto name = m[2].str();
-	  auto variable = all_variables.find(name);
-	  if (variable == all_variables.end()) {
-        std::cout << "error: refactored-variable " << name <<
-                     " not found! line "
-                  << line_num << "\n";
+      auto name = m[2].str();
+      auto variable = all_variables.find(name);
+      if (variable == all_variables.end()) {
+        std::cout << "error: refactored-variable " << name
+                  << " not found! line " << line_num << "\n";
         std::exit(1);
       }
       component_stack.back().params +=

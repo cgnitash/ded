@@ -47,8 +47,8 @@ public:
     // o:in:P' has no tags
     ec["post-tags"] = nullptr;
 
-    ec["org-inputs"] = nullptr;
-    ec["org-outputs"] = nullptr;
+    ec["input-tags"] = nullptr;
+    ec["output-tags"] = nullptr;
 
 	// o:in:selector(P) must handle these tags
     ec["parameters"]["selector"] = {sel_[0], {}, {score_tag_}, {}};

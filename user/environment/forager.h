@@ -89,8 +89,8 @@ public:
     //  o:in:P' must handle these tags
     ec["post-tags"]["food-eaten"] = food_eaten_tag_;
 
-	ec["org-inputs"]["line-of-sight"] = org_input_los_tag_; 
-	ec["org-outputs"]["action"] = org_output_action_tag_; 
+	ec["input-tags"]["line-of-sight"] = org_input_los_tag_; 
+	ec["output-tags"]["action"] = org_output_action_tag_; 
     return ec;
   }
 
@@ -107,8 +107,8 @@ public:
 
     food_eaten_tag_ = con["post-tags"]["food-eaten"];
 
-    org_input_los_tag_ = con["org-inputs"]["line-of-sight"];
-    org_output_action_tag_ = con["org-outputs"]["action"];
+    org_input_los_tag_ = con["input-tags"]["line-of-sight"];
+    org_output_action_tag_ = con["output-tags"]["action"];
   }
 
   // requires org.input("sensors","vector<bool,sensor-range>")

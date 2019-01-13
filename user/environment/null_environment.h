@@ -26,8 +26,8 @@ public:
     con["parameters"] = nullptr;
     con["pre-tags"] = nullptr;
     con["post-tags"] = nullptr;
-    con["org-inputs"] = nullptr;
-    con["org-outputs"] = nullptr;
+    con["input-tags"] = nullptr;
+    con["output-tags"] = nullptr;
     return con;
   }
 
