@@ -568,7 +568,28 @@ life::configuration check_config_exists(life::ModuleInstancePair mip) {
   return real_con_it->second;
 }
 
-auto parse_qst(std::string file_name) {
+std::vector<std::string>
+expand_layout(std::string layout,
+              std::vector<std::vector<std::string>> varied) {
+  std::vector<std::string> all_layouts;
+  all_layouts.push_back(layout);
+  for (auto count{0u}; count < varied.size(); count++) {
+    std::vector<std::string> current_layouts;
+    ranges::transform(
+        ranges::view::cartesian_product(all_layouts, varied[count]),
+        ranges::back_inserter(current_layouts), [count](const auto &t) {
+          std::regex r{"\\(" + std::to_string(count) + "\\)"};
+          return std::regex_replace(std::get<0>(t), r, std::get<1>(t));
+        });
+    all_layouts = current_layouts;
+  }
+  return all_layouts;
+}
+
+std::vector<std::pair<life::configuration,life::configuration>>
+parse_qst(std::string file_name) {
+
+std::vector<std::pair<life::configuration,life::configuration>> all_exps;
 
   std::regex comments{R"~~(#.*$)~~"};
   std::regex close_brace{R"~~(^\s*}\s*$)~~"};
@@ -577,10 +598,14 @@ auto parse_qst(std::string file_name) {
       R"~~(^\s*([-\w\d]+)\s*=\s*\$([-\w\d]+)\s*(\{)?\s*$)~~"};
   std::regex new_refactored_variable{
       R"~~(^\s*([-\w\d]+)\s*=\s*!([-\w\d]+)\s*$)~~"};
+  std::regex new_varied_variable{
+      R"~~(^\s*([-\w\d]+)\s*=\s*\[([^\]]+)\]\s*$)~~"};
   std::regex nested_parameter{
       R"~~(^\s*vary\s+([-\w\d]+)\s*=\s*\$([-\w\d]+)\s*(\{)?\s*$)~~"};
   std::regex nested_refactored_parameter{
       R"~~(^\s*vary\s+([-\w\d]+)\s*=\s*!([-\w\d]+)\s*$)~~"};
+  std::regex nested_varied_parameter{
+      R"~~(^\s*vary\s+([-\w\d]+)\s*=\s*\[([^\]]+)\]\s*$)~~"};
   std::regex parameter{R"~~(^\s*vary\s*([-\w\d]+)\s*=\s*([-\.\w\d]+)\s*$)~~"};
   std::regex pre_tag{R"~~(^\s*pre\s*([-\w\d]+)\s*=\s*([-\w\d]+)\s*$)~~"};
   std::regex post_tag{R"~~(^\s*pos\s*([-\w\d]+)\s*=\s*([-\w\d]+)\s*$)~~"};
@@ -599,6 +624,7 @@ auto parse_qst(std::string file_name) {
         out_sigs;
   };
   std::vector<component_spec> component_stack;
+  std::vector<std::vector<std::string>> varied;
   std::string line;
   std::smatch m;
   for (auto line_num{1}; std::getline(ifs, line); line_num++) {
@@ -649,6 +675,48 @@ auto parse_qst(std::string file_name) {
       continue;
     }
 
+    if (std::regex_match(line, m, new_varied_variable)) {
+      if (!component_stack.empty()) {
+        std::cout
+            << "qst<syntax>error: new-varied-variable cannot be nested "
+               "within "
+               "other components! line "
+            << line_num << "\n";
+        std::exit(1);
+      }
+
+      std::vector<std::string> varied_entry;
+      auto all_varied = m[2].str();
+      auto varied_names = ranges::action::split(all_varied, ' ');
+      varied_names.erase(
+          ranges::remove_if(varied_names, [](auto s) { return s.empty(); }),
+          ranges::end(varied_names));
+      for (auto varied_name : varied_names) {
+        if (varied_name[0] != '!' && varied_name[0] != '$') {
+
+          std::cout << "error: varied-variable " << varied_name
+                    << " must be a component or variable! line " << line_num
+                    << "\n";
+          std::exit(1);
+        }
+        if (varied_name[0] == '!') {
+          auto variable = all_variables.find(varied_name);
+          if (variable == all_variables.end()) {
+            std::cout << "error: varied-refactored-variable " << varied_name
+                      << " not found! line " << line_num << "\n";
+            std::exit(1);
+          }
+          varied_name = variable->second;
+        }
+        varied_entry.push_back(varied_name);
+      }
+
+      all_variables[m[1].str()] = "(" + std::to_string(varied.size()) + ")"; 
+	  varied.push_back(varied_entry);
+
+      continue;
+    }
+
     if (std::regex_match(line, m, nested_parameter)) {
       if (component_stack.empty()) {
         std::cout << "qst<syntax>error: parameter must be nested "
@@ -670,7 +738,7 @@ auto parse_qst(std::string file_name) {
 
     if (std::regex_match(line, m, nested_refactored_parameter)) {
       if (component_stack.empty()) {
-        std::cout << "qst<syntax>error: refactored-variable must be nested "
+        std::cout << "qst<syntax>error: refactored-parameter must be nested "
                      "within "
                      "other components! line "
                   << line_num << "\n";
@@ -689,6 +757,63 @@ auto parse_qst(std::string file_name) {
 
       continue;
     }
+
+    if (std::regex_match(line, m, nested_varied_parameter)) {
+      if (component_stack.empty()) {
+        std::cout << "qst<syntax>error: varied-parameter must be nested "
+                     "within "
+                     "other components! line "
+                  << line_num << "\n";
+        std::exit(1);
+      }
+
+      std::vector<std::string> varied_entry;
+      auto all_varied = m[2].str();
+      auto varied_names = ranges::action::split(all_varied, ' ');
+      varied_names.erase(
+          ranges::remove_if(varied_names, [](auto s) { return s.empty(); }),
+          ranges::end(varied_names));
+      auto is_not_primitive = [](auto s) { return s[0] == '$' || s[0] == '!'; };
+      auto compvars = ranges::all_of(varied_names, is_not_primitive);
+      auto primitives = ranges::none_of(varied_names, is_not_primitive);
+      if (!(compvars || primitives)) {
+        std::cout << "error: varied-parameters must all be  "
+                     "components/variables, or they must all be primitive "
+                     "values! line "
+                  << line_num << "\n";
+        std::exit(1);
+            }
+      if (compvars) {
+
+        for (auto varied_name : varied_names) {
+          if (varied_name[0] == '!') {
+            auto variable = all_variables.find(varied_name);
+            if (variable == all_variables.end()) {
+              std::cout << "error: varied-refactored-variable " << varied_name
+                        << " not found! line " << line_num << "\n";
+              std::exit(1);
+            }
+            varied_name = variable->second;
+          } else { // if varied_name[0] == '$'
+            varied_name = "\"" + m[1].str() + "\":[\"" + m[2].str() +
+                          "\",{\"parameters\":null,\"pre-tags\":"
+                          "null,\"post-tags\":null}],";
+          }
+          varied_entry.push_back(varied_name);
+        }
+      } else { // if primitives
+        for (auto varied_name : varied_names) {
+          varied_name = "\"" + m[1].str() + "\":" + varied_name + ",";
+          varied_entry.push_back(varied_name);
+		}
+      }
+
+      component_stack.back().params +=
+          "(" + std::to_string(varied.size()) + ")";
+      varied.push_back(varied_entry);
+
+      continue;
+      }
 
     if (std::regex_match(line, m, parameter)) {
       std::cout << "matched parameter regex with - " << line << std::endl;
@@ -761,16 +886,39 @@ auto parse_qst(std::string file_name) {
   auto env_con = std::regex_replace(all_variables["E"], spurious_commas, "$1");
   auto pop_con = std::regex_replace(all_variables["P"], spurious_commas, "$1");
   std::cout << env_con << "\n" << pop_con << std::endl;
-  std::stringstream es, ps;
-  es << env_con;
-  ps << pop_con;
 
-  life::configuration env, pop;
-  es >> env;
-  ps >> pop;
+  for (auto &vary : varied) {
+  for (auto &v : vary) {
+  std::cout <<  v << std::endl;
+  }
+  std::cout <<   std::endl;
+  }
+  auto layout = env_con + "@" + pop_con;
+  auto all_exp_cons = expand_layout(layout,varied);
 
-  std::cout << env.dump(4) << "\n" << pop.dump(4) << std::endl;
-  return std::make_pair(pop, env);
+  for (auto &exp : all_exp_cons) {
+    auto marker = exp.find('@');
+
+    auto e_con =
+        std::regex_replace(exp.substr(0, marker), spurious_commas, "$1");
+    auto p_con =
+        std::regex_replace(exp.substr(marker + 1), spurious_commas, "$1");
+
+  std::cout << e_con << "\n" << p_con << std::endl;
+  
+    std::stringstream es, ps;
+    es << e_con;
+    ps << p_con;
+
+    life::configuration env, pop;
+    es >> env;
+    ps >> pop;
+
+    std::cout << env.dump(4) << "\n" << pop.dump(4) << std::endl;
+
+    all_exps.push_back(std::make_pair(pop, env));
+  }
+  return all_exps;
 }
 
 long life::entity::entity_id_ = 0;
@@ -804,32 +952,35 @@ int main(int argc, char **argv) {
 
     std::hash<std::string> hash_fn;
 
-    auto [pop_con, env_con] = parse_qst(qst_path);
+    for (auto &[pop_con, env_con] : parse_qst(qst_path)) {
 
-    auto true_pop = life::configuration::array(
-        {pop_con[0], true_any_object({"population", pop_con[0]}, pop_con[1])});
-    auto true_env = life::configuration::array(
-        {env_con[0],
-         true_environment_object({"environment", env_con[0]}, env_con[1],
-                                 true_pop[1]["parameters"]["entity"][1])});
+      auto true_pop = life::configuration::array(
+          {pop_con[0],
+           true_any_object({"population", pop_con[0]}, pop_con[1])});
+      auto true_env = life::configuration::array(
+          {env_con[0],
+           true_environment_object({"environment", env_con[0]}, env_con[1],
+                                   true_pop[1]["parameters"]["entity"][1])});
 
-    std::cout << std::setw(4) << true_pop << std::endl;
-    std::cout << "\nNot yet Tested! Generated unique population "
-              << hash_fn(true_pop.dump()) << std::endl;
+      // std::cout << std::setw(4) << true_pop << std::endl;
+      std::cout << "\nNot yet Tested! Generated unique population "
+                << hash_fn(true_pop.dump()) << std::endl;
 
-    std::cout << std::setw(4) << true_env << std::endl;
-    std::cout << "\nNot yet Tested! Generated unique environment "
-              << hash_fn(true_env.dump()) << std::endl;
+      // std::cout << std::setw(4) << true_env << std::endl;
+      std::cout << "\nNot yet Tested! Generated unique environment "
+                << hash_fn(true_env.dump()) << std::endl;
 
-    auto pop = life::make_population(true_pop);
+      auto pop = life::make_population(true_pop);
 
-    auto env = life::make_environment(true_env);
+      auto env = life::make_environment(true_env);
 
-    auto res_pop = env.evaluate(pop);
-    for (auto o : res_pop.get_as_vector())
-      std::cout << o.get_id() << " ";
-
-    std::cout << "\nYay?? Ran succesfully?\n";
+	  /*
+      auto res_pop = env.evaluate(pop);
+      for (auto o : res_pop.get_as_vector())
+        std::cout << o.get_id() << " ";
+      */
+      std::cout << "\nYay?? Ran succesfully?\n";
+    }
 
   } else {
     std::cout << "ded: unknown command line arguments. try -h\n";
