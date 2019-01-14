@@ -88,8 +88,6 @@ auto signal_name_type(std::string s) {
 bool tag_converts_to(bool in_order, std::string pub, std::string req,
                      life::configuration pop_config,
                      life::configuration env_config) {
-  if (pub == req)
-    return true;
 
   if (!in_order) {
     std::swap(pub, req);
@@ -102,9 +100,7 @@ bool tag_converts_to(bool in_order, std::string pub, std::string req,
   std::smatch m_req, m_pub;
   // pub and req are pods
   if (std::regex_match(pub, m_pub, pod) && std::regex_match(req, m_req, pod)) {
-    if (m_pub[1].str() == "long" && m_req[1].str() == "double")
-      return true;
-    return false;
+    return pub == req;
   }
 
   // exactly one of pub or req are pods
@@ -114,24 +110,21 @@ bool tag_converts_to(bool in_order, std::string pub, std::string req,
 
   // both pub and req must be aggs
   if (std::regex_match(req, m_req, agg) && std::regex_match(pub, m_pub, agg)) {
+    // pub and req type must match 
+    if (m_pub[1].str() != m_req[1].str())
+      return false;
+
     // req is an unconstrained agg
     if (m_req[2].str().empty())
-      // pub is primitive-convertible to req
-      if (m_pub[1].str() == m_req[1].str() ||
-          (m_pub[1].str() == "long" && m_req[1].str() == "double"))
         return true;
 
-    // req is a constrained agg
-
-    // pub and req type match or are primitive-convertible
-    if ((m_pub[1].str() != m_req[1].str()) &&
-        (m_pub[1].str() != "long" || m_req[1].str() != "double"))
-      return false;
+    // so req is constrained
 
     // pub is unconstrained
     if (m_pub[2].str().empty())
       return false;
 
+	// so pub is constrained
     auto req_type = m_req[3].str();
     auto pub_type = m_pub[3].str();
     // req is constrained by number
@@ -573,17 +566,18 @@ expand_layout(std::string layout,
               std::vector<std::vector<std::string>> varied) {
   std::vector<std::string> all_layouts;
   all_layouts.push_back(layout);
-  for (auto count{0u}; count < varied.size(); count++) {
-    std::vector<std::string> current_layouts;
-    ranges::transform(
-        ranges::view::cartesian_product(all_layouts, varied[count]),
-        ranges::back_inserter(current_layouts), [count](const auto &t) {
-          std::regex r{"\\(" + std::to_string(count) + "\\)"};
-          return std::regex_replace(std::get<0>(t), r, std::get<1>(t));
-        });
-    all_layouts = current_layouts;
-  }
-  return all_layouts;
+  return ranges::accumulate(
+      varied, all_layouts, [count = 0](auto all_layouts, auto vary) mutable {
+        std::regex r{"\\(" + std::to_string(count) + "\\)"};
+        std::vector<std::string> current_layouts;
+        ranges::transform(
+            ranges::view::cartesian_product(all_layouts, vary),
+            ranges::back_inserter(current_layouts), [r](const auto &t) {
+              return std::regex_replace(std::get<0>(t), r, std::get<1>(t));
+            });
+        count++;
+        return current_layouts;
+      });
 }
 
 std::vector<std::pair<life::configuration,life::configuration>>
@@ -816,42 +810,36 @@ std::vector<std::pair<life::configuration,life::configuration>> all_exps;
       }
 
     if (std::regex_match(line, m, parameter)) {
-      std::cout << "matched parameter regex with - " << line << std::endl;
       component_stack.back().params +=
           "\"" + m[1].str() + "\":" + m[2].str() + ",";
       continue;
     }
 
     if (std::regex_match(line, m, pre_tag)) {
-      std::cout << "matched pre-tag regex with - " << line << std::endl;
       component_stack.back().pres +=
           "\"" + m[1].str() + "\":\"" + m[2].str() + "\",";
       continue;
     }
 
     if (std::regex_match(line, m, post_tag)) {
-      std::cout << "matched post-tag regex with - " << line << std::endl;
       component_stack.back().posts +=
           "\"" + m[1].str() + "\":\"" + m[2].str() + "\",";
       continue;
     }
 
     if (std::regex_match(line, m, in_signal_tag)) {
-      std::cout << "matched in-signal-tag regex with - " << line << std::endl;
       component_stack.back().in_sigs +=
           "\"" + m[1].str() + "\":\"" + m[2].str() + "\",";
       continue;
     }
 
     if (std::regex_match(line, m, out_signal_tag)) {
-      std::cout << "matched out-signal-tag regex with - " << line << std::endl;
       component_stack.back().out_sigs +=
           "\"" + m[1].str() + "\":\"" + m[2].str() + "\",";
       continue;
     }
 
     if (std::regex_match(line, m, close_brace)) {
-      std::cout << "matched closed brace regex with - " << line << std::endl;
       if (component_stack.empty()) {
         std::cout << "qst<syntax>error: dangling closing brace! line "
                   << line_num << "\n";
@@ -883,38 +871,21 @@ std::vector<std::pair<life::configuration,life::configuration>> all_exps;
     std::exit(1);
   }
 
-  auto env_con = std::regex_replace(all_variables["E"], spurious_commas, "$1");
-  auto pop_con = std::regex_replace(all_variables["P"], spurious_commas, "$1");
-  std::cout << env_con << "\n" << pop_con << std::endl;
-
-  for (auto &vary : varied) {
-  for (auto &v : vary) {
-  std::cout <<  v << std::endl;
-  }
-  std::cout <<   std::endl;
-  }
-  auto layout = env_con + "@" + pop_con;
-  auto all_exp_cons = expand_layout(layout,varied);
+  auto all_exp_cons = expand_layout(
+      std::regex_replace(all_variables["E"], spurious_commas, "$1") + '@' +
+          std::regex_replace(all_variables["P"], spurious_commas, "$1"),
+      varied);
 
   for (auto &exp : all_exp_cons) {
     auto marker = exp.find('@');
 
-    auto e_con =
-        std::regex_replace(exp.substr(0, marker), spurious_commas, "$1");
-    auto p_con =
-        std::regex_replace(exp.substr(marker + 1), spurious_commas, "$1");
-
-  std::cout << e_con << "\n" << p_con << std::endl;
-  
     std::stringstream es, ps;
-    es << e_con;
-    ps << p_con;
+    es << std::regex_replace(exp.substr(0, marker), spurious_commas, "$1");
+    ps << std::regex_replace(exp.substr(marker + 1), spurious_commas, "$1");
 
     life::configuration env, pop;
     es >> env;
     ps >> pop;
-
-    std::cout << env.dump(4) << "\n" << pop.dump(4) << std::endl;
 
     all_exps.push_back(std::make_pair(pop, env));
   }
