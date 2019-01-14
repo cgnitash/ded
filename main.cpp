@@ -909,7 +909,9 @@ int main(int argc, char **argv) {
 
   if (argc == 2 && std::string(argv[1]) == "-h") {
     std::cout << "-s : saves configuration files\n"
-              << "-f <file-name> : runs experiment in file-name\n";
+              << "-r <N> <dir>/data : runs all experiments in this data directory with N replicates\n"
+              << "-g <file-name> : generates experiment in file-name\n"
+              << "-p <component-name>... : print publication for listed component names\n";
   } else if (argc == 2 && std::string(argv[1]) == "-s") {
     std::cout << "saving configurations.cfg ... \n";
     save_configs();
@@ -917,11 +919,15 @@ int main(int argc, char **argv) {
     for (auto i{2}; i < argc; i++)
       show_config(std::string(argv[i]));
     std::cout << std::endl;
-  } else if (argc == 3 && std::string(argv[1]) == "-b") {
+  } else if (argc == 3 && std::string(argv[1]) == "-g") {
     std::string qst_path = argv[2];
-    life::global_path = qst_path.substr(0, qst_path.find_last_of('/') + 1);
+    life::global_path =
+        qst_path.substr(0, qst_path.find_last_of('/') + 1) + "data/";
 
     std::hash<std::string> hash_fn;
+
+    if (!std::experimental::filesystem::exists(life::global_path))
+      std::experimental::filesystem::create_directory(life::global_path);
 
     for (auto &[pop_con, env_con] : parse_qst(qst_path)) {
 
@@ -934,25 +940,55 @@ int main(int argc, char **argv) {
                                    true_pop[1]["parameters"]["entity"][1])});
 
       // std::cout << std::setw(4) << true_pop << std::endl;
-      std::cout << "\nNot yet Tested! Generated unique population "
-                << hash_fn(true_pop.dump()) << std::endl;
-
       // std::cout << std::setw(4) << true_env << std::endl;
-      std::cout << "\nNot yet Tested! Generated unique environment "
-                << hash_fn(true_env.dump()) << std::endl;
+      auto exp_name = std::to_string(hash_fn(true_pop.dump())) + "_" +
+                      std::to_string(hash_fn(true_env.dump()));
+      std::cout << "Generating unique experiment " << exp_name << std::endl;
 
-      auto pop = life::make_population(true_pop);
+      auto exp_path = life::global_path + exp_name;
+      if (!std::experimental::filesystem::exists(exp_path))
+        std::experimental::filesystem::create_directory(exp_path);
 
-      auto env = life::make_environment(true_env);
+      std::ofstream pop_file(exp_path + "/true_pop.json");
+      pop_file << true_pop.dump(4);
 
-	  /*
-      auto res_pop = env.evaluate(pop);
-      for (auto o : res_pop.get_as_vector())
-        std::cout << o.get_id() << " ";
-      */
-      std::cout << "\nYay?? Ran succesfully?\n";
+      std::ofstream env_file(exp_path + "/true_env.json");
+      env_file << true_env.dump(4);
+    }
+      std::cout << "\nGenerated all experiments succesfully\n";
+  } else if (argc == 4 && std::string(argv[1]) == "-r") {
+    auto rep_num = std::stoi(argv[2]);
+    auto exp_dir = argv[3];
+    if (!std::experimental::filesystem::exists(exp_dir))
+	{
+		std::cout << "error: no directory " << exp_dir << " found.\n";
+		std::exit(1);
     }
 
+    for (auto &p : std::experimental::filesystem::directory_iterator(exp_dir)) {
+      life::configuration env_con, pop_con;
+      auto dir = p.path().string();
+      std::ifstream pop_file(dir + "/true_pop.json");
+      pop_file >> pop_con;
+
+      std::ifstream env_file(dir + "/true_env.json");
+      env_file >> env_con;
+
+      for (auto i{0}; i < rep_num; i++) {
+        life::global_path = dir + "/REP_" + std::to_string(i) + "/";
+        std::experimental::filesystem::create_directory(life::global_path);
+        std::srand(i);
+        auto pop = life::make_population(pop_con);
+
+        auto env = life::make_environment(env_con);
+
+        env.evaluate(pop);
+
+        std::cout << "\nExperiment " << dir << "with rep:" << i
+                  << " run succesfully\n";
+      }
+    }
+    std::cout << "\nAll experiments in dir " << exp_dir << " run succesfully\n";
   } else {
     std::cout << "ded: unknown command line arguments. try -h\n";
   }
