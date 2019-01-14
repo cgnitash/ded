@@ -5,7 +5,7 @@ P = $linear {
 			vary outputs = 2
 			vary hiddens = 2
 		}
-		vary size = 50
+		vary size = [ 50 100 ]
 		vary track-lineage = true
 }
 

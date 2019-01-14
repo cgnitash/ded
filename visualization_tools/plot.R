@@ -1,16 +1,12 @@
 
-# read csv and add update column
 library("plyr")
 library("dplyr")
 library("ggplot2")
 library("xkcd")
+library("patchwork")
 
-av_data = read.csv(paste("data_",2,".csv",sep=""))
-p = ggplot(data=av_data) + geom_line(aes(x=update,y=avg)) + geom_line(aes(x=update,y=max)) + xlab("update") + ylab("score")
-p
-
-across_reps = function(range) {
-  files = lapply(range, function(i) paste("data/data_",i,"/pop.csv",sep=""))
+across_reps = function(file,rep_range) {
+  files = lapply(rep_range, function(i) paste(file,"REP_",i,"/two_cycle/pop.csv",sep=""))
   ldply(lapply(files,read.csv),rbind)
 }
 
@@ -27,45 +23,56 @@ report = function(var,data) {
   )
 }
 
-agg_data = report(avg,across_reps(10:15))
+exp1 = "qst/data/12688761706545524501_8585170111640645107/"
+exp2 = "qst/data/12688761706545524501_17578986486117912121/"
+exp3 = "qst/data/14292387654137485179_8585170111640645107/"
+exp4 = "qst/data/14292387654137485179_17578986486117912121/"
 
-xrange = range(agg_data$update)
-yrange = range(agg_data$mean)
+agg_data1 = report(avg,across_reps(exp1,0:9))
+agg_data2 = report(avg,across_reps(exp2,0:9))
+agg_data3 = report(avg,across_reps(exp3,0:9))
+agg_data4 = report(avg,across_reps(exp4,0:9))
 
-ratioxy <- diff(xrange)/diff(yrange)
+xrange = range(agg_data1$update)
+yrange = range(agg_data1$mean)
 
-mapping <- aes(x, y, scale, ratioxy, angleofspine, 
-               anglerighthumerus, anglelefthumerus,
-               anglerightradius, angleleftradius,
-               anglerightleg, angleleftleg, angleofneck)
+p1 = ggplot(data=agg_data1,aes(x=update,y=mean)) + 
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), color="lightgoldenrod1",width=.1)  + 
+  geom_line() + 
+  xlab("update") + 
+  ylab("fitness") +
+  theme_xkcd() +  
+  xkcdaxis(xrange,yrange) 
 
-simple_dataman <- data.frame(x= 4*diff(xrange)/5, y= diff(yrange)/3,
-                             scale = 0.8 ,
-                             ratioxy = ratioxy,
-                             angleofspine = -pi/2 ,
-                             anglerighthumerus = -pi/6,
-                             anglelefthumerus = pi - pi/6,
-                             anglerightradius = -pi/3,
-                             angleleftradius =  3*pi/4,
-                             anglerightleg = 3*pi/2 - pi / 12,
-                             angleleftleg = 3*pi/2 + pi / 12 ,
-                             angleofneck = -pi + pi/2)
-
-datalines <- data.frame(x=9*diff(xrange)/10,y=diff(yrange)/2.5,xend=9.1*diff(xrange)/10,yend=diff(yrange)/2.2)
-
-p = ggplot(data=agg_data,aes(x=update,y=mean)) + 
+p2 = ggplot(data=agg_data2,aes(x=update,y=mean)) + 
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se), color="lightgoldenrod1",width=.1)  + 
   geom_line() + 
   xlab("update") + 
   ylab("fitness") +
   theme_xkcd() +
-  xkcdaxis(xrange,yrange) +
-  xkcdman(mapping,simple_dataman) +
-  annotate("text", x=9*diff(xrange)/10, y = diff(yrange)/2,
-           label = "Whoa!\nNice Graph, bro!", family="xkcd" ) +
-  xkcdline(aes(x=x,y=y,xend=xend,yend=yend), datalines,
-            xjitteramount = 0.05)
+  xkcdaxis(xrange,yrange) 
 
-p
+p3 = ggplot(data=agg_data3,aes(x=update,y=mean)) + 
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), color="lightgoldenrod1",width=.1)  + 
+  geom_line() + 
+  xlab("update") + 
+  ylab("fitness") +
+  theme_xkcd() +
+  xkcdaxis(xrange,yrange) 
+
+p4 = ggplot(data=agg_data4,aes(x=update,y=mean)) + 
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), color="lightgoldenrod1",width=.1)  + 
+  geom_line() + 
+  xlab("update") + 
+  ylab("fitness") +
+  theme_xkcd() +
+  xkcdaxis(xrange,yrange) 
+
+p1 + p2 + p3 + p4
+
+p1 
+p2
+p3
+p4
 
 vignette("xkcd-intro")
