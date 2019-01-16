@@ -437,42 +437,33 @@ life::configuration true_environment_object(life::ModuleInstancePair mip,
 }
 
 void pretty_show_entity(life::ModuleInstancePair mip, life::configuration con) {
-  std::cout << "\033[31m entity::" << mip.second
-            << "\033[0m\n\033[33mDefault Parameters ----\033[0m\n";
-  for (auto &[key, value] : con["parameters"].items())
-    std::cout << std::setw(26) << key << " : " << value << "\n";
-  std::cout << "\033[33m               ----\033[0m\n";
+
+  std::cout << "\033[31menvironment::" << mip.second << "\033[0m\n";
+
+  for (std::string group : {"parameters", "input-tags", "output-tags"}) {
+    std::cout << "\033[33m" << group << "----\033[0m\n";
+    for (auto &[key, value] : con[group].items())
+      if (value.type_name() != std::string{"array"})
+        std::cout << std::setw(26) << key << " : " << value << "\n";
+    std::cout << "\033[33m" << std::string(group.length(), ' ')
+              << "----\033[0m\n";
+  }
 }
 
 void pretty_show_environment(life::ModuleInstancePair mip,
                              life::configuration con) {
 
-  std::cout << "\033[31menvironment::" << mip.second
-            << "\033[0m\n\033[33mDefault Parameters ----\033[0m\n";
-  for (auto &[key, value] : con["parameters"].items())
-    if (value.type_name() != std::string{"array"})
-      std::cout << std::setw(26) << key << " : " << value << "\n";
-  std::cout << "\033[33m                   ----\033[0m\n";
+  std::cout << "\033[31menvironment::" << mip.second << "\033[0m\n";
 
-  std::cout << "\033[33mPre-Tags ----\033[0m\n";
-  for (auto &[key, value] : con["pre-tags"].items())
-    std::cout << std::setw(26) << key << " : " << value << "\n";
-  std::cout << "\033[33m         ----\033[0m\n";
-
-  std::cout << "\033[33mPost-Tags ----\033[0m\n";
-  for (auto &[key, value] : con["post-tags"].items())
-    std::cout << std::setw(26) << key << " : " << value << "\n";
-  std::cout << "\033[33m          ----\033[0m\n";
-
-  std::cout << "\033[33mOrg-Input-Tags ----\033[0m\n";
-  for (auto &[key, value] : con["input-tags"].items())
-    std::cout << std::setw(26) << key << " : " << value << "\n";
-  std::cout << "\033[33m               ----\033[0m\n";
-
-  std::cout << "\033[33mOrg-Output-Tags ----\033[0m\n";
-  for (auto &[key, value] : con["output-tags"].items())
-    std::cout << std::setw(26) << key << " : " << value << "\n";
-  std::cout << "\033[33m                ----\033[0m\n";
+  for (std::string group :
+       {"parameters", "pre-tags", "post-tags", "input-tags", "output-tags"}) {
+    std::cout << "\033[33m" << group << "----\033[0m\n";
+    for (auto &[key, value] : con[group].items())
+      if (value.type_name() != std::string{"array"})
+        std::cout << std::setw(26) << key << " : " << value << "\n";
+    std::cout << "\033[33m" << std::string(group.length(), ' ')
+              << "----\033[0m\n";
+  }
 
   for (auto &[key, value] : con["parameters"].items())
     if (value.type_name() == std::string{"array"} &&
@@ -567,7 +558,8 @@ expand_layout(std::string layout,
   std::vector<std::string> all_layouts;
   all_layouts.push_back(layout);
   return ranges::accumulate(
-      varied, all_layouts, [count = 0](auto all_layouts, auto vary) mutable {
+      ranges::view::reverse(varied), all_layouts,
+      [count = varied.size() - 1](auto all_layouts, auto vary) mutable {
         std::regex r{"\\(" + std::to_string(count) + "\\)"};
         std::vector<std::string> current_layouts;
         ranges::transform(
@@ -575,7 +567,7 @@ expand_layout(std::string layout,
             ranges::back_inserter(current_layouts), [r](const auto &t) {
               return std::regex_replace(std::get<0>(t), r, std::get<1>(t));
             });
-        count++;
+        count--;
         return current_layouts;
       });
 }
@@ -694,13 +686,16 @@ std::vector<std::pair<life::configuration,life::configuration>> all_exps;
           std::exit(1);
         }
         if (varied_name[0] == '!') {
-          auto variable = all_variables.find(varied_name);
+          auto variable = all_variables.find(varied_name.substr(1));
           if (variable == all_variables.end()) {
-            std::cout << "error: varied-refactored-variable " << varied_name
-                      << " not found! line " << line_num << "\n";
+            std::cout << "error: varied-refactored-variable "
+                      << varied_name.substr(1) << " not found! line "
+                      << line_num << "\n";
             std::exit(1);
           }
-          varied_name = variable->second;
+          varied_name =  variable->second + ",";
+        } else {
+          varied_name = varied_name.substr(1);
         }
         varied_entry.push_back(varied_name);
       }
@@ -781,15 +776,16 @@ std::vector<std::pair<life::configuration,life::configuration>> all_exps;
 
         for (auto varied_name : varied_names) {
           if (varied_name[0] == '!') {
-            auto variable = all_variables.find(varied_name);
+            auto variable = all_variables.find(varied_name.substr(1));
             if (variable == all_variables.end()) {
-              std::cout << "error: varied-refactored-variable " << varied_name
-                        << " not found! line " << line_num << "\n";
+              std::cout << "error: varied-refactored-variable "
+                        << varied_name.substr(1) << " not found! line "
+                        << line_num << "\n";
               std::exit(1);
             }
-            varied_name = variable->second;
+            varied_name = "\"" + m[1].str() + "\":" + variable->second + ",";
           } else { // if varied_name[0] == '$'
-            varied_name = "\"" + m[1].str() + "\":[\"" + m[2].str() +
+            varied_name = "\"" + m[1].str() + "\":[\"" + varied_name.substr(1) + 
                           "\",{\"parameters\":null,\"pre-tags\":"
                           "null,\"post-tags\":null}],";
           }
@@ -807,7 +803,7 @@ std::vector<std::pair<life::configuration,life::configuration>> all_exps;
       varied.push_back(varied_entry);
 
       continue;
-      }
+    }
 
     if (std::regex_match(line, m, parameter)) {
       component_stack.back().params +=
@@ -876,7 +872,12 @@ std::vector<std::pair<life::configuration,life::configuration>> all_exps;
           std::regex_replace(all_variables["P"], spurious_commas, "$1"),
       varied);
 
-  for (auto &exp : all_exp_cons) {
+  decltype(all_exp_cons) all_uniq_exp_cons;
+  ranges::sort(all_exp_cons);
+  ranges::unique_copy(all_exp_cons, ranges::back_inserter(all_uniq_exp_cons));
+
+  for (auto &exp : all_uniq_exp_cons) {
+
     auto marker = exp.find('@');
 
     std::stringstream es, ps;
@@ -889,6 +890,7 @@ std::vector<std::pair<life::configuration,life::configuration>> all_exps;
 
     all_exps.push_back(std::make_pair(pop, env));
   }
+ 
   return all_exps;
 }
 

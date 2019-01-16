@@ -7,13 +7,13 @@ library("patchwork")
 
 across_reps = function(file,rep_range) {
   files = lapply(rep_range, function(i) paste(file,"REP_",i,"/two_cycle/pop.csv",sep=""))
-  ldply(lapply(files,read.csv),rbind)
+  plyr::ldply(lapply(files,read.csv),rbind)
 }
 
 report = function(var,data) {
   var = enquo(var)
   data %>% 
-  group_by(update) %>%
+  dplyr::group_by(update) %>%
   dplyr::summarise(
       N = n(),
       mean = mean(!! var),
@@ -36,43 +36,40 @@ agg_data4 = report(avg,across_reps(exp4,0:9))
 xrange = range(agg_data1$update)
 yrange = range(agg_data1$mean)
 
-p1 = ggplot(data=agg_data1,aes(x=update,y=mean)) + 
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), color="lightgoldenrod1",width=.1)  + 
-  geom_line() + 
+l = list(agg_data1,agg_data2,agg_data3,agg_data4)
+sfx <- c("_1", "_2", "_3", "_4")
+res <- l[[1]]
+for(i in head(seq_along(l), -1)) {
+  res <- merge(res, l[[i+1]], all = TRUE, 
+               suffixes = sfx[i:(i+1)], by = "update")
+}
+
+p1 = ggplot(data=res, aes(x=update)) + 
+  geom_errorbar(aes(ymin=mean_1 - se_1, ymax=mean_1 + se_1, color="_1"),width=.1)  + 
+  geom_line(aes(y=mean_1)) + 
+  geom_errorbar(aes(ymin=mean_2 - se_2, ymax=mean_2 + se_2, color="_2"),width=.1)  + 
+  geom_line(aes(y=mean_2)) + 
+  scale_colour_manual("", 
+                      breaks = c("_1", "_2"),
+                      values = c("lightgoldenrod1", "mediumaquamarine")) +
   xlab("update") + 
-  ylab("fitness") +
+  ylab("avg") +
   theme_xkcd() +  
   xkcdaxis(xrange,yrange) 
 
-p2 = ggplot(data=agg_data2,aes(x=update,y=mean)) + 
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), color="lightgoldenrod1",width=.1)  + 
-  geom_line() + 
+p2 = ggplot(data=res, aes(x=update)) + 
+  geom_errorbar(aes(ymin=mean_3 - se_3, ymax=mean_3 + se_3, color="_3"),width=.1)  + 
+  geom_line(aes(y=mean_3)) + 
+  geom_errorbar(aes(ymin=mean_4 - se_4, ymax=mean_4 + se_4, color="_4"),width=.1)  + 
+  geom_line(aes(y=mean_4)) + 
+  scale_colour_manual("", 
+                      breaks = c("_3", "_4"),
+                      values = c("plum1", "skyblue1")) +
   xlab("update") + 
-  ylab("fitness") +
-  theme_xkcd() +
+  ylab("avg") +
+  theme_xkcd() +  
   xkcdaxis(xrange,yrange) 
 
-p3 = ggplot(data=agg_data3,aes(x=update,y=mean)) + 
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), color="lightgoldenrod1",width=.1)  + 
-  geom_line() + 
-  xlab("update") + 
-  ylab("fitness") +
-  theme_xkcd() +
-  xkcdaxis(xrange,yrange) 
-
-p4 = ggplot(data=agg_data4,aes(x=update,y=mean)) + 
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), color="lightgoldenrod1",width=.1)  + 
-  geom_line() + 
-  xlab("update") + 
-  ylab("fitness") +
-  theme_xkcd() +
-  xkcdaxis(xrange,yrange) 
-
-p1 + p2 + p3 + p4
-
-p1 
-p2
-p3
-p4
+p1 / p2
 
 vignette("xkcd-intro")

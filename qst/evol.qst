@@ -1,11 +1,11 @@
 
 P = $linear {
 		vary entity = $markov_brain {
-			vary inputs =  5
+			vary inputs = 5
 			vary outputs = 2
 			vary hiddens = 2
 		}
-		vary size = [ 50 100 ]
+		vary size = 50
 		vary track-lineage = true
 }
 

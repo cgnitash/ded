@@ -9,16 +9,18 @@ P = $linear {
 		vary track-lineage = true
 }
 
+myfor = $forager {
+		vary  sensor-range = 5
+		vary replace = true
+}
+
 combine = $collate {
-		vary x1 = $forager {
-			vary  sensor-range = 5
-			vary replace = true
- 		}
+		vary x1 = !myfor 
 		vary x2 = $max_one 
 }
 
-E = $two_cycle {
-		vary fitness =   !combine 
+ttc = $two_cycle {
+		vary fitness = [ !combine !myfor ]
     	vary count = 301 
 		vary cout-frequency = 10
 		vary snapshot-frequency = 50
@@ -29,3 +31,11 @@ E = $two_cycle {
 		} 
 } 
 
+printer = $score_cout_printer {
+		vary env = $forager {
+			 vary sensor-range = 5
+			 vary replace = true
+ 		}
+} 
+
+E = [ !ttc !printer ]
