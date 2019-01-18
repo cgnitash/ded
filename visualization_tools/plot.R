@@ -5,9 +5,21 @@ library("ggplot2")
 library("xkcd")
 library("patchwork")
 
+summarize_population = function(path,i) {
+  d = read.csv(path)
+  c(i,mean(d$score),max(d$score),min(d$score))
+}
+
+aggregate_population = function(path) {
+ dfs = lapply(0:300, function(i) summarize_population(
+  paste(path,"score_",i,".csv",sep=""),i))
+ t(as.data.frame(dfs,row.names = c("update","avg","max","min")))
+}
+
+
 across_reps = function(file,rep_range) {
-  files = lapply(rep_range, function(i) paste(file,"REP_",i,"/two_cycle/pop.csv",sep=""))
-  plyr::ldply(lapply(files,read.csv),rbind)
+  paths = lapply(rep_range, function(i) paste(file,"REP_",i,"/two_cycle/",sep=""))
+  plyr::ldply(lapply(paths,aggregate_population),rbind)
 }
 
 report = function(var,data) {
@@ -45,26 +57,26 @@ for(i in head(seq_along(l), -1)) {
 }
 
 p1 = ggplot(data=res, aes(x=update)) + 
-  geom_errorbar(aes(ymin=mean_1 - se_1, ymax=mean_1 + se_1, color="_1"),width=.1)  + 
+  geom_errorbar(aes(ymin=mean_1 - se_1, ymax=mean_1 + se_1, color="_1"),alpha=0.4,width=.1)  + 
   geom_line(aes(y=mean_1)) + 
-  geom_errorbar(aes(ymin=mean_2 - se_2, ymax=mean_2 + se_2, color="_2"),width=.1)  + 
+  geom_errorbar(aes(ymin=mean_2 - se_2, ymax=mean_2 + se_2, color="_2"),alpha=0.4,width=.1)  + 
   geom_line(aes(y=mean_2)) + 
   scale_colour_manual("", 
                       breaks = c("_1", "_2"),
-                      values = c("lightgoldenrod1", "mediumaquamarine")) +
+                      values = c("yellow", "blue")) +
   xlab("update") + 
   ylab("avg") +
   theme_xkcd() +  
   xkcdaxis(xrange,yrange) 
 
 p2 = ggplot(data=res, aes(x=update)) + 
-  geom_errorbar(aes(ymin=mean_3 - se_3, ymax=mean_3 + se_3, color="_3"),width=.1)  + 
+  geom_errorbar(aes(ymin=mean_3 - se_3, ymax=mean_3 + se_3, color="_3"),alpha=0.4,width=.1)  + 
   geom_line(aes(y=mean_3)) + 
-  geom_errorbar(aes(ymin=mean_4 - se_4, ymax=mean_4 + se_4, color="_4"),width=.1)  + 
+  geom_errorbar(aes(ymin=mean_4 - se_4, ymax=mean_4 + se_4, color="_4"),alpha=0.4,width=.1)  + 
   geom_line(aes(y=mean_4)) + 
   scale_colour_manual("", 
                       breaks = c("_3", "_4"),
-                      values = c("plum1", "skyblue1")) +
+                      values = c("green", "red")) +
   xlab("update") + 
   ylab("avg") +
   theme_xkcd() +  
