@@ -35,34 +35,26 @@ life::population two_cycle::evaluate(life::population pop) {
 
     pop = fit_fun.evaluate(pop);
 
-	auto v = pop;
-
-    auto fitnesses = [this](const auto &vec) {
-      life::configuration cout_con;
-
-      const auto scores =
-          vec | ranges::view::transform([this](const auto &org) {
-            return std::get<double>(org.data.get_value(score_tag_));
-          });
-
-      cout_con["max"] = *ranges::max_element(scores);
-      cout_con["avg"] = ranges::accumulate(scores, 0.0) / vec.size();
-
-      return cout_con;
-    };
-
     if (pop_av_freq_ && !(i % pop_av_freq_)) {
-      auto cout_con = fitnesses(v.get_as_vector());
-      auto pop_stats_file = util::open_or_append(life::global_path + "pop.csv",
-                                                 "avg,max,update\n");
-      pop_stats_file << cout_con["avg"] << "," << cout_con["max"] << "," << i
-                     << std::endl;
+      std::ofstream pop_stats_file{life::global_path + "score_" +
+                                   std::to_string(i) + ".csv"};
+      pop_stats_file << "id,score\n";
+      for (auto &org : pop.get_as_vector())
+        pop_stats_file << org.get_id() << ","
+                       << std::get<double>(org.data.get_value(score_tag_))
+                       << std::endl;
     }
 
     if (cout_freq_ && !(i % cout_freq_)) {
-      auto cout_con = fitnesses(v.get_as_vector());
-      std::cout << "update:" << std::setw(6) << i << "   " << cout_con
-                << std::endl;
+      auto v = pop.get_as_vector();
+      const auto scores =
+          v | ranges::view::transform([this](const auto &org) {
+            return std::get<double>(org.data.get_value(score_tag_));
+          });
+      std::cout << "update:" << std::setw(6) << i << "   "
+                << "max:" << std::setw(6) << *ranges::max_element(scores)
+                << "ave:" << std::setw(6)
+                << ranges::accumulate(scores, 0.0) / pop.size() << std::endl;
     }
 
     if (snap_freq_ && !(i % snap_freq_)) {

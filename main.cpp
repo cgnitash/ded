@@ -572,10 +572,10 @@ expand_layout(std::string layout,
       });
 }
 
-std::vector<std::pair<life::configuration,life::configuration>>
+std::vector<std::tuple<life::configuration,life::configuration,std::string>>
 parse_qst(std::string file_name) {
 
-std::vector<std::pair<life::configuration,life::configuration>> all_exps;
+std::vector<std::tuple<life::configuration,life::configuration,std::string>> all_exps;
 
   std::regex comments{R"~~(#.*$)~~"};
   std::regex close_brace{R"~~(^\s*}\s*$)~~"};
@@ -611,6 +611,7 @@ std::vector<std::pair<life::configuration,life::configuration>> all_exps;
   };
   std::vector<component_spec> component_stack;
   std::vector<std::vector<std::string>> varied;
+  std::vector<std::string> varied_labels;
   std::string line;
   std::smatch m;
   for (auto line_num{1}; std::getline(ifs, line); line_num++) {
@@ -678,6 +679,7 @@ std::vector<std::pair<life::configuration,life::configuration>> all_exps;
           ranges::remove_if(varied_names, [](auto s) { return s.empty(); }),
           ranges::end(varied_names));
       for (auto varied_name : varied_names) {
+        varied_labels.push_back(m[1].str() + " = " + varied_name);
         if (varied_name[0] != '!' && varied_name[0] != '$') {
 
           std::cout << "error: varied-variable " << varied_name
@@ -762,6 +764,8 @@ std::vector<std::pair<life::configuration,life::configuration>> all_exps;
       varied_names.erase(
           ranges::remove_if(varied_names, [](auto s) { return s.empty(); }),
           ranges::end(varied_names));
+      for (auto &varied_name : varied_names)
+        varied_labels.push_back(m[1].str() + " = " + varied_name);
       auto is_not_primitive = [](auto s) { return s[0] == '$' || s[0] == '!'; };
       auto compvars = ranges::all_of(varied_names, is_not_primitive);
       auto primitives = ranges::none_of(varied_names, is_not_primitive);
@@ -771,7 +775,7 @@ std::vector<std::pair<life::configuration,life::configuration>> all_exps;
                      "values! line "
                   << line_num << "\n";
         std::exit(1);
-            }
+      }
       if (compvars) {
 
         for (auto varied_name : varied_names) {
@@ -867,16 +871,21 @@ std::vector<std::pair<life::configuration,life::configuration>> all_exps;
     std::exit(1);
   }
 
-  auto all_exp_cons = expand_layout(
+  auto all_layouts = expand_layout(
       std::regex_replace(all_variables["E"], spurious_commas, "$1") + '@' +
           std::regex_replace(all_variables["P"], spurious_commas, "$1"),
       varied);
 
-  decltype(all_exp_cons) all_uniq_exp_cons;
-  ranges::sort(all_exp_cons);
-  ranges::unique_copy(all_exp_cons, ranges::back_inserter(all_uniq_exp_cons));
+  std::vector<std::pair<std::string, std::string>> all_exp_cons =
+      ranges::view::zip(all_layouts, varied_labels);
 
-  for (auto &exp : all_uniq_exp_cons) {
+  all_exp_cons |=
+      ranges::action::sort(std::less<std::string>{},
+                           &std::pair<std::string, std::string>::first) |
+      ranges::action::unique(std::equal_to<std::string>{},
+                             &std::pair<std::string, std::string>::first);
+
+  for (auto &[exp, label] : all_exp_cons) {
 
     auto marker = exp.find('@');
 
@@ -888,9 +897,9 @@ std::vector<std::pair<life::configuration,life::configuration>> all_exps;
     es >> env;
     ps >> pop;
 
-    all_exps.push_back(std::make_pair(pop, env));
+    all_exps.push_back(std::make_tuple(pop, env, label));
   }
- 
+
   return all_exps;
 }
 
@@ -931,7 +940,7 @@ int main(int argc, char **argv) {
     if (!std::experimental::filesystem::exists(life::global_path))
       std::experimental::filesystem::create_directory(life::global_path);
 
-    for (auto &[pop_con, env_con] : parse_qst(qst_path)) {
+    for (auto &[pop_con, env_con, label] : parse_qst(qst_path)) {
 
       auto true_pop = life::configuration::array(
           {pop_con[0],
@@ -945,7 +954,8 @@ int main(int argc, char **argv) {
       // std::cout << std::setw(4) << true_env << std::endl;
       auto exp_name = std::to_string(hash_fn(true_pop.dump())) + "_" +
                       std::to_string(hash_fn(true_env.dump()));
-      std::cout << "Generating unique experiment " << exp_name << std::endl;
+      std::cout << "Generating unique experiment " << exp_name
+                << " with label \"" << label << "\"" << std::endl;
 
       auto exp_path = life::global_path + exp_name;
       if (!std::experimental::filesystem::exists(exp_path))
