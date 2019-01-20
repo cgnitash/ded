@@ -36,10 +36,10 @@ public:
     ec["parameters"]["snapshot-frequency"] = snap_freq_;
     //ec["parameters"]["SEED"] = Seed_;
 
-    // o:in:P has no tags
-    ec["pre-tags"] = nullptr;
+    ec["input-tags"] = nullptr;
+    ec["output-tags"] = nullptr;
 
-    // o:in:P' has no tags
+    ec["pre-tags"] = nullptr;
     ec["post-tags"] = nullptr;
 
     // o:in:fitness(P) must provide these tags

@@ -6,23 +6,36 @@
 #include <algorithm>
 #include <regex>
 
+life::encoding markov2in1out::parse_encoding(std::string s) {
+  life::encoding e;
+  for (std::sregex_iterator end,
+       i(std::begin(s), std::end(s), encoding_parser_);
+       i != end; i++) {
+    auto site = (*i)[1].str();
+    if (!site.empty()) {
+      e.push_back(std::stol(site));
+	}
+  }
+  return e;
+}
+
 void markov2in1out::mutate() {
 
   // go nuts with all kinds of mutations
   genome_.all_mutations();
-  compute_gates_();
+  gates_are_computed_ = false;
+  buffer_ = std::vector(input_ + output_ + hidden_, 0.);
 }
 
-void markov2in1out::input(life::signal s) {
+void markov2in1out::input(std::string n,life::signal s) {
 
-  if (auto vp = std::get_if<std::vector<double>>(&s)) {
-    auto v = *vp;
+  if (n == in_sense_) {
+    auto v = std::get<std::vector<double>>(s);
     if (v.size() != input_) {
       std::cout << "Error: entity-markov2in1out must get an input range of the "
                    "specified size\n";
       exit(1);
     }
-  // must convert double inputs to 1s and 0s, overwrite only input range of
     for (auto i{0u}; i < v.size(); i++)
       buffer_[i] = util::Bit(v[i]);
 
@@ -33,13 +46,24 @@ void markov2in1out::input(life::signal s) {
   }
 }
 
-life::signal markov2in1out::output() {
+life::signal markov2in1out::output(std::string n) {
 
-  return buffer_ | ranges::copy |
-         ranges::action::slice(input_, input_ + output_);
+  if (n == out_sense_) {
+    return buffer_ | ranges::copy |
+           ranges::action::slice(input_, input_ + output_);
+  } else {
+    std::cout
+        << "Impl-Error: entity-markov2inIout cannot handle this name-signal pair in output \n";
+    exit(1);
+  }
 }
 
 void markov2in1out::tick() {
+
+  if (!gates_are_computed_) {
+    compute_gates_();
+    gates_are_computed_ = true;
+  }
 
   std::vector out_buffer(buffer_.size(), 0.);
 
@@ -60,6 +84,7 @@ void markov2in1out::seed_gates_(size_t n) {
     genome_[pos] = 2;
     genome_[pos + 1] = 8;
   });
+  gates_are_computed_ = false;
 }
 
 

@@ -17,6 +17,10 @@
 class flip_bits {
 
   std::string flippiness_tag_ = "flippiness,double";
+
+  std::string org_input_tag_ = "in-bits,A<double,size>";
+  std::string org_output_tag_ = "out-bits,A<double,size>";
+
   size_t  size_ = 10;
   double eval(life::entity &);
 
@@ -27,11 +31,12 @@ public:
     life::configuration c;
     c["parameters"]["size"] = size_;
 
-    //  o:in:P must handle these tags
     c["pre-tags"] = nullptr;
 
-	// o:in:P' must handle these tags 
     c["post-tags"]["flippiness"] = flippiness_tag_;
+
+	c["input-tags"]["line-of-sight"] = org_input_tag_; 
+	c["output-tags"]["action"] = org_output_tag_; 
 
     return c;
   }
@@ -40,11 +45,11 @@ public:
     size_ = c["parameters"]["size"];
 
     flippiness_tag_ = c["post-tags"]["flippiness"];
+
+    org_input_tag_ = c["input-tags"]["line-of-sight"];
+    org_output_tag_ = c["output-tags"]["action"];
   }
 
-// requires org.input("some-bits","vector<bool,size>")
-// requires org.output("flipped-bits","vector<bool,size>")
   life::population evaluate(life::population);
-// guarantess org.data["flippiness"] exists and is double
 };
 

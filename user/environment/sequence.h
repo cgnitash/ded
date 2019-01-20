@@ -32,10 +32,10 @@ public:
 
     ec["parameters"]["to-cout"] = to_cout_;
 
-    // o:in:P has no tags
-    ec["pre-tags"] = nullptr;
+    ec["input-tags"] = nullptr;
+    ec["output-tags"] = nullptr;
 
-    // o:in:P' has no tags
+    ec["pre-tags"] = nullptr;
     ec["post-tags"] = nullptr;
 
 	// o:in:selector(P) must handle these tags

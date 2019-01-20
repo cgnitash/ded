@@ -44,18 +44,17 @@ void cppn::mutate() {
 
   // only point mutations since size of encoding can't change
   genome_.point_mutate();
-  compute_nodes_();
+  gates_are_computed_ = false;
 }
 
-void cppn::input(life::signal s) {
-  if (auto vp = std::get_if<std::vector<double>>(&s)) {
-    auto in = *vp;
-    if (in.size() != input_) {
+void cppn::input(std::string n,life::signal s) {
+  if (n == in_sense_) {
+    ins_ = std::get<std::vector<double>>(s);
+    if (ins_.size() != input_) {
       std::cout << "Error: entity-cppn must get an input range of the "
                    "specified size\n";
       exit(1);
     }
-    ins_ = in;
   } else {
     std::cout
         << "Error: entity-cppn cannot handle this payload type \n";
@@ -63,18 +62,23 @@ void cppn::input(life::signal s) {
   }
 }
 
-life::signal cppn::output() {
+life::signal cppn::output(std::string n) {
 
-  // This should not happen
-  if (outs_.size() != output_) {
-    std::cout << "Impl-Error: entity-cppn must deliver an output range of the "
-                 "specified size\nThis should never happen\n" << outs_.size() << " " << output_;
+  if (n == out_sense_) {
+    return outs_;
+  } else {
+    std::cout
+        << "Impl-Error: entity-cppn cannot handle this name-signal pair in output \n";
     exit(1);
   }
-  return outs_;
 }
 
 void cppn::tick() {
+
+  if (!gates_are_computed_) {
+    compute_nodes_();
+    gates_are_computed_ = true;
+  }
 
   if (ins_.empty())
 	  ins_ = std::vector<double>(input_,0.0);

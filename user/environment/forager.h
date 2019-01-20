@@ -83,10 +83,8 @@ public:
     ec["parameters"]["visualize"] = visualize_;
     ec["parameters"]["sensor-range"] = sensor_range_;
 
-    // o:in:P has no tags
     ec["pre-tags"] = nullptr;
 
-    //  o:in:P' must handle these tags
     ec["post-tags"]["food-eaten"] = food_eaten_tag_;
 
 	ec["input-tags"]["line-of-sight"] = org_input_los_tag_; 
@@ -111,9 +109,6 @@ public:
     org_output_action_tag_ = con["output-tags"]["action"];
   }
 
-  // requires org.input("sensors","vector<bool,sensor-range>")
-  // requires org.output("flipped-bits","vector<bool,size>")
   life::population evaluate(life::population);
-  // guarantess org.data["food-eaten"] exists and is integer
 };
 

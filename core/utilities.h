@@ -2,6 +2,7 @@
 #pragma once
 
 #include "csv/CSV.h"
+#include "qst_parser.h"
 #include <range/v3/all.hpp>
 
 #include <cmath>

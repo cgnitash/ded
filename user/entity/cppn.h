@@ -18,6 +18,9 @@
 class cppn {
 
 private:
+  std::string in_sense_ = "in-sense,A<double,inputs>";
+  std::string out_sense_ = "out-sense,A<double,outputs>";
+
   struct Node {
     size_t activation_function;
     std::map<size_t, double> in_node;
@@ -35,6 +38,7 @@ private:
 
   double activate(size_t, double);
   void print();
+  bool gates_are_computed_ = false;
   void compute_nodes_();
 public:
   cppn() { configure(publish_configuration()); }
@@ -44,6 +48,10 @@ public:
     c["parameters"]["inputs"] = input_;
     c["parameters"]["outputs"] = output_;
     c["parameters"]["hiddens"] = hidden_;
+
+	c["input-tags"]["in-sense"] = in_sense_;
+	c["output-tags"]["out-sense"] = out_sense_;
+
     return c;
   }
 
@@ -51,8 +59,11 @@ public:
     input_ = con["parameters"]["inputs"];
     output_ = con["parameters"]["outputs"];
     hidden_ = con["parameters"]["hiddens"];
+
+    in_sense_ = con["input-tags"]["in-sense"];
+    out_sense_ = con["output-tags"]["out-sense"]; 
+
     genome_.generate(9 * (output_ + hidden_));
-	compute_nodes_();
   }
 
   void mutate();

@@ -19,7 +19,7 @@ opts get_build_options(const std::string &fname) {
   opts build_options;
   std::ifstream cfg(fname);
   std::regex r(
-      R"(^\s*(experiment|entity|environment|population)\s*:\s*(\w+)\s*$)");
+      R"(^\s*(entity|environment|population)\s*:\s*(\w+)\s*$)");
   for (std::string line; std::getline(cfg, line);) {
     std::smatch m;
     if (std::regex_match(line, m, r))
@@ -83,10 +83,10 @@ void generate_makefile(const std::string &fname, opts build_options,
          "core/signal.h core/utilities.h ";
 
   for (auto &flags : {"", "debug", "asan"}) {
-    makefile
-        << "\n\n{0}components = {0}obj_files/main.o {0}obj_files/components.o "
-           "{0}obj_files/util_csv.o {0}obj_files/util_csvreader.o "_format(
-               flags);
+    makefile << "\n\n{0}components = {0}obj_files/main.o "
+                "{0}obj_files/components.o {0}obj_files/qst_parser.o "
+                "{0}obj_files/util_csv.o {0}obj_files/util_csvreader.o "_format(
+                    flags);
 
     for (auto &[type, names] : build_options)
       for (auto &name : names)
@@ -96,6 +96,8 @@ void generate_makefile(const std::string &fname, opts build_options,
                 "\n\t$({0}flags) $({0}components) -lstdc++fs -o {0}ded"
                 "\n\n{0}obj_files/main.o : main.cpp"
                 "\n\t$({0}flags) -c main.cpp -o {0}obj_files/main.o"
+                "\n\n{0}obj_files/qst_parser.o : core/qst_parser.cpp"
+                "\n\t$({0}flags) -c core/qst_parser.cpp -o {0}obj_files/qst_parser.o"
                 "\n\n{0}obj_files/util_csv.o : core/csv/CSV.cpp"
                 "\n\t$({0}flags) -c core/csv/CSV.cpp -o {0}obj_files/util_csv.o"
                 "\n\n{0}obj_files/util_csvreader.o : core/csv/CSVReader.cpp"
