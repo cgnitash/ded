@@ -489,6 +489,18 @@ void pretty_show_population(life::ModuleInstancePair mip,
   std::cout << "\033[33m               ----\033[0m\n";
 }
 
+void list_all_configs() {
+
+  std::map<std::string, std::vector<std::string>> cons;
+  for (auto &[type_name, config] : life::all_configs) 
+    cons[type_name.first].push_back(type_name.second);
+  for (auto &type : {"entity", "environment", "population"}) {
+    std::cout << type << "\n";
+    for (auto &name : cons[type])
+      std::cout << "    " << name << "\n";
+  }
+}
+
 void show_config(std::string name) {
 
   auto found = false;
@@ -606,15 +618,20 @@ int main(int argc, char **argv) {
   if (argc == 2 && std::string(argv[1]) == "-h") {
     std::cout << R"~~(
 			  -s                     : saves configuration files 
-              -r <N> <file-name>     : 'runs' all experiments in this file-name with N replicates
+              -rl <N> <file-name>    : 'runs' all experiments in this file-name with N replicates (locally)
+              -rh <N> <file-name>    : 'runs' all experiments in this file-name with N replicates (msu hpc)
               -v <file-name>         : verify experiment in file-name
               -p <component-name>... : print publication for listed component names
+              -pa 					 : lists all components currently loaded
               -f <N> <file-name>     : actually runs this experiment with REP N (should NOT be called manually)
 				)~~";
   } else if (argc == 2 && std::string(argv[1]) == "-s") {
     std::cout << "saving configurations.cfg ... \n";
     save_configs();
-  } else if (argc > 2 && std::string(argv[1]) == "-p") {
+  } else if (argc == 2 && std::string(argv[1]) == "-pa") {
+    list_all_configs();
+    std::cout << std::endl;
+  } else if (argc == 3 && std::string(argv[1]) == "-p") {
     for (auto i{2}; i < argc; i++)
       show_config(std::string(argv[i]));
     std::cout << std::endl;
@@ -622,16 +639,15 @@ int main(int argc, char **argv) {
     true_experiments(argv[2],hash_fn);
     std::cout << "\nVerified all experiments succesfully\n";
 
-  } else if (argc == 4 && std::string(argv[1]) == "-r") {
+  } else if (argc == 4 && ((std::string(argv[1]) == "-rl") ||
+                           (std::string(argv[1]) == "-rh"))) {
     std::string qst_path = argv[3];
-    //auto qst_parent_path = qst_path.substr(0, qst_path.find_last_of('/') + 1);
-	std::ofstream run_file("run.sh");
     life::global_path = qst_path.substr(0, qst_path.find_last_of('/') + 1) + "data/";
 
     if (!std::experimental::filesystem::exists(life::global_path))
       std::experimental::filesystem::create_directory(life::global_path);
 
-	std::string exps;
+	std::vector<std::string> exps;
     for (auto &[pop, env, label] : true_experiments(qst_path,hash_fn)) {
 
       auto exp_name = std::to_string(hash_fn(pop.dump())) + "_" +
@@ -643,18 +659,39 @@ int main(int argc, char **argv) {
       }
       std::experimental::filesystem::create_directory(exp_path);
 
-      exps +=  exp_name + " ";
+      exps.push_back(exp_name);
       std::ofstream pop_file(exp_path + "/true_pop.json");
       pop_file << pop.dump(4);
 
       std::ofstream env_file(exp_path + "/true_env.json");
       env_file << env.dump(4);
     }
-	//auto nums = ranges::view::iota(0,std::stoi(argv[2])) | ranges::view::transform([](auto i) { return std::to_string(i); }) | ranges::view::intersperse(' ');
-    run_file << "for i in " << exps << " ; do for r in ";
-    for (auto r{0}; r < std::stoi(argv[2]); r++)
-      run_file << r << " ";
-    run_file << " ; do ./ded -f $r " << life::global_path << "$i ; done  ; done";
+    std::ofstream run_file("run.sh");
+    if (std::string(argv[1]) == "-rl") {
+      run_file << "for i in "
+               << ranges::accumulate(
+                      exps, std::string{},
+                      [](auto ret, auto s) { return ret + s + " "; })
+               << " ; do for r in ";
+      for (auto r{0}; r < std::stoi(argv[2]); r++)
+        run_file << r << " ";
+      run_file << " ; do ./ded -f $r " << life::global_path
+               << "$i ; done  ; done";
+    } else { //  	if (std::string(argv[1] == "-rh")
+      std::ofstream sb_file("run.sb");
+      sb_file << R"~~(	
+#!/bin/bash -login
+#SBATCH --time=03:56:00
+#SBATCH --mem=2GB
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+		)~~";
+      sb_file << "\n#SBATCH --array=0-" << argv[2]
+               << "\ncd ${SLURM_SUBMIT_DIR}\n./ded -f "
+                  "${SLURM_ARRAY_TASK_ID} $1\n";
+	  for (auto &e : exps)
+		  run_file << "\nsbatch run.sb " << e;
+    }
     std::cout << "\nGenerated script run.sh succesfully\n";
   } else if (argc == 4 && std::string(argv[1]) == "-f") {
     auto exp_dir = std::string{argv[3]};
@@ -682,9 +719,8 @@ int main(int argc, char **argv) {
 
     std::cout << "\nExperiment " << exp_dir << "with rep:" << argv[2]
               << " run succesfully\n";
-      
+
   } else {
     std::cout << "ded: unknown command line arguments. try -h\n";
-
   }
 }
