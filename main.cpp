@@ -679,18 +679,18 @@ int main(int argc, char **argv) {
                << "$i ; done  ; done";
     } else { //  	if (std::string(argv[1] == "-rh")
       std::ofstream sb_file("run.sb");
-      sb_file << R"~~(	
-#!/bin/bash -login
+      sb_file << R"~~(#!/bin/bash -login
 #SBATCH --time=03:56:00
 #SBATCH --mem=2GB
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 		)~~";
       sb_file << "\n#SBATCH --array=0-" << argv[2]
-               << "\ncd ${SLURM_SUBMIT_DIR}\n./ded -f "
-                  "${SLURM_ARRAY_TASK_ID} $1\n";
-	  for (auto &e : exps)
-		  run_file << "\nsbatch run.sb " << e;
+              << "\ncd ${SLURM_SUBMIT_DIR}\n./ded -f "
+                 "${SLURM_ARRAY_TASK_ID} "
+              << life::global_path << "$1\n";
+      for (auto &e : exps)
+        run_file << "\nsbatch run.sb " << e;
     }
     std::cout << "\nGenerated script run.sh succesfully\n";
   } else if (argc == 4 && std::string(argv[1]) == "-f") {
