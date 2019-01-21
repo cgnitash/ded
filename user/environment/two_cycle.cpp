@@ -53,6 +53,7 @@ life::population two_cycle::evaluate(life::population pop) {
           });
       std::cout << "update:" << std::setw(6) << i << "   "
                 << "max:" << std::setw(6) << *ranges::max_element(scores)
+                << "   "
                 << "ave:" << std::setw(6)
                 << ranges::accumulate(scores, 0.0) / pop.size() << std::endl;
     }

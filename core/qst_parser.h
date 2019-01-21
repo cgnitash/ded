@@ -12,8 +12,7 @@
 class qst_parser {
 
   std::regex comments{R"~~(#.*$)~~"};
-  std::regex close_brace{R"~~(^\s*}\s*$)~~"};
-  std::regex spurious_commas{R"~~(,(]|}))~~"};
+
   std::regex new_variable{
       R"~~(^\s*([-\w\d]+)\s*=\s*\$([-\w\d]+)\s*(\{)?\s*$)~~"};
   std::regex new_refactored_variable{
@@ -32,7 +31,32 @@ class qst_parser {
   std::regex in_signal_tag{R"~~(^\s*ist\s*([-\w\d]+)\s*=\s*([-\w\d]+)\s*$)~~"};
   std::regex out_signal_tag{R"~~(^\s*ost\s*([-\w\d]+)\s*=\s*([-\w\d]+)\s*$)~~"};
 
+  std::regex close_brace{R"~~(^\s*}\s*$)~~"};
+  std::regex spurious_commas{R"~~(,(]|}))~~"};
+
+  std::vector<std::tuple<std::string, std::string, std::string>> all_exps;
+  std::map<std::string, std::string> all_variables;
+  struct component_spec {
+    std::string variable_or_comp_name, comp, params, pres, posts, in_sigs,
+        out_sigs;
+  };
+  std::vector<component_spec> component_stack;
+  std::vector<std::vector<std::string>> varied;
+  std::vector<std::vector<std::string>> varied_labels;
+  long line_num{1};
+
+  // methods
+  void parse_new_variable(std::smatch);
+  void parse_new_refactored_variable(std::smatch);
+  void parse_new_varied_variable(std::smatch);
+  void parse_nested_parameter(std::smatch);
+  void parse_nested_refactored_parameter(std::smatch);
+  void parse_nested_varied_parameter(std::smatch);
+  void parse_closed_brace();
+  void cleanup();
+
 public:
+  qst_parser() = default;
   std::vector<std::string> expand_layout(std::string,
                                          std::vector<std::vector<std::string>>);
   std::vector<std::tuple<std::string, std::string, std::string>>

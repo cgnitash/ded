@@ -672,10 +672,13 @@ int main(int argc, char **argv) {
                << ranges::accumulate(
                       exps, std::string{},
                       [](auto ret, auto s) { return ret + s + " "; })
-               << " ; do for r in ";
-      for (auto r{0}; r < std::stoi(argv[2]); r++)
-        run_file << r << " ";
-      run_file << " ; do ./ded -f $r " << life::global_path
+               << " ; do for r in "
+               << ranges::accumulate(ranges::view::iota(0, std::stoi(argv[2])),
+                                     std::string{},
+                                     [](auto s, auto i) {
+                                       return s + std::to_string(i) + " ";
+                                     })
+               << " ; do ./ded -f $r " << life::global_path
                << "$i ; done  ; done";
     } else { //  	if (std::string(argv[1] == "-rh")
       std::ofstream sb_file("run.sb");
@@ -685,7 +688,7 @@ int main(int argc, char **argv) {
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 		)~~";
-      sb_file << "\n#SBATCH --array=0-" << argv[2]
+      sb_file << "\n#SBATCH --array=1-" << argv[2]
               << "\ncd ${SLURM_SUBMIT_DIR}\n./ded -f "
                  "${SLURM_ARRAY_TASK_ID} "
               << life::global_path << "$1\n";
