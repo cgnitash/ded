@@ -94,6 +94,10 @@ bool tag_converts_to(bool in_order, std::string pub, std::string req,
     std::swap(pop_config, env_config);
   }
 
+  // req matches any input
+  if (req.empty())
+    return true;
+
   std::regex pod{R"~~(^(double|long|bool)$)~~"};
   std::regex agg{R"~~(^A\<(double|long|bool)(,([-\w\d]+))?\>$)~~"};
 
@@ -153,17 +157,25 @@ bool tag_converts_to(bool in_order, std::string pub, std::string req,
 
 life::configuration
 check_org_signal_tag_overrides(bool is_input, life::configuration::iterator it,
-                               life::configuration nested_con,
-                               life::configuration pop_config,
+                               life::configuration::iterator rit,
+                               life::configuration pop,
                                life::configuration env_config) {
 
   auto signal_category =
       is_input ? std::string{"input-tags"} : std::string{"output-tags"};
   auto name = it.key();
   auto nested_name = it.value()[0];
-  auto reqs = pop_config[signal_category];
+  auto reqs = pop[1][signal_category];
+  auto nested_con = rit.value()[1];
   auto overs = it.value()[1][signal_category];
   auto published = env_config[signal_category];
+
+ std::cout << "reqs" << reqs << std::endl;
+ std::cout << "overs" << overs << std::endl;
+ std::cout << "pop_con" << pop << std::endl;
+ std::cout << "env_con" << env_config << std::endl;
+ std::cout << "it" << it.value()[1] << std::endl;
+ std::cout << "published" << published << std::endl;
 
   if (reqs.size() < published.size()) {
     std::cout << "error: Population<entity cannot handle all the "
@@ -187,21 +199,29 @@ check_org_signal_tag_overrides(bool is_input, life::configuration::iterator it,
     auto find_pub = ranges::find(pub_split, key,
                                  &std::pair<std::string, std::string>::first);
     if (find_pub == ranges::end(pub_split)) {
-      std::cout << "error: " << nested_name << " does not have an "
-                << signal_category << "-signal named '" << key
-                << "' to override\n";
+      std::cout << "error: \033[31m<environment>::" << nested_name
+                << "\033[0m does not have an " << signal_category
+                << "-signal named \033[31m\"" << key
+                << "\"\033[0m to override\n";
+      for (auto it : env_config[signal_category].items())
+        if (life::config::match(key, it.key()))
+          std::cout << "Did you mean \033[32m'" << it.key() << "'\033[0m?\n";
       std::exit(1);
     }
     auto find_req = ranges::find(req_split, std::string{value},
                                  &std::pair<std::string, std::string>::first);
     if (find_req == ranges::end(req_split)) {
-      std::cout << "error: Population<entity> does not respond to an "
-                << signal_category << "-signal named '" << value
-                << "'. This cannot be overridden\n";
+      std::cout << "error: \033[31m<entity>::" << pop[0]
+                << "\033[0m does not publish an " << signal_category
+                << "-signal named \033[31m" << value
+                << "\033[0m. This cannot be overridden\n";
+      for (auto it : pop[1][signal_category].items())
+        if (life::config::match(value, it.key()))
+          std::cout << "Did you mean \033[32m'" << it.key() << "'\033[0m?\n";
       std::exit(1);
     }
-    if (!tag_converts_to(is_input, find_pub->second, find_req->second,
-                         pop_config, nested_con)) {
+    if (!tag_converts_to(is_input, find_pub->second, find_req->second, pop[1],
+                         nested_con)) {
       std::cout << "error: " << find_req->first << " must be type "
                 << find_req->second << " but " << find_pub->first
                 << " has type " << find_pub->second << "'\n";
@@ -216,28 +236,28 @@ check_org_signal_tag_overrides(bool is_input, life::configuration::iterator it,
   // apply remaining tags
   for (auto &[pub_name, pub_type] : pub_split) {
     auto find_replacement = ranges::find_if(
-        req_split, [p = pub_type, pop_config, nested_con, is_input](auto r) {
+        req_split, [p = pub_type, pop_config = pop[1], nested_con, is_input](auto r) {
           return tag_converts_to(is_input, p, r.second, pop_config, nested_con);
         });
     if (find_replacement == ranges::end(req_split)) {
-      std::cout
-          << "error: for published " << signal_category << "-signal "
-          << nested_name << "'" << pub_name
-          << "' - no Signals provided by Population<entity> are convertible to "
-          << pub_type;
+      std::cout << "error: for published " << signal_category << "-signal "
+                << nested_name << "'" << pub_name
+                << "' - no Signals provided by <entity>::" << pop[0]
+                << " are convertible to " << pub_type;
       std::exit(1);
     }
     attempted_over[pub_name] =
         find_replacement->first + "," + find_replacement->second;
     find_replacement = ranges::find_if(
         find_replacement + 1, ranges::end(req_split),
-        [p = pub_type, pop_config, nested_con, is_input](auto r) {
+        [p = pub_type, pop_config = pop[1], nested_con, is_input](auto r) {
           return tag_converts_to(is_input, p, r.second, pop_config, nested_con);
         });
     if (find_replacement != ranges::end(req_split)) {
       std::cout << "error: for published " << signal_category << "-signal "
                 << nested_name << "'" << pub_name
-                << "' - multiple Signals provided by Population<entity> are "
+                << "' - multiple Signals provided by <entity>::" << pop[0]
+                << " are "
                    "convertible to "
                 << pub_type;
       std::exit(1);
@@ -248,18 +268,25 @@ check_org_signal_tag_overrides(bool is_input, life::configuration::iterator it,
 }
 
 life::configuration check_tag_overrides(bool is_pre,
-                                        life::configuration::iterator user_con,
-                                        life::configuration::iterator real_con,
-                                        life::configuration nested_con,
-                                        life::configuration pop_config) {
+                                        life::configuration::iterator user_it,
+                                        life::configuration::iterator real_it,
+                                        life::configuration pop,
+                                        life::configuration nested_con) {
 
-  auto name = user_con.key();
-  auto nested_name = user_con.value()[0];
-  auto reqs = is_pre ? real_con.value()[2] : real_con.value()[3];
+  auto name = user_it.key();
+  auto nested_name = user_it.value()[0];
+  auto reqs = is_pre ? real_it.value()[2] : real_it.value()[3];
   auto tag_category =
       is_pre ? std::string{"pre-tags"} : std::string{"post-tags"};
-  auto overs = user_con.value()[1][tag_category];
+  auto overs = user_it.value()[1][tag_category];
   auto published = nested_con[tag_category];
+
+ std::cout << "reqs" << reqs << std::endl;
+ std::cout << "overs" << overs << std::endl;
+ std::cout << "pop_con" << pop << std::endl;
+ std::cout << "env_con" << nested_con << std::endl;
+ std::cout << "it" << user_it.value()[1] << std::endl;
+ std::cout << "published" << published << std::endl;
 
   if (reqs.size() != published.size()) {
     std::cout << "error: environment::" << name
@@ -296,7 +323,7 @@ life::configuration check_tag_overrides(bool is_pre,
                 << tag_category << " named '" << value << "'\n";
       std::exit(1);
     }
-    if (!tag_converts_to(is_pre, find_pub->second, find_req->second, pop_config,
+    if (!tag_converts_to(is_pre, find_pub->second, find_req->second, pop[1],
                          nested_con)) {
       std::cout << "error: " << find_req->first << " must be type "
                 << find_req->second << " but " << find_pub->first
@@ -312,7 +339,7 @@ life::configuration check_tag_overrides(bool is_pre,
   // apply remaining tags
   for (auto &[req_name, req_type] : req_split) {
     auto find_replacement = ranges::find_if(
-        pub_split, [r = req_type, pop_config, nested_con, is_pre](auto p) {
+        pub_split, [r = req_type, pop_config = pop[1], nested_con, is_pre](auto p) {
           return tag_converts_to(is_pre, p.second, r, pop_config, nested_con);
         });
     if (find_replacement == ranges::end(pub_split)) {
@@ -323,7 +350,7 @@ life::configuration check_tag_overrides(bool is_pre,
     attempted_over[find_replacement->first] = req_name + "," + req_type;
     find_replacement = ranges::find_if(
         find_replacement + 1, ranges::end(pub_split),
-        [r = req_type, pop_config, nested_con, is_pre](auto p) {
+        [r = req_type, pop_config = pop[1], nested_con, is_pre](auto p) {
           return tag_converts_to(is_pre, p.second, r, pop_config, nested_con);
         });
     if (find_replacement != ranges::end(pub_split)) {
@@ -381,55 +408,55 @@ void check_unmentioned_tag_overrides(life::ModuleInstancePair mip,
 }
 
 life::configuration true_environment_object(life::ModuleInstancePair mip,
-                                            life::configuration env_config,
-                                            life::configuration pop_config) {
+                                            life::configuration user_env_config,
+                                            life::configuration user_pop) {
 
   auto real_con = life::config::true_parameters(mip);
 
-  for (auto it = env_config["parameters"].begin();
-       it != env_config["parameters"].end(); it++) {
-    auto rit = real_con["parameters"].find(it.key());
-    if (rit == real_con["parameters"].end())
-      life::config::config_mismatch_error(it.key(), mip);
+  for (auto user_it = user_env_config["parameters"].begin();
+       user_it != user_env_config["parameters"].end(); user_it++) {
+    auto real_it = real_con["parameters"].find(user_it.key());
+    if (real_it == real_con["parameters"].end())
+      life::config::config_mismatch_error(user_it.key(), mip);
 
-    if (rit->type_name() != it->type_name())
-      life::config::type_mismatch_error(it.key(), rit->type_name(),
-                                        it->type_name(), mip);
+    if (real_it->type_name() != user_it->type_name())
+      life::config::type_mismatch_error(user_it.key(), real_it->type_name(),
+                                        user_it->type_name(), mip);
 
     // non <environment> parameters are not checked
-    if (it->type_name() != std::string{"array"} ||
-        rit.value()[0] != "null_environment") {
-      rit.value() = it.value();
+    if (user_it->type_name() != std::string{"array"} ||
+        real_it.value()[0] != "null_environment") {
+      real_it.value() = user_it.value();
     }
   }
 
   // check all <environment> parameters
-  for (auto rit = real_con["parameters"].begin();
-       rit != real_con["parameters"].end(); rit++) {
-    if (rit->type_name() == std::string{"array"} &&
-        rit.value()[0] == "null_environment") {
-      auto it = env_config["parameters"].find(rit.key());
-      if (it != env_config["parameters"].end()) {
-        auto nested_con =
-            life::config::true_parameters({"environment", it.value()[0]});
+  for (auto real_it = real_con["parameters"].begin();
+       real_it != real_con["parameters"].end(); real_it++) {
+    if (real_it->type_name() == std::string{"array"} &&
+        real_it.value()[0] == "null_environment") {
+      auto user_it = user_env_config["parameters"].find(real_it.key());
+      if (user_it != user_env_config["parameters"].end()) {
+        auto nested_env_config =
+            life::config::true_parameters({"environment", user_it.value()[0]});
         auto pre_tags =
-            check_tag_overrides(true, it, rit, nested_con, pop_config);
+            check_tag_overrides(true, user_it, real_it, user_pop, nested_env_config);
         auto post_tags =
-            check_tag_overrides(false, it, rit, nested_con, pop_config);
-        rit.value() = life::configuration::array(
-            {it.value()[0],
-             true_environment_object({"environment", it.value()[0]},
-                                     it.value()[1], pop_config)});
+            check_tag_overrides(false, user_it, real_it, user_pop, nested_env_config);
+        real_it.value() = life::configuration::array(
+            {user_it.value()[0],
+             true_environment_object({"environment", user_it.value()[0]},
+                                     user_it.value()[1], user_pop)});
         auto org_in_tags = check_org_signal_tag_overrides(
-            true, it, rit.value()[1], pop_config, nested_con);
+            true, user_it, real_it, user_pop, nested_env_config);
         auto org_out_tags = check_org_signal_tag_overrides(
-            false, it, rit.value()[1], pop_config, nested_con);
-        rit.value()[1]["pre-tags"] = pre_tags;
-        rit.value()[1]["post-tags"] = post_tags;
-        rit.value()[1]["input-tags"] = org_in_tags;
-        rit.value()[1]["output-tags"] = org_out_tags;
+            false, user_it, real_it, user_pop, nested_env_config);
+        real_it.value()[1]["pre-tags"] = pre_tags;
+        real_it.value()[1]["post-tags"] = post_tags;
+        real_it.value()[1]["input-tags"] = org_in_tags;
+        real_it.value()[1]["output-tags"] = org_out_tags;
       } else {
-        check_unmentioned_tag_overrides(mip, rit.key(), rit.value());
+        check_unmentioned_tag_overrides(mip, real_it.key(), real_it.value());
       }
     }
   }
@@ -492,8 +519,8 @@ void pretty_show_population(life::ModuleInstancePair mip,
 void list_all_configs() {
 
   std::map<std::string, std::vector<std::string>> cons;
-  for (auto &[type_name, config] : life::all_configs) 
-    cons[type_name.first].push_back(type_name.second);
+  for (auto &c : life::all_configs) 
+    cons[c.first.first].push_back(c.first.second);
   for (auto &type : {"entity", "environment", "population"}) {
     std::cout << type << "\n";
     for (auto &name : cons[type])
@@ -573,20 +600,22 @@ true_experiments(std::string file_name, std::hash<std::string> hash_fn) {
   qst_parser q;
   for (auto &[pop_con_s, env_con_s, label] : q.parse_qst(file_name)) {
 
-	  // why this circumlocution?
-	  std::stringstream es, ps;
-	  ps << pop_con_s;
-	  es << env_con_s;
-     life::configuration pop_con;
-     life::configuration env_con;
-	 ps >> pop_con;
-	 es >> env_con;
+    // why this circumlocution?
+    std::stringstream es, ps;
+    ps << pop_con_s;
+    es << env_con_s;
+    life::configuration pop_con;
+    life::configuration env_con;
+    ps >> pop_con;
+    es >> env_con;
     auto true_pop = life::configuration::array(
         {pop_con[0], true_any_object({"population", pop_con[0]}, pop_con[1])});
+	
+	// assume population is linear ***** 
     auto true_env = life::configuration::array(
         {env_con[0],
          true_environment_object({"environment", env_con[0]}, env_con[1],
-                                 true_pop[1]["parameters"]["entity"][1])});
+                                 true_pop[1]["parameters"]["entity"])});
 
     exps.push_back(std::make_tuple(true_pop, true_env, label));
     auto exp_name = std::to_string(hash_fn(true_pop.dump())) + "_" +
@@ -631,7 +660,7 @@ int main(int argc, char **argv) {
   } else if (argc == 2 && std::string(argv[1]) == "-pa") {
     list_all_configs();
     std::cout << std::endl;
-  } else if (argc == 3 && std::string(argv[1]) == "-p") {
+  } else if (argc > 2 && std::string(argv[1]) == "-p") {
     for (auto i{2}; i < argc; i++)
       show_config(std::string(argv[i]));
     std::cout << std::endl;
@@ -647,8 +676,11 @@ int main(int argc, char **argv) {
     if (!std::experimental::filesystem::exists(life::global_path))
       std::experimental::filesystem::create_directory(life::global_path);
 
-	std::vector<std::string> exps;
-    for (auto &[pop, env, label] : true_experiments(qst_path,hash_fn)) {
+    std::vector<std::string> exps;
+    for (auto &[pop, env, label] : true_experiments(qst_path, hash_fn)) {
+
+      // label unused for now
+      (void)label;
 
       auto exp_name = std::to_string(hash_fn(pop.dump())) + "_" +
                       std::to_string(hash_fn(env.dump()));

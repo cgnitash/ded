@@ -35,6 +35,14 @@ qst_parser::expand_layout(std::string layout,
       });
 }
 
+void qst_parser::check_no_redefinition(std::string name) {
+  if (all_variables.find(name) != all_variables.end()) {
+    std::cout << "qst<syntax>error: redefinition of variable '" << name << "' !line "
+              << line_num << "\n";
+    std::exit(1);
+  }
+}
+
 void qst_parser::parse_new_variable(std::smatch m) {
   if (!component_stack.empty()) {
     std::cout << "qst<syntax>error: new user variable cannot be nested "
@@ -43,6 +51,7 @@ void qst_parser::parse_new_variable(std::smatch m) {
     std::exit(1);
   }
   if (m[3].str().empty()) {
+    check_no_redefinition(m[1].str());
     all_variables[m[1].str()] = "[\"" + m[2].str() +
                                 "\",{\"parameters\":null,\"pre-tags\":"
                                 "null,\"post-tags\":null}]";
@@ -68,6 +77,7 @@ void qst_parser::parse_new_refactored_variable(std::smatch m) {
     std::exit(1);
   }
 
+  check_no_redefinition(m[1].str());
   all_variables[m[1].str()] = variable->second;
 }
 
@@ -113,6 +123,7 @@ void qst_parser::parse_new_varied_variable(std::smatch m) {
     varied_entry.push_back(varied_name);
   }
 
+  check_no_redefinition(m[1].str());
   all_variables[m[1].str()] = "(" + std::to_string(varied.size()) + ")";
   varied.push_back(varied_entry);
 }
@@ -224,9 +235,10 @@ void qst_parser::parse_closed_brace() {
       auto expanded_component =
           "[\"" + current.comp + "\",{\"parameters\":{" + current.params +
           "},\"pre-tags\":{" + current.pres + "},\"post-tags\":{" +
-          current.posts + "},\"org-inputs\":{" + current.in_sigs +
-          "},\"org-outputs\":{" + current.out_sigs + "}}]";
+          current.posts + "},\"input-tags\":{" + current.in_sigs +
+          "},\"output-tags\":{" + current.out_sigs + "}}]";
       if (component_stack.empty()) {
+        check_no_redefinition(current.variable_or_comp_name);
         all_variables[current.variable_or_comp_name] = expanded_component;
       } else {
         component_stack.back().params += "\"" + current.variable_or_comp_name +
@@ -238,6 +250,18 @@ void qst_parser::cleanup() {
 
   if (!component_stack.empty()) {
     std::cout << "qst<syntax>error: braces need to be added\n";
+    std::exit(1);
+  }
+
+  if (all_variables.find("P") == all_variables.end()) {
+    std::cout << "error: qst script must have a variable named 'P' fpr the "
+                 "Population\n";
+    std::exit(1);
+  }
+
+  if (all_variables.find("E") == all_variables.end()) {
+    std::cout << "error: qst script must have a variable named 'E' fpr the "
+                 "Environment\n";
     std::exit(1);
   }
 
@@ -292,11 +316,14 @@ qst_parser::parse_qst(std::string file_name) {
   std::smatch m;
   for (; std::getline(ifs, line); line_num++) {
 
+	  std::cout << line_num << " " << line << std::endl;
     line = std::regex_replace(line, comments, "");
+    line = std::regex_replace(line, spurious_tabs, " ");
 
-    if (line.empty())
+    if (line.empty() || ranges::all_of(line, [](auto c) { return c == ' '; }))
       continue;
 
+	  std::cout << line_num << " " << line << std::endl;
     if (std::regex_match(line, m, new_variable)) {
       parse_new_variable(m);
       continue;

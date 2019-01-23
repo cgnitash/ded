@@ -12,6 +12,7 @@
 class qst_parser {
 
   std::regex comments{R"~~(#.*$)~~"};
+  std::regex spurious_tabs{R"~~(\t)~~"};
 
   std::regex new_variable{
       R"~~(^\s*([-\w\d]+)\s*=\s*\$([-\w\d]+)\s*(\{)?\s*$)~~"};
@@ -54,6 +55,7 @@ class qst_parser {
   void parse_nested_varied_parameter(std::smatch);
   void parse_closed_brace();
   void cleanup();
+  void check_no_redefinition(std::string);
 
 public:
   qst_parser() = default;

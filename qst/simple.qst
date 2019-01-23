@@ -2,7 +2,7 @@
 P = $linear {
 		vary entity = $markov_brain {
 			 vary inputs = 5
-			 vary outputs = 2
+			 vary outputs = 3
 			 vary hiddens = 2
 		}
 		vary size = 50
