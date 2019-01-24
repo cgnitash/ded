@@ -178,9 +178,10 @@ check_org_signal_tag_overrides(bool is_input, life::configuration::iterator it,
  std::cout << "published" << published << std::endl;
 
   if (reqs.size() < published.size()) {
-    std::cout << "error: Population<entity cannot handle all the "
-              << signal_category
-              << "-tags provided by environment::" << nested_name << "\n";
+    std::cout << "error: \033[31m<entity>::" << pop[0]
+              << "\033[0m cannot handle all the " << signal_category
+              << "-tags provided by \033[31m<environment>::" << nested_name
+              << "\033[0m<\n";
     exit(1);
   }
 
@@ -202,7 +203,8 @@ check_org_signal_tag_overrides(bool is_input, life::configuration::iterator it,
       std::cout << "error: \033[31m<environment>::" << nested_name
                 << "\033[0m does not have an " << signal_category
                 << "-signal named \033[31m\"" << key
-                << "\"\033[0m to override\n";
+                << "\"\033[0m to override. Please check this component's "
+                   "publication\n";
       for (auto it : env_config[signal_category].items())
         if (life::config::match(key, it.key()))
           std::cout << "Did you mean \033[32m'" << it.key() << "'\033[0m?\n";
@@ -214,7 +216,8 @@ check_org_signal_tag_overrides(bool is_input, life::configuration::iterator it,
       std::cout << "error: \033[31m<entity>::" << pop[0]
                 << "\033[0m does not publish an " << signal_category
                 << "-signal named \033[31m" << value
-                << "\033[0m. This cannot be overridden\n";
+                << "\033[0m. This cannot be overridden. Please check this "
+                   "component's publication\n";
       for (auto it : pop[1][signal_category].items())
         if (life::config::match(value, it.key()))
           std::cout << "Did you mean \033[32m'" << it.key() << "'\033[0m?\n";
@@ -240,10 +243,12 @@ check_org_signal_tag_overrides(bool is_input, life::configuration::iterator it,
           return tag_converts_to(is_input, p, r.second, pop_config, nested_con);
         });
     if (find_replacement == ranges::end(req_split)) {
-      std::cout << "error: for published " << signal_category << "-signal "
-                << nested_name << "'" << pub_name
-                << "' - no Signals provided by <entity>::" << pop[0]
-                << " are convertible to " << pub_type;
+      std::cout << "error: for published " << signal_category
+                << "-signal in \033[31m<environment>::" << nested_name
+                << "::" << pub_name
+                << "\033[0m - No signals provided by \033[31m<entity>::"
+                << pop[0] << "\033[0m are convertible to \033[33m" << pub_name
+                << " ~ " << pub_type  << "\033[0m";
       std::exit(1);
     }
     attempted_over[pub_name] =
@@ -254,12 +259,18 @@ check_org_signal_tag_overrides(bool is_input, life::configuration::iterator it,
           return tag_converts_to(is_input, p, r.second, pop_config, nested_con);
         });
     if (find_replacement != ranges::end(req_split)) {
-      std::cout << "error: for published " << signal_category << "-signal "
-                << nested_name << "'" << pub_name
-                << "' - multiple Signals provided by <entity>::" << pop[0]
-                << " are "
-                   "convertible to "
-                << pub_type;
+      std::cout << "error: for published " << signal_category
+                << "-signal in \033[31m<environment>::" << nested_name
+                << "::" << pub_name
+                << "\033[0m\n - Multiple Signals provided by \033[31m<entity>::"
+                << pop[0] << "\033[0m are convertible to \033[33m" << pub_name
+                << " ~ " << pub_type << "\033[0m\n Viable candidates are \n";
+      ranges::for_each(req_split, [p = pub_type, pop_config = pop[1],
+                                   nested_con, is_input](auto r) {
+        if (tag_converts_to(is_input, p, r.second, pop_config, nested_con))
+          std::cout << "\033[33m      " << r.first << " ~ " << r.second << "\033[0m"
+                    << std::endl;
+      });
       std::exit(1);
     }
   }
