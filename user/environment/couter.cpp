@@ -12,7 +12,8 @@
 #include <utility>
 #include <vector>
 
-life::population couter::evaluate(life::population pop)
+life::population
+    couter::evaluate(life::population pop)
 {
 
   for (const auto &org : pop.get_as_vector())

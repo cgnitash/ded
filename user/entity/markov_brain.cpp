@@ -4,7 +4,8 @@
 #include <algorithm>
 #include <vector>
 
-life::encoding markov_brain::parse_encoding(std::string s)
+life::encoding
+    markov_brain::parse_encoding(std::string s)
 {
   life::encoding e;
   for (std::sregex_iterator end,
@@ -18,7 +19,8 @@ life::encoding markov_brain::parse_encoding(std::string s)
   return e;
 }
 
-void markov_brain::mutate()
+void
+    markov_brain::mutate()
 {
 
   genome_.point_delete();
@@ -30,7 +32,8 @@ void markov_brain::mutate()
   buffer_             = std::vector(input_ + output_ + hidden_, 0.);
 }
 
-void markov_brain::input(std::string n, life::signal s)
+void
+    markov_brain::input(std::string n, life::signal s)
 {
   if (n == in_sense_)
   {
@@ -51,7 +54,8 @@ void markov_brain::input(std::string n, life::signal s)
   }
 }
 
-life::signal markov_brain::output(std::string n)
+life::signal
+    markov_brain::output(std::string n)
 {
 
   if (n == out_sense_)
@@ -66,7 +70,8 @@ life::signal markov_brain::output(std::string n)
   }
 }
 
-void markov_brain::tick()
+void
+    markov_brain::tick()
 {
 
   if (!gates_are_computed_)
@@ -88,7 +93,8 @@ void markov_brain::tick()
             ranges::action::transform([](auto i) { return util::Bit(i); });
 }
 
-void markov_brain::seed_gates_(size_t n)
+void
+    markov_brain::seed_gates_(size_t n)
 {
 
   util::repeat(n, [&] {
@@ -98,7 +104,8 @@ void markov_brain::seed_gates_(size_t n)
   gates_are_computed_ = false;
 }
 
-void markov_brain::compute_gates_()
+void
+    markov_brain::compute_gates_()
 {
 
   gates_.clear();

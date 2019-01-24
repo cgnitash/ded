@@ -4,7 +4,8 @@
 #include <algorithm>
 #include <vector>
 
-life::encoding bidir_markov::parse_encoding(std::string s)
+life::encoding
+    bidir_markov::parse_encoding(std::string s)
 {
   life::encoding e;
   for (std::sregex_iterator end,
@@ -18,7 +19,8 @@ life::encoding bidir_markov::parse_encoding(std::string s)
   return e;
 }
 
-void bidir_markov::mutate()
+void
+    bidir_markov::mutate()
 {
 
   genome_.point_delete();
@@ -30,7 +32,8 @@ void bidir_markov::mutate()
   buffer_             = std::vector(input_ + output_ + hidden_, 0.);
 }
 
-void bidir_markov::input(std::string n, life::signal s)
+void
+    bidir_markov::input(std::string n, life::signal s)
 {
   if (n == in_straight_)
   {
@@ -51,7 +54,8 @@ void bidir_markov::input(std::string n, life::signal s)
   }
 }
 
-life::signal bidir_markov::output(std::string n)
+life::signal
+    bidir_markov::output(std::string n)
 {
 
   if (n == out_sense_)
@@ -66,7 +70,8 @@ life::signal bidir_markov::output(std::string n)
   }
 }
 
-void bidir_markov::tick()
+void
+    bidir_markov::tick()
 {
 
   if (!gates_are_computed_)
@@ -88,7 +93,8 @@ void bidir_markov::tick()
             ranges::action::transform([](auto i) { return util::Bit(i); });
 }
 
-void bidir_markov::seed_gates_(size_t n)
+void
+    bidir_markov::seed_gates_(size_t n)
 {
 
   util::repeat(n, [&] {
@@ -98,7 +104,8 @@ void bidir_markov::seed_gates_(size_t n)
   gates_are_computed_ = false;
 }
 
-void bidir_markov::compute_gates_()
+void
+    bidir_markov::compute_gates_()
 {
 
   gates_.clear();

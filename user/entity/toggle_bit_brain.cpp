@@ -8,15 +8,20 @@
 void toggle_bit_brain::input(std::string, life::signal) {}
 
 // no internal state change on a tick
-void toggle_bit_brain::tick() {}
+void
+    toggle_bit_brain::tick()
+{
+}
 
-void toggle_bit_brain::mutate()
+void
+    toggle_bit_brain::mutate()
 {
   // only point mutations since the size of the encoding can't change
   genome_.point_mutate();
 }
 
-life::signal toggle_bit_brain::output(std::string n)
+life::signal
+    toggle_bit_brain::output(std::string n)
 {
   if (n == out_as_true_)
   {

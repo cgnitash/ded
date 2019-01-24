@@ -13,7 +13,8 @@
 #include <utility>
 #include <vector>
 
-life::encoding cppn::parse_encoding(std::string s)
+life::encoding
+    cppn::parse_encoding(std::string s)
 {
   std::smatch    m;
   life::encoding e;
@@ -28,7 +29,8 @@ life::encoding cppn::parse_encoding(std::string s)
   return e;
 }
 
-void cppn::compute_nodes_()
+void
+    cppn::compute_nodes_()
 {
 
   nodes_.clear();
@@ -44,7 +46,8 @@ void cppn::compute_nodes_()
   }
 }
 
-void cppn::mutate()
+void
+    cppn::mutate()
 {
 
   // only point mutations since size of encoding can't change
@@ -52,7 +55,8 @@ void cppn::mutate()
   gates_are_computed_ = false;
 }
 
-void cppn::input(std::string n, life::signal s)
+void
+    cppn::input(std::string n, life::signal s)
 {
   if (n == in_sense_)
   {
@@ -70,7 +74,8 @@ void cppn::input(std::string n, life::signal s)
   }
 }
 
-life::signal cppn::output(std::string n)
+life::signal
+    cppn::output(std::string n)
 {
 
   if (n == out_sense_)
@@ -84,7 +89,8 @@ life::signal cppn::output(std::string n)
   }
 }
 
-void cppn::tick()
+void
+    cppn::tick()
 {
 
   if (!gates_are_computed_)
@@ -121,7 +127,8 @@ void cppn::tick()
           ranges::action::slice(res_size - output_, res_size);
 }
 
-double cppn::activate(size_t c, double x)
+double
+    cppn::activate(size_t c, double x)
 {
 
   // TODO activation function set needs to be thought out
@@ -135,7 +142,8 @@ double cppn::activate(size_t c, double x)
 }
 
 // for debugging purposes
-void cppn::print()
+void
+    cppn::print()
 {
   for (auto &node : nodes_)
   {

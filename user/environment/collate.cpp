@@ -14,7 +14,8 @@
 #include <utility>
 #include <vector>
 
-life::population collate::evaluate(life::population pop)
+life::population
+    collate::evaluate(life::population pop)
 {
 
   auto x1 = life::make_environment(x1_);

@@ -12,7 +12,8 @@
 #include <utility>
 #include <vector>
 
-life::population score_cout_printer::evaluate(life::population pop)
+life::population
+    score_cout_printer::evaluate(life::population pop)
 {
 
   // make and configure nested environment

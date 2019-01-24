@@ -14,7 +14,8 @@
 #include <utility>
 #include <vector>
 
-life::population sequence::evaluate(life::population pop)
+life::population
+    sequence::evaluate(life::population pop)
 {
 
   auto one = life::make_environment(one_);

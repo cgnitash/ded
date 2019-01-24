@@ -19,9 +19,10 @@ entity      make_entity(configuration);
 environment make_environment(configuration);
 
 template <typename M>
-void generate_config(std::string                        comp_type,
-                     M                                  component_maker,
-                     std::initializer_list<std::string> component_list)
+void
+    generate_config(std::string                        comp_type,
+                    M                                  component_maker,
+                    std::initializer_list<std::string> component_list)
 {
 
   for (auto &comp_name : component_list)

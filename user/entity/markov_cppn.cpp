@@ -4,7 +4,8 @@
 #include <algorithm>
 #include <vector>
 
-life::encoding markov_cppn::parse_encoding(std::string s)
+life::encoding
+    markov_cppn::parse_encoding(std::string s)
 {
   std::smatch    m;
   life::encoding e;
@@ -19,7 +20,8 @@ life::encoding markov_cppn::parse_encoding(std::string s)
   return e;
 }
 
-void markov_cppn::mutate()
+void
+    markov_cppn::mutate()
 {
 
   genome_.point_delete();
@@ -63,7 +65,8 @@ void markov_cppn::mutate()
   buffer_             = std::vector(input_ + output_ + hidden_, 0.);
 }
 
-void markov_cppn::input(std::string n, life::signal s)
+void
+    markov_cppn::input(std::string n, life::signal s)
 {
   if (n == in_sense_)
   {
@@ -83,7 +86,8 @@ void markov_cppn::input(std::string n, life::signal s)
   }
 }
 
-life::signal markov_cppn::output(std::string n)
+life::signal
+    markov_cppn::output(std::string n)
 {
 
   if (n == out_sense_)
@@ -98,7 +102,8 @@ life::signal markov_cppn::output(std::string n)
   }
 }
 
-void markov_cppn::tick()
+void
+    markov_cppn::tick()
 {
 
   if (!gates_are_computed_)
@@ -120,7 +125,8 @@ void markov_cppn::tick()
             ranges::action::transform([](auto i) { return util::Bit(i); });
 }
 
-void markov_cppn::seed_gates_(size_t n)
+void
+    markov_cppn::seed_gates_(size_t n)
 {
 
   util::repeat(n, [&] {
@@ -130,7 +136,8 @@ void markov_cppn::seed_gates_(size_t n)
   gates_are_computed_ = false;
 }
 
-void markov_cppn::compute_gates_()
+void
+    markov_cppn::compute_gates_()
 {
 
   gates_.clear();

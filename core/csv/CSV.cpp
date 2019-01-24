@@ -13,7 +13,8 @@
 #include <sstream>
 #include <vector>
 
-std::vector<std::string> CSV::singleColumn(std::string column)
+std::vector<std::string>
+    CSV::singleColumn(std::string column)
 {
   if (!hasColumn(column))
   {
@@ -37,9 +38,10 @@ std::vector<std::string> CSV::singleColumn(std::string column)
   return values;
 }
 
-std::string CSV::lookUp(std::string lookup_column,
-                        std::string value,
-                        std::string return_column) const
+std::string
+    CSV::lookUp(std::string lookup_column,
+                std::string value,
+                std::string return_column) const
 {
 
   if (!hasColumn(lookup_column))
@@ -144,7 +146,8 @@ CSV::CSV(std::string fn, char s, char se) : file_name_(fn), reader_(s, se)
   }
 }
 
-void CSV::merge(CSV merge_csv, std::string column)
+void
+    CSV::merge(CSV merge_csv, std::string column)
 {
 
   if (!hasColumn(column))
@@ -211,7 +214,8 @@ void CSV::merge(CSV merge_csv, std::string column)
   }
 }
 
-bool CSV::hasColumn(std::string name) const
+bool
+    CSV::hasColumn(std::string name) const
 {
   return std::find(std::begin(column_names_), std::end(column_names_), name) !=
          std::end(column_names_);

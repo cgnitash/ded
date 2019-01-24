@@ -14,7 +14,8 @@
 #include <utility>
 #include <vector>
 
-life::population cycle::evaluate(life::population pop)
+life::population
+    cycle::evaluate(life::population pop)
 {
 
   life::global_path += "cycle/";

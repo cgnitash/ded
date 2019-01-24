@@ -6,7 +6,8 @@
 #include <regex>
 #include <vector>
 
-life::encoding markov2in1out::parse_encoding(std::string s)
+life::encoding
+    markov2in1out::parse_encoding(std::string s)
 {
   life::encoding e;
   for (std::sregex_iterator end,
@@ -20,7 +21,8 @@ life::encoding markov2in1out::parse_encoding(std::string s)
   return e;
 }
 
-void markov2in1out::mutate()
+void
+    markov2in1out::mutate()
 {
 
   // go nuts with all kinds of mutations
@@ -29,7 +31,8 @@ void markov2in1out::mutate()
   buffer_             = std::vector(input_ + output_ + hidden_, 0.);
 }
 
-void markov2in1out::input(std::string n, life::signal s)
+void
+    markov2in1out::input(std::string n, life::signal s)
 {
 
   if (n == in_sense_)
@@ -51,7 +54,8 @@ void markov2in1out::input(std::string n, life::signal s)
   }
 }
 
-life::signal markov2in1out::output(std::string n)
+life::signal
+    markov2in1out::output(std::string n)
 {
 
   if (n == out_sense_)
@@ -66,7 +70,8 @@ life::signal markov2in1out::output(std::string n)
   }
 }
 
-void markov2in1out::tick()
+void
+    markov2in1out::tick()
 {
 
   if (!gates_are_computed_)
@@ -86,7 +91,8 @@ void markov2in1out::tick()
             ranges::action::transform([](auto i) { return util::Bit(i); });
 }
 
-void markov2in1out::seed_gates_(size_t n)
+void
+    markov2in1out::seed_gates_(size_t n)
 {
 
   util::repeat(n, [&] {
@@ -97,7 +103,8 @@ void markov2in1out::seed_gates_(size_t n)
   gates_are_computed_ = false;
 }
 
-void markov2in1out::compute_gates_()
+void
+    markov2in1out::compute_gates_()
 {
 
   gates_.clear();

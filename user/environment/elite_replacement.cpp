@@ -7,7 +7,8 @@
 #include <iostream>
 #include <vector>
 
-life::population elite_replacement::evaluate(life::population populate)
+life::population
+    elite_replacement::evaluate(life::population populate)
 {
 
   auto pop = populate.get_as_vector();

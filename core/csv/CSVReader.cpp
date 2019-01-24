@@ -13,7 +13,8 @@
 #include <sstream>
 #include <vector>
 
-CSVReader::input CSVReader::symbol(char c)
+CSVReader::input
+    CSVReader::symbol(char c)
 {
   return c == delimiter_ ? input::delim
                          : c == quotation_ ? input::quote
@@ -21,8 +22,9 @@ CSVReader::input CSVReader::symbol(char c)
                                                       : /* char */ input::chars;
 }
 
-void CSVReader::showLineAndErrorChar(const std::string &line,
-                                     const int &        charIndex)
+void
+    CSVReader::showLineAndErrorChar(const std::string &line,
+                                    const int &        charIndex)
 {
   // example output:
   // this, was, your string, with, error
@@ -31,10 +33,11 @@ void CSVReader::showLineAndErrorChar(const std::string &line,
   std::cout << std::string(std::max(charIndex - 1, 0), ' ') << "^" << std::endl;
 }
 
-void CSVReader::doStateAction(state              s,
-                              char               c,
-                              const std::string &line,
-                              const int &        charIndex)
+void
+    CSVReader::doStateAction(state              s,
+                             char               c,
+                             const std::string &line,
+                             const int &        charIndex)
 {
   switch (s)
   {
@@ -75,7 +78,8 @@ void CSVReader::doStateAction(state              s,
   }
 }
 
-std::vector<std::string> CSVReader::parseLine(const std::string &s)
+std::vector<std::string>
+    CSVReader::parseLine(const std::string &s)
 {
   fields_.clear();
   state curr = state::precw;

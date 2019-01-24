@@ -38,21 +38,24 @@ std::vector<std::string>
       });
 }
 
-void qst_parser::check_no_redefinition(std::string name)
+void
+    qst_parser::check_no_redefinition(std::string name)
 {
   if (all_variables.find(name) != all_variables.end())
   {
-    std::cout << "qst<syntax>error: redefinition of variable '" << name
-              << "' !line " << line_num << "\n";
+    std::cout << "\033[31mqst<syntax>error:\033[0m redefinition of variable '"
+              << name << "' !line " << line_num << "\n";
     std::exit(1);
   }
 }
 
-void qst_parser::parse_new_variable(std::smatch m)
+void
+    qst_parser::parse_new_variable(std::smatch m)
 {
   if (!component_stack.empty())
   {
-    std::cout << "qst<syntax>error: new user variable cannot be nested "
+    std::cout << "\033[31mqst<syntax>error:\033[0m new user variable cannot be "
+                 "nested "
                  "within other components! line "
               << line_num << "\n";
     std::exit(1);
@@ -69,11 +72,13 @@ void qst_parser::parse_new_variable(std::smatch m)
   }
 }
 
-void qst_parser::parse_new_refactored_variable(std::smatch m)
+void
+    qst_parser::parse_new_refactored_variable(std::smatch m)
 {
   if (!component_stack.empty())
   {
-    std::cout << "qst<syntax>error: new-refactored-variable cannot be nested "
+    std::cout << "\033[31mqst<syntax>error:\033[0m new-refactored-variable "
+                 "cannot be nested "
                  "within "
                  "other components! line "
               << line_num << "\n";
@@ -84,8 +89,8 @@ void qst_parser::parse_new_refactored_variable(std::smatch m)
   auto variable = all_variables.find(name);
   if (variable == all_variables.end())
   {
-    std::cout << "error: refactored-variable " << name << " not found! line "
-              << line_num << "\n";
+    std::cout << "\033[31mqst<syntax>error:\033[0m refactored-variable " << name
+              << " not found! line " << line_num << "\n";
     std::exit(1);
   }
 
@@ -93,11 +98,13 @@ void qst_parser::parse_new_refactored_variable(std::smatch m)
   all_variables[m[1].str()] = variable->second;
 }
 
-void qst_parser::parse_new_varied_variable(std::smatch m)
+void
+    qst_parser::parse_new_varied_variable(std::smatch m)
 {
   if (!component_stack.empty())
   {
-    std::cout << "qst<syntax>error: new-varied-variable cannot be nested "
+    std::cout << "\033[31mqst<syntax>error:\033[0m new-varied-variable cannot "
+                 "be nested "
                  "within "
                  "other components! line "
               << line_num << "\n";
@@ -119,9 +126,9 @@ void qst_parser::parse_new_varied_variable(std::smatch m)
     if (varied_name[0] != '!' && varied_name[0] != '$')
     {
 
-      std::cout << "error: varied-variable " << varied_name
-                << " must be a component or variable! line " << line_num
-                << "\n";
+      std::cout << "\033[31mqst<syntax>error:\033[0m varied-variable "
+                << varied_name << " must be a component or variable! line "
+                << line_num << "\n";
       std::exit(1);
     }
     if (varied_name[0] == '!')
@@ -129,9 +136,9 @@ void qst_parser::parse_new_varied_variable(std::smatch m)
       auto variable = all_variables.find(varied_name.substr(1));
       if (variable == all_variables.end())
       {
-        std::cout << "error: varied-refactored-variable "
-                  << varied_name.substr(1) << " not found! line " << line_num
-                  << "\n";
+        std::cout
+            << "\033[31mqst<syntax>error:\033[0m varied-refactored-variable "
+            << varied_name.substr(1) << " not found! line " << line_num << "\n";
         std::exit(1);
       }
       varied_name = variable->second + ",";
@@ -147,13 +154,13 @@ void qst_parser::parse_new_varied_variable(std::smatch m)
   varied.push_back(varied_entry);
 }
 
-void qst_parser::parse_nested_parameter(std::smatch m)
+void
+    qst_parser::parse_nested_parameter(std::smatch m)
 {
   if (component_stack.empty())
   {
-    std::cout << "qst<syntax>error: parameter must be nested "
-                 "within "
-                 "other components! line "
+    std::cout << "\033[31mqst<syntax>error:\033[0m parameter must be nested "
+                 "within other components! line "
               << line_num << "\n";
     std::exit(1);
   }
@@ -168,11 +175,13 @@ void qst_parser::parse_nested_parameter(std::smatch m)
   }
 }
 
-void qst_parser::parse_nested_refactored_parameter(std::smatch m)
+void
+    qst_parser::parse_nested_refactored_parameter(std::smatch m)
 {
   if (component_stack.empty())
   {
-    std::cout << "qst<syntax>error: refactored-parameter must be nested "
+    std::cout << "\033[31mqst<syntax>error:\033[0m refactored-parameter must "
+                 "be nested "
                  "within "
                  "other components! line "
               << line_num << "\n";
@@ -183,22 +192,24 @@ void qst_parser::parse_nested_refactored_parameter(std::smatch m)
   auto variable = all_variables.find(name);
   if (variable == all_variables.end())
   {
-    std::cout << "error: refactored-variable " << name << " not found! line "
-              << line_num << "\n";
+    std::cout << "\033[31mqst<syntax>error:\033[0m refactored-variable " << name
+              << " not found! line " << line_num << "\n";
     std::exit(1);
   }
   component_stack.back().params +=
       "\"" + m[1].str() + "\":" + variable->second + ",";
 }
 
-void qst_parser::parse_nested_varied_parameter(std::smatch m)
+void
+    qst_parser::parse_nested_varied_parameter(std::smatch m)
 {
   if (component_stack.empty())
   {
-    std::cout << "qst<syntax>error: varied-parameter must be nested "
-                 "within "
-                 "other components! line "
-              << line_num << "\n";
+    std::cout
+        << "\033[31mqst<syntax>error:\033[0m varied-parameter must be nested "
+           "within "
+           "other components! line "
+        << line_num << "\n";
     std::exit(1);
   }
 
@@ -217,10 +228,11 @@ void qst_parser::parse_nested_varied_parameter(std::smatch m)
   auto primitives       = ranges::none_of(varied_names, is_not_primitive);
   if (!(compvars || primitives))
   {
-    std::cout << "error: varied-parameters must all be  "
-                 "components/variables, or they must all be primitive "
-                 "values! line "
-              << line_num << "\n";
+    std::cout
+        << "\033[31mqst<syntax>error:\033[0m varied-parameters must all be  "
+           "components/variables, or they must all be primitive "
+           "values! line "
+        << line_num << "\n";
     std::exit(1);
   }
   if (compvars)
@@ -233,9 +245,10 @@ void qst_parser::parse_nested_varied_parameter(std::smatch m)
         auto variable = all_variables.find(varied_name.substr(1));
         if (variable == all_variables.end())
         {
-          std::cout << "error: varied-refactored-variable "
-                    << varied_name.substr(1) << " not found! line " << line_num
-                    << "\n";
+          std::cout
+              << "\033[31mqst<syntax>error:\033[0m varied-refactored-variable "
+              << varied_name.substr(1) << " not found! line " << line_num
+              << "\n";
           std::exit(1);
         }
         varied_name = "\"" + m[1].str() + "\":" + variable->second + ",";
@@ -260,12 +273,14 @@ void qst_parser::parse_nested_varied_parameter(std::smatch m)
   varied.push_back(varied_entry);
 }
 
-void qst_parser::parse_closed_brace()
+void
+    qst_parser::parse_closed_brace()
 {
   if (component_stack.empty())
   {
-    std::cout << "qst<syntax>error: dangling closing brace! line " << line_num
-              << "\n";
+    std::cout
+        << "\033[31mqst<syntax>error:\033[0m dangling closing brace! line "
+        << line_num << "\n";
     std::exit(1);
   }
   auto current = component_stack.back();
@@ -286,25 +301,28 @@ void qst_parser::parse_closed_brace()
   }
 }
 
-void qst_parser::cleanup()
+void
+    qst_parser::cleanup()
 {
 
   if (!component_stack.empty())
   {
-    std::cout << "qst<syntax>error: braces need to be added\n";
+    std::cout << "\033[31mqst<syntax>error:\033[0m braces need to be added\n";
     std::exit(1);
   }
 
   if (all_variables.find("P") == all_variables.end())
   {
-    std::cout << "error: qst script must have a variable named 'P' fpr the "
+    std::cout << "\033[31mqst<syntax>error:\033[0m qst script must have a "
+                 "variable named 'P' for the "
                  "Population\n";
     std::exit(1);
   }
 
   if (all_variables.find("E") == all_variables.end())
   {
-    std::cout << "error: qst script must have a variable named 'E' fpr the "
+    std::cout << "\033[31mqst<syntax>error:\033[0m qst script must have a "
+                 "variable named 'E' for the "
                  "Environment\n";
     std::exit(1);
   }
@@ -364,14 +382,13 @@ std::vector<std::tuple<std::string, std::string, std::string>>
   for (; std::getline(ifs, line); line_num++)
   {
 
-    std::cout << line_num << " " << line << std::endl;
     line = std::regex_replace(line, comments, "");
+
     line = std::regex_replace(line, spurious_tabs, " ");
 
     if (line.empty() || ranges::all_of(line, [](auto c) { return c == ' '; }))
       continue;
 
-    std::cout << line_num << " " << line << std::endl;
     if (std::regex_match(line, m, new_variable))
     {
       parse_new_variable(m);
@@ -449,7 +466,8 @@ std::vector<std::tuple<std::string, std::string, std::string>>
       continue;
     }
 
-    std::cout << "qst<syntax>error: unable to parse! line " << line_num << "\n"
+    std::cout << "\033[31mqst<syntax>error:\033[0m unable to parse! line "
+              << line_num << "\n"
               << line << "\n";
     std::exit(1);
   }

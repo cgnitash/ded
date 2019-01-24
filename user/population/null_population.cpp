@@ -4,4 +4,8 @@
 #include <algorithm>
 #include <vector>
 
-std::vector<life::entity> create() { return {}; }
+std::vector<life::entity>
+    create()
+{
+  return {};
+}

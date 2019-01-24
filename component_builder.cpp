@@ -14,7 +14,8 @@
 
 using opts = std::map<std::string, std::vector<std::string>>;
 
-opts get_build_options(const std::string &fname)
+opts
+    get_build_options(const std::string &fname)
 {
 
   opts          build_options;
@@ -29,7 +30,8 @@ opts get_build_options(const std::string &fname)
   return build_options;
 }
 
-void generate_components(const std::string &fname, opts build_options)
+void
+    generate_components(const std::string &fname, opts build_options)
 {
 
   std::ofstream header(fname);
@@ -67,9 +69,10 @@ void generate_components(const std::string &fname, opts build_options)
   header << "}\n\n} // namespace life";
 }
 
-void generate_makefile(const std::string &fname,
-                       opts               build_options,
-                       std::string        args)
+void
+    generate_makefile(const std::string &fname,
+                      opts               build_options,
+                      std::string        args)
 {
   std::ofstream makefile(fname);
   using namespace fmt::literals;
@@ -130,7 +133,8 @@ void generate_makefile(const std::string &fname,
   }
 }
 
-int main(int argc, char **argv)
+int
+    main(int argc, char **argv)
 {
 
   auto bo = get_build_options("components.cfg");

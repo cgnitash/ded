@@ -3,7 +3,8 @@
 
 #include <algorithm>
 
-life::population max_one::evaluate(life::population pop)
+life::population
+    max_one::evaluate(life::population pop)
 {
 
   pop.merge(pop.get_as_vector() | ranges::action::transform([this](auto &org) {

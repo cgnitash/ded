@@ -12,7 +12,8 @@
 #include <utility>
 #include <vector>
 
-double flip_bits::eval(life::entity &org)
+double
+    flip_bits::eval(life::entity &org)
 {
 
   // feed in input - input signals are 0s or 1s only
@@ -41,7 +42,8 @@ double flip_bits::eval(life::entity &org)
       });
 }
 
-life::population flip_bits::evaluate(life::population pop)
+life::population
+    flip_bits::evaluate(life::population pop)
 {
   pop.merge(pop.get_as_vector() | ranges::action::transform([this](auto &org) {
               org.data.set_value(flippiness_tag_, eval(org));

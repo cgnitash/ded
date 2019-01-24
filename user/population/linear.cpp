@@ -5,7 +5,8 @@
 #include <experimental/filesystem>
 #include <vector>
 
-void linear::initialize()
+void
+    linear::initialize()
 {
 
   if (load_spec_.empty())
@@ -39,9 +40,14 @@ void linear::initialize()
   }
 }
 
-std::vector<life::entity> linear::get_as_vector() { return pop_; }
+std::vector<life::entity>
+    linear::get_as_vector()
+{
+  return pop_;
+}
 
-void linear::update_tree(long org_id, int count)
+void
+    linear::update_tree(long org_id, int count)
 {
 
   auto possible_ancestry_end = std::end(fossils_);
@@ -61,7 +67,8 @@ void linear::update_tree(long org_id, int count)
   }
 }
 
-bool linear::found_in_fossils(long n) const
+bool
+    linear::found_in_fossils(long n) const
 {
   auto l = std::lower_bound(
       std::begin(fossils_), std::end(fossils_), n, [](auto &org, long n) {
@@ -70,7 +77,8 @@ bool linear::found_in_fossils(long n) const
   return l != std::end(fossils_) && l->first.get_id() == n;
 }
 
-bool linear::found_in_pop(long n) const
+bool
+    linear::found_in_pop(long n) const
 {
   auto l = std::lower_bound(std::begin(pop_),
                             std::end(pop_),
@@ -79,7 +87,8 @@ bool linear::found_in_pop(long n) const
   return l != ranges::end(pop_) && l->get_id() == n;
 }
 
-void linear::merge(std::vector<life::entity> v)
+void
+    linear::merge(std::vector<life::entity> v)
 {
 
   if (track_lineage_)
@@ -113,7 +122,8 @@ void linear::merge(std::vector<life::entity> v)
   pop_ = v;
 }
 
-void linear::snapshot(long i) const
+void
+    linear::snapshot(long i) const
 {
   auto snapshot_file = util::open_or_append(life::global_path + "snapshot_" +
                                                 std::to_string(i) + ".csv",
@@ -123,7 +133,8 @@ void linear::snapshot(long i) const
                   << org.get_encoding() << std::endl;
 }
 
-void linear::prune_lineage(long i)
+void
+    linear::prune_lineage(long i)
 {
 
   if (!track_lineage_) return;
@@ -162,7 +173,8 @@ void linear::prune_lineage(long i)
   return;
 }
 
-void linear::flush_unpruned()
+void
+    linear::flush_unpruned()
 {
   pop_.clear();
   prune_lineage(-1);

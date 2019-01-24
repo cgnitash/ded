@@ -13,7 +13,8 @@
 #include <utility>
 #include <vector>
 
-void forager::replace_resource_()
+void
+    forager::replace_resource_()
 {
 
   size_t i, j;
@@ -25,7 +26,8 @@ void forager::replace_resource_()
   resources_[i][j] = 1;
 }
 
-std::vector<double> forager::signals_at(location loc, direction facing)
+std::vector<double>
+    forager::signals_at(location loc, direction facing)
 {
 
   std::vector out(sensor_range_, 1.);
@@ -40,7 +42,8 @@ std::vector<double> forager::signals_at(location loc, direction facing)
   return out;
 }
 
-void forager::initialize_resource_()
+void
+    forager::initialize_resource_()
 {
 
   resources_ = std::vector(grid_size_, std::vector(grid_size_, 0));
@@ -49,10 +52,11 @@ void forager::initialize_resource_()
       if ((std::rand() % 1000) / 1000.0 < density_) resources_[i][j] = 1;
 }
 
-void forager::visualize(std::ofstream &out,
-                        location       position,
-                        direction      facing,
-                        double         score)
+void
+    forager::visualize(std::ofstream &out,
+                       location       position,
+                       direction      facing,
+                       double         score)
 {
 
   out << position.x_ << " " << position.y_ << " " << static_cast<int>(facing)
@@ -63,10 +67,11 @@ void forager::visualize(std::ofstream &out,
   out << std::endl;
 }
 
-void forager::interact(life::signal s,
-                       location &   position,
-                       direction &  facing,
-                       double &     score)
+void
+    forager::interact(life::signal s,
+                      location &   position,
+                      direction &  facing,
+                      double &     score)
 {
 
   auto output = std::get<std::vector<double>>(s);
@@ -105,7 +110,8 @@ void forager::interact(life::signal s,
   }
 }
 
-double forager::eval(life::entity &org)
+double
+    forager::eval(life::entity &org)
 {
 
   auto score = 0.0;
@@ -149,7 +155,8 @@ double forager::eval(life::entity &org)
   return score;
 }
 
-life::population forager::evaluate(life::population pop)
+life::population
+    forager::evaluate(life::population pop)
 {
   auto vec = pop.get_as_vector();
   for (auto &org : vec) org.data.set_value(food_eaten_tag_, eval(org));
