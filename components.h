@@ -13,19 +13,21 @@
 namespace life {
 extern std::string global_path;
 
-experiment make_experiment(configuration);
-population make_population(configuration);
-entity make_entity(configuration);
+experiment  make_experiment(configuration);
+population  make_population(configuration);
+entity      make_entity(configuration);
 environment make_environment(configuration);
 
 template <typename M>
-void generate_config(std::string comp_type, M component_maker,
-                     std::initializer_list<std::string> component_list) {
+void generate_config(std::string                        comp_type,
+                     M                                  component_maker,
+                     std::initializer_list<std::string> component_list)
+{
 
   for (auto &comp_name : component_list)
-    all_configs[{comp_type, comp_name}] =
-        component_maker({comp_name}).publish_configuration();
+    all_configs[{ comp_type, comp_name }] =
+        component_maker({ comp_name }).publish_configuration();
 }
 
 void generate_all_configs();
-} // namespace life
+}   // namespace life

@@ -14,7 +14,8 @@
 #include <utility>
 #include <vector>
 
-life::population sequence::evaluate(life::population pop) {
+life::population sequence::evaluate(life::population pop)
+{
 
   auto one = life::make_environment(one_);
 
@@ -22,7 +23,8 @@ life::population sequence::evaluate(life::population pop) {
 
   pop = one.evaluate(pop);
 
-  if (to_cout_) {
+  if (to_cout_)
+  {
     auto vec = pop;
     for (const auto &org : vec.get_as_vector())
       std::cout << "id: " << org.get_id() << " : "
@@ -34,4 +36,3 @@ life::population sequence::evaluate(life::population pop) {
 
   return pop;
 }
-

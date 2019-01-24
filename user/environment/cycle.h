@@ -15,49 +15,48 @@
 
 class cycle {
 
-  long count_ = 1;
+  long count_     = 1;
   long snap_freq_ = 0;
 
-  std::string score_tag_  = "score,double";
-  
-  life::configuration world_{"null_environment", {}};
+  std::string score_tag_ = "score,double";
+
+  life::configuration world_{ "null_environment", {} };
 
   // not here??
   long Seed_ = 0;
 
 public:
-  cycle() {
-	  configure(publish_configuration());
-  }
+  cycle() { configure(publish_configuration()); }
 
-  life::configuration publish_configuration() {
+  life::configuration publish_configuration()
+  {
     life::configuration ec;
-    ec["parameters"]["count"] = count_;
+    ec["parameters"]["count"]              = count_;
     ec["parameters"]["snapshot-frequency"] = snap_freq_;
-    //ec["parameters"]["SEED"] = Seed_;
+    // ec["parameters"]["SEED"] = Seed_;
 
-    ec["input-tags"] = nullptr;
+    ec["input-tags"]  = nullptr;
     ec["output-tags"] = nullptr;
 
-    ec["pre-tags"] = nullptr;
+    ec["pre-tags"]  = nullptr;
     ec["post-tags"] = nullptr;
 
     // o:in:fitness(P) must provide these tags
-    ec["parameters"]["world"] = {world_[0], {}, {}, {score_tag_}};
+    ec["parameters"]["world"] = { world_[0], {}, {}, { score_tag_ } };
 
     return ec;
   }
 
-  void configure(life::configuration con) {
-    count_ = con["parameters"]["count"];
+  void configure(life::configuration con)
+  {
+    count_     = con["parameters"]["count"];
     snap_freq_ = con["parameters"]["snapshot-frequency"];
-    //Seed_ = con["parameters"]["SEED"];
-	
-	world_= con["parameters"]["world"];
+    // Seed_ = con["parameters"]["SEED"];
 
-	//std::srand(Seed_);
+    world_ = con["parameters"]["world"];
+
+    // std::srand(Seed_);
   }
 
   life::population evaluate(life::population);
 };
-

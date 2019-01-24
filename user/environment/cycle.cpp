@@ -14,11 +14,13 @@
 #include <utility>
 #include <vector>
 
-life::population cycle::evaluate(life::population pop) {
+life::population cycle::evaluate(life::population pop)
+{
 
   life::global_path += "cycle/";
 
-  if (std::experimental::filesystem::exists(life::global_path)) {
+  if (std::experimental::filesystem::exists(life::global_path))
+  {
     std::cout
         << "error: directory \"" << life::global_path
         << "\" already contains data. This will be overwritten. aborting..."
@@ -29,14 +31,14 @@ life::population cycle::evaluate(life::population pop) {
 
   auto world = life::make_environment(world_);
 
-  for (auto i : ranges::view::iota(0, count_)) {
+  for (auto i : ranges::view::iota(0, count_))
+  {
 
     pop = world.evaluate(pop);
 
-    if (!snap_freq_ && !(i % snap_freq_))
-      pop.snapshot(i);
+    if (!snap_freq_ && !(i % snap_freq_)) pop.snapshot(i);
 
-	// this should not be necessary to say
+    // this should not be necessary to say
     pop.prune_lineage(i);
   }
   // this should not be necessary to say
@@ -48,4 +50,3 @@ life::population cycle::evaluate(life::population pop) {
 
   return pop;
 }
-

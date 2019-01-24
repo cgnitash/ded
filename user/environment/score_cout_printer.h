@@ -20,12 +20,13 @@ class score_cout_printer {
 
   std::string used_score_tag_ = "score,double";
 
-  life::configuration env_{"null_environment", {}};
+  life::configuration env_{ "null_environment", {} };
 
 public:
   score_cout_printer() { configure(publish_configuration()); }
 
-  life::configuration publish_configuration() {
+  life::configuration publish_configuration()
+  {
     life::configuration c;
     c["parameters"]["message"] = message_;
 
@@ -35,26 +36,24 @@ public:
     // o:in:P' has no tags
     c["post-tags"] = nullptr;
 
-    c["input-tags"] = nullptr;
+    c["input-tags"]  = nullptr;
     c["output-tags"] = nullptr;
 
     //  o:in:env(P) must provide these tags
     c["parameters"]["env"] = {
-        env_[0],
-        {},
-        {},
-        {used_score_tag_}}; // as well as propogate population requirements
+      env_[0], {}, {}, { used_score_tag_ }
+    };   // as well as propogate population requirements
 
     return c;
   }
 
-  void configure(life::configuration con) {
+  void configure(life::configuration con)
+  {
     message_ = con["parameters"]["message"];
-    env_ = con["parameters"]["env"];
+    env_     = con["parameters"]["env"];
   }
 
   // guarantess org.data["x"] exists and is double
   life::population evaluate(life::population);
   // guarantess org.data["fx"] exists and is double
 };
-

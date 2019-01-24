@@ -1,8 +1,7 @@
 
-#include"null_population.h"
+#include "null_population.h"
 
-#include <vector>
 #include <algorithm>
+#include <vector>
 
 std::vector<life::entity> create() { return {}; }
-

@@ -1,23 +1,25 @@
 
-#include"bidir_markov.h"
+#include "bidir_markov.h"
 
-#include <vector>
 #include <algorithm>
+#include <vector>
 
-life::encoding bidir_markov::parse_encoding(std::string s) {
+life::encoding bidir_markov::parse_encoding(std::string s)
+{
   life::encoding e;
   for (std::sregex_iterator end,
        i(std::begin(s), std::end(s), encoding_parser_);
-       i != end; i++) {
+       i != end;
+       i++)
+  {
     auto site = (*i)[1].str();
-    if (!site.empty()) {
-      e.push_back(std::stol(site));
-	}
+    if (!site.empty()) { e.push_back(std::stol(site)); }
   }
   return e;
 }
 
-void bidir_markov::mutate() {
+void bidir_markov::mutate()
+{
 
   genome_.point_delete();
   genome_.point_insert();
@@ -25,61 +27,69 @@ void bidir_markov::mutate() {
   genome_.copy_chunk();
   genome_.del_chunk();
   gates_are_computed_ = false;
-  buffer_ = std::vector(input_ + output_ + hidden_, 0.);
+  buffer_             = std::vector(input_ + output_ + hidden_, 0.);
 }
 
-void bidir_markov::input(std::string n, life::signal s) {
-  if (n == in_straight_) {
+void bidir_markov::input(std::string n, life::signal s)
+{
+  if (n == in_straight_)
+  {
     auto v = std::get<std::vector<double>>(s);
-    if (v.size() != input_) {
-      std::cout << "Impl-Error: entity-markovbrain must get an input range of the "
-                   "specified size\n";
+    if (v.size() != input_)
+    {
+      std::cout
+          << "Impl-Error: entity-markovbrain must get an input range of the "
+             "specified size\n";
       exit(1);
     }
-    for (auto i{0u}; i < input_; i++)
-      buffer_[i] = util::Bit(v[i]);
-  } else 
-  if (n == in_reverse_) {
+    for (auto i{ 0u }; i < input_; i++) buffer_[i] = util::Bit(v[i]);
+  } else if (n == in_reverse_)
+  {
     auto v = std::get<std::vector<double>>(s);
-    for (auto i{0u}; i < input_; i++)
+    for (auto i{ 0u }; i < input_; i++)
       buffer_[input_ - i - 1] = util::Bit(v[i]);
   }
 }
 
-life::signal bidir_markov::output(std::string n) {
+life::signal bidir_markov::output(std::string n)
+{
 
-  if (n == out_sense_) {
+  if (n == out_sense_)
+  {
     return buffer_ | ranges::copy |
            ranges::action::slice(input_, input_ + output_);
-  } else {
-    std::cout
-        << "Impl-Error: entity-markovbrain cannot handle this name-signal pair in output \n";
+  } else
+  {
+    std::cout << "Impl-Error: entity-markovbrain cannot handle this "
+                 "name-signal pair in output \n";
     exit(1);
   }
 }
 
-void bidir_markov::tick() {
+void bidir_markov::tick()
+{
 
-  if (!gates_are_computed_) {
+  if (!gates_are_computed_)
+  {
     compute_gates_();
     gates_are_computed_ = true;
   }
 
   std::vector out_buffer(buffer_.size(), 0.);
 
-  for (auto &g : gates_) {
+  for (auto &g : gates_)
+  {
     auto in = 0;
-    for (auto &i : g.ins_)
-      in = in * 2 + buffer_[i];
+    for (auto &i : g.ins_) in = in * 2 + buffer_[i];
     auto out = g.logic_[in];
-    for (auto &i : g.outs_) 
-      out_buffer[i] += out;
+    for (auto &i : g.outs_) out_buffer[i] += out;
   }
   buffer_ = out_buffer | ranges::move |
             ranges::action::transform([](auto i) { return util::Bit(i); });
 }
 
-void bidir_markov::seed_gates_(size_t n) {
+void bidir_markov::seed_gates_(size_t n)
+{
 
   util::repeat(n, [&] {
     auto pos = std::rand() % (genome_.size() - 1);
@@ -88,31 +98,36 @@ void bidir_markov::seed_gates_(size_t n) {
   gates_are_computed_ = false;
 }
 
-void bidir_markov::compute_gates_() {
+void bidir_markov::compute_gates_()
+{
 
   gates_.clear();
   auto addresses = input_ + output_ + hidden_;
-  for (auto pos{std::begin(genome_)}; pos < std::end(genome_) - gene_length_;
-       pos++) {
+  for (auto pos{ std::begin(genome_) }; pos < std::end(genome_) - gene_length_;
+       pos++)
+  {
     // find the next codon
-    pos = std::search(pos, std::end(genome_) - gene_length_, std::begin(codon_),
+    pos = std::search(pos,
+                      std::end(genome_) - gene_length_,
+                      std::begin(codon_),
                       std::end(codon_));
-    if (pos != std::end(genome_) - gene_length_) {
+    if (pos != std::end(genome_) - gene_length_)
+    {
       // convert the gene into gate
       gate g;
-	  // translate input wires
+      // translate input wires
       auto in = *(pos + 2) % 4 + 1;
       for (auto i : ranges::view::iota(0u, in))
         g.ins_.push_back(*(pos + 3 + i) % addresses);
 
-	  // translate output wires
+      // translate output wires
       auto out = *(pos + 7) % 4 + 1;
       for (auto i : ranges::view::iota(0u, out))
         g.outs_.push_back(*(pos + 8 + i) % addresses);
 
-	  // translate logic 
+      // translate logic
       for (auto i : ranges::view::iota(0u, 16))
-        g.logic_.push_back(*(pos + 13 + i) % 2); 
+        g.logic_.push_back(*(pos + 13 + i) % 2);
 
       gates_.push_back(g);
     }

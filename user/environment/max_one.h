@@ -16,13 +16,14 @@
 
 class max_one {
 
-  std::string ones_tag_ = "ones,double";
+  std::string ones_tag_            = "ones,double";
   std::string org_output_ones_tag_ = "ones,A<double>";
 
 public:
   max_one() { configure(publish_configuration()); }
 
-  life::configuration publish_configuration() {
+  life::configuration publish_configuration()
+  {
     life::configuration c;
     c["parameters"] = nullptr;
 
@@ -32,17 +33,17 @@ public:
     // o:in:P' must handle these tags
     c["post-tags"]["ones"] = ones_tag_;
 
-    c["input-tags"] = nullptr;
+    c["input-tags"]          = nullptr;
     c["output-tags"]["ones"] = org_output_ones_tag_;
 
     return c;
   }
 
-  void configure(life::configuration c) {
-    ones_tag_ = c["post-tags"]["ones"];
+  void configure(life::configuration c)
+  {
+    ones_tag_            = c["post-tags"]["ones"];
     org_output_ones_tag_ = c["output-tags"]["ones"];
   }
 
   life::population evaluate(life::population);
 };
-

@@ -18,15 +18,16 @@ class replicate {
 
   size_t num_ = 1;
 
-  std::string fx_tag_ = "fx,double";
+  std::string fx_tag_     = "fx,double";
   std::string used_x_tag_ = "x,double";
 
-  life::configuration env_{"null_environment", {}};
+  life::configuration env_{ "null_environment", {} };
 
 public:
   replicate() { configure(publish_configuration()); }
 
-  life::configuration publish_configuration() {
+  life::configuration publish_configuration()
+  {
     life::configuration c;
     c["parameters"]["num"] = num_;
 
@@ -36,20 +37,19 @@ public:
     //  o:in:P' must handle these tags
     c["post-tags"]["fx"] = fx_tag_;
 
-    c["input-tags"] = nullptr;
+    c["input-tags"]  = nullptr;
     c["output-tags"] = nullptr;
 
     //  o:in:env(P) must provide these tags
     c["parameters"]["env"] = {
-        env_[0],
-        {},
-        {},
-        {used_x_tag_}}; // as well as propogate population requirements
+      env_[0], {}, {}, { used_x_tag_ }
+    };   // as well as propogate population requirements
 
     return c;
   }
 
-  void configure(life::configuration con) {
+  void configure(life::configuration con)
+  {
     num_ = con["parameters"]["num"];
     env_ = con["parameters"]["env"];
 
@@ -58,4 +58,3 @@ public:
 
   life::population evaluate(life::population);
 };
-

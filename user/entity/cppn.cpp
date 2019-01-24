@@ -1,38 +1,42 @@
 
-#include"cppn.h"
-#include"../../core/utilities.h"
+#include "cppn.h"
+#include "../../core/utilities.h"
 
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <cmath>
-#include <vector>
-#include <functional>
-#include <numeric>
 #include <algorithm>
-#include <utility>
+#include <cmath>
+#include <fstream>
+#include <functional>
+#include <iomanip>
+#include <iostream>
 #include <map>
+#include <numeric>
+#include <utility>
+#include <vector>
 
-life::encoding cppn::parse_encoding(std::string s) {
-  std::smatch m;
+life::encoding cppn::parse_encoding(std::string s)
+{
+  std::smatch    m;
   life::encoding e;
   for (std::sregex_iterator end,
        i(std::begin(s), std::end(s), encoding_parser_);
-       i != end; i++) {
+       i != end;
+       i++)
+  {
     auto site = (*i)[1].str();
-    if (!site.empty())
-      e.push_back(std::stol(site));
+    if (!site.empty()) e.push_back(std::stol(site));
   }
   return e;
 }
 
-void cppn::compute_nodes_() {
+void cppn::compute_nodes_()
+{
 
   nodes_.clear();
   // create activation functions for all nodes other than inputs
-  for (size_t i : ranges::view::iota(0, output_ + hidden_)) {
+  for (size_t i : ranges::view::iota(0, output_ + hidden_))
+  {
     Node node;
-    node.activation_function = genome_[9*i] % 6;
+    node.activation_function = genome_[9 * i] % 6;
     for (auto j = 0; j < 4; j++)
       node.in_node[genome_[9 * i + j * 2 + 1] % (input_ + i + 1)] =
           (genome_[9 * i + j * 2 + 2] % 1000) / 1000.0;
@@ -40,58 +44,68 @@ void cppn::compute_nodes_() {
   }
 }
 
-void cppn::mutate() {
+void cppn::mutate()
+{
 
   // only point mutations since size of encoding can't change
   genome_.point_mutate();
   gates_are_computed_ = false;
 }
 
-void cppn::input(std::string n,life::signal s) {
-  if (n == in_sense_) {
+void cppn::input(std::string n, life::signal s)
+{
+  if (n == in_sense_)
+  {
     ins_ = std::get<std::vector<double>>(s);
-    if (ins_.size() != input_) {
+    if (ins_.size() != input_)
+    {
       std::cout << "Error: entity-cppn must get an input range of the "
                    "specified size\n";
       exit(1);
     }
-  } else {
-    std::cout
-        << "Error: entity-cppn cannot handle this payload type \n";
+  } else
+  {
+    std::cout << "Error: entity-cppn cannot handle this payload type \n";
     exit(1);
   }
 }
 
-life::signal cppn::output(std::string n) {
+life::signal cppn::output(std::string n)
+{
 
-  if (n == out_sense_) {
+  if (n == out_sense_)
+  {
     return outs_;
-  } else {
-    std::cout
-        << "Impl-Error: entity-cppn cannot handle this name-signal pair in output \n";
+  } else
+  {
+    std::cout << "Impl-Error: entity-cppn cannot handle this name-signal pair "
+                 "in output \n";
     exit(1);
   }
 }
 
-void cppn::tick() {
+void cppn::tick()
+{
 
-  if (!gates_are_computed_) {
+  if (!gates_are_computed_)
+  {
     compute_nodes_();
     gates_are_computed_ = true;
   }
 
-  if (ins_.empty())
-	  ins_ = std::vector<double>(input_,0.0);
+  if (ins_.empty()) ins_ = std::vector<double>(input_, 0.0);
 
-  if (ins_.size() != input_) {
+  if (ins_.size() != input_)
+  {
     std::cout
         << "Error: entity-cppn must get an input range of the specified size\n";
     exit(1);
   }
   auto results = ins_;
-  
+
   // for each node in order
-  for (auto &node : nodes_) {
+  for (auto &node : nodes_)
+  {
     // sum up the incoming weighted-outputs from other nodes
     auto const sum = ranges::accumulate(
         node.in_node, 0.0, [&results](auto const total, auto const value) {
@@ -103,14 +117,15 @@ void cppn::tick() {
 
   auto res_size = results.size();
   // put the last output node results into the output buffer
-  outs_ = results | ranges::move | ranges::action::slice(res_size - output_, res_size);
-
+  outs_ = results | ranges::move |
+          ranges::action::slice(res_size - output_, res_size);
 }
 
-double cppn::activate(size_t c, double x) {
+double cppn::activate(size_t c, double x)
+{
 
   // TODO activation function set needs to be thought out
-  // TODO  activation function set needs to be parameterised 
+  // TODO  activation function set needs to be parameterised
   auto xp = c == 0 ? std::sin(x)
                    : c == 1 ? std::cos(x)
                             : c == 2 ? std::tan(x)
@@ -120,12 +135,13 @@ double cppn::activate(size_t c, double x) {
 }
 
 // for debugging purposes
-void cppn::print() {
-  for (auto &node : nodes_) {
+void cppn::print()
+{
+  for (auto &node : nodes_)
+  {
     std::cout << "af: " << node.activation_function << " ws: ";
     for (auto &w : node.in_node)
       std::cout << "{" << w.first << "," << w.second << "} ";
     std::cout << std::endl;
   }
 }
-

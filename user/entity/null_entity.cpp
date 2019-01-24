@@ -1,12 +1,10 @@
 
-#include"null_entity.h"
+#include "null_entity.h"
 
-#include <vector>
 #include <algorithm>
+#include <vector>
 
-  void null_entity::mutate() {}
-  void null_entity::input(std::string, life::signal) {}
-  life::signal null_entity::output(std::string) { return life::signal(); }
-  void null_entity::tick() {}
-
-
+void         null_entity::mutate() {}
+void         null_entity::input(std::string, life::signal) {}
+life::signal null_entity::output(std::string) { return life::signal(); }
+void         null_entity::tick() {}

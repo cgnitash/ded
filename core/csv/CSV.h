@@ -61,7 +61,8 @@ public:
 
   // look up a value in a column and return the value in the corresponding row
   // of the other column
-  std::string lookUp(std::string lookup_column, std::string value,
+  std::string lookUp(std::string lookup_column,
+                     std::string value,
                      std::string return_column) const;
 
   // merges another csv file. Only extra columns are added. All values in the
@@ -73,4 +74,3 @@ public:
   // check existence of a column
   bool hasColumn(std::string name) const;
 };
-

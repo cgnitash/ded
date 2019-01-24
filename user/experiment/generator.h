@@ -14,21 +14,23 @@
 #include <vector>
 
 class generator {
-  std::string file_;
+  std::string                      file_;
   std::vector<life::configuration> all_exps_;
 
-  std::regex comment_{R"(^\s*#.*)"};
-  std::regex spaces_{R"(\s+)"};
-  std::regex vary_command_{R"(^\s*vary\s+(.+)$)"};
+  std::regex comment_{ R"(^\s*#.*)" };
+  std::regex spaces_{ R"(\s+)" };
+  std::regex vary_command_{ R"(^\s*vary\s+(.+)$)" };
   std::regex vary_with_{
-      R"(^\s*with\s*(\s[^\[]+\S)\s*\[\s*([^\]]+\S)\s*\]\s*$)"};
+    R"(^\s*with\s*(\s[^\[]+\S)\s*\[\s*([^\]]+\S)\s*\]\s*$)"
+  };
 
-
-  auto clean_lines() {
+  auto clean_lines()
+  {
     return ranges::view::filter([this](auto line) {
       if (!(std::regex_match(line, vary_command_) ||
             std::regex_match(line, comment_) ||
-            std::regex_match(line, vary_with_) || line.empty())) {
+            std::regex_match(line, vary_with_) || line.empty()))
+      {
         std::cout << "error: unable to parse qst command " << line << "\n";
         std::exit(1);
       }
@@ -36,40 +38,42 @@ class generator {
     });
   }
 
-
-  auto generate_overrides(life::configuration con) {
+  auto generate_overrides(life::configuration con)
+  {
     return ranges::view::transform([this, con](auto patch_options) {
       std::smatch m;
       std::regex_match(patch_options, m, vary_with_);
-	  
+
       auto patch_path = std::regex_replace(m[1].str(), spaces_, "/1/");
       check_parameter_override_error(con, patch_path);
 
       auto jar = life::configuration::parse(
-          std::string{"["} + std::regex_replace(m[2].str(), spaces_, ",") +
-          std::string{"]"});
-      auto p = con.at(life::configuration::json_pointer{patch_path});
+          std::string{ "[" } + std::regex_replace(m[2].str(), spaces_, ",") +
+          std::string{ "]" });
+      auto p = con.at(life::configuration::json_pointer{ patch_path });
       check_jar_types(jar, patch_path, p.type_name());
 
       std::vector<std::pair<std::string, life::configuration>> v =
           ranges::view::zip_with(
               [](auto w, auto l) {
-                return std::make_pair(w, life::configuration{l});
+                return std::make_pair(w, life::configuration{ l });
               },
-              ranges::view::repeat_n(patch_path, jar.size()), jar);
+              ranges::view::repeat_n(patch_path, jar.size()),
+              jar);
       return v;
     });
   }
 
-  auto by_vary() {
+  auto by_vary()
+  {
     return ranges::view::group_by([this](auto line1, auto line2) {
              return std::regex_match(line1, vary_command_) ==
                     std::regex_match(line2, vary_command_);
            }) |
            ranges::view::chunk(2) | ranges::view::transform([this](auto p) {
              std::smatch m;
-             std::regex_match(ranges::front(ranges::front(p)), m,
-                              vary_command_);
+             std::regex_match(
+                 ranges::front(ranges::front(p)), m, vary_command_);
              auto con = true_user_experiment(life::global_path + m[1].str());
              std::vector<
                  std::vector<std::pair<std::string, life::configuration>>>
@@ -79,35 +83,36 @@ class generator {
            });
   }
 
-  auto hash_experiment(std::string exp) {
+  auto hash_experiment(std::string exp)
+  {
     std::hash<std::string> h;
     return h(exp);
   }
 
-  auto
-  apply_unchecked_override(life::configuration con,
-                           std::pair<std::string, life::configuration> pv) {
+  auto apply_unchecked_override(life::configuration                         con,
+                                std::pair<std::string, life::configuration> pv)
+  {
 
-    con.at(life::configuration::json_pointer{pv.first}) = pv.second[0];
+    con.at(life::configuration::json_pointer{ pv.first }) = pv.second[0];
     return con;
   }
 
-  auto expand_true_experiment() {
+  auto expand_true_experiment()
+  {
     return ranges::view::transform([this](auto exp) {
       std::vector<life::configuration> ret_exp;
       ret_exp.push_back(exp.first);
-      return ranges::accumulate(
-          exp.second , ret_exp,
-          [this](auto b, auto s) {
-            std::vector<life::configuration> w;
-            std::vector<std::pair<std::string, life::configuration>> m = s;
-            ranges::transform(ranges::view::cartesian_product(b, m),
-                              ranges::back_inserter(w), [this](const auto &t) {
-                                return apply_unchecked_override(std::get<0>(t),
-                                                                std::get<1>(t));
-                              });
-            return w;
-          });
+      return ranges::accumulate(exp.second, ret_exp, [this](auto b, auto s) {
+        std::vector<life::configuration>                         w;
+        std::vector<std::pair<std::string, life::configuration>> m = s;
+        ranges::transform(ranges::view::cartesian_product(b, m),
+                          ranges::back_inserter(w),
+                          [this](const auto &t) {
+                            return apply_unchecked_override(std::get<0>(t),
+                                                            std::get<1>(t));
+                          });
+        return w;
+      });
     });
   }
 
@@ -119,7 +124,8 @@ class generator {
 public:
   generator() { configure(publish_configuration()); }
 
-  life::configuration publish_configuration() {
+  life::configuration publish_configuration()
+  {
     life::configuration con;
     con["file"] = file_;
     return con;
@@ -129,4 +135,3 @@ public:
 
   void run();
 };
-

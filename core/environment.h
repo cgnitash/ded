@@ -23,12 +23,15 @@ class environment {
 public:
   template <typename UserEnvironment>
   environment(UserEnvironment x)
-      : self_(new environment_object<UserEnvironment>(std::move(x))) {}
+      : self_(new environment_object<UserEnvironment>(std::move(x)))
+  {
+  }
 
   environment(const environment &x) : self_(x.self_->copy_()) {}
   environment(environment &&) noexcept = default;
 
-  environment &operator=(const environment &x) {
+  environment &operator=(const environment &x)
+  {
     environment tmp(x);
     *this = std::move(tmp);
     return *this;
@@ -36,34 +39,39 @@ public:
   environment &operator=(environment &&) noexcept = default;
 
   // public interface of environments - how environments can be used
-  population evaluate(population p) { 
-	  {
-	  auto pcheck = p;
-	  auto current = publish_configuration();
-	  for (auto &o : pcheck.get_as_vector())
-		  if (o.data.size() != current["pre-tags"].size()) {
-			  std::cout << "prewtf";
-			  std::exit(1);
-		  }
-	  }
-	  auto p_r =  self_->evaluate_(p); 
-	  {
-	  auto pcheck = p_r;
-	  auto current = publish_configuration();
-	  for (auto &o : pcheck.get_as_vector())
-		  if (o.data.size() != current["post-tags"].size()) {
-			  std::cout << "postwtf";
-			  std::exit(1);
-		  }
-	  }
-	  return p_r;
+  population evaluate(population p)
+  {
+    {
+      auto pcheck  = p;
+      auto current = publish_configuration();
+      for (auto &o : pcheck.get_as_vector())
+        if (o.data.size() != current["pre-tags"].size())
+        {
+          std::cout << "prewtf";
+          std::exit(1);
+        }
+    }
+    auto p_r = self_->evaluate_(p);
+    {
+      auto pcheck  = p_r;
+      auto current = publish_configuration();
+      for (auto &o : pcheck.get_as_vector())
+        if (o.data.size() != current["post-tags"].size())
+        {
+          std::cout << "postwtf";
+          std::exit(1);
+        }
+    }
+    return p_r;
   }
 
-  configuration publish_configuration() const {
+  configuration publish_configuration() const
+  {
     return self_->publish_configuration_();
   }
 
-  void configure(configuration con) const {
+  void configure(configuration con) const
+  {
     auto real = publish_configuration();
     validate_subset(con, real);
     merge_into(con, real);
@@ -72,22 +80,25 @@ public:
 
 private:
   // interface/ABC for an environment
-  struct environment_interface {
-    virtual ~environment_interface() = default;
+  struct environment_interface
+  {
+    virtual ~environment_interface()             = default;
     virtual environment_interface *copy_() const = 0;
 
-    virtual configuration publish_configuration_() = 0;
-    virtual void configure_(configuration) = 0;
+    virtual configuration publish_configuration_()  = 0;
+    virtual void          configure_(configuration) = 0;
 
     virtual population evaluate_(population) = 0;
   };
 
   template <typename UserEnvironment>
-  struct environment_object final : environment_interface {
+  struct environment_object final : environment_interface
+  {
 
     environment_object(UserEnvironment x) : data_(std::move(x)) {}
 
-    environment_interface *copy_() const override {
+    environment_interface *copy_() const override
+    {
       return new environment_object(*this);
     }
 
@@ -95,7 +106,8 @@ private:
     //
     population evaluate_(population p) override { return data_.evaluate(p); }
 
-    configuration publish_configuration_() override {
+    configuration publish_configuration_() override
+    {
       return data_.publish_configuration();
     }
 
@@ -111,4 +123,4 @@ private:
   std::unique_ptr<environment_interface> self_;
 };
 
-} // namespace life
+}   // namespace life

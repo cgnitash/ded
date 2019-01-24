@@ -1,6 +1,6 @@
 
-#include "../../core/utilities.h"
 #include "visualizer.h"
+#include "../../core/utilities.h"
 #include <algorithm>
 #include <experimental/filesystem>
 #include <fstream>
@@ -14,14 +14,16 @@
 #include <utility>
 #include <vector>
 
-void visualizer::run() {
+void visualizer::run()
+{
 
   // ONLY life::experiments can do this
   life::global_path += "visualizer_data/";
 
   // generate the population
   auto pop = life::make_population(pop_name_);
-  if (std::experimental::filesystem::exists(life::global_path)) {
+  if (std::experimental::filesystem::exists(life::global_path))
+  {
     std::cout
         << "error: directory \"" << life::global_path
         << "\" already contains data. This will be overwritten. aborting..."
@@ -36,4 +38,3 @@ void visualizer::run() {
 
   pop = world.evaluate(pop);
 }
-

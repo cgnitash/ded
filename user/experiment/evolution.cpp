@@ -14,14 +14,16 @@
 #include <utility>
 #include <vector>
 
-void evolution::run() {
+void evolution::run()
+{
 
   // ONLY life::experiments can do this
   life::global_path += "evolution_data/";
 
   // generate the population
   auto pop = life::make_population(pop_name_);
-  if (std::experimental::filesystem::exists(life::global_path)) {
+  if (std::experimental::filesystem::exists(life::global_path))
+  {
     std::cout
         << "error: directory \"" << life::global_path
         << "\" already contains data. This will be overwritten. aborting..."
@@ -37,11 +39,13 @@ void evolution::run() {
   auto world = life::make_environment(world_name_);
   world.configure(world_config_);
 
-  for (auto i : ranges::view::iota(0, generations_)) {
+  for (auto i : ranges::view::iota(0, generations_))
+  {
 
     pop = world.evaluate(pop);
 
-    if (!(i % 25)) {
+    if (!(i % 25))
+    {
       auto stats = pop.get_stats(i);
       std::cout << "update:" << std::setw(6) << i << "   " << stats
                 << std::endl;
@@ -55,4 +59,3 @@ void evolution::run() {
   }
   pop.flush_unpruned();
 }
-

@@ -23,12 +23,15 @@ class population {
 public:
   template <typename UserPopulation>
   population(UserPopulation x)
-      : self_(new population_object<UserPopulation>(std::move(x))) {}
+      : self_(new population_object<UserPopulation>(std::move(x)))
+  {
+  }
 
   population(const population &x) : data(x.data), self_(x.self_->copy_()) {}
   population(population &&) noexcept = default;
 
-  population &operator=(const population &x) {
+  population &operator=(const population &x)
+  {
     population tmp(x);
     *this = std::move(tmp);
     return *this;
@@ -50,11 +53,13 @@ public:
 
   void flush_unpruned() { self_->flush_unpruned(); }
 
-  configuration publish_configuration() {
+  configuration publish_configuration()
+  {
     return self_->publish_configuration_();
   }
 
-  void configure(configuration con) {
+  void configure(configuration con)
+  {
     auto real = publish_configuration();
     validate_subset(con, real);
     merge_into(con, real);
@@ -63,28 +68,31 @@ public:
 
 private:
   // interface/ABC for an population
-  struct population_interface {
-    virtual ~population_interface() = default;
+  struct population_interface
+  {
+    virtual ~population_interface()             = default;
     virtual population_interface *copy_() const = 0;
 
-    virtual configuration publish_configuration_() = 0;
-    virtual void configure_(configuration) = 0;
+    virtual configuration publish_configuration_()  = 0;
+    virtual void          configure_(configuration) = 0;
 
-	virtual size_t size_() const = 0;
-    virtual std::vector<life::entity> get_as_vector_() = 0;
-    virtual void merge_(std::vector<life::entity>) = 0;
-    virtual void prune_lineage_(long) = 0;
-    virtual void snapshot_(long) = 0;
-    virtual void flush_unpruned() = 0;
+    virtual size_t                    size_() const                     = 0;
+    virtual std::vector<life::entity> get_as_vector_()                  = 0;
+    virtual void                      merge_(std::vector<life::entity>) = 0;
+    virtual void                      prune_lineage_(long)              = 0;
+    virtual void                      snapshot_(long)                   = 0;
+    virtual void                      flush_unpruned()                  = 0;
   };
 
   template <typename UserPopulation>
-  struct population_object final : population_interface {
+  struct population_object final : population_interface
+  {
 
     // provided methods
     population_object(UserPopulation x) : data_(std::move(x)) {}
 
-    population_interface *copy_() const override {
+    population_interface *copy_() const override
+    {
       return new population_object(*this);
     }
 
@@ -93,7 +101,8 @@ private:
 
     void merge_(std::vector<entity> v) override { data_.merge(v); }
 
-    std::vector<entity> get_as_vector_() override {
+    std::vector<entity> get_as_vector_() override
+    {
       return data_.get_as_vector();
     }
 
@@ -105,7 +114,8 @@ private:
 
     void snapshot_(long i) override { data_.snapshot(i); }
 
-    configuration publish_configuration_() override {
+    configuration publish_configuration_() override
+    {
       return data_.publish_configuration();
     }
 
@@ -120,4 +130,4 @@ private:
   std::unique_ptr<population_interface> self_;
 };
 
-} // namespace life
+}   // namespace life

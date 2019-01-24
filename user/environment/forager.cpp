@@ -13,21 +13,25 @@
 #include <utility>
 #include <vector>
 
-void forager::replace_resource_() {
+void forager::replace_resource_()
+{
 
   size_t i, j;
-  do {
+  do
+  {
     i = std::rand() % grid_size_;
     j = std::rand() % grid_size_;
   } while (resources_[i][j]);
   resources_[i][j] = 1;
 }
 
-std::vector<double> forager::signals_at(location loc, direction facing) {
+std::vector<double> forager::signals_at(location loc, direction facing)
+{
 
   std::vector out(sensor_range_, 1.);
-  for (auto &sensor : out) {
-    if (!resources_[loc.x_][loc.y_]) 
+  for (auto &sensor : out)
+  {
+    if (!resources_[loc.x_][loc.y_])
       sensor = 0.;
     else
       break;
@@ -36,81 +40,91 @@ std::vector<double> forager::signals_at(location loc, direction facing) {
   return out;
 }
 
-void forager::initialize_resource_() {
+void forager::initialize_resource_()
+{
 
   resources_ = std::vector(grid_size_, std::vector(grid_size_, 0));
   for (auto i : ranges::view::iota(0u, grid_size_))
     for (auto j : ranges::view::iota(0u, grid_size_))
-      if ((std::rand() % 1000) / 1000.0 < density_)
-        resources_[i][j] = 1;
+      if ((std::rand() % 1000) / 1000.0 < density_) resources_[i][j] = 1;
 }
 
-void forager::visualize(std::ofstream &out, location position, direction facing,
-                        double score) {
+void forager::visualize(std::ofstream &out,
+                        location       position,
+                        direction      facing,
+                        double         score)
+{
 
   out << position.x_ << " " << position.y_ << " " << static_cast<int>(facing)
       << " " << score << " " << grid_size_ << " ";
   for (auto i : ranges::view::iota(0u, grid_size_))
     for (auto j : ranges::view::iota(0u, grid_size_))
-      if (resources_[i][j])
-        out << i << "," << j << " ";
+      if (resources_[i][j]) out << i << "," << j << " ";
   out << std::endl;
 }
 
-void forager::interact(life::signal s, location &position, direction &facing,
-                       double &score) {
+void forager::interact(life::signal s,
+                       location &   position,
+                       direction &  facing,
+                       double &     score)
+{
 
-  auto output = std::get<std::vector<double>>(s) ;
-  if (output.size() != 2) {
+  auto output = std::get<std::vector<double>>(s);
+  if (output.size() != 2)
+  {
     std::cout
         << "Error: environment-forager must recieve an output of size 2\n";
     exit(1);
   }
 
-    // outputs are interpreted as 0s and 1s only
-    auto out = util::Bit(output[0]) * 2 + util::Bit(output[1]);
+  // outputs are interpreted as 0s and 1s only
+  auto out = util::Bit(output[0]) * 2 + util::Bit(output[1]);
 
-	//std::cout << out <<  " " <<position.x_ << " " << position.y_ << std::endl;
-    // interact with the environment
-    switch (static_cast<int>(out)) {
-    case 0: // move
+  // std::cout << out <<  " " <<position.x_ << " " << position.y_ << std::endl;
+  // interact with the environment
+  switch (static_cast<int>(out))
+  {
+    case 0:   // move
       position = move_in_dir(position, facing);
       break;
-    case 1: // turn right
+    case 1:   // turn right
       facing = turn(facing, 3);
       break;
-    case 2: // turn left
+    case 2:   // turn left
       facing = turn(facing, 1);
       break;
-    case 3: // eat
+    case 3:   // eat
       auto &pos = resources_[position.x_][position.y_];
-      if (pos) {
+      if (pos)
+      {
         pos = 0;
-        if (replace_) {
-          replace_resource_();
-        }
+        if (replace_) { replace_resource_(); }
         score++;
       }
       break;
-    }
+  }
 }
 
-double forager::eval(life::entity &org) {
+double forager::eval(life::entity &org)
+{
 
   auto score = 0.0;
   // random starting position
-  auto position = location{std::rand() % grid_size_, std::rand() % grid_size_};
+  auto position =
+      location{ std::rand() % grid_size_, std::rand() % grid_size_ };
   // face in random direction
-  auto facing = direction{std::rand() % 4};
+  auto facing = direction{ std::rand() % 4 };
 
   resources_.clear();
   initialize_resource_();
 
   std::ofstream vis_file;
-  if (visualize_) {
+  if (visualize_)
+  {
     auto vis_file_name =
         life::global_path + "org_" + std::to_string(org.get_id());
-    if (std::experimental::filesystem::exists(vis_file_name)) {
+    if (std::experimental::filesystem::exists(vis_file_name))
+    {
       std::cout
           << "error: directory \"" << vis_file_name
           << "\" already contains data. This will be overwritten. aborting..."
@@ -124,23 +138,21 @@ double forager::eval(life::entity &org) {
 
   util::repeat(updates_, [&] {
     // feed input to org; inputs are 0s and 1s only
-    org.input(org_input_los_tag_,signals_at(position, facing));
+    org.input(org_input_los_tag_, signals_at(position, facing));
     // run the org once
     org.tick();
     // read its outputs and interact with the environment
     interact(org.output(org_output_action_tag_), position, facing, score);
-    if (visualize_)
-      visualize(vis_file, position, facing, score);
+    if (visualize_) visualize(vis_file, position, facing, score);
   });
 
   return score;
 }
 
-life::population forager::evaluate(life::population pop) {
+life::population forager::evaluate(life::population pop)
+{
   auto vec = pop.get_as_vector();
-  for(auto &org:vec)
-	  org.data.set_value(food_eaten_tag_, eval(org));
+  for (auto &org : vec) org.data.set_value(food_eaten_tag_, eval(org));
   pop.merge(vec);
   return pop;
 }
-
