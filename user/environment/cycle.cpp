@@ -37,7 +37,7 @@ life::population
 
     pop = world.evaluate(pop);
 
-    if (!snap_freq_ && !(i % snap_freq_)) pop.snapshot(i);
+    if (snap_freq_ && !(i % snap_freq_)) pop.snapshot(i);
 
     // this should not be necessary to say
     pop.prune_lineage(i);

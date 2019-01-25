@@ -35,9 +35,9 @@ report = function(var,data) {
   )
 }
 
-compute_all = function(stats,exps,labels,component,tag,reps,cycles) {
+compute_all = function(stats,exps,labels,un_reported_data) {
  stats = enquo(stats)
- agg_datas = lapply(exps, function(e) report(!!stats,across_reps(e,component,tag,reps,cycles)))
+ agg_datas = lapply(un_reported_data, function(e) report(!!stats,e))
 
  agg_exps = agg_datas[[1]]
  for(i in head(seq_along(agg_datas), -1)) {
@@ -55,6 +55,10 @@ single_plot = function(all_exps,col) {
   
   list(geom_errorbar(aes(ymin= !!ensym(mean) - !!ensym(se), ymax= !!ensym(mean) + !!ensym(se), color=col),alpha=0.4,width=.1),
     geom_line(aes(y=!!ensym(mean)))) 
+}
+
+un_reported_data = function(exps,component,tag,reps,cycles) {
+  lapply(exps, function(e) across_reps(e,component,tag,reps,cycles))
 }
 
 cluster_plots = function(all_exps,ylabel,labs,indices,cols) {
@@ -87,13 +91,20 @@ cluster_plots = function(all_exps,ylabel,labs,indices,cols) {
 #            "size=100 replace=true", 
 #            "size=100 replace=false")
 
-#all_exps = compute_all(avg,exps,labels,"two_cycle","score",0:9,0:300)
+                                            
+#extracted_exps = across_reps(e,component,tag,reps,cycles)
 
-#p1 = cluster_plots(all_exps,"avg",labels, c(1,2),c("yellow", "blue")) 
+#unr_data = un_reported_data(exps,"two_cycle","score",0:9,0:300)
 
-#p1
+#all_max = compute_all(max,exps,labels,unr_data)
 
-#p2 = cluster_plots(all_exps,"avg",labels,c(3,4),c("red", "green")) 
+#all_avg = compute_all(avg,exps,labels,unr_data)
+
+#p1 = cluster_plots(all_max,"max",labels, c(1,2),c("yellow", "blue")) 
+
+#p1 / p2
+
+#p2 = cluster_plots(all_avg,"avg",labels,c(1,2),c("red", "green")) 
   
 #p2
 
@@ -101,7 +112,7 @@ cluster_plots = function(all_exps,ylabel,labs,indices,cols) {
 
 #p3
 
-#p3 + ( p1 / p2)
+#( p1 / p2)
   
 #p1 / p2
 
