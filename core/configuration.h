@@ -717,7 +717,7 @@ inline void
   }
 }
 
-void
+inline void
     pretty_show_environment(life::ModuleInstancePair mip,
                             life::configuration      con)
 {
@@ -751,7 +751,7 @@ void
     }
 }
 
-void
+inline void
     pretty_show_population(life::ModuleInstancePair mip,
                            life::configuration      con)
 {

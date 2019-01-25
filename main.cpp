@@ -92,10 +92,11 @@ int
   if (argc == 2 && std::string(argv[1]) == "-h")
   {
     std::cout << R"~~(
-			  -s                     : saves configuration files 
+              -s                     : saves configuration files 
               -rl <N> <file-name>    : 'runs' all experiments in this file-name with N replicates (locally)
               -rh <N> <file-name>    : 'runs' all experiments in this file-name with N replicates (msu hpc)
               -v <file-name>         : verify experiment in file-name
+              -a <file-name>         : generate 'analysis' for experiment in file-name
               -p <component-name>... : print publication for listed component names
               -pa 					 : lists all components currently loaded
               -f <N> <file-name>     : actually runs this experiment with REP N (should NOT be called manually)
@@ -132,16 +133,14 @@ int
     for (auto &[pop, env, label] : true_experiments(qst_path, hash_fn))
     {
 
-      // label unused for now
-      (void)label;
-
       auto exp_name = std::to_string(hash_fn(pop.dump())) + "_" +
                       std::to_string(hash_fn(env.dump()));
       auto exp_path = life::global_path + exp_name;
       if (std::experimental::filesystem::exists(exp_path))
       {
-        std::cout << "error: these experiments already exist\n";
-        std::exit(1);
+        std::cout << "Warning: experiment " << exp_name << " with label "
+                  << label << " already exists. Skipping this experiment\n";
+        continue;
       }
       std::experimental::filesystem::create_directory(exp_path);
 
@@ -184,6 +183,44 @@ int
       for (auto &e : exps) run_file << "\nsbatch run.sb " << e;
     }
     std::cout << "\nGenerated script run.sh succesfully\n";
+  } else if (argc == 3 && std::string(argv[1]) == "-a")
+  {
+    std::string qst_path = argv[2];
+    life::global_path =
+        qst_path.substr(0, qst_path.find_last_of('/') + 1) + "data/";
+
+    if (!std::experimental::filesystem::exists(life::global_path))
+    {
+      std::cout << "Error: There is no data directory " << life::global_path
+                << " with experiments to analyse\n. Aborting ...\n";
+      std::exit(1);
+    }
+
+    std::string exps   = "\nexps = list(";
+    std::string labels = "\nlabels = c(";
+    for (auto &[pop, env, label] : true_experiments(qst_path, hash_fn))
+    {
+
+      auto exp_name = std::to_string(hash_fn(pop.dump())) + "_" +
+                      std::to_string(hash_fn(env.dump()));
+      auto exp_path = life::global_path + exp_name;
+      if (!std::experimental::filesystem::exists(exp_path))
+      {
+        std::cout << "Error: There is no experiment in " << life::global_path
+                  << " with label " << label << " to analyse\n. Aborting ...\n";
+        std::exit(1);
+      }
+
+      exps += "\"" + exp_path + "/\",";
+      labels += "\"" + label + "\",";
+    }
+    exps.pop_back();
+    labels.pop_back();
+    std::ofstream run_file("anal.R");
+    run_file << "\n" << exps << ")\n\n" << labels << ")\n";
+    std::cout << "\nGenerated analysis script anal.R succesfully\nThese "
+                 "experiments can be referred to by the indices 1 2 3 ... "
+                 "as listed above\n";
   } else if (argc == 4 && std::string(argv[1]) == "-f")
   {
     auto exp_dir = std::string{ argv[3] };
