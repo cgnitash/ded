@@ -8,6 +8,7 @@
 #include <iostream>
 #include <map>
 #include <numeric>
+#include <range/v3/all.hpp>
 #include <regex>
 #include <set>
 #include <sstream>
@@ -23,8 +24,7 @@ CSVReader::input
 }
 
 void
-    CSVReader::showLineAndErrorChar(const std::string &line,
-                                    const int &        charIndex)
+    CSVReader::error_message(const std::string &line, const int &charIndex)
 {
   // example output:
   // this, was, your string, with, error
@@ -34,10 +34,10 @@ void
 }
 
 void
-    CSVReader::doStateAction(state              s,
-                             char               c,
-                             const std::string &line,
-                             const int &        charIndex)
+    CSVReader::action(state              s,
+                      char               c,
+                      const std::string &line,
+                      const int &        char_index)
 {
   switch (s)
   {
@@ -53,8 +53,8 @@ void
     case state::delim:
       // found delim
       // add field
-      // clear field
       fields_.push_back(current_string_);
+      // clear field
       current_string_.clear();
       break;
     case state::quote:
@@ -72,33 +72,32 @@ void
       break;
     case state::CRASH:
       std::cout << "cannot parse : unexpected character" << std::endl;
-      showLineAndErrorChar(line, charIndex);
+      error_message(line, char_index);
       exit(1);
       break;
   }
 }
 
 std::vector<std::string>
-    CSVReader::parseLine(const std::string &s)
+    CSVReader::parse_line(const std::string &s)
 {
   fields_.clear();
   state curr = state::precw;
-  auto  index(0);
-  for (char c : s)
+  //auto  index{ 0 };
+  for (auto [i, c] : ranges::view::enumerate(s))
   {
     // cast to int to index into more
     // readable transition table
     curr = Transition[static_cast<int>(curr)][static_cast<int>(symbol(c))];
 
-    doStateAction(curr, c, s, index);
-    ++index;
+    action(curr, c, s, i);
   }
 
   if (curr == state::openq)
   {
-    std::cout << "cannot parse : missing quotation" << std::endl;
-    showLineAndErrorChar(s, index + 1);
-    exit(1);
+    std::cout << "cannot parse : missing quotation" << std::endl
+              << s << std::endl;
+    std::exit(1);
   }
   // add the final field
   fields_.push_back(current_string_);

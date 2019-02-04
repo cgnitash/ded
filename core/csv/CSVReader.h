@@ -13,12 +13,9 @@
 #include <sstream>
 #include <vector>
 
-// can parse a csv string into a vector of strings
+// parses a csv string into a vector of strings
 // The delimiter and quotation character can be specified:
 // by default  , and "
-// works by using Transition to manage state transitions
-// (the state-to-state transition table) and appending
-// characters to strings as needed.
 
 class CSVReader {
 
@@ -26,6 +23,8 @@ class CSVReader {
   std::string              current_string_;
   std::vector<std::string> fields_;
   enum class input { chars, delim, quote, wh_sp };
+  // Warning, order of values in state have semantics
+  // Do Not change
   enum class state {
     precw,   // leading whitespace
     field,   // non quoted field
@@ -51,16 +50,13 @@ class CSVReader {
 
   CSVReader::input symbol(char c);
 
-  void doStateAction(state              s,
-                     char               c,
-                     const std::string &line,
-                     const int &        charIndex);
+  void action(state s, char c, const std::string &line, const int &char_index);
 
-  void showLineAndErrorChar(const std::string &line, const int &charIndex);
+  void error_message(const std::string &line, const int &char_index);
 
 public:
   CSVReader() = default;
   CSVReader(char d) : delimiter_(d) {}
   CSVReader(char d, char oq) : delimiter_(d), quotation_(oq) {}
-  std::vector<std::string> parseLine(const std::string &s);
+  std::vector<std::string> parse_line(const std::string &s);
 };

@@ -27,13 +27,13 @@ void
       std::exit(1);
     }
     CSV  csv(life::global_path + load_spec_);
-    auto ids = csv.singleColumn("id");
+    auto ids = csv.single_column("id");
     ranges::sort(ids,
                  [](auto a, auto b) { return std::stol(a) > std::stol(b); });
     pop_.clear();
     ranges::transform(ids, ranges::back_inserter(pop_), [&](auto id) {
       auto org = life::make_entity(entity_);
-      org.set_encoding(org.parse_encoding(csv.lookUp("id", id, "encoding")));
+      org.set_encoding(org.parse_encoding(csv.look_up("id", id, "encoding")));
       if (track_lineage_) fossils_.push_back({ org, 1 });
       return org;
     });
