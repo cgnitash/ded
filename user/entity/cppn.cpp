@@ -77,6 +77,12 @@ void
 life::signal
     cppn::output(std::string n)
 {
+  if (!gates_are_computed_)
+  {
+    std::cout << "Impl-Error: entity-cppn must be tick()-ed before requesting "
+                 "output\n";
+    exit(1);
+  }
 
   if (n == out_sense_)
   {
