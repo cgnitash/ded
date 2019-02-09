@@ -15,6 +15,10 @@ namespace life {
 using configuration      = nlohmann::json;
 using ModuleInstancePair = std::pair<std::string, std::string>;
 extern std::map<ModuleInstancePair, life::configuration> all_configs;
+extern std::string global_path;
+
+template<typename T>
+	std::string  auto_class_name_as_string() { return "oops";}
 
 // almost certainly unnecessary
 inline void

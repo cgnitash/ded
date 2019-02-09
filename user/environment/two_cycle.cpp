@@ -18,18 +18,6 @@ life::population
     two_cycle::evaluate(life::population pop)
 {
 
-  life::global_path += "two_cycle/";
-
-  if (std::experimental::filesystem::exists(life::global_path))
-  {
-    std::cout
-        << "error: directory \"" << life::global_path
-        << "\" already contains data. This will be overwritten. aborting..."
-        << std::endl;
-    exit(1);
-  }
-  std::experimental::filesystem::create_directory(life::global_path);
-
   auto optimiser = life::make_environment(sel_);
 
   auto fit_fun = life::make_environment(fitn_);
@@ -73,10 +61,6 @@ life::population
   }
   // this should not be necessary to say
   pop.flush_unpruned();
-
-  // yuck
-  life::global_path =
-      life::global_path.substr(0, life::global_path.length() - 10);
 
   return pop;
 }

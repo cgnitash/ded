@@ -54,6 +54,10 @@ void
              << "()};\n    e.configure(con[1]);\n    return e;\n  }\n";
     header << "  std::cout << \"unknown-" << type
            << ": \" << con[0];\n  exit(1);\n}\n\n";
+
+    for (auto &name : names)
+      header << "template<>\nstd::string auto_class_name_as_string<" << name
+             << ">() { return \"" << name << "\"; }\n\n";
   }
 
   header << "void generate_all_configs() {\n";

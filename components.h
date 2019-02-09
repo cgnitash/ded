@@ -11,7 +11,6 @@
 #include "core/utilities.h"
 
 namespace life {
-extern std::string global_path;
 
 experiment  make_experiment(configuration);
 population  make_population(configuration);
