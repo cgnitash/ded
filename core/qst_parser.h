@@ -32,7 +32,7 @@ class qst_parser {
   std::regex nested_varied_parameter{
     R"~~(^\s*vary\s+([-\w\d]+)\s*=\s*\[([^\]]+)\]\s*$)~~"
   };
-  std::regex parameter{ R"~~(^\s*vary\s*([-\w\d]+)\s*=\s*([-\.\w\d]+)\s*$)~~" };
+  std::regex parameter{ R"~~(^\s*vary\s*([-\w\d]+)\s*=\s*(.+)\s*$)~~" };
   std::regex pre_tag{ R"~~(^\s*pre\s*([-\w\d]+)\s*=\s*([-\w\d]+)\s*$)~~" };
   std::regex post_tag{ R"~~(^\s*pos\s*([-\w\d]+)\s*=\s*([-\w\d]+)\s*$)~~" };
   std::regex in_signal_tag{
