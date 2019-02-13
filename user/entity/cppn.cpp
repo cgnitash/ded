@@ -122,7 +122,7 @@ void
     auto const sum = ranges::accumulate(
         node.in_node, 0.0, [&results](auto const total, auto const value) {
           return total + results[value.first] * value.second;
-        });
+        }) / 4.;
     // fire the activation function
     results.push_back(activate(node.activation_function, sum));
   }
@@ -140,11 +140,11 @@ double
   // TODO activation function set needs to be thought out
   // TODO  activation function set needs to be parameterised
   auto xp = c == 0 ? std::sin(x)
-                   : c == 1 ? std::cos(x)
-                            : c == 2 ? std::tan(x)
+                   : c == 1 ? std::tan(x)
+                            : c == 2 ? std::cos(x)
                                      : c == 3 ? std::sqrt(std::abs(x))
-                                              : c == 4 ? std::fmod(x, 1) : x;
-  return std::clamp(xp, -2 * util::PI, 2 * util::PI);
+                                              : c == 4 ? std::fmod(x, 1) : -x;
+  return std::clamp(xp, -1.,1.);//-2 * util::PI, 2 * util::PI);
 }
 
 // for debugging purposes

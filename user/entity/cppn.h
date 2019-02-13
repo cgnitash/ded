@@ -21,6 +21,8 @@ private:
   std::string in_sense_  = "in-sense,A<double,inputs>";
   std::string out_sense_ = "out-sense,A<double,outputs>";
 
+  std::string init_enc_;
+
   struct Node
   {
     size_t                   activation_function;
@@ -51,6 +53,7 @@ public:
     c["parameters"]["inputs"]  = input_;
     c["parameters"]["outputs"] = output_;
     c["parameters"]["hiddens"] = hidden_;
+    c["parameters"]["enco"] = init_enc_;
 
     c["input-tags"]["in-sense"]   = in_sense_;
     c["output-tags"]["out-sense"] = out_sense_;
@@ -64,10 +67,15 @@ public:
     output_ = con["parameters"]["outputs"];
     hidden_ = con["parameters"]["hiddens"];
 
+    init_enc_ = con["parameters"]["enco"];
+
     in_sense_  = con["input-tags"]["in-sense"];
     out_sense_ = con["output-tags"]["out-sense"];
 
-    genome_.generate(9 * (output_ + hidden_));
+    if (init_enc_.empty())
+      genome_.generate(9 * (output_ + hidden_));
+    else
+      set_encoding(parse_encoding(init_enc_));
   }
 
   void           mutate();
