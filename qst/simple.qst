@@ -9,10 +9,6 @@ P = $linear {
 }
 
 
-#E = $forager {
-#		vary sensor-range = 5
-#		 vary replace = true
-#}
 E = $score_cout_printer {
 		vary env = $forager {
 			 vary sensor-range = 5

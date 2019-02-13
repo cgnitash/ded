@@ -330,12 +330,10 @@ void
     std::exit(1);
   }
 
-  std::cout  << all_variables["E"]<< std::endl;
   all_variables["E"] =
       "[\"pass_through\",{\"parameters\":{\"env\":" + all_variables["E"] +
       "},\"pre-tags\":{},\"post-tags\":{},\"input-tags\":{},\"output-tags\":{}}"
       "]";
-  std::cout  << all_variables["E"]<< std::endl;
 
   auto pop_env_layout =
       std::regex_replace(all_variables["P"], spurious_commas, "$1") + '@' +
