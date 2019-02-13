@@ -214,8 +214,10 @@ void
   }
 
   std::vector<std::string> varied_entry;
-  auto                     all_varied = m[2].str();
-  auto varied_names                   = ranges::action::split(all_varied, ' ');
+
+  auto all_varied   = m[2].str();
+  auto varied_names = ranges::action::split(all_varied, ' ');
+
   varied_names.erase(
       ranges::remove_if(varied_names, [](auto s) { return s.empty(); }),
       ranges::end(varied_names));
@@ -226,6 +228,7 @@ void
   auto is_not_primitive = [](auto s) { return s[0] == '$' || s[0] == '!'; };
   auto compvars         = ranges::all_of(varied_names, is_not_primitive);
   auto primitives       = ranges::none_of(varied_names, is_not_primitive);
+
   if (!(compvars || primitives))
   {
     std::cout
@@ -235,9 +238,9 @@ void
         << line_num << "\n";
     std::exit(1);
   }
+
   if (compvars)
   {
-
     for (auto varied_name : varied_names)
     {
       if (varied_name[0] == '!')
@@ -326,6 +329,13 @@ void
                  "Environment\n";
     std::exit(1);
   }
+
+  std::cout  << all_variables["E"]<< std::endl;
+  all_variables["E"] =
+      "[\"pass_through\",{\"parameters\":{\"env\":" + all_variables["E"] +
+      "},\"pre-tags\":{},\"post-tags\":{},\"input-tags\":{},\"output-tags\":{}}"
+      "]";
+  std::cout  << all_variables["E"]<< std::endl;
 
   auto pop_env_layout =
       std::regex_replace(all_variables["P"], spurious_commas, "$1") + '@' +
