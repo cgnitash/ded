@@ -20,12 +20,15 @@ life::population
     std::ofstream pop_stats_file{ life::global_path + "pattern_" +
                                   std::to_string(org.get_id()) + ".csv" };
     for (auto i{ -2 * util::PI }; i < 2 * util::PI; i += .1)
-      for (auto j{ -2 * util::PI }; j < 2 * util::PI; j += .1) {
+      for (auto j{ -2 * util::PI }; j < 2 * util::PI; j += .1)
+      {
         org.input(org_input_tag_, std::vector{i , j });
 		org.tick();
         auto out = std::get<std::vector<double>>(org.output(org_output_tag_));
-        pop_stats_file << i << "," << j << "," << out[0] << "\n";
-          }
+        pop_stats_file << i << "," << j ;
+        for (auto o : out) pop_stats_file << "," << o;
+        pop_stats_file<< "\n";
+      }
   }
 
   return pop;

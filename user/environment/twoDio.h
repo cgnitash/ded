@@ -16,8 +16,9 @@
 
 class twoDio {
 
+  int         size_{ 0 };
   std::string org_input_tag_  = "in,A<double,2>";
-  std::string org_output_tag_ = "out,A<double,1>";
+  std::string org_output_tag_ = "out,A<double,size>";
 
 public:
   twoDio() { configure(publish_configuration()); }
@@ -26,7 +27,7 @@ public:
   {
     life::configuration c;
 
-    c["parameters"] = nullptr;
+    c["parameters"]["size"] = size_;
 
     c["pre-tags"] = nullptr;
 
@@ -40,6 +41,7 @@ public:
   }
 
   void configure(life::configuration con) {
+    size_= con["parameters"]["size"] ;
     org_input_tag_  = con["input-tags"]["in"];
     org_output_tag_ = con["output-tags"]["out"];
   }

@@ -87,6 +87,7 @@ void
 
   auto name     = m[2].str();
   auto variable = all_variables.find(name);
+
   if (variable == all_variables.end())
   {
     std::cout << "\033[31mqst<syntax>error:\033[0m refactored-variable " << name
@@ -112,20 +113,23 @@ void
   }
 
   std::vector<std::string> varied_entry;
-  auto                     all_varied = m[2].str();
-  auto varied_names                   = ranges::action::split(all_varied, ' ');
+
+  auto all_varied   = m[2].str();
+  auto varied_names = ranges::action::split(all_varied, ' ');
+
   varied_names.erase(
       ranges::remove_if(varied_names, [](auto s) { return s.empty(); }),
       ranges::end(varied_names));
+
   varied_labels.push_back(varied_names |
                           ranges::view::transform([v = m[1].str()](auto n) {
                             return v + "=" + n;
                           }));
+
   for (auto varied_name : varied_names)
   {
     if (varied_name[0] != '!' && varied_name[0] != '$')
     {
-
       std::cout << "\033[31mqst<syntax>error:\033[0m varied-variable "
                 << varied_name << " must be a component or variable! line "
                 << line_num << "\n";
@@ -190,12 +194,14 @@ void
 
   auto name     = m[2].str();
   auto variable = all_variables.find(name);
+
   if (variable == all_variables.end())
   {
     std::cout << "\033[31mqst<syntax>error:\033[0m refactored-variable " << name
               << " not found! line " << line_num << "\n";
     std::exit(1);
   }
+
   component_stack.back().params +=
       "\"" + m[1].str() + "\":" + variable->second + ",";
 }
@@ -221,10 +227,12 @@ void
   varied_names.erase(
       ranges::remove_if(varied_names, [](auto s) { return s.empty(); }),
       ranges::end(varied_names));
+
   varied_labels.push_back(varied_names |
                           ranges::view::transform([v = m[1].str()](auto n) {
                             return v + "=" + n;
                           }));
+
   auto is_not_primitive = [](auto s) { return s[0] == '$' || s[0] == '!'; };
   auto compvars         = ranges::all_of(varied_names, is_not_primitive);
   auto primitives       = ranges::none_of(varied_names, is_not_primitive);
@@ -293,6 +301,7 @@ void
                             "},\"post-tags\":{" + current.posts +
                             "},\"input-tags\":{" + current.in_sigs +
                             "},\"output-tags\":{" + current.out_sigs + "}}]";
+
   if (component_stack.empty())
   {
     check_no_redefinition(current.variable_or_comp_name);

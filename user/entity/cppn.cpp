@@ -38,10 +38,10 @@ void
   for (size_t i : ranges::view::iota(0, output_ + hidden_))
   {
     Node node;
-    node.activation_function = genome_[9 * i] % 6;
+    node.activation_function = genome_[9 * i] % 3;
     for (auto j = 0; j < 4; j++)
       node.in_node[genome_[9 * i + j * 2 + 1] % (input_ + i + 1)] =
-          (genome_[9 * i + j * 2 + 2] % 1000) / 1000.0;
+          (genome_[9 * i + j * 2 + 2] % 100) / 12.5 - 4.0;
     nodes_.push_back(node);
   }
 }
@@ -58,41 +58,17 @@ void
 void
     cppn::input(std::string n, life::signal s)
 {
-  if (n == in_sense_)
-  {
-    ins_ = std::get<std::vector<double>>(s);
-    if (ins_.size() != input_)
-    {
-      std::cout << "Error: entity-cppn must get an input range of the "
-                   "specified size\n";
-      exit(1);
-    }
-  } else
-  {
-    std::cout << "Error: entity-cppn cannot handle this payload type \n";
-    exit(1);
-  }
+  if (n == in_sense_) ins_ = std::get<std::vector<double>>(s);
 }
 
 life::signal
     cppn::output(std::string n)
 {
-  if (!gates_are_computed_)
-  {
-    std::cout << "Impl-Error: entity-cppn must be tick()-ed before requesting "
-                 "output\n";
-    exit(1);
-  }
+  if (!gates_are_computed_) tick();
 
-  if (n == out_sense_)
-  {
-    return outs_;
-  } else
-  {
-    std::cout << "Impl-Error: entity-cppn cannot handle this name-signal pair "
-                 "in output \n";
-    exit(1);
-  }
+  if (n == out_sense_) return outs_;
+
+  return {};
 }
 
 void
@@ -107,12 +83,6 @@ void
 
   if (ins_.empty()) ins_ = std::vector<double>(input_, 0.0);
 
-  if (ins_.size() != input_)
-  {
-    std::cout
-        << "Error: entity-cppn must get an input range of the specified size\n";
-    exit(1);
-  }
   auto results = ins_;
 
   // for each node in order
@@ -122,7 +92,7 @@ void
     auto const sum = ranges::accumulate(
         node.in_node, 0.0, [&results](auto const total, auto const value) {
           return total + results[value.first] * value.second;
-        }) / 4.;
+        });
     // fire the activation function
     results.push_back(activate(node.activation_function, sum));
   }
@@ -136,15 +106,7 @@ void
 double
     cppn::activate(size_t c, double x)
 {
-
-  // TODO activation function set needs to be thought out
-  // TODO  activation function set needs to be parameterised
-  auto xp = c == 0 ? std::sin(x)
-                   : c == 1 ? std::tan(x)
-                            : c == 2 ? std::cos(x)
-                                     : c == 3 ? std::sqrt(std::abs(x))
-                                              : c == 4 ? std::fmod(x, 1) : -x;
-  return std::clamp(xp, -1.,1.);//-2 * util::PI, 2 * util::PI);
+  return c == 0 ? std::sin(x) : c == 1 ? std::tanh(x) : std::cos(x);
 }
 
 // for debugging purposes
