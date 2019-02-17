@@ -1,0 +1,14 @@
+
+P = $linear {
+		vary entity = $cppn {
+			 vary inputs = 2
+			 vary outputs = 1
+			 vary hiddens = [ 0 1 2 3 4 5 6 7 8 9 ]
+		}
+		vary size = 4
+}
+
+E = $twoDio {
+	vary size = 1
+}
+
