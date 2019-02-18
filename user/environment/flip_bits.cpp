@@ -28,7 +28,8 @@ double
   org.tick();
 
   // get the output
-  auto output = std::get<std::vector<double>>(org.output(org_output_tag_));
+  auto output_signal = org.output(org_output_tag_);
+  auto output = std::get<std::vector<double>>(output_signal);
   if (output.size() != size_)
   {
     std::cout << "Error: environment-flip_bits must receive an ouput of same "

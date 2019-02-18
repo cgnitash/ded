@@ -36,8 +36,8 @@ public:
 
     c["post-tags"]["flippiness"] = flippiness_tag_;
 
-    c["input-tags"]["line-of-sight"] = org_input_tag_;
-    c["output-tags"]["action"]       = org_output_tag_;
+    c["input-tags"]["in-bits"] = org_input_tag_;
+    c["output-tags"]["out-bits"]       = org_output_tag_;
 
     return c;
   }
@@ -48,8 +48,8 @@ public:
 
     flippiness_tag_ = c["post-tags"]["flippiness"];
 
-    org_input_tag_  = c["input-tags"]["line-of-sight"];
-    org_output_tag_ = c["output-tags"]["action"];
+    org_input_tag_  = c["input-tags"]["in-bits"];
+    org_output_tag_ = c["output-tags"]["out-bits"];
   }
 
   life::population evaluate(life::population);
