@@ -1,5 +1,5 @@
 
-#include "cppn.h"
+#include "recurrent_cppn.h"
 #include "../../core/utilities.h"
 
 #include <algorithm>
@@ -14,7 +14,7 @@
 #include <vector>
 
 life::encoding
-    cppn::parse_encoding(std::string s)
+    recurrent_cppn::parse_encoding(std::string s)
 {
   std::smatch    m;
   life::encoding e;
@@ -30,7 +30,7 @@ life::encoding
 }
 
 void
-    cppn::compute_nodes_()
+    recurrent_cppn::compute_nodes_()
 {
 
   nodes_.clear();
@@ -40,14 +40,14 @@ void
     Node node;
     node.activation_function = genome_[9 * i] % 3;
     for (auto j = 0; j < 4; j++)
-      node.in_node[genome_[9 * i + j * 2 + 1] % (input_ + i)] =
+      node.in_node[genome_[9 * i + j * 2 + 1] % (input_ + recurr_ + i)] =
           (genome_[9 * i + j * 2 + 2] % 100) / 12.5 - 4.0;
     nodes_.push_back(node);
   }
 }
 
 void
-    cppn::mutate()
+    recurrent_cppn::mutate()
 {
 
   // only point mutations since size of encoding can't change
@@ -56,13 +56,13 @@ void
 }
 
 void
-    cppn::input(std::string n, life::signal s)
+    recurrent_cppn::input(std::string n, life::signal s)
 {
   if (n == in_sense_) ins_ = std::get<std::vector<double>>(s);
 }
 
 life::signal
-    cppn::output(std::string n)
+    recurrent_cppn::output(std::string n)
 {
   if (!gates_are_computed_) tick();
 
@@ -72,7 +72,7 @@ life::signal
 }
 
 void
-    cppn::tick()
+    recurrent_cppn::tick()
 {
 
   if (!gates_are_computed_)
@@ -82,8 +82,9 @@ void
   }
 
   if (ins_.empty()) ins_ = std::vector<double>(input_, 0.0);
+  if (recs_.empty()) recs_ = std::vector<double>(recurr_, 0.0);
 
-  auto results = ins_;
+  std::vector<double> results = ranges::view::concat(ins_,recs_);
 
   // for each node in order
   for (auto &node : nodes_)
@@ -104,14 +105,14 @@ void
 }
 
 double
-    cppn::activate(size_t c, double x)
+    recurrent_cppn::activate(size_t c, double x)
 {
   return c == 0 ? std::sin(x) : c == 1 ? std::tanh(x) : std::cos(x);
 }
 
 // for debugging purposes
 void
-    cppn::print()
+    recurrent_cppn::print()
 {
   for (auto &node : nodes_)
   {
