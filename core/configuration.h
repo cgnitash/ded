@@ -15,10 +15,14 @@ namespace life {
 using configuration      = nlohmann::json;
 using ModuleInstancePair = std::pair<std::string, std::string>;
 extern std::map<ModuleInstancePair, life::configuration> all_configs;
-extern std::string global_path;
+extern std::string                                       global_path;
 
-template<typename T>
-	std::string  auto_class_name_as_string() { return "oops";}
+template <typename T>
+std::string
+    auto_class_name_as_string()
+{
+  return "oops";
+}
 
 // almost certainly unnecessary
 inline void
@@ -174,6 +178,13 @@ inline void
   std::exit(1);
 }
 
+inline auto
+    signal_name_type(std::string s)
+{
+  auto p = s.find_first_of(',');
+  return std::make_pair(s.substr(0, p), s.substr(p + 1));
+}
+
 inline void
     check_environment_correct(life::ModuleInstancePair type_name,
                               life::configuration      config)
@@ -189,6 +200,20 @@ inline void
                 << "'\033[0m group\n";
       exit(1);
     }
+
+  for (auto &group : 
+       { "pre-tags", "post-tags", "input-tags", "output-tags" })
+    for (auto &[name, type] : config[group].items())
+      if (name != signal_name_type(type).first)
+      {
+        std::cout << "User publication error: user module\033[31m<"
+                  << type_name.first << ">::'" << type_name.second
+                  << "'\033[0m must synchronise name of " << group
+                  << ":\033[32m" << name << "\033[0m with "
+                  << "\033[32m" << type << "\033[0m"
+                  << "\n";
+        exit(1);
+      }
 
   if (config.size() != 5)
   {
@@ -229,7 +254,6 @@ inline void
     check_entity_correct(life::ModuleInstancePair type_name,
                          life::configuration      config)
 {
-
   for (auto &group : { "parameters", "input-tags", "output-tags" })
     if (config.find(group) == config.end())
     {
@@ -239,6 +263,19 @@ inline void
                 << "'\033[0m group\n";
       exit(1);
     }
+
+  for (auto &group : { "input-tags", "output-tags" })
+    for (auto &[name, type] : config[group].items())
+      if (name != signal_name_type(type).first)
+      {
+        std::cout << "User publication error: user module\033[31m<"
+                  << type_name.first << ">::'" << type_name.second
+                  << "'\033[0m must synchronise name of " << group
+                  << ":\033[32m" << name << "\033[0m with "
+                  << "\033[32m" << type << "\033[0m"
+                  << "\n";
+        exit(1);
+      }
 
   if (config.size() != 3)
   {
@@ -263,13 +300,6 @@ inline void
     if (type_name.first == "population")
       check_population_correct(type_name, config);
   }
-}
-
-inline auto
-    signal_name_type(std::string s)
-{
-  auto p = s.find_first_of(',');
-  return std::make_pair(s.substr(0, p), s.substr(p + 1));
 }
 
 inline void

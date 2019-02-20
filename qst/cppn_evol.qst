@@ -1,8 +1,8 @@
 
 P = $linear {
 		vary entity = $cppn {
-			 vary inputs = 10 
-			 vary outputs = 10
+			 vary inputs = 4 
+			 vary outputs = 2
 			 vary hiddens = [ 0 1 2 3 4 5 6 7  8 9 ]
 			 #vary hiddens =  5 
 		}
@@ -29,8 +29,8 @@ elite = $elite_replacement {
 		} 
 
 E = $two_cycle {
-		vary fitness = !rep-flip
-		vary count = 1001 
+		vary fitness = !rep-for
+		vary count = 301 
 		vary cout-frequency = 10
 		vary snapshot-frequency = 50
 		vary pop-avmax-frequency = 1
