@@ -17,12 +17,10 @@ using ModuleInstancePair = std::pair<std::string, std::string>;
 extern std::map<ModuleInstancePair, life::configuration> all_configs;
 extern std::string                                       global_path;
 
+// component_builder will provide full specializations
 template <typename T>
 std::string
-    auto_class_name_as_string()
-{
-  return "oops";
-}
+    auto_class_name_as_string() = delete;
 
 // almost certainly unnecessary
 inline void

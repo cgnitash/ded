@@ -5,14 +5,14 @@ P = $linear {
 			vary outputs = 2
 			vary hiddens = 2
 		}
-		vary size = [ 50 100 ]
+		vary size =  50 
 		vary track-lineage = true
 }
 
 rep-for = $replicate {
 			vary env = $forager {
 				vary  sensor-range = 5
-				vary replace = [ true false ]
+				vary replace =  true 
 				pos food-eaten = x
 				ist line-of-sight = in-sense
 				ost action = out-sense
