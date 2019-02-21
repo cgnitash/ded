@@ -27,14 +27,13 @@ private:
   size_t input_  = 1;
   size_t output_ = 1;
   size_t recurr_ = 0;
-  size_t cppn_recurr_ = 0;
   size_t cppn_hidden_ = 0;
 
   life::encoding genome_;
   std::regex     encoding_parser_{ R"(([^:]+):)" };
 
   std::vector<double> buffer_;
-  life::entity internal_cppn_ = life::make_entity({"recurrent_cppn"});
+  life::entity internal_cppn_ = life::make_entity({"cppn"});
 
   void reconstruct_weights_();
 public:
@@ -46,7 +45,6 @@ public:
     c["parameters"]["inputs"]  = input_;
     c["parameters"]["outputs"] = output_;
     c["parameters"]["recurr"] = recurr_;
-    c["parameters"]["cppn-recurr"] = cppn_recurr_;
     c["parameters"]["cppn-hidden"] = cppn_hidden_;
 
     c["input-tags"]["in-sense"]   = in_sense_;
@@ -60,7 +58,6 @@ public:
     input_       = con["parameters"]["inputs"];
     output_      = con["parameters"]["outputs"];
     recurr_      = con["parameters"]["recurr"];
-    cppn_recurr_ = con["parameters"]["cppn-recurr"];
     cppn_hidden_ = con["parameters"]["cppn-hidden"];
 
     in_sense_  = con["input-tags"]["in-sense"];
@@ -74,7 +71,6 @@ public:
     c["parameters"]["inputs"]  = 2;
     c["parameters"]["outputs"] = 1;
     c["parameters"]["hiddens"] = cppn_hidden_;
-    c["parameters"]["recurr"]  = cppn_recurr_;
     internal_cppn_.configure(c);
     genome_.generate((input_ + recurr_) * (recurr_ + output_));
     reconstruct_weights_();

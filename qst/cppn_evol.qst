@@ -1,47 +1,41 @@
 
-cppn = $linear {
-		vary entity = $cppn {
-			 vary inputs = 4 
-			 vary outputs = 2
-			 vary hiddens =  5 
-		}
-		vary size = 50
+mark = $markov_brain {
+	 vary inputs = 4 
+	 vary outputs = 2
+	 vary hiddens =  3 
 }
 
-rnn_cppn = $linear {
-		vary entity = $rnn_with_cppn {
-			 vary inputs = 4 
-			 vary outputs = 2
-			 vary recurr  =  2
-			 vary cppn-hidden =  3 
-			 vary cppn-recurr  =  2
-		}
-		vary size = 50
+cppn =  $cppn {
+	 vary inputs = 4 
+	 vary outputs = 2
+	 vary hiddens =  3 
 }
 
-rec_cppn = $linear {
-		vary entity = $recurrent_cppn {
-			 vary inputs = 4 
-			 vary outputs = 2
-			 vary hiddens =  3 
-			 vary recurr  =  2
-		}
-		vary size = 50
+rnn_cppn = $rnn_with_cppn {
+	 vary inputs = 4 
+	 vary outputs = 2
+	 vary recurr  =  3
+	 vary cppn-hidden =  3 
 }
 
-rnn = $linear {
-		vary entity = $rnn {
-			 vary inputs = 4 
-			 vary outputs = 2
-			 vary recurr  =  2
-		}
-		vary size = 50
+rec_cppn = $recurrent_cppn {
+	 vary inputs = 4 
+	 vary outputs = 2
+	 vary hiddens =  3 
+	 vary recurr  =  3
+}
+
+rnn = $rnn {
+	 vary inputs = 4 
+	 vary outputs = 2
+	 vary recurr  =  3
 }
 
 rep-for = $replicate {
 			vary env = $forager {
 				vary  sensor-range = 4
 				vary replace =  true 
+				vary direction = false 
 			}
 			vary num = 3
 }
@@ -50,17 +44,18 @@ elite = $elite_replacement {
 			vary strength = 0.4
 		} 
 
-#P = [ !cppn !rec_cppn !rnn !rnn_cppn ]
-
-P = !rnn_cppn
- 
+P = $linear {
+        vary entity = [ !mark !cppn !rec_cppn !rnn !rnn_cppn ]
+		#vary entity = !mark
+        vary size = 50
+}
 
 E = $two_cycle {
 		vary fitness = !rep-for
 		vary count = 501 
 		vary cout-frequency = 10
-		vary snapshot-frequency = 50
-		vary pop-avmax-frequency = 1
+		vary snapshot-frequency = 0
+		vary pop-avmax-frequency = 10
 		vary selector = !elite
 } 
 

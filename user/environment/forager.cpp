@@ -27,6 +27,32 @@ void
 }
 
 std::vector<double>
+    forager::signals_at(const location loc)
+{
+
+  std::vector         out(sensor_range_, 1.);
+  std::vector<size_t> dists;
+  for (const auto dir :
+       { direction::up, direction::down, direction::left, direction::right })
+  {
+    size_t d{ 0 };
+    auto   l{ loc };
+    for ([[maybe_unused]] auto i : ranges::view::iota(0, sensor_range_))
+    {
+      if (!resources_[l.x_][l.y_])
+        d++;
+      else
+        break;
+      l = move_in_dir(l, dir);
+    }
+    dists.push_back(d);
+  }
+  for (auto i{ *ranges::min_element(dists) }; i < sensor_range_; i++)
+    out[i] = 0.;
+  return out;
+}
+
+std::vector<double>
     forager::signals_at(location loc, direction facing)
 {
 
@@ -144,7 +170,9 @@ double
 
   util::repeat(updates_, [&] {
     // feed input to org; inputs are 0s and 1s only
-    org.input(org_input_los_tag_, signals_at(position, facing));
+    org.input(org_input_los_tag_,
+              directional_ ? signals_at(position, facing)
+                           : signals_at(position));
     // run the org once
     org.tick();
     // read its outputs and interact with the environment

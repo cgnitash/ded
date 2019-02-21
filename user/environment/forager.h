@@ -28,6 +28,7 @@ class forager {
   size_t sensor_range_ = 4;
   size_t updates_      = 100;
   bool   replace_      = true;
+  bool   directional_  = true;
   bool   visualize_    = false;
   double density_      = 0.1;
 
@@ -74,6 +75,7 @@ class forager {
   void                interact(life::signal, location &, direction &, double &);
   double              eval(life::entity &);
   std::vector<double> signals_at(location, direction);
+  std::vector<double> signals_at(const location);
   void                visualize(std::ofstream &, location, direction, double);
 
 public:
@@ -88,6 +90,7 @@ public:
     ec["parameters"]["replace"]      = replace_;
     ec["parameters"]["visualize"]    = visualize_;
     ec["parameters"]["sensor-range"] = sensor_range_;
+    ec["parameters"]["direction"]    = directional_;
 
     ec["pre-tags"] = nullptr;
 
@@ -107,6 +110,7 @@ public:
     replace_      = con["parameters"]["replace"];
     visualize_    = con["parameters"]["visualize"];
     sensor_range_ = con["parameters"]["sensor-range"];
+    directional_  = con["parameters"]["direction"];
 
     resources_ = std::vector(grid_size_, std::vector(grid_size_, 0));
 
