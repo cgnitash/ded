@@ -35,12 +35,12 @@ void
 
   nodes_.clear();
   // create activation functions for all nodes other than inputs
-  for (size_t i : ranges::view::iota(0, output_ + hidden_))
+  for (size_t i : ranges::view::iota(0, output_ + hidden_ + recurr_))
   {
     Node node;
     node.activation_function = genome_[9 * i] % 3;
     for (auto j = 0; j < 4; j++)
-      node.in_node[genome_[9 * i + j * 2 + 1] % (input_ + i)] =
+      node.in_node[genome_[9 * i + j * 2 + 1] % (input_ + recurr_ + i)] =
           (genome_[9 * i + j * 2 + 2] % 100) / 12.5 - 4.0;
     nodes_.push_back(node);
   }
@@ -49,7 +49,6 @@ void
 void
     cppn::mutate()
 {
-
   // only point mutations since size of encoding can't change
   genome_.point_mutate();
   gates_are_computed_ = false;
@@ -82,8 +81,9 @@ void
   }
 
   if (ins_.empty()) ins_ = std::vector<double>(input_, 0.0);
+  if (recs_.empty()) recs_ = std::vector<double>(recurr_, 0.0);
 
-  auto results = ins_;
+  std::vector<double> results = ranges::view::concat(ins_,recs_);
 
   // for each node in order
   for (auto &node : nodes_)
@@ -99,8 +99,10 @@ void
 
   auto res_size = results.size();
   // put the last output node results into the output buffer
-  outs_ = results | ranges::move |
-          ranges::action::slice(res_size - output_, res_size);
+  outs_ = results | ranges::copy |
+          ranges::action::slice(res_size - output_ - recurr_, res_size - recurr_);
+  recs_ = results | ranges::move |
+          ranges::action::slice(res_size - recurr_, res_size);
 }
 
 double
@@ -109,15 +111,3 @@ double
   return c == 0 ? std::sin(x) : c == 1 ? std::tanh(x) : std::cos(x);
 }
 
-// for debugging purposes
-void
-    cppn::print()
-{
-  for (auto &node : nodes_)
-  {
-    std::cout << "af: " << node.activation_function << " ws: ";
-    for (auto &w : node.in_node)
-      std::cout << "{" << w.first << "," << w.second << "} ";
-    std::cout << std::endl;
-  }
-}

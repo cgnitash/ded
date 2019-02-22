@@ -24,10 +24,14 @@ private:
   std::string internal_cppn_input_tag{};
   std::string internal_cppn_output_tag{};
 
-  size_t input_  = 1;
-  size_t output_ = 1;
-  size_t recurr_ = 0;
+  size_t input_       = 1;
+  size_t output_      = 1;
+  size_t recurr_      = 0;
   size_t cppn_hidden_ = 0;
+  size_t cppn_recurr_ = 0;
+  double offset_ = 0.1;
+  double source_x_{1};
+  double source_y_{1};
 
   life::encoding genome_;
   std::regex     encoding_parser_{ R"(([^:]+):)" };
@@ -45,7 +49,13 @@ public:
     c["parameters"]["inputs"]  = input_;
     c["parameters"]["outputs"] = output_;
     c["parameters"]["recurr"] = recurr_;
+
+    c["parameters"]["offset"] = offset_;
+    c["parameters"]["src-x"] = source_x_;
+    c["parameters"]["src-y"] = source_y_;
+
     c["parameters"]["cppn-hidden"] = cppn_hidden_;
+    c["parameters"]["cppn-recurr"] = cppn_recurr_;
 
     c["input-tags"]["in-sense"]   = in_sense_;
     c["output-tags"]["out-sense"] = out_sense_;
@@ -58,7 +68,13 @@ public:
     input_       = con["parameters"]["inputs"];
     output_      = con["parameters"]["outputs"];
     recurr_      = con["parameters"]["recurr"];
+
+    offset_   = con["parameters"]["offset"];
+    source_x_ = con["parameters"]["src-x"];
+    source_y_ = con["parameters"]["src-y"];
+
     cppn_hidden_ = con["parameters"]["cppn-hidden"];
+    cppn_recurr_ = con["parameters"]["cppn-recurr"];
 
     in_sense_  = con["input-tags"]["in-sense"];
     out_sense_ = con["output-tags"]["out-sense"];
@@ -71,6 +87,7 @@ public:
     c["parameters"]["inputs"]  = 2;
     c["parameters"]["outputs"] = 1;
     c["parameters"]["hiddens"] = cppn_hidden_;
+    c["parameters"]["recurr"] = cppn_recurr_;
     internal_cppn_.configure(c);
     genome_.generate((input_ + recurr_) * (recurr_ + output_));
     reconstruct_weights_();

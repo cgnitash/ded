@@ -35,7 +35,7 @@ void
 
   nodes_.clear();
   // create activation functions for all nodes other than inputs
-  for (size_t i : ranges::view::iota(0, output_ + hidden_))
+  for (size_t i : ranges::view::iota(0, output_ + hidden_ + recurr_))
   {
     Node node;
     node.activation_function = genome_[9 * i] % 3;
@@ -49,7 +49,6 @@ void
 void
     recurrent_cppn::mutate()
 {
-
   // only point mutations since size of encoding can't change
   genome_.point_mutate();
   gates_are_computed_ = false;
@@ -100,8 +99,10 @@ void
 
   auto res_size = results.size();
   // put the last output node results into the output buffer
-  outs_ = results | ranges::move |
-          ranges::action::slice(res_size - output_, res_size);
+  outs_ = results | ranges::copy |
+          ranges::action::slice(res_size - output_ - recurr_, res_size - recurr_);
+  recs_ = results | ranges::move |
+          ranges::action::slice(res_size - recurr_, res_size);
 }
 
 double

@@ -9,6 +9,7 @@ cppn =  $cppn {
 	 vary inputs = 4 
 	 vary outputs = 2
 	 vary hiddens =  3 
+	 vary recurr =  3 
 }
 
 rnn_cppn = $rnn_with_cppn {
@@ -16,26 +17,23 @@ rnn_cppn = $rnn_with_cppn {
 	 vary outputs = 2
 	 vary recurr  =  3
 	 vary cppn-hidden =  3 
-}
-
-rec_cppn = $recurrent_cppn {
-	 vary inputs = 4 
-	 vary outputs = 2
-	 vary hiddens =  3 
-	 vary recurr  =  3
+	 vary cppn-recurr =  2 
+	 vary src-x =  2 
+	 vary src-y =  2 
+	 vary offset =  0.01 
 }
 
 rnn = $rnn {
 	 vary inputs = 4 
 	 vary outputs = 2
-	 vary recurr  =  3
+	 vary recurr  =  6
 }
 
 rep-for = $replicate {
 			vary env = $forager {
 				vary  sensor-range = 4
 				vary replace =  true 
-				vary direction = false 
+				vary direction = true 
 			}
 			vary num = 3
 }
@@ -45,8 +43,9 @@ elite = $elite_replacement {
 		} 
 
 P = $linear {
-        vary entity = [ !mark !cppn !rec_cppn !rnn !rnn_cppn ]
-		#vary entity = !mark
+        #vary entity = [ !mark !cppn  !rnn !rnn_cppn ]
+		vary entity = !rnn_cppn
+		#vary entity = !rnn
         vary size = 50
 }
 
@@ -55,7 +54,7 @@ E = $two_cycle {
 		vary count = 501 
 		vary cout-frequency = 10
 		vary snapshot-frequency = 0
-		vary pop-avmax-frequency = 10
+		vary pop-avmax-frequency = 0
 		vary selector = !elite
 } 
 

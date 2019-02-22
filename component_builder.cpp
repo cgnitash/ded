@@ -20,12 +20,24 @@ opts
 
   opts          build_options;
   std::ifstream cfg(fname);
-  std::regex    r(
-      R"(^\s*(entity|environment|population)\s*:\s*(\w+)\s*$)");
+  std::regex    r(R"~~(^\s*(entity|environment|population)\s*:\s*(\w+)\s*$)~~");
+  std::regex    comments(R"~~(#.*$)~~");
+  std::regex    spaces(R"~~(^\s*$)~~");
   for (std::string line; std::getline(cfg, line);)
   {
+    auto clean_line = std::regex_replace(line, comments, "");
+    if (std::regex_match(clean_line,spaces))continue;
     std::smatch m;
-    if (std::regex_match(line, m, r)) build_options[m[1]].push_back(m[2]);
+    if (std::regex_match(clean_line, m, r))
+      build_options[m[1]].push_back(m[2]);
+    else
+    {
+      std::cout << "\033[31m<ded-core>Error:\033[0m unrecognised line in "
+                   "components file \033[32m\""
+                << fname << "\"\033[0m\n*"
+                << line << "*\n";
+      std::exit(1);
+    }
   }
   return build_options;
 }

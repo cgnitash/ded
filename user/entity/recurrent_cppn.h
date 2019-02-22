@@ -29,10 +29,11 @@ private:
     std::map<size_t, double> in_node;
   };
   std::vector<Node> nodes_;
-  size_t            input_  = 1;
-  size_t            output_ = 1;
-  size_t            hidden_ = 0;
-  size_t            recurr_ = 0;
+
+  size_t input_  = 1;
+  size_t output_ = 1;
+  size_t hidden_ = 0;
+  size_t recurr_ = 0;
 
   life::encoding genome_;
   std::regex     encoding_parser_{ R"(([^:]+):)" };
@@ -56,6 +57,7 @@ public:
     c["parameters"]["outputs"] = output_;
     c["parameters"]["hiddens"] = hidden_;
     c["parameters"]["recurr"] = recurr_;
+
     c["parameters"]["enco"] = init_enc_;
 
     c["input-tags"]["in-sense"]   = in_sense_;
@@ -77,7 +79,7 @@ public:
     out_sense_ = con["output-tags"]["out-sense"];
 
     if (init_enc_.empty())
-      genome_.generate(9 * (output_ + hidden_));
+      genome_.generate(9 * (output_ + hidden_ + recurr_));
     else
       set_encoding(parse_encoding(init_enc_));
   }
