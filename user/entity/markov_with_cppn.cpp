@@ -1,11 +1,11 @@
 
-#include "markov_cppn.h"
+#include "markov_with_cppn.h"
 
 #include <algorithm>
 #include <vector>
 
 life::encoding
-    markov_cppn::parse_encoding(std::string s)
+    markov_with_cppn::parse_encoding(std::string s)
 {
   std::smatch    m;
   life::encoding e;
@@ -21,7 +21,7 @@ life::encoding
 }
 
 void
-    markov_cppn::mutate()
+    markov_with_cppn::mutate()
 {
 
   genome_.point_delete();
@@ -66,7 +66,7 @@ void
 }
 
 void
-    markov_cppn::input(std::string n, life::signal s)
+    markov_with_cppn::input(std::string n, life::signal s)
 {
   if (n == in_sense_)
   {
@@ -87,7 +87,7 @@ void
 }
 
 life::signal
-    markov_cppn::output(std::string n)
+    markov_with_cppn::output(std::string n)
 {
 
   if (n == out_sense_)
@@ -103,7 +103,7 @@ life::signal
 }
 
 void
-    markov_cppn::tick()
+    markov_with_cppn::tick()
 {
 
   if (!gates_are_computed_)
@@ -126,7 +126,7 @@ void
 }
 
 void
-    markov_cppn::seed_gates_(size_t n)
+    markov_with_cppn::seed_gates_(size_t n)
 {
 
   util::repeat(n, [&] {
@@ -137,7 +137,7 @@ void
 }
 
 void
-    markov_cppn::compute_gates_()
+    markov_with_cppn::compute_gates_()
 {
 
   gates_.clear();

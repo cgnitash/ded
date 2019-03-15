@@ -18,8 +18,8 @@ rnn_cppn = $rnn_with_cppn {
 	 vary recurr  =  3
 	 vary cppn-hidden =  3 
 	 vary cppn-recurr =  2 
-	 vary src-x =  2 
-	 vary src-y =  2 
+	 vary src-x =  0 
+	 vary src-y =  0 
 	 vary offset =  0.01 
 }
 
@@ -33,7 +33,7 @@ rep-for = $replicate {
 			vary env = $forager {
 				vary  sensor-range = 4
 				vary replace =  true 
-				vary direction = true 
+				vary direction = false 
 			}
 			vary num = 3
 }
@@ -51,7 +51,7 @@ P = $linear {
 
 E = $two_cycle {
 		vary fitness = !rep-for
-		vary count = 501 
+		vary count = 301 
 		vary cout-frequency = 10
 		vary snapshot-frequency = 0
 		vary pop-avmax-frequency = 0

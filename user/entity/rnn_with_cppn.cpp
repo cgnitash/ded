@@ -32,18 +32,18 @@ life::encoding
 void
     rnn_with_cppn::reconstruct_weights_()
 {
-  //auto norm = [](auto x, auto scale) { return (x * 4 * util::PI) / scale; };
+  // auto norm = [](auto x, auto scale) { return (x * 4 * util::PI) / scale; };
 
   for (auto i : ranges::view::iota(0, input_ + recurr_))
     for (auto j : ranges::view::iota(0, recurr_ + output_))
     {
       internal_cppn_.input(internal_cppn_input_tag,
-                           std::vector<double>{ source_x_+ i * offset_,
-                                                source_y_+ j * offset_ });
+                           std::vector<double>{ source_x_ + i * offset_,
+                                                source_y_ + j * offset_ });
       internal_cppn_.tick();
       auto v = std::get<std::vector<double>>(
           internal_cppn_.output(internal_cppn_output_tag));
-      genome_[i*(recurr_+output_) + j] = v[0];
+      genome_[i * (recurr_ + output_) + j] = (v[0] + 1) * 50;
     }
 }
 
@@ -86,7 +86,9 @@ void
     temp_buffer_.push_back(ranges::inner_product(
         weights,
         in_recs,
-        0.));
+        0.,
+        [](int w, auto i) { return (((w % 100) - 50) / 50.) * i; },
+        std::plus{}));
 
   ranges::copy(temp_buffer_, ranges::begin(buffer_) + input_);
 }

@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <vector>
 
-class markov_cppn {
+class markov_with_cppn {
 
   std::string in_sense_  = "in-sense,A<double,inputs>";
   std::string out_sense_ = "out-sense,A<double,outputs>";
@@ -43,7 +43,7 @@ class markov_cppn {
   void seed_gates_(size_t = 1);
 
 public:
-  markov_cppn() { configure(publish_configuration()); }
+  markov_with_cppn() { configure(publish_configuration()); }
   life::configuration publish_configuration()
   {
     life::configuration con;
