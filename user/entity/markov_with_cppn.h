@@ -13,9 +13,18 @@ class markov_with_cppn {
   life::encoding genome_;
   std::regex     encoding_parser_{ R"(([^:]+):)" };
 
+  std::string internal_cppn_input_tag{};
+  std::string internal_cppn_output_tag{};
+
   size_t input_  = 10;
   size_t output_ = 10;
   size_t hidden_ = 10;
+
+  size_t cppn_hidden_ = 0;
+  size_t cppn_recurr_ = 0;
+  double offset_ = 0.1;
+  double source_x_{1};
+  double source_y_{1};
 
   bool mutate_wires_{ false };
   bool mutate_weights_{ false };
@@ -24,7 +33,7 @@ class markov_with_cppn {
 
   life::configuration genome_config_;
 
-  life::entity my_cppn_ = life::make_entity({ "cppn", {} });
+  life::entity my_cppn_ = life::make_entity({ "cppn" });
 
   std::vector<double> buffer_;
 
@@ -56,6 +65,12 @@ public:
     con["parameters"]["mutate-cppn"]    = mutate_cppn_;
     con["parameters"]["genome-params"]  = genome_config_;
 
+    con["parameters"]["offset"] = offset_;
+    con["parameters"]["src-x"] = source_x_;
+    con["parameters"]["src-y"] = source_y_;
+    con["parameters"]["cppn-hidden"] = cppn_hidden_;
+    con["parameters"]["cppn-recurr"] = cppn_recurr_;
+
     con["input-tags"]["in-sense"]   = in_sense_;
     con["output-tags"]["out-sense"] = out_sense_;
 
@@ -75,13 +90,19 @@ public:
     in_sense_  = con["input-tags"]["in-sense"];
     out_sense_ = con["output-tags"]["out-sense"];
 
+    life::configuration c = my_cppn_.publish_configuration();
+    // yucky
+    internal_cppn_input_tag    = c["input-tags"]["in-sense"];
+    internal_cppn_output_tag   = c["output-tags"]["out-sense"];
+
+    c["parameters"]["inputs"]  = 2;
+    c["parameters"]["outputs"] = 1;
+    c["parameters"]["hiddens"] = cppn_hidden_;
+    c["parameters"]["recurr"] = cppn_recurr_;
+    my_cppn_.configure(c);
+
     genome_.configure(genome_config_);
     genome_.generate(200);
-    my_cppn_.configure({ { "inputs", 2 }, { "outputs", 1 }, { "hiddens", 2 } });
-    my_cppn_.set_encoding(
-        my_cppn_.parse_encoding("1:0:97:2:101:98:21:88:1:"
-                                "2:12:76:20:10:100:62:62:4:"
-                                "0:66:59:28:92:93:38:123:101:"));
     buffer_ = std::vector(input_ + output_ + hidden_, 0.);
     seed_gates_(4);
   }

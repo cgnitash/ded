@@ -27,6 +27,7 @@ private:
   size_t input_       = 1;
   size_t output_      = 1;
   size_t recurr_      = 0;
+
   size_t cppn_hidden_ = 0;
   size_t cppn_recurr_ = 0;
   double offset_ = 0.1;
@@ -53,7 +54,6 @@ public:
     c["parameters"]["offset"] = offset_;
     c["parameters"]["src-x"] = source_x_;
     c["parameters"]["src-y"] = source_y_;
-
     c["parameters"]["cppn-hidden"] = cppn_hidden_;
     c["parameters"]["cppn-recurr"] = cppn_recurr_;
 
