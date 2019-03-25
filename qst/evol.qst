@@ -5,7 +5,7 @@ P = $linear {
 			vary outputs = 2
 			vary hiddens = 2
 		}
-		vary size =  50 
+		vary size =  10 
 		vary track-lineage = true
 }
 
@@ -25,13 +25,18 @@ elite = $elite_replacement {
 			pre value = score
 		} 
 
+roul = $roulette_wheel {
+			vary strength = 0.4
+			pre value = score
+		} 
+
 E = $two_cycle {
 		vary fitness = !rep-for
-		vary count = 301 
+		vary count = 10 
 		vary cout-frequency = 10
 		vary snapshot-frequency = 50
 		vary pop-avmax-frequency = 1
-		vary selector = !elite
+		vary selector = !roul
 } 
 
 #E = !ttc 
