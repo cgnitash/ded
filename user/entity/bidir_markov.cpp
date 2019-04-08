@@ -20,6 +20,12 @@ life::encoding
 }
 
 void
+    bidir_markov::reset()
+{
+  for (auto &b : buffer_) b = 0;
+}
+
+void
     bidir_markov::mutate()
 {
 

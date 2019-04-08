@@ -66,6 +66,7 @@ public:
     seed_gates_(4);
   }
 
+  void           reset();
   void           mutate();
   void           input(std::string, life::signal);
   life::signal   output(std::string);

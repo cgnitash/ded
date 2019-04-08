@@ -1,7 +1,7 @@
 
 P = $linear {
 		vary entity = $markov_brain {
-			vary inputs = 2
+			vary inputs = 5
 			vary outputs = 2
 			vary hiddens = 2
 		}
@@ -22,9 +22,9 @@ rep-for = $replicate {
 
 rep-ed = $replicate {
 			vary env = $edlund_maze {
-				vary doors = 10
+				vary doors = 20
 				vary updates = 50
-				vary corridor-length = 20
+				vary corridor-length = 10
 			}
 			vary num = 3
 }
@@ -40,11 +40,11 @@ roul = $roulette_wheel {
 		} 
 
 E = $two_cycle {
-		vary fitness = !rep-ed
-		vary count = 500 
+		vary fitness = !rep-for
+		vary count = 300 
 		vary cout-frequency = 10
 		vary snapshot-frequency = 50
-		vary pop-avmax-frequency = 1
+		vary pop-avmax-frequency = 0
 		vary selector = !roul
 } 
 

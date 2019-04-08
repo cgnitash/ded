@@ -19,6 +19,12 @@ life::encoding
   return e;
 }
 
+
+void
+    markov_brain::reset()
+{
+  for (auto &b : buffer_) b = 0;
+}
 void
     markov_brain::mutate()
 {

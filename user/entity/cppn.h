@@ -83,6 +83,7 @@ public:
       set_encoding(parse_encoding(init_enc_));
   }
 
+  void           reset();
   void           mutate();
   void           input(std::string, life::signal);
   life::signal   output(std::string);

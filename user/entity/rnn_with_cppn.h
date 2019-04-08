@@ -95,6 +95,7 @@ public:
   }
 
   void           mutate();
+  void           reset();
   void           input(std::string, life::signal);
   life::signal   output(std::string);
   void           tick();

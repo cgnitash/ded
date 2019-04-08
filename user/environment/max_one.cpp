@@ -9,6 +9,7 @@ life::population
 
   pop.merge(pop.get_as_vector() | ranges::action::transform([this](auto &org) {
               // no inputs
+			  org.reset();
               // run single tick
               org.tick();
               // score is number of outputs that evaluate to Bit() == 1

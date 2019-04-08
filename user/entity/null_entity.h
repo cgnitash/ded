@@ -28,6 +28,7 @@ public:
     return con;
   }
 
+  void         reset();
   void         mutate();
   void         input(std::string, life::signal);
   life::signal output(std::string);

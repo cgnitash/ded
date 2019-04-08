@@ -77,6 +77,8 @@ public:
 
   void mutate() { self_->mutate_(); }
 
+  void reset() { self_->reset_(); }
+
   configuration publish_configuration()
   {
     return self_->publish_configuration_();
@@ -106,6 +108,7 @@ private:
     virtual encoding parse_encoding_(std::string) = 0;
 
     virtual void          mutate_()                   = 0;
+    virtual void          reset_()                   = 0;
     virtual configuration publish_configuration_()    = 0;
     virtual void          tick_()                     = 0;
     virtual void          input_(std::string, signal) = 0;
@@ -136,6 +139,8 @@ private:
     signal output_(std::string n) override { return data_.output(n); }
 
     void tick_() override { data_.tick(); }
+
+    void reset_() override { data_.reset(); }
 
     void mutate_() override
     {
@@ -207,7 +212,7 @@ private:
     long ancestor_;
 
     UserEntity data_;
-  };
+    };
 
   static long                       entity_id_;
   std::unique_ptr<entity_interface> self_;

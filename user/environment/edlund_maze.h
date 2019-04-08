@@ -21,7 +21,7 @@ class edlund_maze {
 
   std::string distance_tag_ = "distance,double";
 
-  std::string org_input_vision_tag_  = "vision,A<double,2>";
+  std::string org_input_vision_tag_  = "vision,A<double,3>";
   std::string org_output_action_tag_ = "action,A<double,2>";
 
   size_t           doors_ = 10;

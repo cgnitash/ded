@@ -47,6 +47,12 @@ void
 }
 
 void
+    cppn::reset()
+{
+  if (recs_.empty()) recs_ = std::vector<double>(recurr_, 0.0);
+}
+
+void
     cppn::mutate()
 {
   // only point mutations since size of encoding can't change

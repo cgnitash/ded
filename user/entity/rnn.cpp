@@ -30,6 +30,12 @@ life::encoding
 }
 
 void
+    rnn::reset()
+{
+  for (auto &b : buffer_) b = 0;
+}
+
+void
     rnn::mutate()
 {
   // only point mutations since size of encoding can't change

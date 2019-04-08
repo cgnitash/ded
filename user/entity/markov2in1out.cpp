@@ -21,6 +21,13 @@ life::encoding
   return e;
 }
 
+
+void
+    markov2in1out::reset()
+{
+  for (auto &b : buffer_) b = 0;
+}
+
 void
     markov2in1out::mutate()
 {

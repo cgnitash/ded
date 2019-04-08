@@ -187,7 +187,11 @@ life::population
     forager::evaluate(life::population pop)
 {
   auto vec = pop.get_as_vector();
-  for (auto &org : vec) org.data.set_value(food_eaten_tag_, eval(org));
+  for (auto &org : vec)
+  {
+    org.reset();
+    org.data.set_value(food_eaten_tag_, eval(org));
+  }
   pop.merge(vec);
   return pop;
 }

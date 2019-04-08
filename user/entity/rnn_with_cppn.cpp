@@ -48,6 +48,12 @@ void
 }
 
 void
+    rnn_with_cppn::reset()
+{
+  for (auto &b : buffer_) b = 0;
+}
+
+void
     rnn_with_cppn::mutate()
 {
   internal_cppn_.mutate();

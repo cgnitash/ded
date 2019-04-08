@@ -59,6 +59,7 @@ public:
     buffer_ = std::vector<double>(input_ + recurr_ + output_, 0.);
   }
 
+  void           reset();
   void           mutate();
   void           input(std::string, life::signal);
   life::signal   output(std::string);

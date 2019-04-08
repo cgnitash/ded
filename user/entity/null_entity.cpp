@@ -5,6 +5,10 @@
 #include <vector>
 
 void
+    null_entity::reset()
+{
+}
+void
     null_entity::mutate()
 {
 }

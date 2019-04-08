@@ -47,6 +47,7 @@ life::population
     flip_bits::evaluate(life::population pop)
 {
   pop.merge(pop.get_as_vector() | ranges::action::transform([this](auto &org) {
+			  org.reset();
               org.data.set_value(flippiness_tag_, eval(org));
               return org;
             }));
