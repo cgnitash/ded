@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+#include "term_colours.h"
+
 namespace life {
 
 using configuration      = nlohmann::json;
@@ -18,9 +20,7 @@ extern std::map<ModuleInstancePair, life::configuration> all_configs;
 extern std::string                                       global_path;
 
 // component_builder will provide full specializations
-template <typename T>
-std::string
-    auto_class_name_as_string() = delete;
+template <typename T> std::string auto_class_name_as_string() = delete;
 
 // almost certainly unnecessary
 inline void
@@ -127,13 +127,15 @@ inline auto
 {
   auto &true_mod       = mip.first;
   auto &attempted_inst = mip.second;
-  std::cout << "Error: Non-existent <Module>::Instance -- \033[31m<" << true_mod
-            << ">::" << attempted_inst << "\033[0m\n";
+  std::cout << "Error: Non-existent <Module>::Instance -- "
+            << term_colours::red_fg << "<" << true_mod
+            << ">::" << attempted_inst << "" << term_colours::reset << "\n";
   for (auto &type_name_config_pair : life::all_configs)
   {
     auto &[mod, inst] = type_name_config_pair.first;
     if (mod == true_mod && match(attempted_inst, inst))
-      std::cout << "Did you mean \033[32m'" << inst << "'\033[0m?\n";
+      std::cout << "Did you mean " << term_colours::green_fg << "'" << inst
+                << "'" << term_colours::reset << "?\n";
   }
   std::exit(1);
 }
@@ -151,14 +153,16 @@ inline void
     config_mismatch_error(std::string key, life::ModuleInstancePair mip)
 {
 
-  std::cout << "Error: Configuration mismatch -- \033[33m<" << mip.first
-            << ">::" << mip.second
-            << "\033[0m does not have parameter named \033[31m'" << key
-            << "'\033[0m\n";
+  std::cout << "Error: Configuration mismatch -- " << term_colours::yellow_fg
+            << "<" << mip.first << ">::" << mip.second << ""
+            << term_colours::reset << " does not have parameter named "
+            << term_colours::red_fg << "'" << key << "'" << term_colours::reset
+            << "\n";
   auto con = true_parameters(mip);
   for (auto it : con["parameters"].items())
     if (match(key, it.key()))
-      std::cout << "Did you mean \033[32m'" << it.key() << "'\033[0m?\n";
+      std::cout << "Did you mean " << term_colours::green_fg << "'" << it.key()
+                << "'" << term_colours::reset << "?\n";
 
   std::exit(1);
 }
@@ -169,10 +173,12 @@ inline void
                         std::string              fake,
                         life::ModuleInstancePair mip)
 {
-  std::cout << "Error: Type mismatch -- \033[33m<" << mip.first
-            << ">::" << mip.second << "'" << name
-            << "'\033[0m must have type \033[32m'" << real
-            << "'\033[0m but has type \033[31m'" << fake << "'\033[0m\n";
+  std::cout << "Error: Type mismatch -- " << term_colours::yellow_fg << "<"
+            << mip.first << ">::" << mip.second << "'" << name << "'"
+            << term_colours::reset << " must have type "
+            << term_colours::green_fg << "'" << real << "'"
+            << term_colours::reset << " but has type " << term_colours::red_fg
+            << "'" << fake << "'" << term_colours::reset << "\n";
   std::exit(1);
 }
 
@@ -192,32 +198,35 @@ inline void
        { "parameters", "pre-tags", "post-tags", "input-tags", "output-tags" })
     if (config.find(group) == config.end())
     {
-      std::cout << "User publication error: user module\033[31m<"
-                << type_name.first << ">::'" << type_name.second
-                << "'\033[0m must publish \033[31m'" << group
-                << "'\033[0m group\n";
+      std::cout << "User publication error: user module" << term_colours::red_fg
+                << "<" << type_name.first << ">::'" << type_name.second << "'"
+                << term_colours::reset << " must publish "
+                << term_colours::red_fg << "'" << group << "'"
+                << term_colours::reset << " group\n";
       exit(1);
     }
 
-  for (auto &group : 
-       { "pre-tags", "post-tags", "input-tags", "output-tags" })
+  for (auto &group : { "pre-tags", "post-tags", "input-tags", "output-tags" })
     for (auto &[name, type] : config[group].items())
       if (name != signal_name_type(type).first)
       {
-        std::cout << "User publication error: user module\033[31m<"
-                  << type_name.first << ">::'" << type_name.second
-                  << "'\033[0m must synchronise name of " << group
-                  << ":\033[32m" << name << "\033[0m with "
-                  << "\033[32m" << type << "\033[0m"
+        std::cout << "User publication error: user module"
+                  << term_colours::red_fg << "<" << type_name.first << ">::'"
+                  << type_name.second << "'" << term_colours::reset
+                  << " must synchronise name of " << group << ":"
+                  << term_colours::green_fg << "" << name << ""
+                  << term_colours::reset << " with "
+                  << "" << term_colours::green_fg << "" << type << ""
+                  << term_colours::reset << ""
                   << "\n";
         exit(1);
       }
 
   if (config.size() != 5)
   {
-    std::cout << "User publication error: user module\033[31m<"
-              << type_name.first << ">::'" << type_name.second
-              << "'\033[0m must not publish unspecified groups"
+    std::cout << "User publication error: user module" << term_colours::red_fg
+              << "<" << type_name.first << ">::'" << type_name.second << "'"
+              << term_colours::reset << " must not publish unspecified groups"
               << "\n";
     exit(1);
   }
@@ -230,18 +239,19 @@ inline void
 {
   if (config.find("parameters") == config.end())
   {
-    std::cout << "User publication error: user module\033[31m<"
-              << type_name.first << ">::'" << type_name.second
-              << "'\033[0m must publish \033[31m'parameters'\033[0m group"
+    std::cout << "User publication error: user module" << term_colours::red_fg
+              << "<" << type_name.first << ">::'" << type_name.second << "'"
+              << term_colours::reset << " must publish " << term_colours::red_fg
+              << "'parameters'" << term_colours::reset << " group"
               << "\n";
     exit(1);
   }
 
   if (config.size() != 1)
   {
-    std::cout << "User publication error: user module\033[31m<"
-              << type_name.first << ">::'" << type_name.second
-              << "'\033[0m must not publish unspecified groups"
+    std::cout << "User publication error: user module" << term_colours::red_fg
+              << "<" << type_name.first << ">::'" << type_name.second << "'"
+              << term_colours::reset << " must not publish unspecified groups"
               << "\n";
     exit(1);
   }
@@ -255,10 +265,11 @@ inline void
   for (auto &group : { "parameters", "input-tags", "output-tags" })
     if (config.find(group) == config.end())
     {
-      std::cout << "User publication error: user module\033[31m<"
-                << type_name.first << ">::'" << type_name.second
-                << "'\033[0m must publish \033[31m'" << group
-                << "'\033[0m group\n";
+      std::cout << "User publication error: user module" << term_colours::red_fg
+                << "<" << type_name.first << ">::'" << type_name.second << "'"
+                << term_colours::reset << " must publish "
+                << term_colours::red_fg << "'" << group << "'"
+                << term_colours::reset << " group\n";
       exit(1);
     }
 
@@ -266,20 +277,23 @@ inline void
     for (auto &[name, type] : config[group].items())
       if (name != signal_name_type(type).first)
       {
-        std::cout << "User publication error: user module\033[31m<"
-                  << type_name.first << ">::'" << type_name.second
-                  << "'\033[0m must synchronise name of " << group
-                  << ":\033[32m" << name << "\033[0m with "
-                  << "\033[32m" << type << "\033[0m"
+        std::cout << "User publication error: user module"
+                  << term_colours::red_fg << "<" << type_name.first << ">::'"
+                  << type_name.second << "'" << term_colours::reset
+                  << " must synchronise name of " << group << ":"
+                  << term_colours::green_fg << "" << name << ""
+                  << term_colours::reset << " with "
+                  << "" << term_colours::green_fg << "" << type << ""
+                  << term_colours::reset << ""
                   << "\n";
         exit(1);
       }
 
   if (config.size() != 3)
   {
-    std::cout << "User publication error: user module\033[31m<"
-              << type_name.first << ">::'" << type_name.second
-              << "'\033[0m must not publish unspecified groups"
+    std::cout << "User publication error: user module" << term_colours::red_fg
+              << "<" << type_name.first << ">::'" << type_name.second << "'"
+              << term_colours::reset << " must not publish unspecified groups"
               << "\n";
     exit(1);
   }
@@ -307,15 +321,17 @@ inline void
 {
   if (value[2] != nullptr)
   {
-    std::cout << "error: \033[31menvironment" << value[0]
-              << "\033[0m does not handle the pre-tags that " << mip.second
+    std::cout << "error: " << term_colours::red_fg << "environment" << value[0]
+              << "" << term_colours::reset
+              << " does not handle the pre-tags that " << mip.second
               << "::" << key << " needs to handle\n";
     std::exit(1);
   }
   if (value[3] != nullptr)
   {
-    std::cout << "error: \033[31menvironment" << value[0]
-              << "\033[0m does not provide the post-tags that " << mip.second
+    std::cout << "error: " << term_colours::red_fg << "environment" << value[0]
+              << "" << term_colours::reset
+              << " does not provide the post-tags that " << mip.second
               << "::" << key << " needs to provide\n";
     std::exit(1);
   }
@@ -416,10 +432,11 @@ inline life::configuration
 
   if (reqs.size() < published.size())
   {
-    std::cout << "error: \033[31m<entity>::" << pop[0]
-              << "\033[0m cannot handle all the " << signal_category
-              << "-tags provided by \033[31m<environment>::" << nested_name
-              << "\033[0m<\n";
+    std::cout << "error: " << term_colours::red_fg << "<entity>::" << pop[0]
+              << "" << term_colours::reset << " cannot handle all the "
+              << signal_category << "-tags provided by " << term_colours::red_fg
+              << "<environment>::" << nested_name << "" << term_colours::reset
+              << "<\n";
     exit(1);
   }
 
@@ -440,14 +457,17 @@ inline life::configuration
         pub_split, key, &std::pair<std::string, std::string>::first);
     if (find_pub == ranges::end(pub_split))
     {
-      std::cout << "error: \033[31m<environment>::" << nested_name
-                << "\033[0m does not have an " << signal_category
-                << "-signal named \033[31m\"" << key
-                << "\"\033[0m to override. Please check this component's "
+      std::cout << "error: " << term_colours::red_fg
+                << "<environment>::" << nested_name << "" << term_colours::reset
+                << " does not have an " << signal_category << "-signal named "
+                << term_colours::red_fg << "\"" << key << "\""
+                << term_colours::reset
+                << " to override. Please check this component's "
                    "publication\n";
       for (auto it : env_config[signal_category].items())
         if (life::config_manager::match(key, it.key()))
-          std::cout << "Did you mean \033[32m'" << it.key() << "'\033[0m?\n";
+          std::cout << "Did you mean " << term_colours::green_fg << "'"
+                    << it.key() << "'" << term_colours::reset << "?\n";
       std::exit(1);
     }
     auto find_req = ranges::find(req_split,
@@ -455,14 +475,16 @@ inline life::configuration
                                  &std::pair<std::string, std::string>::first);
     if (find_req == ranges::end(req_split))
     {
-      std::cout << "error: \033[31m<entity>::" << pop[0]
-                << "\033[0m does not publish an " << signal_category
-                << "-signal named \033[31m" << value
-                << "\033[0m. This cannot be overridden. Please check this "
+      std::cout << "error: " << term_colours::red_fg << "<entity>::" << pop[0]
+                << "" << term_colours::reset << " does not publish an "
+                << signal_category << "-signal named " << term_colours::red_fg
+                << "" << value << "" << term_colours::reset
+                << ". This cannot be overridden. Please check this "
                    "component's publication\n";
       for (auto it : pop[1][signal_category].items())
         if (life::config_manager::match(value, it.key()))
-          std::cout << "Did you mean \033[32m'" << it.key() << "'\033[0m?\n";
+          std::cout << "Did you mean " << term_colours::green_fg << "'"
+                    << it.key() << "'" << term_colours::reset << "?\n";
       std::exit(1);
     }
     if (!tag_converts_to(
@@ -491,12 +513,14 @@ inline life::configuration
         });
     if (find_replacement == ranges::end(req_split))
     {
-      std::cout << "error: for published " << signal_category
-                << "-signal in \033[31m<environment>::" << nested_name
-                << "::" << pub_name
-                << "\033[0m - No signals provided by \033[31m<entity>::"
-                << pop[0] << "\033[0m are convertible to \033[33m" << pub_name
-                << " ~ " << pub_type << "\033[0m";
+      std::cout << "error: for published " << signal_category << "-signal in "
+                << term_colours::red_fg << "<environment>::" << nested_name
+                << "::" << pub_name << "" << term_colours::reset
+                << " - No signals provided by " << term_colours::red_fg
+                << "<entity>::" << pop[0] << "" << term_colours::reset
+                << " are convertible to " << term_colours::yellow_fg << ""
+                << pub_name << " ~ " << pub_type << "" << term_colours::reset
+                << "";
       std::exit(1);
     }
     attempted_over[pub_name] =
@@ -509,18 +533,21 @@ inline life::configuration
         });
     if (find_replacement != ranges::end(req_split))
     {
-      std::cout << "error: for published " << signal_category
-                << "-signal in \033[31m<environment>::" << nested_name
-                << "::" << pub_name
-                << "\033[0m\n - Multiple Signals provided by \033[31m<entity>::"
-                << pop[0] << "\033[0m are convertible to \033[33m" << pub_name
-                << " ~ " << pub_type << "\033[0m\n Viable candidates are \n";
+      std::cout << "error: for published " << signal_category << "-signal in "
+                << term_colours::red_fg << "<environment>::" << nested_name
+                << "::" << pub_name << "" << term_colours::reset
+                << "\n - Multiple Signals provided by " << term_colours::red_fg
+                << "<entity>::" << pop[0] << "" << term_colours::reset
+                << " are convertible to " << term_colours::yellow_fg << ""
+                << pub_name << " ~ " << pub_type << "" << term_colours::reset
+                << "\n Viable candidates are \n";
       ranges::for_each(
           req_split,
           [p = pub_type, pop_config = pop[1], nested_con, is_input](auto r) {
             if (tag_converts_to(is_input, p, r.second, pop_config, nested_con))
-              std::cout << "\033[33m      " << r.first << " ~ " << r.second
-                        << "\033[0m" << std::endl;
+              std::cout << "" << term_colours::yellow_fg << "      " << r.first
+                        << " ~ " << r.second << "" << term_colours::reset << ""
+                        << std::endl;
           });
       std::exit(1);
     }
@@ -736,16 +763,19 @@ inline void
     pretty_show_entity(life::ModuleInstancePair mip, life::configuration con)
 {
 
-  std::cout << "\033[31mentity::" << mip.second << "\033[0m\n";
+  std::cout << "" << term_colours::red_fg << "entity::" << mip.second << ""
+            << term_colours::reset << "\n";
 
   for (std::string group : { "parameters", "input-tags", "output-tags" })
   {
-    std::cout << "\033[33m" << group << "----\033[0m\n";
+    std::cout << "" << term_colours::yellow_fg << "" << group << "----"
+              << term_colours::reset << "\n";
     for (auto &[key, value] : con[group].items())
       if (value.type_name() != std::string{ "array" })
         std::cout << std::setw(26) << key << " : " << value << "\n";
-    std::cout << "\033[33m" << std::string(group.length(), ' ')
-              << "----\033[0m\n";
+    std::cout << "" << term_colours::yellow_fg << ""
+              << std::string(group.length(), ' ') << "----"
+              << term_colours::reset << "\n";
   }
 }
 
@@ -754,32 +784,37 @@ inline void
                             life::configuration      con)
 {
 
-  std::cout << "\033[31menvironment::" << mip.second << "\033[0m\n";
+  std::cout << "" << term_colours::red_fg << "environment::" << mip.second << ""
+            << term_colours::reset << "\n";
 
   for (std::string group :
        { "parameters", "pre-tags", "post-tags", "input-tags", "output-tags" })
   {
-    std::cout << "\033[33m" << group << "----\033[0m\n";
+    std::cout << "" << term_colours::yellow_fg << "" << group << "----"
+              << term_colours::reset << "\n";
     for (auto &[key, value] : con[group].items())
       if (value.type_name() != std::string{ "array" })
         std::cout << std::setw(26) << key << " : " << value << "\n";
-    std::cout << "\033[33m" << std::string(group.length(), ' ')
-              << "----\033[0m\n";
+    std::cout << "" << term_colours::yellow_fg << ""
+              << std::string(group.length(), ' ') << "----"
+              << term_colours::reset << "\n";
   }
 
   for (auto &[key, value] : con["parameters"].items())
     if (value.type_name() == std::string{ "array" } &&
         value[0] == "null_environment")
     {
-      std::cout << "\033[32mNested Environment ----\033[0m \033[31m" << key
-                << "\033[0m\n";
+      std::cout << "" << term_colours::green_fg << "Nested Environment ----"
+                << term_colours::reset << " " << term_colours::red_fg << ""
+                << key << "" << term_colours::reset << "\n";
       if (value[2] != nullptr)
-        std::cout << "with pre-tag requirements \033[32m" << value[2]
-                  << "\033[0m\n";
+        std::cout << "with pre-tag requirements " << term_colours::green_fg
+                  << "" << value[2] << "" << term_colours::reset << "\n";
       if (value[3] != nullptr)
-        std::cout << "with post-tag requirements \033[32m" << value[3]
-                  << "\033[0m\n";
-      std::cout << "\033[32m                   ----\033[0m\n";
+        std::cout << "with post-tag requirements " << term_colours::green_fg
+                  << "" << value[3] << "" << term_colours::reset << "\n";
+      std::cout << "" << term_colours::green_fg << "                   ----"
+                << term_colours::reset << "\n";
     }
 }
 
@@ -787,11 +822,14 @@ inline void
     pretty_show_population(life::ModuleInstancePair mip,
                            life::configuration      con)
 {
-  std::cout << "\033[31mpopulation::" << mip.second
-            << "\033[0m\n\033[33mDefault Parameters ----\033[0m\n";
+  std::cout << "" << term_colours::red_fg << "population::" << mip.second << ""
+            << term_colours::reset << "\n"
+            << term_colours::yellow_fg << "Default Parameters ----"
+            << term_colours::reset << "\n";
   for (auto &[key, value] : con["parameters"].items())
     std::cout << std::setw(26) << key << " : " << value << "\n";
-  std::cout << "\033[33m               ----\033[0m\n";
+  std::cout << "" << term_colours::yellow_fg << "               ----"
+            << term_colours::reset << "\n";
 }
 
 inline void
@@ -816,8 +854,10 @@ inline void
     std::cout << "component " << name << " not found\n";
     for (auto &type_name_config : life::all_configs)
       if (life::config_manager::match(name, type_name_config.first.second))
-        std::cout << "Did you mean \033[32m<" << type_name_config.first.first
-                  << ">::" << type_name_config.first.second << "\033[0m?\n";
+        std::cout << "Did you mean " << term_colours::green_fg << "<"
+                  << type_name_config.first.first
+                  << ">::" << type_name_config.first.second << ""
+                  << term_colours::reset << "?\n";
   }
 }
 

@@ -1,5 +1,6 @@
 
 #include "qst_parser.h"
+#include "term_colours.h"
 
 // Input:
 // layout:  "this is (0) (2)."
@@ -43,8 +44,10 @@ void
 {
   if (all_variables.find(name) != all_variables.end())
   {
-    std::cout << "\033[31mqst<syntax>error:\033[0m redefinition of variable '"
-              << name << "' !line " << line_num << "\n";
+    std::cout << "" << term_colours::red_fg
+              << "qst<syntax>error:" << term_colours::reset
+              << " redefinition of variable '" << name << "' !line " << line_num
+              << "\n";
     std::exit(1);
   }
 }
@@ -54,7 +57,9 @@ void
 {
   if (!component_stack.empty())
   {
-    std::cout << "\033[31mqst<syntax>error:\033[0m new user variable cannot be "
+    std::cout << "" << term_colours::red_fg
+              << "qst<syntax>error:" << term_colours::reset
+              << " new user variable cannot be "
                  "nested "
                  "within other components! line "
               << line_num << "\n";
@@ -77,7 +82,9 @@ void
 {
   if (!component_stack.empty())
   {
-    std::cout << "\033[31mqst<syntax>error:\033[0m new-refactored-variable "
+    std::cout << "" << term_colours::red_fg
+              << "qst<syntax>error:" << term_colours::reset
+              << " new-refactored-variable "
                  "cannot be nested "
                  "within "
                  "other components! line "
@@ -90,8 +97,10 @@ void
 
   if (variable == all_variables.end())
   {
-    std::cout << "\033[31mqst<syntax>error:\033[0m refactored-variable " << name
-              << " not found! line " << line_num << "\n";
+    std::cout << "" << term_colours::red_fg
+              << "qst<syntax>error:" << term_colours::reset
+              << " refactored-variable " << name << " not found! line "
+              << line_num << "\n";
     std::exit(1);
   }
 
@@ -104,7 +113,9 @@ void
 {
   if (!component_stack.empty())
   {
-    std::cout << "\033[31mqst<syntax>error:\033[0m new-varied-variable cannot "
+    std::cout << "" << term_colours::red_fg
+              << "qst<syntax>error:" << term_colours::reset
+              << " new-varied-variable cannot "
                  "be nested "
                  "within "
                  "other components! line "
@@ -130,9 +141,11 @@ void
   {
     if (varied_name[0] != '!' && varied_name[0] != '$')
     {
-      std::cout << "\033[31mqst<syntax>error:\033[0m varied-variable "
-                << varied_name << " must be a component or variable! line "
-                << line_num << "\n";
+      std::cout << "" << term_colours::red_fg
+                << "qst<syntax>error:" << term_colours::reset
+                << " varied-variable " << varied_name
+                << " must be a component or variable! line " << line_num
+                << "\n";
       std::exit(1);
     }
     if (varied_name[0] == '!')
@@ -140,9 +153,10 @@ void
       auto variable = all_variables.find(varied_name.substr(1));
       if (variable == all_variables.end())
       {
-        std::cout
-            << "\033[31mqst<syntax>error:\033[0m varied-refactored-variable "
-            << varied_name.substr(1) << " not found! line " << line_num << "\n";
+        std::cout << "" << term_colours::red_fg
+                  << "qst<syntax>error:" << term_colours::reset
+                  << " varied-refactored-variable " << varied_name.substr(1)
+                  << " not found! line " << line_num << "\n";
         std::exit(1);
       }
       varied_name = variable->second + ",";
@@ -163,7 +177,9 @@ void
 {
   if (component_stack.empty())
   {
-    std::cout << "\033[31mqst<syntax>error:\033[0m parameter must be nested "
+    std::cout << "" << term_colours::red_fg
+              << "qst<syntax>error:" << term_colours::reset
+              << " parameter must be nested "
                  "within other components! line "
               << line_num << "\n";
     std::exit(1);
@@ -184,7 +200,9 @@ void
 {
   if (component_stack.empty())
   {
-    std::cout << "\033[31mqst<syntax>error:\033[0m refactored-parameter must "
+    std::cout << "" << term_colours::red_fg
+              << "qst<syntax>error:" << term_colours::reset
+              << " refactored-parameter must "
                  "be nested "
                  "within "
                  "other components! line "
@@ -197,8 +215,10 @@ void
 
   if (variable == all_variables.end())
   {
-    std::cout << "\033[31mqst<syntax>error:\033[0m refactored-variable " << name
-              << " not found! line " << line_num << "\n";
+    std::cout << "" << term_colours::red_fg
+              << "qst<syntax>error:" << term_colours::reset
+              << " refactored-variable " << name << " not found! line "
+              << line_num << "\n";
     std::exit(1);
   }
 
@@ -211,11 +231,12 @@ void
 {
   if (component_stack.empty())
   {
-    std::cout
-        << "\033[31mqst<syntax>error:\033[0m varied-parameter must be nested "
-           "within "
-           "other components! line "
-        << line_num << "\n";
+    std::cout << "" << term_colours::red_fg
+              << "qst<syntax>error:" << term_colours::reset
+              << " varied-parameter must be nested "
+                 "within "
+                 "other components! line "
+              << line_num << "\n";
     std::exit(1);
   }
 
@@ -239,11 +260,12 @@ void
 
   if (!(compvars || primitives))
   {
-    std::cout
-        << "\033[31mqst<syntax>error:\033[0m varied-parameters must all be  "
-           "components/variables, or they must all be primitive "
-           "values! line "
-        << line_num << "\n";
+    std::cout << "" << term_colours::red_fg
+              << "qst<syntax>error:" << term_colours::reset
+              << " varied-parameters must all be  "
+                 "components/variables, or they must all be primitive "
+                 "values! line "
+              << line_num << "\n";
     std::exit(1);
   }
 
@@ -256,10 +278,10 @@ void
         auto variable = all_variables.find(varied_name.substr(1));
         if (variable == all_variables.end())
         {
-          std::cout
-              << "\033[31mqst<syntax>error:\033[0m varied-refactored-variable "
-              << varied_name.substr(1) << " not found! line " << line_num
-              << "\n";
+          std::cout << "" << term_colours::red_fg
+                    << "qst<syntax>error:" << term_colours::reset
+                    << " varied-refactored-variable " << varied_name.substr(1)
+                    << " not found! line " << line_num << "\n";
           std::exit(1);
         }
         varied_name = "\"" + m[1].str() + "\":" + variable->second + ",";
@@ -289,9 +311,9 @@ void
 {
   if (component_stack.empty())
   {
-    std::cout
-        << "\033[31mqst<syntax>error:\033[0m dangling closing brace! line "
-        << line_num << "\n";
+    std::cout << "" << term_colours::red_fg
+              << "qst<syntax>error:" << term_colours::reset
+              << " dangling closing brace! line " << line_num << "\n";
     std::exit(1);
   }
   auto current = component_stack.back();
@@ -319,13 +341,17 @@ void
 
   if (!component_stack.empty())
   {
-    std::cout << "\033[31mqst<syntax>error:\033[0m braces need to be added\n";
+    std::cout << "" << term_colours::red_fg
+              << "qst<syntax>error:" << term_colours::reset
+              << " braces need to be added\n";
     std::exit(1);
   }
 
   if (all_variables.find("P") == all_variables.end())
   {
-    std::cout << "\033[31mqst<syntax>error:\033[0m qst script must have a "
+    std::cout << "" << term_colours::red_fg
+              << "qst<syntax>error:" << term_colours::reset
+              << " qst script must have a "
                  "variable named 'P' for the "
                  "Population\n";
     std::exit(1);
@@ -333,7 +359,9 @@ void
 
   if (all_variables.find("E") == all_variables.end())
   {
-    std::cout << "\033[31mqst<syntax>error:\033[0m qst script must have a "
+    std::cout << "" << term_colours::red_fg
+              << "qst<syntax>error:" << term_colours::reset
+              << " qst script must have a "
                  "variable named 'E' for the "
                  "Environment\n";
     std::exit(1);
@@ -483,8 +511,9 @@ std::vector<std::tuple<std::string, std::string, std::string>>
       continue;
     }
 
-    std::cout << "\033[31mqst<syntax>error:\033[0m unable to parse! line "
-              << line_num << "\n"
+    std::cout << "" << term_colours::red_fg
+              << "qst<syntax>error:" << term_colours::reset
+              << " unable to parse! line " << line_num << "\n"
               << line << "\n";
     std::exit(1);
   }

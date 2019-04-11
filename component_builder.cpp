@@ -1,6 +1,7 @@
 
 #include "core/fmt/fmt/format.h"
 #include "core/fmt/fmt/printf.h"
+#include "core/term_colours.h"
 
 #include <algorithm>
 #include <fstream>
@@ -32,10 +33,11 @@ opts
       build_options[m[1]].push_back(m[2]);
     else
     {
-      std::cout << "\033[31m<ded-core>Error:\033[0m unrecognised line in "
-                   "components file \033[32m\""
-                << fname << "\"\033[0m\n*"
-                << line << "*\n";
+      std::cout << term_colours::red_fg
+                << "<ded-core>Error:" << term_colours::reset
+                << " unrecognised line in components file \""
+                << term_colours::green_fg << fname << "\""
+                << term_colours::reset << line << "\n";
       std::exit(1);
     }
   }
@@ -108,7 +110,7 @@ void
   for (auto &flags : { "", "debug", "asan" })
   {
     makefile << "\n\n{0}components = {0}obj_files/main.o "
-                "{0}obj_files/components.o {0}obj_files/qst_parser.o "
+                "{0}obj_files/components.o {0}obj_files/qst_parser.o {0}obj_files/term_colours.o "
                 "{0}obj_files/util_csv.o {0}obj_files/util_csvreader.o "_format(
                     flags);
 
@@ -123,6 +125,8 @@ void
            "\n\t$({0}flags) -c main.cpp -o {0}obj_files/main.o"
            "\n\n{0}obj_files/qst_parser.o : core/qst_parser.cpp"
            "\n\t$({0}flags) -c core/qst_parser.cpp -o {0}obj_files/qst_parser.o"
+           "\n\n{0}obj_files/term_colours.o : core/term_colours.cpp"
+           "\n\t$({0}flags) -c core/term_colours.cpp -o {0}obj_files/term_colours.o"
            "\n\n{0}obj_files/util_csv.o : core/csv/CSV.cpp"
            "\n\t$({0}flags) -c core/csv/CSV.cpp -o {0}obj_files/util_csv.o"
            "\n\n{0}obj_files/util_csvreader.o : core/csv/CSVReader.cpp"
