@@ -2,7 +2,7 @@
 P = $linear {
 		vary entity = $markov_brain {
 			vary inputs = 5
-			vary outputs = 2
+			vary outputs = 1
 			vary hiddens = 2
 		}
 		vary size =  100 
@@ -29,6 +29,12 @@ rep-ed = $replicate {
 			vary num = 3
 }
 
+exro = $exit_room {
+				vary num-copies = 5
+				vary updates = 100
+				vary num-trials = 16
+			}
+
 elite = $elite_replacement {
 			vary strength = 0.5
 			pre value = score
@@ -40,8 +46,8 @@ roul = $roulette_wheel {
 		} 
 
 E = $two_cycle {
-		vary fitness = !rep-for
-		vary count = 300 
+		vary fitness = !exro
+		vary count = 500 
 		vary cout-frequency = 10
 		vary snapshot-frequency = 50
 		vary pop-avmax-frequency = 0
