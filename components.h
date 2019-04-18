@@ -3,7 +3,6 @@
 
 #include "core/entity.h"
 #include "core/environment.h"
-#include "core/experiment.h"
 #include "core/population.h"
 
 #include "core/configuration.h"
@@ -12,7 +11,6 @@
 
 namespace life {
 
-experiment  make_experiment(configuration);
 population  make_population(configuration);
 entity      make_entity(configuration);
 environment make_environment(configuration);

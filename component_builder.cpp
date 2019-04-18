@@ -105,7 +105,7 @@ void
               "\n\nall : ded \n\n";
 
   makefile
-      << "\ncore_headers = components.h core/experiment.h core/environment.h "
+      << "\ncore_headers = components.h core/environment.h "
          "core/entity.h core/population.h core/encoding.h "
          "core/configuration.h	"
          "core/signal.h core/utilities.h ";
