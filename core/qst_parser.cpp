@@ -20,22 +20,20 @@ std::vector<std::string>
     qst_parser::expand_layout(std::string                           layout,
                               std::vector<std::vector<std::string>> varied)
 {
-  std::vector<std::string> all_layouts;
-  all_layouts.push_back(layout);
   return ranges::accumulate(
-      ranges::view::reverse(varied),
-      all_layouts,
-      [count = varied.size() - 1](auto all_layouts, auto vary) mutable {
-        std::regex               r{ "\\(" + std::to_string(count) + "\\)" };
-        std::vector<std::string> current_layouts;
-        ranges::transform(ranges::view::cartesian_product(all_layouts, vary),
-                          ranges::back_inserter(current_layouts),
-                          [r](const auto &t) {
-                            return std::regex_replace(
-                                std::get<0>(t), r, std::get<1>(t));
-                          });
-        count--;
-        return current_layouts;
+      // iterate through indices of varied in reverse
+      ranges::view::iota(0, varied.size()) | ranges::view::reverse,
+      // accumulator begins with layout
+      std::vector<std::string>{ layout },
+      // to expand a single layout by index
+      [&](const auto &all_layouts, auto index) -> std::vector<std::string> {
+        // create the index-pattern to be substituted
+        const std::regex r{ "\\(" + std::to_string(index) + "\\)" };
+        // and replace all occurences of pattern with all varied substitutions
+        return ranges::view::cartesian_product(all_layouts, varied[index]) |
+               ranges::view::transform([&r](const auto &t) {
+                 return std::regex_replace(std::get<0>(t), r, std::get<1>(t));
+               });
       });
 }
 
