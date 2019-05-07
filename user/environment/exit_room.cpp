@@ -96,7 +96,6 @@ life::population
     exit_room::evaluate(life::population pop)
 {
   auto vec = pop.get_as_vector();
-  // generate new maze
   for (auto &org : vec) org.data.set_value(score_tag_, eval(org));
   pop.merge(vec);
   return pop;
