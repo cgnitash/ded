@@ -122,7 +122,7 @@ inline auto
   return false;
 }
 
-inline auto
+inline void
     missing_module_instance_error(life::ModuleInstancePair mip)
 {
   auto &true_mod       = mip.first;
@@ -363,45 +363,41 @@ inline bool
   { return pub == req; }   // exactly one of pub or req are pods
   if (std::regex_match(pub, m_pub, pod) || std::regex_match(req, m_req, pod))
   { return false; }   // both pub and req must be aggs
-  if (std::regex_match(req, m_req, agg) && std::regex_match(pub, m_pub, agg))
+  if (!std::regex_match(req, m_req, agg) || !std::regex_match(pub, m_pub, agg))
+  { return false; } // pub and req type must match
+  if (m_pub[1].str() != m_req[1].str()) return false;
+
+  // req is an unconstrained agg
+  if (m_req[2].str().empty()) return true;
+
+  // so req is constrained
+
+  // pub is unconstrained
+  if (m_pub[2].str().empty()) return false;
+
+  auto is_number = [](auto type) {
+    return ranges::all_of(type, [](auto c) { return std::isdigit(c); });
+  };
+
+  // so pub is constrained
+  auto req_type = m_req[3].str();
+  auto pub_type = m_pub[3].str();
+  // req is constrained by number
+  if (is_number(req_type))
   {
-    // pub and req type must match
-    if (m_pub[1].str() != m_req[1].str()) return false;
-
-    // req is an unconstrained agg
-    if (m_req[2].str().empty()) return true;
-
-    // so req is constrained
-
-    // pub is unconstrained
-    if (m_pub[2].str().empty()) return false;
-
-    // so pub is constrained
-    auto req_type = m_req[3].str();
-    auto pub_type = m_pub[3].str();
-    // req is constrained by number
-    if (ranges::all_of(req_type, [](auto c) { return std::isdigit(c); }))
-    {
-      // pub is constrained by number
-      if (ranges::all_of(pub_type, [](auto c) { return std::isdigit(c); }))
-        return req_type == pub_type;
-      // pub is constrained by parameter
-      auto j_pub_val = env_config["parameters"][pub_type];
-      auto pub_val   = j_pub_val.get<int>();
-      return pub_val == std::stoi(req_type);
-    }
-    // req is constrained by parameter
-    auto j_req_val = pop_config["parameters"][req_type];
-    auto req_val   = j_req_val.get<int>();
     // pub is constrained by number
-    if (ranges::all_of(pub_type, [](auto c) { return std::isdigit(c); }))
-      return std::stoi(pub_type) == req_val;
+    if (is_number(pub_type)) return req_type == pub_type;
     // pub is constrained by parameter
-    auto j_pub_val = env_config["parameters"][pub_type];
-    auto pub_val   = j_pub_val.get<int>();
-    return pub_val == req_val;
+    auto pub_val = env_config["parameters"][pub_type].get<int>();
+    return pub_val == std::stoi(req_type);
   }
-  return false;
+  // req is constrained by parameter
+  auto req_val = pop_config["parameters"][req_type].get<int>();
+  // pub is constrained by number
+  if (is_number(pub_type)) return std::stoi(pub_type) == req_val;
+  // pub is constrained by parameter
+  auto pub_val = env_config["parameters"][pub_type].get<int>();
+  return pub_val == req_val;
 }
 
 inline life::configuration

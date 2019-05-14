@@ -1,7 +1,7 @@
 
 P = $linear {
 		vary entity = $markov_brain {
-			vary inputs = 3
+			vary inputs = 5
 			vary outputs = 2
 			vary hiddens = 2
 		}
@@ -17,23 +17,10 @@ rep-for = $replicate {
 				ist line-of-sight = in-sense
 				ost action = out-sense
 			}
+			pos fx = score
 			vary num = 3
 }
 
-rep-ed = $replicate {
-			vary env = $edlund_maze {
-				vary doors = 10
-				vary updates = 50
-				vary corridor-length = 10
-			}
-			vary num = 3
-}
-
-exro = $exit_room {
-				vary num-copies = 5
-				vary updates = 100
-				vary num-trials = 16
-			}
 
 elite = $elite_replacement {
 			vary strength = 0.5
@@ -46,8 +33,8 @@ roul = $roulette_wheel {
 		} 
 
 E = $two_cycle {
-		vary fitness = !rep-ed
-		vary count = 500 
+		vary fitness = !rep-for
+		vary count = 100 
 		vary cout-frequency = 10
 		vary snapshot-frequency = 50
 		vary pop-avmax-frequency = 0

@@ -36,8 +36,7 @@ std::vector<std::tuple<life::configuration, life::configuration, std::string>>
   std::vector<std::tuple<life::configuration, life::configuration, std::string>>
       exps;
 
-  auto parsed_qst = qst_parser().parse_qst(file_name); 
-  for (auto &[pop_con_s, env_con_s, label] : parsed_qst)
+  for (auto [pop_con_s, env_con_s, label] : qst_parser().parse_qst(file_name))
   {
 
     // why this circumlocution?
