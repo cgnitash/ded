@@ -16,4 +16,10 @@ struct is_detected<T, Op, std::void_t<Op<T>>> : std::true_type
 {
 };
 
+template <typename T, typename Ret, template <typename> typename Op>
+struct has_signature
+    : std::conjunction<is_detected<T, Op>, std::is_same<Op<T>, Ret>>
+{
+};
+
 }   // namespace enhanced_type_traits

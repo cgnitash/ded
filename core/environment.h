@@ -9,13 +9,13 @@
 #include "signal.h"
 
 #include <cassert>
+#include <experimental/filesystem>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <string>
 #include <type_traits>
 #include <vector>
-#include <experimental/filesystem>
 
 namespace life {
 
@@ -45,34 +45,11 @@ public:
     auto class_name = self_->class_name_as_string_();
     global_path += class_name + "/";
     std::experimental::filesystem::create_directory(global_path);
-    /*
-{
-auto pcheck  = p;
-auto current = publish_configuration();
-for (auto &o : pcheck.get_as_vector())
-  if (o.data.size() != current["pre-tags"].size())
-  {
-    std::cout << "prewtf";
-    std::exit(1);
-  }
-}
-    */
+
     auto p_r = self_->evaluate_(p);
-    /*
-{
-auto pcheck  = p_r;
-auto current = publish_configuration();
-for (auto &o : pcheck.get_as_vector())
-  if (o.data.size() != current["post-tags"].size())
-  {
-    std::cout << "postwtf";
-    std::exit(1);
-  }
-}
-    */
+
     life::global_path = life::global_path.substr(
-        0,
-        life::global_path.length() - class_name.length() - 1);
+        0, life::global_path.length() - class_name.length() - 1);
     return p_r;
   }
 
@@ -99,7 +76,7 @@ private:
     virtual configuration publish_configuration_()  = 0;
     virtual void          configure_(configuration) = 0;
 
-    virtual population evaluate_(population) = 0;
+    virtual population  evaluate_(population)         = 0;
     virtual std::string class_name_as_string_() const = 0;
   };
 
@@ -115,32 +92,44 @@ private:
     }
 
     // mandatory methods
-    //
+
+    template <typename T>
+    using HasEvaluate =
+        decltype(std::declval<T &>().evaluate(std::declval<population>()));
+    static_assert(
+        enhanced_type_traits::
+            has_signature<UserEnvironment, population, HasEvaluate>{},
+        "UserEnvironment does not satisfy 'evaluate' concept requirement");
     population evaluate_(population p) override { return data_.evaluate(p); }
 
+    template <typename T>
+    using HasConf =
+        decltype(std::declval<T &>().configure(std::declval<configuration>()));
+    template <typename T>
+    using HasPubConf = decltype(std::declval<T &>().publish_configuration());
+    static_assert(
+        enhanced_type_traits::has_signature<UserEnvironment, void, HasConf>{} &&
+            enhanced_type_traits::
+                has_signature<UserEnvironment, configuration, HasPubConf>{},
+        "UserEnvironment does not satisfy 'configuration' concept requirement");
     configuration publish_configuration_() override
     {
       return data_.publish_configuration();
     }
-
     void configure_(configuration c) override { data_.configure(c); }
 
     // optional methods
-	//
+
     // prohibited methods
     template <typename T>
     using Nameable = decltype(std::declval<T &>().class_name_as_string());
-
+    static_assert(
+        std::negation<
+            enhanced_type_traits::is_detected<UserEnvironment, Nameable>>{},
+        "Environment class cannot provide class_name_as_string()");
     std::string class_name_as_string_() const override
     {
-      if constexpr (enhanced_type_traits::is_detected<UserEnvironment,
-                                                      Nameable>{})
-      {
-        static_assert(
-            enhanced_type_traits::is_detected<UserEnvironment, Nameable>{},
-            "Environment class cannot provide class_name_as_string()");
-      } else
-        return auto_class_name_as_string<UserEnvironment>();
+      return auto_class_name_as_string<UserEnvironment>();
     }
 
     // data

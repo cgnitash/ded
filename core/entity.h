@@ -108,7 +108,7 @@ private:
     virtual encoding parse_encoding_(std::string) = 0;
 
     virtual void          mutate_()                   = 0;
-    virtual void          reset_()                   = 0;
+    virtual void          reset_()                    = 0;
     virtual configuration publish_configuration_()    = 0;
     virtual void          tick_()                     = 0;
     virtual void          input_(std::string, signal) = 0;
@@ -134,14 +134,40 @@ private:
 
     // mandatory methods
 
+    template <typename T>
+    using HasInput = decltype(std::declval<T &>().input(
+        std::declval<std::string>(), std::declval<signal>()));
+    static_assert(
+        enhanced_type_traits::has_signature<UserEntity, void, HasInput>{},
+        "UserEntity does not satisfy 'input' concept requirement");
     void input_(std::string n, signal s) override { data_.input(n, s); }
 
+    template <typename T>
+    using HasOutput =
+        decltype(std::declval<T &>().output(std::declval<std::string>()));
+    static_assert(
+        enhanced_type_traits::has_signature<UserEntity, signal, HasOutput>{},
+        "UserEntity does not satisfy 'output' concept requirement");
     signal output_(std::string n) override { return data_.output(n); }
 
+    template <typename T> using HasTick = decltype(std::declval<T &>().tick());
+    static_assert(
+        enhanced_type_traits::has_signature<UserEntity, void, HasTick>{},
+        "UserEntity does not satisfy 'tick' concept requirement");
     void tick_() override { data_.tick(); }
 
+    template <typename T>
+    using HasReset = decltype(std::declval<T &>().reset());
+    static_assert(
+        enhanced_type_traits::has_signature<UserEntity, void, HasReset>{},
+        "UserEntity does not satisfy 'reset' concept requirement");
     void reset_() override { data_.reset(); }
 
+    template <typename T>
+    using HasMutate = decltype(std::declval<T &>().mutate());
+    static_assert(
+        enhanced_type_traits::has_signature<UserEntity, void, HasMutate>{},
+        "UserEntity does not satisfy 'mutate' concept requirement");
     void mutate_() override
     {
       ancestor_ = id_;
@@ -149,11 +175,20 @@ private:
       data_.mutate();
     }
 
+    template <typename T>
+    using HasConf =
+        decltype(std::declval<T &>().configure(std::declval<configuration>()));
+    template <typename T>
+    using HasPubConf = decltype(std::declval<T &>().publish_configuration());
+    static_assert(
+        enhanced_type_traits::has_signature<UserEntity, void, HasConf>{} &&
+            enhanced_type_traits::
+                has_signature<UserEntity, configuration, HasPubConf>{},
+        "UserEntity does not satisfy 'configuration' concept requirement");
     configuration publish_configuration_() override
     {
       return data_.publish_configuration();
     }
-
     void configure_(configuration c) override { data_.configure(c); }
 
     // optional methods
@@ -165,11 +200,11 @@ private:
       if constexpr (enhanced_type_traits::is_detected<UserEntity,
                                                       EncodingGettable>{})
       {
-        // std::cout << "in entity get_encoding\n";
         return data_.get_encoding();
       } else
-        // std::cout << "no entity get_encoding\n";
+      {
         return encoding{};
+      }
     }
 
     template <typename T>
@@ -180,13 +215,7 @@ private:
     {
       if constexpr (enhanced_type_traits::is_detected<UserEntity,
                                                       EncodingSettable>{})
-      {
-        // std::cout << "in entity set_encoding\n";
-        data_.set_encoding(e);
-      } else
-      {
-        // std::cout << "no entity set_encoding\n";
-      }
+      { data_.set_encoding(e); }
     }
 
     template <typename T>
@@ -198,11 +227,9 @@ private:
       if constexpr (enhanced_type_traits::is_detected<UserEntity,
                                                       EncodingParsable>{})
       {
-        // std::cout << "in entity parse_encoding\n";
         return data_.parse_encoding(s);
       } else
       {
-        // std::cout << "no entity parse_encoding\n";
         return encoding{};
       }
     }
@@ -212,7 +239,7 @@ private:
     long ancestor_;
 
     UserEntity data_;
-    };
+  };
 
   static long                       entity_id_;
   std::unique_ptr<entity_interface> self_;
