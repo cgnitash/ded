@@ -99,7 +99,7 @@ int
               -p <component-name>... : print publication for listed component names
               -pa                    : lists all components currently loaded
               -f <N> <file-name>     : actually runs this experiment with REP N (should NOT be called manually)
-				)~~";
+)~~";
   } else if (argc == 2 && std::string(argv[1]) == "-s")
   {
     std::cout << "saving configurations.cfg ... \n";
