@@ -51,7 +51,7 @@ void
 }
 
 void
-    qst_parser::parse_new_variable(std::smatch m)
+    qst_parser::check_global_scope()
 {
   if (!component_stack.empty())
   {
@@ -63,6 +63,13 @@ void
               << line_num << "\n";
     std::exit(1);
   }
+}
+
+void
+    qst_parser::parse_new_variable(std::smatch m)
+{
+  check_global_scope();
+
   if (m[3].str().empty())
   {
     check_no_redefinition(m[1].str());
@@ -78,17 +85,7 @@ void
 void
     qst_parser::parse_new_refactored_variable(std::smatch m)
 {
-  if (!component_stack.empty())
-  {
-    std::cout << "" << term_colours::red_fg
-              << "qst<syntax>error:" << term_colours::reset
-              << " new-refactored-variable "
-                 "cannot be nested "
-                 "within "
-                 "other components! line "
-              << line_num << "\n";
-    std::exit(1);
-  }
+  check_global_scope();
 
   auto name     = m[2].str();
   auto variable = all_variables.find(name);
@@ -109,17 +106,7 @@ void
 void
     qst_parser::parse_new_varied_variable(std::smatch m)
 {
-  if (!component_stack.empty())
-  {
-    std::cout << "" << term_colours::red_fg
-              << "qst<syntax>error:" << term_colours::reset
-              << " new-varied-variable cannot "
-                 "be nested "
-                 "within "
-                 "other components! line "
-              << line_num << "\n";
-    std::exit(1);
-  }
+  check_global_scope();
 
   std::vector<std::string> varied_entry;
 

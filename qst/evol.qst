@@ -13,23 +13,23 @@ rep-for = $replicate {
 			vary env = $forager {
 				vary  sensor-range = 5
 				vary replace =  true 
-				pos food-eaten = x
+				food-eaten -> x
 				ist line-of-sight = in-sense
 				ost action = out-sense
 			}
-			pos fx = score
+			fx -> score
 			vary num = 3
 }
 
 
 elite = $elite_replacement {
 			vary strength = 0.5
-			pre value = score
+			value <- score
 		} 
 
 roul = $roulette_wheel {
 			vary strength = 0.5
-			pre value = score
+			value <- score
 		} 
 
 E = $two_cycle {

@@ -33,8 +33,8 @@ class qst_parser {
     R"~~(^\s*vary\s+([-\w\d]+)\s*=\s*\[([^\]]+)\]\s*$)~~"
   };
   std::regex parameter{ R"~~(^\s*vary\s*([-\w\d]+)\s*=\s*(.+)\s*$)~~" };
-  std::regex pre_tag{ R"~~(^\s*pre\s*([-\w\d]+)\s*=\s*([-\w\d]+)\s*$)~~" };
-  std::regex post_tag{ R"~~(^\s*pos\s*([-\w\d]+)\s*=\s*([-\w\d]+)\s*$)~~" };
+  std::regex pre_tag{ R"~~(^\s*([-\w\d]+)\s*<-\s*([-\w\d]+)\s*$)~~" };
+  std::regex post_tag{ R"~~(^\s*([-\w\d]+)\s*->\s*([-\w\d]+)\s*$)~~" };
   std::regex in_signal_tag{
     R"~~(^\s*ist\s*([-\w\d]+)\s*=\s*([-\w\d]+)\s*$)~~"
   };
@@ -56,6 +56,7 @@ class qst_parser {
   std::vector<std::vector<std::string>> varied;
   std::vector<std::vector<std::string>> varied_labels;
   long                                  line_num{ 1 };
+  bool                                  in_nested_scope{ false };
 
   // methods
   void parse_new_variable(std::smatch);
@@ -67,6 +68,7 @@ class qst_parser {
   void parse_closed_brace();
   void cleanup();
   void check_no_redefinition(std::string);
+  void check_global_scope();
 
 public:
   qst_parser() = default;

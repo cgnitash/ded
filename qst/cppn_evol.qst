@@ -43,18 +43,28 @@ elite = $elite_replacement {
 		} 
 
 P = $linear {
-        #vary entity = [ !mark !cppn  !rnn !rnn_cppn ]
-		vary entity = !rnn_cppn
-		#vary entity = !rnn
-        vary size = 50
+        vary entity = [ !mark !cppn  !rnn !rnn_cppn ]
+		#vary entity = !rnn_cppn
+		#vary entity = !mark
+        vary size = 20
+        vary track-lineage = true
 }
 
 E = $two_cycle {
 		vary fitness = !rep-for
-		vary count = 301 
-		vary cout-frequency = 10
-		vary snapshot-frequency = 0
-		vary pop-avmax-frequency = 0
+		vary count = 10 
+		vary cout-frequency = 1 
+		vary snapshot-frequency = 1
+		vary pop-avmax-frequency = 1
+		vary selector = !elite
+} 
+
+cs = $two_cycle {
+		vary fitness = !rep-for
+		vary count = 10 
+		vary cout-frequency = 1 
+		vary snapshot-frequency = 1
+		vary pop-avmax-frequency = 1
 		vary selector = !elite
 } 
 
