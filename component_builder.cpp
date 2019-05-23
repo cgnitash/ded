@@ -108,7 +108,7 @@ void
       << "\ncore_headers = components.h core/environment.h "
          "core/entity.h core/population.h core/encoding.h "
          "core/configuration.h	"
-         "core/signal.h core/utilities.h";
+         "core/signal.h core/utilities.h core/qst_parser.h";
 
   for (auto flags : { "", "debug", "asan" })
   {
@@ -138,7 +138,7 @@ void
              << "obj_files/main.o"
                 "\n\n"
              << flags
-             << "obj_files/qst_parser.o : core/qst_parser.cpp core/qst_parser.h"
+             << "obj_files/qst_parser.o : core/qst_parser.cpp"
                 "\n\t$("
              << flags << "flags) -c core/qst_parser.cpp -o " << flags
              << "obj_files/qst_parser.o"
