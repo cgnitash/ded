@@ -5,17 +5,17 @@
 // Input:
 // layout:  "this is (0) (2)."
 // varied:  {"a", "the"}
-// 			{"fat", "thin"}
-// 			{"(1) dog", "(1) cat"}
+// 		    {"fat", "thin"}
+// 	        {"(1) dog", "(1) cat"}
 //
 // Output:	this is a fat dog.
-//			this is the fat dog.
-//			this is a thin dog.
-//			this is the thin dog.
-//			this is a fat cat.
-//			this is the fat cat.
-//			this is a thin cat.
-//			this is the thin cat.
+//	        this is the fat dog.
+//          this is a thin dog.
+//          this is the thin dog.
+//          this is a fat cat.
+//          this is the fat cat.
+//          this is a thin cat.
+//          this is the thin cat.
 std::vector<std::string>
     qst_parser::expand_layout(std::string                           layout,
                               std::vector<std::vector<std::string>> varied)
