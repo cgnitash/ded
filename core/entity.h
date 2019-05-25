@@ -3,8 +3,9 @@
 
 #include "configuration.h"
 #include "encoding.h"
-#include "member_detection.h"
+#include "enhanced_type_traits.h"
 #include "signal.h"
+#include "specs/entity_spec.h"
 
 #include <cassert>
 #include <deque>
@@ -81,17 +82,21 @@ public:
 
   configuration publish_configuration()
   {
-    return self_->publish_configuration_();
+    return self_->publish_configuration_().to_json();
   }
 
   void tick() { self_->tick_(); }
 
   void configure(configuration con)
   {
-    auto real = publish_configuration();
-    validate_subset(con, real);
-    merge_into(con, real);
-    self_->configure_(con);
+	entity_spec es =  self_->publish_configuration_(), c;
+	c.from_json(con);
+	es.validate_and_merge(c);
+ 
+    //auto real = publish_configuration();
+    //validate_subset(con, real);
+    //merge_into(con, real);
+    self_->configure_(es);
   }
 
 private:
@@ -109,11 +114,11 @@ private:
 
     virtual void          mutate_()                   = 0;
     virtual void          reset_()                    = 0;
-    virtual configuration publish_configuration_()    = 0;
     virtual void          tick_()                     = 0;
     virtual void          input_(std::string, signal) = 0;
     virtual signal        output_(std::string)        = 0;
-    virtual void          configure_(configuration)   = 0;
+    virtual void          configure_(entity_spec)     = 0;
+    virtual entity_spec   publish_configuration_()    = 0;
   };
 
   template <typename UserEntity> struct entity_object final : entity_interface
@@ -129,7 +134,9 @@ private:
     {
       return new entity_object(*this);
     }
+
     long get_ancestor_() const override { return ancestor_; }
+
     long get_id_() const override { return id_; }
 
     // mandatory methods
@@ -177,19 +184,19 @@ private:
 
     template <typename T>
     using HasConf =
-        decltype(std::declval<T &>().configure(std::declval<configuration>()));
+        decltype(std::declval<T &>().configure(std::declval<entity_spec>()));
     template <typename T>
     using HasPubConf = decltype(std::declval<T &>().publish_configuration());
     static_assert(
         enhanced_type_traits::has_signature<UserEntity, void, HasConf>{} &&
             enhanced_type_traits::
-                has_signature<UserEntity, configuration, HasPubConf>{},
+                has_signature<UserEntity, entity_spec, HasPubConf>{},
         "UserEntity does not satisfy 'configuration' concept requirement");
-    configuration publish_configuration_() override
+    entity_spec publish_configuration_() override
     {
       return data_.publish_configuration();
     }
-    void configure_(configuration c) override { data_.configure(c); }
+    void configure_(entity_spec c) override { data_.configure(c); }
 
     // optional methods
     template <typename T>

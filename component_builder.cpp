@@ -107,7 +107,7 @@ void
   makefile
       << "\ncore_headers = components.h core/environment.h "
          "core/entity.h core/population.h core/encoding.h "
-         "core/configuration.h	"
+         "core/configuration.h core/specs/configuration_primitive.h core/specs/entity_spec.h "
          "core/signal.h core/utilities.h core/qst_parser.h";
 
   for (auto flags : { "", "debug", "asan" })

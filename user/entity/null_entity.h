@@ -11,21 +11,25 @@ class null_entity {
   std::string out_sense_ = "out-sense,";
 
 public:
-  void configure(life::configuration con)
+  void configure(life::entity_spec es)
   {
-    in_sense_  = con["input-tags"]["in-sense"];
-    out_sense_ = con["output-tags"]["out-sense"];
+    es.configure_input("in-sense", in_sense_);
+    es.configure_output("out-sense", out_sense_);
+    //in_sense_  = con["input-tags"]["in-sense"];
+    //out_sense_ = con["output-tags"]["out-sense"];
   }
   null_entity() { configure(publish_configuration()); }
-  life::configuration publish_configuration()
+  life::entity_spec publish_configuration()
   {
-    life::configuration con;
-    con["parameters"] = nullptr;
+    life::entity_spec es;
+	//con["parameters"] = nullptr;
 
-    con["input-tags"]["in-sense"]   = in_sense_;
-    con["output-tags"]["out-sense"] = out_sense_;
+    es.bind_input("in-sense", in_sense_);
+    es.bind_output("out-sense", out_sense_);
+    //con["input-tags"]["in-sense"]   = in_sense_;
+    //con["output-tags"]["out-sense"] = out_sense_;
 
-    return con;
+    return es;
   }
 
   void         reset();

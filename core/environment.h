@@ -4,7 +4,7 @@
 #include "configuration.h"
 #include "encoding.h"
 #include "entity.h"
-#include "member_detection.h"
+#include "enhanced_type_traits.h"
 #include "population.h"
 #include "signal.h"
 

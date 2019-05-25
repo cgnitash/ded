@@ -43,9 +43,9 @@ elite = $elite_replacement {
 		} 
 
 P = $linear {
-        vary entity = [ !mark !cppn  !rnn !rnn_cppn ]
+        #vary entity = [ !mark !cppn  !rnn !rnn_cppn ]
 		#vary entity = !rnn_cppn
-		#vary entity = !mark
+		vary entity = !mark
         vary size = 20
         vary track-lineage = true
 }

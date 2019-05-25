@@ -13,9 +13,9 @@ class markov_brain {
   life::encoding genome_;
   std::regex     encoding_parser_{ R"(([^:]+):)" };
 
-  size_t input_  = 10;
-  size_t output_ = 10;
-  size_t hidden_ = 10;
+  long input_  = 10;
+  long output_ = 10;
+  long hidden_ = 10;
 
   life::configuration genome_config_;
 
@@ -37,28 +37,43 @@ class markov_brain {
 
 public:
   markov_brain() { configure(publish_configuration()); }
-  life::configuration publish_configuration()
+  life::entity_spec publish_configuration()
   {
-    life::configuration con;
-    con["parameters"]["inputs"]        = input_;
-    con["parameters"]["outputs"]       = output_;
-    con["parameters"]["hiddens"]       = hidden_;
-    con["parameters"]["genome-params"] = genome_config_;
+    life::entity_spec es;
+    //con["parameters"]["inputs"]        = input_;
+    //con["parameters"]["outputs"]       = output_;
+    //con["parameters"]["hiddens"]       = hidden_;
+    //con["parameters"]["genome-params"] = genome_config_;
 
-    con["input-tags"]["in-sense"]   = in_sense_;
-    con["output-tags"]["out-sense"] = out_sense_;
+	es.bind_parameter("inputs",input_);
+	es.bind_parameter("outputs",output_);
+	es.bind_parameter("hiddens",hidden_);
 
-    return con;
+    es.bind_input("in-sense", in_sense_);
+    es.bind_output("out-sense", out_sense_);
+    //con["input-tags"]["in-sense"]   = in_sense_;
+    //con["output-tags"]["out-sense"] = out_sense_;
+
+    return es;
   }
-  void configure(life::configuration con)
+  void configure(life::entity_spec es)
   {
-    input_         = con["parameters"]["inputs"];
-    output_        = con["parameters"]["outputs"];
-    hidden_        = con["parameters"]["hiddens"];
-    genome_config_ = con["parameters"]["genome-params"];
+  //  input_         = con["parameters"]["inputs"];
+  //  output_        = con["parameters"]["outputs"];
+  //  hidden_        = con["parameters"]["hiddens"];
+  
+	  // MUST BE ADDRESSED
+  //  genome_config_ = con["parameters"]["genome-params"];
 
-    in_sense_  = con["input-tags"]["in-sense"];
-    out_sense_ = con["output-tags"]["out-sense"];
+	es.configure_parameter("inputs",input_);
+	es.configure_parameter("outputs",output_);
+	es.configure_parameter("hiddens",hidden_);
+
+    es.configure_input("in-sense", in_sense_);
+
+    es.configure_output("out-sense", out_sense_);
+    //in_sense_  = con["input-tags"]["in-sense"];
+    //out_sense_ = con["output-tags"]["out-sense"];
 
     genome_.configure(genome_config_);
     genome_.generate(500);

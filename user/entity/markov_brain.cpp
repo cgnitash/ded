@@ -44,7 +44,7 @@ void
   if (n == in_sense_)
   {
     auto v = std::get<std::vector<double>>(s);
-    if (v.size() != input_)
+    if (static_cast<long>(v.size()) != input_)
     {
       std::cout
           << "Impl-Error: entity-markovbrain must get an input range of the "
