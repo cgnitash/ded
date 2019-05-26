@@ -17,7 +17,7 @@ life::population
 {
 
   // make and configure nested environment
-  auto env = life::make_environment(env_);
+  auto env = life::make_environment(env_.to_json());
 
   std::vector accumulated_scores(pop.size(), 0.0);
 

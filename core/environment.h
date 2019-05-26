@@ -7,6 +7,7 @@
 #include "enhanced_type_traits.h"
 #include "population.h"
 #include "signal.h"
+#include "specs/environment_spec.h"
 
 #include <cassert>
 #include <experimental/filesystem>
@@ -55,15 +56,19 @@ public:
 
   configuration publish_configuration() const
   {
-    return self_->publish_configuration_();
+    return self_->publish_configuration_().to_json();
   }
 
   void configure(configuration con) const
   {
-    auto real = publish_configuration();
-    validate_subset(con, real);
-    merge_into(con, real);
-    self_->configure_(con);
+	environment_spec es =  self_->publish_configuration_(), c;
+	c.from_json(con);
+	es.validate_and_merge(c);
+  //  auto real = publish_configuration();
+  //  validate_subset(con, real);
+  //  merge_into(con, real);
+  //  self_->configure_(con);
+    self_->configure_(es);
   }
 
 private:
@@ -73,8 +78,8 @@ private:
     virtual ~environment_interface()             = default;
     virtual environment_interface *copy_() const = 0;
 
-    virtual configuration publish_configuration_()  = 0;
-    virtual void          configure_(configuration) = 0;
+    virtual environment_spec publish_configuration_()  = 0;
+    virtual void          configure_(environment_spec) = 0;
 
     virtual population  evaluate_(population)         = 0;
     virtual std::string class_name_as_string_() const = 0;
@@ -104,19 +109,19 @@ private:
 
     template <typename T>
     using HasConf =
-        decltype(std::declval<T &>().configure(std::declval<configuration>()));
+        decltype(std::declval<T &>().configure(std::declval<environment_spec>()));
     template <typename T>
     using HasPubConf = decltype(std::declval<T &>().publish_configuration());
     static_assert(
         enhanced_type_traits::has_signature<UserEnvironment, void, HasConf>{} &&
             enhanced_type_traits::
-                has_signature<UserEnvironment, configuration, HasPubConf>{},
+                has_signature<UserEnvironment, environment_spec, HasPubConf>{},
         "UserEnvironment does not satisfy 'configuration' concept requirement");
-    configuration publish_configuration_() override
+    environment_spec publish_configuration_() override
     {
       return data_.publish_configuration();
     }
-    void configure_(configuration c) override { data_.configure(c); }
+    void configure_(environment_spec c) override { data_.configure(c); }
 
     // optional methods
 

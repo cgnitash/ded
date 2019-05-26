@@ -81,43 +81,43 @@ class forager {
 public:
   forager() { configure(publish_configuration()); }
 
-  life::configuration publish_configuration()
+  life::environment_spec publish_configuration()
   {
-    life::configuration ec;
-    ec["parameters"]["grid-size"]    = grid_size_;
-    ec["parameters"]["updates"]      = updates_;
-    ec["parameters"]["density"]      = density_;
-    ec["parameters"]["replace"]      = replace_;
-    ec["parameters"]["visualize"]    = visualize_;
-    ec["parameters"]["sensor-range"] = sensor_range_;
-    ec["parameters"]["direction"]    = directional_;
+    life::environment_spec es;
+    es.bind_parameter("grid-size",grid_size_);
+    es.bind_parameter("updates",updates_);
+    es.bind_parameter("density",density_);
+    es.bind_parameter("replace",replace_);
+    es.bind_parameter("visualize",visualize_);
+    es.bind_parameter("sensor-range",sensor_range_);
+    es.bind_parameter("direction",directional_);
+ 
+    //ec["pre-tags"] = nullptr;
 
-    ec["pre-tags"] = nullptr;
+    es.bind_post("food-eaten",food_eaten_tag_);
 
-    ec["post-tags"]["food-eaten"] = food_eaten_tag_;
-
-    ec["input-tags"]["line-of-sight"] = org_input_los_tag_;
-    ec["output-tags"]["action"]       = org_output_action_tag_;
-    return ec;
+    es.bind_input("line-of-sight",org_input_los_tag_);
+    es.bind_output("action",org_output_action_tag_);
+    return es;
   }
 
-  void configure(life::configuration con)
+  void configure(life::environment_spec es)
   {
 
-    grid_size_    = con["parameters"]["grid-size"];
-    updates_      = con["parameters"]["updates"];
-    density_      = con["parameters"]["density"];
-    replace_      = con["parameters"]["replace"];
-    visualize_    = con["parameters"]["visualize"];
-    sensor_range_ = con["parameters"]["sensor-range"];
-    directional_  = con["parameters"]["direction"];
+    es.configure_parameter("grid-size",grid_size_);
+    es.configure_parameter("updates",updates_);
+    es.configure_parameter("density",density_);
+    es.configure_parameter("replace",replace_);
+    es.configure_parameter("visualize",visualize_);
+    es.configure_parameter("sensor-range",sensor_range_);
+    es.configure_parameter("direction",directional_);
 
     resources_ = std::vector(grid_size_, std::vector(grid_size_, 0));
 
-    food_eaten_tag_ = con["post-tags"]["food-eaten"];
+    es.configure_post("food-eaten",food_eaten_tag_);
 
-    org_input_los_tag_     = con["input-tags"]["line-of-sight"];
-    org_output_action_tag_ = con["output-tags"]["action"];
+    es.configure_input("line-of-sight",org_input_los_tag_);
+    es.configure_output("action",org_output_action_tag_);
   }
 
   life::population evaluate(life::population);

@@ -19,18 +19,20 @@ class null_environment {
 public:
   null_environment() { configure(publish_configuration()); }
 
-  life::configuration publish_configuration()
+  life::environment_spec publish_configuration()
   {
-    life::configuration con;
+    life::environment_spec es;
+	/*
     con["parameters"]  = nullptr;
     con["pre-tags"]    = nullptr;
     con["post-tags"]   = nullptr;
     con["input-tags"]  = nullptr;
     con["output-tags"] = nullptr;
-    return con;
+    */
+	return es;
   }
 
-  void configure(life::configuration) {}
+  void configure(life::environment_spec) {}
 
   life::population evaluate(life::population);
 };
