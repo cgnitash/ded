@@ -71,7 +71,7 @@ void
              << "\") {\n    auto e = " << type << "{" << name
              << "()};\n    e.configure(spec);\n    return e;\n  }\n";
     header << "  std::cout << \"unknown-" << type
-           << ": \" << spec[0];\n  exit(1);\n}\n\n";
+           << ": \" << spec.name();\n  exit(1);\n}\n\n";
   }
 
   for (auto name : ranges::view::concat(build_options["entity"],
