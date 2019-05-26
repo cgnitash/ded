@@ -21,7 +21,7 @@ public:
 
   life::environment_spec publish_configuration()
   {
-    life::environment_spec es;
+    life::environment_spec es{"null_environment"};
 	/*
     con["parameters"]  = nullptr;
     con["pre-tags"]    = nullptr;
@@ -34,5 +34,5 @@ public:
 
   void configure(life::environment_spec) {}
 
-  life::population evaluate(life::population);
+  life::population evaluate(life::population){}
 };

@@ -13,28 +13,28 @@ class elite_replacement {
   double      strength_  = 0.1;
 
 public:
-  void configure(life::configuration c)
+  void configure(life::environment_spec es)
   {
-    strength_ = c["parameters"]["strength"];
+    es.configure_parameter("strength",strength_);
 
-    value_tag_ = c["pre-tags"]["value"];
+    es.configure_pre("value",value_tag_);
   }
 
-  life::configuration publish_configuration()
+  life::environment_spec publish_configuration()
   {
-    life::configuration c;
-    c["parameters"]["strength"] = strength_;
+    life::environment_spec es{"elite_replacement"};
+    es.bind_parameter("strength",strength_);
 
     //  o:in:P must handle these tags
-    c["pre-tags"]["value"] = value_tag_;
+    es.bind_pre("value",value_tag_);
 
-    c["input-tags"]  = nullptr;
-    c["output-tags"] = nullptr;
+    //c["input-tags"]  = nullptr;
+    //c["output-tags"] = nullptr;
 
     // o:in:P' has no tags
-    c["post-tags"] = nullptr;
+    //ic["post-tags"] = nullptr;
 
-    return c;
+    return es;
   }
   elite_replacement() { configure(publish_configuration()); }
 

@@ -27,10 +27,13 @@ class environment_spec {
   std::map<std::string, std::string>             pre_tags_;
   std::map<std::string, std::string>             post_tags_;
   std::map<std::string, nested_spec>             nested_;
+  std::vector<std::pair<std::pair<std::string, std::string>,
+                        std::pair<std::string, std::string>>>
+      tag_flow_constraints_;
 
 public:
-  environment_spec(std::string name) : name_(name) {} 
-  
+  environment_spec(std::string name) : name_(name) {}
+
   auto name() const { return name_; }
 
   template <typename T> void configure_parameter(std::string name, T &value)
@@ -83,18 +86,33 @@ public:
     value = outputs_[name];
   }
 
-  void bind_environment(std::string              name,
-                        environment_spec         env,
-                        std::vector<std::string> pre_constraints,
-                        std::vector<std::string> post_constraints)
+  void bind_environment(std::string name, environment_spec env)
   {
-    nested_[name] =
-        nested_spec{ std::make_unique<environment_spec>(env), pre_constraints, post_constraints };
+    nested_[name].e = std::make_unique<environment_spec>(env);
+  }
+
+  void
+      bind_environment_pre_constraints(std::string              name,
+                                       std::vector<std::string> pre_constraints)
+  {
+    nested_[name].pre_constraints = pre_constraints;
+  }
+
+  void bind_environment_post_constraints(
+      std::string name, std::vector<std::string> post_constraints)
+  {
+    nested_[name].post_constraints = post_constraints;
   }
 
   void configure_environment(std::string name, environment_spec &e)
   {
     e = *nested_[name].e;
+  }
+
+  void bind_tag_flow(std::pair<std::string, std::string> x,
+                     std::pair<std::string, std::string> y)
+  {
+    tag_flow_constraints_.push_back({ x, y });
   }
 
   void from_json(configuration con)

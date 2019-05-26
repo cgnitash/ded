@@ -47,7 +47,9 @@ std::vector<double>
     }
     dists.push_back(d);
   }
-  for (auto i{ *ranges::min_element(dists) }; i < sensor_range_; i++)
+  for (auto i{ *ranges::min_element(dists) };
+       static_cast<long>(i) < sensor_range_;
+       i++)
     out[i] = 0.;
   return out;
 }
@@ -142,8 +144,8 @@ double
 
   auto score = 0.0;
   // random starting position
-  auto position =
-      location{ std::rand() % grid_size_, std::rand() % grid_size_ };
+  auto position = location{ static_cast<size_t>(std::rand() % grid_size_),
+                            static_cast<size_t>(std::rand() % grid_size_) };
   // face in random direction
   auto facing = direction{ std::rand() % 4 };
 

@@ -22,14 +22,14 @@ class replicate {
   std::string used_x_tag_ = "x,double";
 
   //life::configuration env_{ "null_environment", {} };
-  life::environment_spec env_;//{ "null_environment", {} };
+  life::environment_spec env_{ "null_environment"};
 
 public:
   replicate() { configure(publish_configuration()); }
 
   life::environment_spec publish_configuration()
   {
-    life::environment_spec es;
+    life::environment_spec es{"replicate"};
     es.bind_parameter("num",num_);
 
     // o:in:P has no tags
@@ -45,7 +45,8 @@ public:
     //c["parameters"]["env"] = {
     //  env_[0], {}, {}, { used_x_tag_ }
     //};   // as well as propogate population requirements
-	es.bind_environment("env",env_, {}, { used_x_tag_});
+	es.bind_environment("env",env_);
+	es.bind_environment_post_constraints("env", { used_x_tag_ });
     return es;
   }
 
@@ -56,6 +57,7 @@ public:
     es.configure_environment("env",env_);
 
     es.configure_post("fx",fx_tag_);
+
   }
 
   life::population evaluate(life::population);

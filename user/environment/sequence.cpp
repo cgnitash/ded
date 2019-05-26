@@ -24,6 +24,7 @@ life::population
 
   pop = one.evaluate(pop);
 
+  /*
   if (to_cout_)
   {
     auto vec = pop;
@@ -32,6 +33,7 @@ life::population
                 << std::get<double>(org.data.get_value(score_tag_))
                 << std::endl;
   }
+	*/
 
   pop = two.evaluate(pop);
 

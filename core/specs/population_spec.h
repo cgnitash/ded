@@ -15,6 +15,7 @@ class population_spec {
   std::map<std::string, configuration_primitive> parameters_;
   std::map<std::string, std::string>             inputs_;
   std::map<std::string, std::string>             outputs_;
+  entity_spec es_{"null_entity"};
 
 public:
   population_spec(std::string name) : name_(name) {} 
@@ -31,6 +32,7 @@ public:
     parameters_[name].set_value(value);
   }
 
+  /*
   void bind_input(std::string name, std::string value)
   {
     inputs_[name] = value;
@@ -49,6 +51,17 @@ public:
   void configure_output(std::string name, std::string &value)
   {
     value = outputs_[name];
+  }
+	*/
+
+  void bind_entity( entity_spec e)
+  {
+	  es_  = e;
+  }
+
+  void configure_entity( entity_spec &e)
+  {
+	  e = es_;
   }
 
   void from_json(configuration con)

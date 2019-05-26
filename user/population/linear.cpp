@@ -13,7 +13,7 @@ void
   {
     pop_.clear();
     ranges::generate_n(ranges::back_inserter(pop_), size_, [&] {
-      auto org = life::make_entity(entity_);
+      auto org = life::make_entity(org_);
       if (track_lineage_) fossils_.push_back({ org, 1 });
       return org;
     });
@@ -32,7 +32,7 @@ void
                  [](auto a, auto b) { return std::stol(a) > std::stol(b); });
     pop_.clear();
     ranges::transform(ids, ranges::back_inserter(pop_), [&](auto id) {
-      auto org = life::make_entity(entity_);
+      auto org = life::make_entity(org_);
       org.set_encoding(org.parse_encoding(csv.look_up("id", id, "encoding")));
       if (track_lineage_) fossils_.push_back({ org, 1 });
       return org;

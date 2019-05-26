@@ -15,43 +15,47 @@
 
 class sequence {
 
-  bool to_cout_ = false;
+  // bool to_cout_ = false;
 
-  std::string score_tag_ = "score,double";
+  //std::string score_tag_ = "score,double";
 
-  life::configuration one_{ "null_environment", {} };
-  life::configuration two_{ "null_environment", {} };
+  life::environment_spec one_{ "null_environment" };
+  life::environment_spec two_{ "null_environment" };
 
 public:
   sequence() { configure(publish_configuration()); }
 
-  life::configuration publish_configuration()
+  life::environment_spec publish_configuration()
   {
-    life::configuration ec;
+    life::environment_spec es{"sequence"};
 
-    ec["parameters"]["to-cout"] = to_cout_;
+    //ec["parameters"]["to-cout"] = to_cout_;
 
-    ec["input-tags"]  = nullptr;
-    ec["output-tags"] = nullptr;
+    //ec["input-tags"]  = nullptr;
+    //ec["output-tags"] = nullptr;
 
-    ec["pre-tags"]  = nullptr;
-    ec["post-tags"] = nullptr;
+    //ec["pre-tags"]  = nullptr;
+    //ec["post-tags"] = nullptr;
 
     // o:in:selector(P) must handle these tags
-    ec["parameters"]["one"] = { one_[0], {}, { score_tag_ }, {} };
+	es.bind_environment("one",one_);
+    //ec["parameters"]["one"] = { one_[0], {}, { score_tag_ }, {} };
 
     // o:in:fitness(P) must provide these tags
-    ec["parameters"]["two"] = { two_[0], {}, {}, { score_tag_ } };
+	es.bind_environment("one",two_);
+    //ec["parameters"]["two"] = { two_[0], {}, {}, { score_tag_ } };
 
-    return ec;
+	es.bind_tag_flow({"one", "post"}, {"two", "pre"});
+
+    return es;
   }
 
-  void configure(life::configuration con)
+  void configure(life::environment_spec es)
   {
-    to_cout_ = con["parameters"]["to-cout"];
+    //es.configure_("to-cout",to_cout_);
 
-    one_ = con["parameters"]["one"];
-    two_ = con["parameters"]["two"];
+    es.configure_environment("one",one_);
+    es.configure_environment("two",two_);
   }
 
   life::population evaluate(life::population);

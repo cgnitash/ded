@@ -10,15 +10,16 @@
 
 class linear {
 
+  bool                      track_lineage_{ false };
+  long                      size_{ 0 };
+  std::string               load_spec_{ "" };
+
   // count of descendants per entity
   std::vector<std::pair<life::entity, long>> fossils_;
 
-  bool                      track_lineage_{ false };
   std::vector<life::entity> pop_;
-  std::string               load_spec_{ "" };
-  long                      size_{ 0 };
 
-  life::configuration entity_{ "null_entity", {} };
+  life::entity_spec org_{ "null_entity" };
 
   void update_tree(long p, int count);
   bool found_in_fossils(long) const;
@@ -28,25 +29,27 @@ class linear {
 public:
   linear() { configure(publish_configuration()); }
 
-  void configure(life::configuration con)
+  void configure(life::population_spec ps)
   {
-    size_          = con["parameters"]["size"];
-    load_spec_     = std::string(con["parameters"]["load-from"]);
-    track_lineage_ = con["parameters"]["track-lineage"];
-    entity_        = con["parameters"]["entity"];
+    ps.configure_parameter("size",size_);
+    ps.configure_parameter("load-from",load_spec_);
+    ps.configure_parameter("track-lineage",track_lineage_);
+
+    ps.configure_entity(org_);
 
     initialize();
   }
 
-  life::configuration publish_configuration()
+  life::population_spec publish_configuration()
   {
-    life::configuration con;
-    con["parameters"]["track-lineage"] = track_lineage_;
-    con["parameters"]["size"]          = size_;
-    con["parameters"]["load-from"]     = load_spec_;
+    life::population_spec ps{"linear"};
+    ps.bind_parameter("track-lineage",track_lineage_);
+    ps.bind_parameter("size",size_);
+    ps.bind_parameter("load-from",load_spec_);
 
-    con["parameters"]["entity"] = { entity_[0], {} };
-    return con;
+    //con["parameters"]["entity"] = { entity_[0], {} };
+	ps.bind_entity(org_);
+    return ps;
   }
 
   size_t                    size() const { return pop_.size(); }

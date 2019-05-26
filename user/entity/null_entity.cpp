@@ -1,4 +1,8 @@
 
+/*
+ * only needed for core build system 
+ * everything is provided trivially by header
+ *
 #include "null_entity.h"
 
 #include <algorithm>
@@ -18,3 +22,4 @@ void
     null_entity::tick()
 {
 }
+*/

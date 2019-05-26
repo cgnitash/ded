@@ -1,4 +1,10 @@
 
+
+
+/*
+ * only needed for core build system 
+ * everything is provided trivially by header
+ *
 #include "pass_through.h"
 
 #include <algorithm>
@@ -21,3 +27,4 @@ life::population
 
   return env.evaluate(pop);
 }
+*/

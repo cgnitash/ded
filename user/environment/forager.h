@@ -24,9 +24,9 @@ class forager {
   std::string org_input_los_tag_     = "line-of-sight,A<double,sensor-range>";
   std::string org_output_action_tag_ = "action,A<double,2>";
 
-  size_t grid_size_    = 10;
-  size_t sensor_range_ = 4;
-  size_t updates_      = 100;
+  long grid_size_    = 10;
+  long sensor_range_ = 4;
+  long updates_      = 100;
   bool   replace_      = true;
   bool   directional_  = true;
   bool   visualize_    = false;
@@ -83,7 +83,7 @@ public:
 
   life::environment_spec publish_configuration()
   {
-    life::environment_spec es;
+    life::environment_spec es{"forager"};
     es.bind_parameter("grid-size",grid_size_);
     es.bind_parameter("updates",updates_);
     es.bind_parameter("density",density_);

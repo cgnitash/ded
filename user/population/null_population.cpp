@@ -1,4 +1,9 @@
 
+
+/*
+ * only needed for core build system 
+ * everything is provided trivially by header
+ *
 #include "null_population.h"
 
 #include <algorithm>
@@ -9,3 +14,4 @@ std::vector<life::entity>
 {
   return {};
 }
+*/

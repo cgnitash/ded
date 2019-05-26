@@ -16,30 +16,34 @@
 
 class pass_through {
 
-  life::configuration env_{ "null_environment", {} };
+  life::environment_spec env_{"null_environment"};
 
 public:
   pass_through() { configure(publish_configuration()); }
 
-  life::configuration publish_configuration()
+  life::environment_spec publish_configuration()
   {
-    life::configuration c;
+    life::environment_spec es{"pass_through"};
+	/*
     c["pre-tags"] = nullptr;
-
     c["post-tags"]  = nullptr;
-
     c["input-tags"]  = nullptr;
-
     c["output-tags"] = nullptr;
-
     c["parameters"]["env"] = {
       env_[0], {}, {}, {}
     };   // and propogate population requirements
-
-    return c;
+	*/
+	es.bind_environment("env",env_);
+    return es;
   }
 
-  void configure(life::configuration con) { env_ = con["parameters"]["env"]; }
+  void configure(life::environment_spec es) { 
+	  es.configure_environment("env",env_);
+  }
 
-  life::population evaluate(life::population);
+  life::population evaluate(life::population pop)
+  {
+    auto env = life::make_environment(env_);
+    return env.evaluate(pop);
+  }
 };
