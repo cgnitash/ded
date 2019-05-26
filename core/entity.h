@@ -80,18 +80,18 @@ public:
 
   void reset() { self_->reset_(); }
 
-  configuration publish_configuration()
+  entity_spec publish_configuration()
   {
-    return self_->publish_configuration_().to_json();
+    return self_->publish_configuration_();
   }
 
   void tick() { self_->tick_(); }
 
-  void configure(configuration con)
+  void configure(entity_spec es)
   {
-	entity_spec es =  self_->publish_configuration_(), c;
-	c.from_json(con);
-	es.validate_and_merge(c);
+	//entity_spec es =  self_->publish_configuration_(), c;
+	//c.from_json(con);
+	//es.validate_and_merge(c);
  
     //auto real = publish_configuration();
     //validate_subset(con, real);
@@ -119,6 +119,8 @@ private:
     virtual signal        output_(std::string)        = 0;
     virtual void          configure_(entity_spec)     = 0;
     virtual entity_spec   publish_configuration_()    = 0;
+
+    virtual std::string class_name_as_string_() const = 0;
   };
 
   template <typename UserEntity> struct entity_object final : entity_interface
@@ -239,6 +241,18 @@ private:
       {
         return encoding{};
       }
+    }
+
+    // prohibited methods
+    template <typename T>
+    using Nameable = decltype(std::declval<T &>().class_name_as_string());
+    static_assert(
+        std::negation<
+            enhanced_type_traits::is_detected<UserEntity, Nameable>>{},
+        "Environment class cannot provide class_name_as_string()");
+    std::string class_name_as_string_() const override
+    {
+      return auto_class_name_as_string<UserEntity>();
     }
 
     // data

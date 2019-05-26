@@ -29,7 +29,7 @@ void
 {
   for (auto comp_name : component_list)
     all_environment_specs[ comp_name ] =
-        make_environment(environment{ comp_name }).publish_configuration();
+        make_environment(environment_spec{ comp_name }).publish_configuration();
 }
 
 void

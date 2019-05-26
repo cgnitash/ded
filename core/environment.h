@@ -54,16 +54,17 @@ public:
     return p_r;
   }
 
-  configuration publish_configuration() const
+  environment_spec publish_configuration() const
   {
-    return self_->publish_configuration_().to_json();
+    return self_->publish_configuration_();
   }
 
-  void configure(configuration con) const
+  void configure(environment_spec es) const
   {
-	environment_spec es =  self_->publish_configuration_(), c;
-	c.from_json(con);
-	es.validate_and_merge(c);
+	//environment_spec es =  self_->publish_configuration_(), c;
+	//c.from_json(con);
+	//es.validate_and_merge(c);
+	
   //  auto real = publish_configuration();
   //  validate_subset(con, real);
   //  merge_into(con, real);

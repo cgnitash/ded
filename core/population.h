@@ -1,12 +1,13 @@
 
 #pragma once
 
-#include "configuration.h"
 #include "encoding.h"
 #include "entity.h"
 #include "enhanced_type_traits.h"
 #include "signal.h"
+#include "specs/population_spec.h"
 
+#include "configuration.h"
 #include <cassert>
 #include <functional>
 #include <iostream>
@@ -53,17 +54,17 @@ public:
 
   void flush_unpruned() { self_->flush_unpruned(); }
 
-  configuration publish_configuration()
+  population_spec publish_configuration()
   {
     return self_->publish_configuration_();
   }
 
-  void configure(configuration con)
+  void configure(population_spec es)
   {
-    auto real = publish_configuration();
-    validate_subset(con, real);
-    merge_into(con, real);
-    self_->configure_(con);
+    //auto real = publish_configuration();
+    //validate_subset(con, real);
+    //merge_into(con, real);
+    self_->configure_(es);
   }
 
 private:
@@ -73,8 +74,8 @@ private:
     virtual ~population_interface()             = default;
     virtual population_interface *copy_() const = 0;
 
-    virtual configuration publish_configuration_()  = 0;
-    virtual void          configure_(configuration) = 0;
+    virtual population_spec publish_configuration_()  = 0;
+    virtual void          configure_(population_spec) = 0;
 
     virtual size_t                    size_() const                     = 0;
     virtual std::vector<life::entity> get_as_vector_()                  = 0;
@@ -114,12 +115,12 @@ private:
 
     void snapshot_(long i) override { data_.snapshot(i); }
 
-    configuration publish_configuration_() override
+    population_spec publish_configuration_() override
     {
       return data_.publish_configuration();
     }
 
-    void configure_(configuration c) override { data_.configure(c); }
+    void configure_(population_spec c) override { data_.configure(c); }
 
     // optional methods
 
