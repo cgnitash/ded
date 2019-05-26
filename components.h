@@ -4,27 +4,40 @@
 #include "core/entity.h"
 #include "core/environment.h"
 #include "core/population.h"
+#include "core/signal.h"
 
 #include "core/configuration.h"
-#include "core/signal.h"
+
 #include "core/utilities.h"
 
 namespace life {
 
-population  make_population(configuration);
-entity      make_entity(configuration);
-environment make_environment(configuration);
+entity      make_entity(entity_spec);
+environment make_environment(environment_spec);
+population  make_population(population_spec);
 
-template <typename M>
 void
-    generate_config(std::string                        comp_type,
-                    M                                  component_maker,
-                    std::initializer_list<std::string> component_list)
+    generate_entity_spec(std::initializer_list<std::string> component_list)
 {
+  for (auto comp_name : component_list)
+    all_entity_specs[ comp_name ] =
+        make_entity(entity_spec{ comp_name }).publish_configuration();
+}
 
-  for (auto &comp_name : component_list)
-    all_configs[{ comp_type, comp_name }] =
-        component_maker({ comp_name }).publish_configuration();
+void
+    generate_environment_spec(std::initializer_list<std::string> component_list)
+{
+  for (auto comp_name : component_list)
+    all_environment_specs[ comp_name ] =
+        make_environment(environment{ comp_name }).publish_configuration();
+}
+
+void
+    generate_population_spec(std::initializer_list<std::string> component_list)
+{
+  for (auto comp_name : component_list)
+    all_population_specs[ comp_name ] =
+        make_population(population_spec{ comp_name }).publish_configuration();
 }
 
 void generate_all_configs();

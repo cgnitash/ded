@@ -10,6 +10,10 @@
 #include <string>
 #include <vector>
 
+#include "specs/entity_spec.h"
+#include "specs/environment_spec.h"
+#include "specs/population_spec.h"
+
 #include "term_colours.h"
 
 namespace life {
@@ -17,6 +21,9 @@ namespace life {
 using configuration      = nlohmann::json;
 using ModuleInstancePair = std::pair<std::string, std::string>;
 extern std::map<ModuleInstancePair, life::configuration> all_configs;
+extern std::map<std::string, entity_spec> all_entity_specs;
+extern std::map<std::string, environment_spec> all_environment_specs;
+extern std::map<std::string, population_spec> all_population_specs;
 extern std::string                                       global_path;
 
 // component_builder will provide full specializations

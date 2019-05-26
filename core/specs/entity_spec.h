@@ -17,6 +17,10 @@ class entity_spec {
   std::map<std::string, std::string>             outputs_;
 
 public:
+  entity_spec(std::string name) : name_(name) {} 
+
+  auto name() const { return name_; }
+
   template <typename T> void configure_parameter(std::string name, T &value)
   {
     parameters_[name].get_value(value);

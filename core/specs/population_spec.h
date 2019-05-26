@@ -5,32 +5,20 @@
 #include "configuration_primitive.h"
 #include <iostream>
 #include <map>
-#include <memory>
 #include <regex>
 #include <string>
 #include <variant>
 
 namespace life {
-class environment_spec {
-
-  struct nested_spec
-  {
-    std::unique_ptr<environment_spec> e;
-    std::vector<std::string>          pre_constraints;
-    std::vector<std::string>          post_constraints;
-  };
-
+class population_spec {
   std::string                                    name_;
   std::map<std::string, configuration_primitive> parameters_;
   std::map<std::string, std::string>             inputs_;
   std::map<std::string, std::string>             outputs_;
-  std::map<std::string, std::string>             pre_tags_;
-  std::map<std::string, std::string>             post_tags_;
-  std::map<std::string, nested_spec>             nested_;
 
 public:
-  environment_spec(std::string name) : name_(name) {} 
-  
+  population_spec(std::string name) : name_(name) {} 
+
   auto name() const { return name_; }
 
   template <typename T> void configure_parameter(std::string name, T &value)
@@ -43,16 +31,6 @@ public:
     parameters_[name].set_value(value);
   }
 
-  void bind_pre(std::string name, std::string value)
-  {
-    pre_tags_[name] = value;
-  }
-
-  void bind_post(std::string name, std::string value)
-  {
-    post_tags_[name] = value;
-  }
-
   void bind_input(std::string name, std::string value)
   {
     inputs_[name] = value;
@@ -63,16 +41,6 @@ public:
     outputs_[name] = value;
   }
 
-  void configure_pre(std::string name, std::string &value)
-  {
-    value = pre_tags_[name];
-  }
-
-  void configure_post(std::string name, std::string &value)
-  {
-    value = post_tags_[name];
-  }
-
   void configure_input(std::string name, std::string &value)
   {
     value = inputs_[name];
@@ -81,20 +49,6 @@ public:
   void configure_output(std::string name, std::string &value)
   {
     value = outputs_[name];
-  }
-
-  void bind_environment(std::string              name,
-                        environment_spec         env,
-                        std::vector<std::string> pre_constraints,
-                        std::vector<std::string> post_constraints)
-  {
-    nested_[name] =
-        nested_spec{ std::make_unique<environment_spec>(env), pre_constraints, post_constraints };
-  }
-
-  void configure_environment(std::string name, environment_spec &e)
-  {
-    e = *nested_[name].e;
   }
 
   void from_json(configuration con)
@@ -112,12 +66,6 @@ public:
       inputs_[key] = std::string{ value };
     const auto &outputs = con["output-tags"];
     for (const auto &[key, value] : outputs.items())
-      inputs_[key] = std::string{ value };
-    const auto &pre_tags = con["pre-tags"];
-    for (const auto &[key, value] : pre_tags.items())
-      inputs_[key] = std::string{ value };
-    const auto &post_tags = con["post-tags"];
-    for (const auto &[key, value] : post_tags.items())
       outputs_[key] = std::string{ value };
   }
 
@@ -127,18 +75,12 @@ public:
     con["parameters"];
     for (const auto &[key, value] : parameters_)
       con["parameters"][key] = configuration::parse(value.value_as_string());
-    con["input-tags"];
     for (const auto &[key, value] : inputs_) con["input-tags"][key] = value;
-    con["output-tags"];
     for (const auto &[key, value] : outputs_) con["output-tags"][key] = value;
-    con["pre-tags"];
-    for (const auto &[key, value] : pre_tags_) con["pre-tags"][key] = value;
-    con["post-tags"];
-    for (const auto &[key, value] : post_tags_) con["post-tags"][key] = value;
     return con;
   }
 
-  void validate_and_merge(environment_spec e)
+  void validate_and_merge(population_spec e)
   {
     for (const auto &[key, value] : e.parameters_)
     {
