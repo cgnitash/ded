@@ -1,14 +1,16 @@
 
 #pragma once
 
-//#include "../configuration.h"
-#include"entity_spec.h"
-#include "configuration_primitive.h"
+#include <iomanip>
 #include <iostream>
 #include <map>
 #include <regex>
 #include <string>
 #include <variant>
+
+#include "../term_colours.h"
+#include "configuration_primitive.h"
+#include "entity_spec.h"
 
 namespace life {
 class population_spec {
@@ -16,12 +18,12 @@ class population_spec {
   std::map<std::string, configuration_primitive> parameters_;
   std::map<std::string, std::string>             inputs_;
   std::map<std::string, std::string>             outputs_;
-  entity_spec es_{"null_entity"};
+  entity_spec                                    es_{ "null_entity" };
 
 public:
-  //population_spec() = default;
+  // population_spec() = default;
 
-  population_spec(std::string name = "") : name_(name) {} 
+  population_spec(std::string name = "") : name_(name) {}
 
   auto name() const { return name_; }
 
@@ -41,82 +43,54 @@ public:
     parameters_[name].set_value(value);
   }
 
-  /*
-  void bind_input(std::string name, std::string value)
-  {
-    inputs_[name] = value;
-  }
+  void bind_entity(entity_spec e) { es_ = e; }
 
-  void bind_output(std::string name, std::string value)
-  {
-    outputs_[name] = value;
-  }
+  void configure_entity(entity_spec &e) { e = es_; }
 
-  void configure_input(std::string name, std::string &value)
+  friend std::ostream &operator<<(std::ostream &out, population_spec e)
   {
-    value = inputs_[name];
-  }
+    out << term_colours::red_fg << "population::" << e.name_
+        << term_colours::reset << "\n";
 
-  void configure_output(std::string name, std::string &value)
-  {
-    value = outputs_[name];
-  }
-	*/
+    out << term_colours::yellow_fg << "parameters----" << term_colours::reset
+        << "\n";
+    for (auto [parameter, value] : e.parameters_)
+      out << std::setw(26) << parameter << " : " << value.value_as_string()
+          << "\n";
+    out << term_colours::yellow_fg << "inputs----" << term_colours::reset
+        << "\n";
+    for (auto [input, value] : e.inputs_)
+      out << std::setw(26) << input << " : " << value << "\n";
+    out << term_colours::yellow_fg << "outputs----" << term_colours::reset
+        << "\n";
+    for (auto [output, value] : e.outputs_)
+      out << std::setw(26) << output << " : " << value << "\n";
 
-  void bind_entity( entity_spec e)
-  {
-	  es_  = e;
+    return out;
   }
-
-  void configure_entity( entity_spec &e)
-  {
-	  e = es_;
-  }
-
-  /*
-  void from_json(configuration con)
-  {
-    if (con.find("parameters") == con.end()) return;
-    const auto &params = con["parameters"];
-    for (const auto &[key, value] : params.items())
-    {
-      std::stringstream ss;
-      ss << value;
-      parameters_[key].parse(ss.str());
-    }
-    const auto &inputs = con["input-tags"];
-    for (const auto &[key, value] : inputs.items())
-      inputs_[key] = std::string{ value };
-    const auto &outputs = con["output-tags"];
-    for (const auto &[key, value] : outputs.items())
-      outputs_[key] = std::string{ value };
-  }
-
-  configuration to_json() const
-  {
-    configuration con;
-    con["parameters"];
-    for (const auto &[key, value] : parameters_)
-      con["parameters"][key] = configuration::parse(value.value_as_string());
-    for (const auto &[key, value] : inputs_) con["input-tags"][key] = value;
-    for (const auto &[key, value] : outputs_) con["output-tags"][key] = value;
-    return con;
-  }
-
-  void validate_and_merge(population_spec e)
-  {
-    for (const auto &[key, value] : e.parameters_)
-    {
-      if (parameters_.find(key) == parameters_.end())
-      {
-        std::cout << "Error: Configuration mismatch -- \"" << key
-                  << "\" is not a valid parameter\n";
-        exit(1);
-      }
-      parameters_[key] = value;
-    }
-  }
-  */
 };
 
+/*
+std::ostream &
+    operator<<(std::ostream &out, population_spec e)
+{
+  out << term_colours::red_fg << "population::" << e.name()
+      << term_colours::reset << "\n";
+
+  out << term_colours::yellow_fg << "parameters----" << term_colours::reset
+      << "\n";
+  for (auto [parameter, value] : e.parameters())
+    out << std::setw(26) << parameter << " : " << value.value_as_string()
+        << "\n";
+  out << term_colours::yellow_fg << "inputs----" << term_colours::reset << "\n";
+  for (auto [input, value] : e.inputs())
+    out << std::setw(26) << input << " : " << value << "\n";
+  out << term_colours::yellow_fg << "outputs----" << term_colours::reset
+      << "\n";
+  for (auto [output, value] : e.outputs())
+    out << std::setw(26) << output << " : " << value << "\n";
+
+  return out;
+}
+*/
 }   // namespace life

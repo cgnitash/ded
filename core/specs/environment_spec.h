@@ -1,14 +1,16 @@
 
 #pragma once
 
-//#include "../configuration.h"
-#include "configuration_primitive.h"
+#include <iomanip>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <regex>
 #include <string>
 #include <variant>
+
+#include "../term_colours.h"
+#include "configuration_primitive.h"
 
 namespace life {
 class environment_spec {
@@ -62,14 +64,14 @@ public:
 
   auto tag_flow_constraints() const { return tag_flow_constraints_; }
 
-  template <typename T> void configure_parameter(std::string name, T &value)
-  {
-    parameters_[name].get_value(value);
-  }
-
   template <typename T> void bind_parameter(std::string name, T value)
   {
     parameters_[name].set_value(value);
+  }
+
+  template <typename T> void configure_parameter(std::string name, T &value)
+  {
+    parameters_[name].get_value(value);
   }
 
   void bind_pre(std::string name, std::string value)
@@ -77,24 +79,14 @@ public:
     pre_tags_[name] = value;
   }
 
-  void bind_post(std::string name, std::string value)
-  {
-    post_tags_[name] = value;
-  }
-
-  void bind_input(std::string name, std::string value)
-  {
-    inputs_[name] = value;
-  }
-
-  void bind_output(std::string name, std::string value)
-  {
-    outputs_[name] = value;
-  }
-
   void configure_pre(std::string name, std::string &value)
   {
     value = pre_tags_[name];
+  }
+
+  void bind_post(std::string name, std::string value)
+  {
+    post_tags_[name] = value;
   }
 
   void configure_post(std::string name, std::string &value)
@@ -102,9 +94,19 @@ public:
     value = post_tags_[name];
   }
 
+  void bind_input(std::string name, std::string value)
+  {
+    inputs_[name] = value;
+  }
+
   void configure_input(std::string name, std::string &value)
   {
     value = inputs_[name];
+  }
+
+  void bind_output(std::string name, std::string value)
+  {
+    outputs_[name] = value;
   }
 
   void configure_output(std::string name, std::string &value)
@@ -114,9 +116,18 @@ public:
 
   void bind_environment(std::string name, environment_spec env)
   {
-    //if (!env.name().empty())
-      // nested_[name].e = new environment_spec{env};
-      nested_[name].e = std::make_unique<environment_spec>(env);
+    nested_[name].e = std::make_unique<environment_spec>(env);
+  }
+
+  void configure_environment(std::string name, environment_spec &e)
+  {
+    if (!nested_[name].e)
+    {
+      std::cout << "Warning: <" << name_ << ":" << name
+                << "> environment spec has not been bind-ed (probably error)\n";
+      //      std::exit(1);
+    } else
+      e = *nested_[name].e;
   }
 
   void
@@ -132,79 +143,72 @@ public:
     nested_[name].post_constraints = post_constraints;
   }
 
-  void configure_environment(std::string name, environment_spec &e)
-  {
-    if (!nested_[name].e)
-    {
-      std::cout << "Warning: <" << name_ << ":" << name
-                << "> environment spec has not been bind-ed (probably error)\n";
-      //      std::exit(1);
-    } else
-      e = *nested_[name].e;
-  }
-
   void bind_tag_flow(std::pair<std::string, std::string> x,
                      std::pair<std::string, std::string> y)
   {
     tag_flow_constraints_.push_back({ x, y });
   }
 
-  /*
-  void from_json(configuration con)
+  friend std::ostream &operator<<(std::ostream &out, const environment_spec &e)
   {
-    if (con.find("parameters") == con.end()) return;
-    const auto &params = con["parameters"];
-    for (const auto &[key, value] : params.items())
-    {
-      std::stringstream ss;
-      ss << value;
-      parameters_[key].parse(ss.str());
-    }
-    const auto &inputs = con["input-tags"];
-    for (const auto &[key, value] : inputs.items())
-      inputs_[key] = std::string{ value };
-    const auto &outputs = con["output-tags"];
-    for (const auto &[key, value] : outputs.items())
-      inputs_[key] = std::string{ value };
-    const auto &pre_tags = con["pre-tags"];
-    for (const auto &[key, value] : pre_tags.items())
-      inputs_[key] = std::string{ value };
-    const auto &post_tags = con["post-tags"];
-    for (const auto &[key, value] : post_tags.items())
-      outputs_[key] = std::string{ value };
-  }
+    out << term_colours::red_fg << "environment::" << e.name_
+        << term_colours::reset << "\n";
 
-  configuration to_json() const
-  {
-    configuration con;
-    con["parameters"];
-    for (const auto &[key, value] : parameters_)
-      con["parameters"][key] = configuration::parse(value.value_as_string());
-    con["input-tags"];
-    for (const auto &[key, value] : inputs_) con["input-tags"][key] = value;
-    con["output-tags"];
-    for (const auto &[key, value] : outputs_) con["output-tags"][key] = value;
-    con["pre-tags"];
-    for (const auto &[key, value] : pre_tags_) con["pre-tags"][key] = value;
-    con["post-tags"];
-    for (const auto &[key, value] : post_tags_) con["post-tags"][key] = value;
-    return con;
-  }
+    out << term_colours::yellow_fg << "parameters----" << term_colours::reset
+        << "\n";
+    for (auto [parameter, value] : e.parameters_)
+      out << std::setw(26) << parameter << " : " << value.value_as_string()
+          << "\n";
+    out << term_colours::yellow_fg << "inputs----" << term_colours::reset
+        << "\n";
+    for (auto [input, value] : e.inputs_)
+      out << std::setw(26) << input << " : " << value << "\n";
+    out << term_colours::yellow_fg << "outputs----" << term_colours::reset
+        << "\n";
+    for (auto [output, value] : e.outputs_)
+      out << std::setw(26) << output << " : " << value << "\n";
+    out << term_colours::yellow_fg << "pre-tags----" << term_colours::reset
+        << "\n";
+    for (auto [pre_tag, value] : e.pre_tags_)
+      out << std::setw(26) << pre_tag << " : " << value << "\n";
+    out << term_colours::yellow_fg << "post_tags----" << term_colours::reset
+        << "\n";
+    for (auto [post_tag, value] : e.post_tags_)
+      out << std::setw(26) << post_tag << " : " << value << "\n";
 
-  void validate_and_merge(environment_spec e)
-  {
-    for (const auto &[key, value] : e.parameters_)
+    out << term_colours::yellow_fg << "nested----" << term_colours::reset
+        << "\n";
+    for (auto &[name, nspec] : e.nested_)
     {
-      if (parameters_.find(key) == parameters_.end())
+      out << std::setw(26) << name << " :\n";
+      if (nspec.pre_constraints.empty())
+        out << "No pre-constraints\n";
+      else
       {
-        std::cout << "Error: Configuration mismatch -- \"" << key
-                  << "\" is not a valid parameter\n";
-        exit(1);
+        out << "pre-constraints:\n";
+        for (auto name : nspec.pre_constraints)
+          out << std::setw(26) << name << " :\n";
       }
-      parameters_[key] = value;
+      if (nspec.post_constraints.empty())
+        out << "No post-constraints\n";
+      else
+      {
+        out << "post-constraints:\n";
+        for (auto name : nspec.post_constraints)
+          out << std::setw(26) << name << " :\n";
+      }
     }
+
+    if (!e.tag_flow_constraints_.empty())
+    {
+      out << "with tag-flow-constraints:\n";
+      for (auto name : e.tag_flow_constraints_)
+        out << std::setw(26) << name.first.second << "(" << name.first.first
+            << ") <=> " << name.second.second << "(" << name.second.first
+            << ")\n";
+    }
+    return out;
   }
-  */
 };
 
 }   // namespace life

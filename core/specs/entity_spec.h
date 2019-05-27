@@ -1,25 +1,41 @@
 
 #pragma once
 
-//#include "../configuration.h"
-#include "configuration_primitive.h"
+#include <iomanip>
 #include <iostream>
 #include <map>
 #include <regex>
 #include <string>
 #include <variant>
 
+#include "../term_colours.h"
+#include "configuration_primitive.h"
+
 namespace life {
 class entity_spec {
+  struct nested_spec
+  {
+    std::unique_ptr<entity_spec> e;
+    // environment_spec *e = nullptr;
+    //std::vector<std::string> pre_constraints;
+    //std::vector<std::string> post_constraints;
+    nested_spec() = default;
+    nested_spec(const nested_spec &ns)
+        : e(std::make_unique<entity_spec>(*ns.e))
+    {
+    }
+  };
+
   std::string                                    name_;
   std::map<std::string, configuration_primitive> parameters_;
   std::map<std::string, std::string>             inputs_;
   std::map<std::string, std::string>             outputs_;
+  std::map<std::string, nested_spec>             nested_;
 
 public:
-  //entity_spec() = default;
+  // entity_spec() = default;
 
-  entity_spec(std::string name = "") : name_(name) {} 
+  entity_spec(std::string name = "") : name_(name) {}
 
   auto name() const { return name_; }
 
@@ -28,6 +44,8 @@ public:
   auto inputs() const { return inputs_; }
 
   auto outputs() const { return outputs_; }
+
+  auto nested() const { return nested_; }
 
   template <typename T> void configure_parameter(std::string name, T &value)
   {
@@ -44,14 +62,14 @@ public:
     inputs_[name] = value;
   }
 
-  void bind_output(std::string name, std::string value)
-  {
-    outputs_[name] = value;
-  }
-
   void configure_input(std::string name, std::string &value)
   {
     value = inputs_[name];
+  }
+
+  void bind_output(std::string name, std::string value)
+  {
+    outputs_[name] = value;
   }
 
   void configure_output(std::string name, std::string &value)
@@ -59,50 +77,65 @@ public:
     value = outputs_[name];
   }
 
-  /*
-  void from_json(configuration con)
+  void bind_entity(std::string name, entity_spec env)
   {
-    if (con.find("parameters") == con.end()) return;
-    const auto &params = con["parameters"];
-    for (const auto &[key, value] : params.items())
-    {
-      std::stringstream ss;
-      ss << value;
-      parameters_[key].parse(ss.str());
-    }
-    const auto &inputs = con["input-tags"];
-    for (const auto &[key, value] : inputs.items())
-      inputs_[key] = std::string{ value };
-    const auto &outputs = con["output-tags"];
-    for (const auto &[key, value] : outputs.items())
-      outputs_[key] = std::string{ value };
+    nested_[name].e = std::make_unique<entity_spec>(env);
   }
 
-  configuration to_json() const
+  void configure_entity(std::string name, entity_spec &e)
   {
-    configuration con;
-    con["parameters"];
-    for (const auto &[key, value] : parameters_)
-      con["parameters"][key] = configuration::parse(value.value_as_string());
-    for (const auto &[key, value] : inputs_) con["input-tags"][key] = value;
-    for (const auto &[key, value] : outputs_) con["output-tags"][key] = value;
-    return con;
+    if (!nested_[name].e)
+    {
+      std::cout << "Warning: <" << name_ << ":" << name
+                << "> environment spec has not been bind-ed (probably error)\n";
+      //      std::exit(1);
+    } else
+      e = *nested_[name].e;
   }
 
-  void validate_and_merge(entity_spec e)
+  friend std::ostream &operator<<(std::ostream &out, entity_spec e)
   {
-    for (const auto &[key, value] : e.parameters_)
-    {
-      if (parameters_.find(key) == parameters_.end())
-      {
-        std::cout << "Error: Configuration mismatch -- \"" << key
-                  << "\" is not a valid parameter\n";
-        exit(1);
-      }
-      parameters_[key] = value;
-    }
+    out << term_colours::red_fg << "entity::" << e.name_ << term_colours::reset
+        << "\n";
+
+    out << term_colours::yellow_fg << "parameters----" << term_colours::reset
+        << "\n";
+    for (auto [parameter, value] : e.parameters_)
+      out << std::setw(26) << parameter << " : " << value.value_as_string()
+          << "\n";
+    out << term_colours::yellow_fg << "inputs----" << term_colours::reset
+        << "\n";
+    for (auto [input, value] : e.inputs_)
+      out << std::setw(26) << input << " : " << value << "\n";
+    out << term_colours::yellow_fg << "outputs----" << term_colours::reset
+        << "\n";
+    for (auto [output, value] : e.outputs_)
+      out << std::setw(26) << output << " : " << value << "\n";
+    return out;
   }
-  */
 };
 
+/*
+std::ostream &
+    operator<<(std::ostream &out, entity_spec e)
+{
+
+  out << term_colours::red_fg << "entity::" << e.name() << term_colours::reset
+      << "\n";
+
+  out << term_colours::yellow_fg << "parameters----" << term_colours::reset
+      << "\n";
+  for (auto [parameter, value] : e.parameters())
+    out << std::setw(26) << parameter << " : " << value.value_as_string()
+        << "\n";
+  out << term_colours::yellow_fg << "inputs----" << term_colours::reset << "\n";
+  for (auto [input, value] : e.inputs())
+    out << std::setw(26) << input << " : " << value << "\n";
+  out << term_colours::yellow_fg << "outputs----" << term_colours::reset
+      << "\n";
+  for (auto [output, value] : e.outputs())
+    out << std::setw(26) << output << " : " << value << "\n";
+  return out;
+}
+*/
 }   // namespace life

@@ -30,16 +30,9 @@ void
     std::cout << "    " << name << "\n";
   
   return;
-/*  std::map<std::string, std::vector<std::string>> cons;
-  for (auto &c : life::all_configs)
-    cons[c.first.first].push_back(c.first.second);
-  for (auto &type : { "entity", "environment", "population" })
-  {
-    std::cout << type << "\n";
-    for (auto &name : cons[type]) std::cout << "    " << name << "\n";
-  } */
 }
 
+/*
 std::vector<std::tuple<life::configuration, life::configuration, std::string>>
     true_experiments(std::string file_name, std::hash<std::string> hash_fn)
 {
@@ -79,12 +72,13 @@ std::vector<std::tuple<life::configuration, life::configuration, std::string>>
   }
   return exps;
 }
+*/
 
 long life::entity::entity_id_ = 0;
 
 std::string life::global_path = "./";
 
-std::map<life::ModuleInstancePair, life::configuration> life::all_configs;
+//std::map<life::ModuleInstancePair, life::configuration> life::all_configs;
 std::map<std::string, life::entity_spec>                life::all_entity_specs;
 std::map<std::string, life::environment_spec>           life::all_environment_specs;
 std::map<std::string, life::population_spec>            life::all_population_specs;

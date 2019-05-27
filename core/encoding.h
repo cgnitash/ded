@@ -26,6 +26,7 @@ class encoding {
   std::vector<long> enc_;
 
 public:
+  /*
   encoding() { configure(publish_configuration()); }
 
   configuration publish_configuration()
@@ -61,6 +62,7 @@ public:
     min_length_        = con["parameters"]["min-length"];
     max_length_        = con["parameters"]["max-length"];
   }
+  */
 
   auto begin() { return std::begin(enc_); }
 

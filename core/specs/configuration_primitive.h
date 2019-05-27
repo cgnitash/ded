@@ -10,6 +10,7 @@
 
 #include "../enhanced_type_traits.h"
 
+namespace life {
 class configuration_primitive {
 private:
 
@@ -95,4 +96,5 @@ public:
     return s;
   }
 };
+}
 

@@ -17,8 +17,8 @@ class markov_brain {
   long output_ = 10;
   long hidden_ = 10;
 
-  life::configuration genome_config_;
-
+  //life::entity_spec genome_spec_;
+  	
   std::vector<double> buffer_;
 
   std::vector<long> codon_{ 7, 14 };
@@ -54,6 +54,8 @@ public:
     //con["input-tags"]["in-sense"]   = in_sense_;
     //con["output-tags"]["out-sense"] = out_sense_;
 
+    //es.bind_entity("genome", genome_spec_);
+
     return es;
   }
   void configure(life::entity_spec es)
@@ -62,9 +64,6 @@ public:
   //  output_        = con["parameters"]["outputs"];
   //  hidden_        = con["parameters"]["hiddens"];
   
-	  // MUST BE ADDRESSED
-  //  genome_config_ = con["parameters"]["genome-params"];
-
 	es.configure_parameter("inputs",input_);
 	es.configure_parameter("outputs",output_);
 	es.configure_parameter("hiddens",hidden_);
@@ -75,7 +74,11 @@ public:
     //in_sense_  = con["input-tags"]["in-sense"];
     //out_sense_ = con["output-tags"]["out-sense"];
 
-    genome_.configure(genome_config_);
+	  // MUST BE ADDRESSED
+  //genome_config_ = con["parameters"]["genome-params"];
+    //genome_.configure(genome_config_);
+    //es.configure_entity("genome", genome_spec_ );
+
     genome_.generate(500);
     buffer_ = std::vector(input_ + output_ + hidden_, 0.);
     seed_gates_(4);

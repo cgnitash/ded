@@ -40,7 +40,8 @@ public:
   population &operator=(population &&) noexcept = default;
 
   // public interface of populations - how populations can be used
-  life::configuration data;
+  //life::configuration data;
+  std::map<std::string,life::configuration_primitive> data;
 
   size_t size() const { return self_->size_(); }
 
@@ -61,9 +62,6 @@ public:
 
   void configure(population_spec es)
   {
-    //auto real = publish_configuration();
-    //validate_subset(con, real);
-    //merge_into(con, real);
     self_->configure_(es);
   }
 
