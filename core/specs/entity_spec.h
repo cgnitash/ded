@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "../configuration.h"
+//#include "../configuration.h"
 #include "configuration_primitive.h"
 #include <iostream>
 #include <map>
@@ -17,9 +17,17 @@ class entity_spec {
   std::map<std::string, std::string>             outputs_;
 
 public:
-  entity_spec(std::string name) : name_(name) {} 
+  //entity_spec() = default;
+
+  entity_spec(std::string name = "") : name_(name) {} 
 
   auto name() const { return name_; }
+
+  auto parameters() const { return parameters_; }
+
+  auto inputs() const { return inputs_; }
+
+  auto outputs() const { return outputs_; }
 
   template <typename T> void configure_parameter(std::string name, T &value)
   {
@@ -51,6 +59,7 @@ public:
     value = outputs_[name];
   }
 
+  /*
   void from_json(configuration con)
   {
     if (con.find("parameters") == con.end()) return;
@@ -93,6 +102,7 @@ public:
       parameters_[key] = value;
     }
   }
+  */
 };
 
 }   // namespace life

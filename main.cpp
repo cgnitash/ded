@@ -19,14 +19,25 @@ void
     list_all_configs()
 {
 
-  std::map<std::string, std::vector<std::string>> cons;
+  std::cout << "entity:\n";
+  for (auto [name, spec] : life::all_entity_specs)
+    std::cout << "    " << name << "\n";
+  std::cout << "environment:\n";
+  for (auto [name, spec] : life::all_environment_specs)
+    std::cout << "    " << name << "\n";
+  std::cout << "population:\n";
+  for (auto [name, spec] : life::all_population_specs)
+    std::cout << "    " << name << "\n";
+  
+  return;
+/*  std::map<std::string, std::vector<std::string>> cons;
   for (auto &c : life::all_configs)
     cons[c.first.first].push_back(c.first.second);
   for (auto &type : { "entity", "environment", "population" })
   {
     std::cout << type << "\n";
     for (auto &name : cons[type]) std::cout << "    " << name << "\n";
-  }
+  } */
 }
 
 std::vector<std::tuple<life::configuration, life::configuration, std::string>>
@@ -74,6 +85,9 @@ long life::entity::entity_id_ = 0;
 std::string life::global_path = "./";
 
 std::map<life::ModuleInstancePair, life::configuration> life::all_configs;
+std::map<std::string, life::entity_spec>                life::all_entity_specs;
+std::map<std::string, life::environment_spec>           life::all_environment_specs;
+std::map<std::string, life::population_spec>            life::all_population_specs;
 
 int
     main(int argc, char **argv)
@@ -81,24 +95,24 @@ int
   // TODO use an actual command-line library :P
   //
 
-  life::generate_all_configs();
+  life::generate_all_specs();
   // check all things that aren't being checked statically, in particular the
   // publications of components
-  life::config_manager::check_all_configs_correct();
+  //life::config_manager::check_all_configs_correct();
 
-  std::hash<std::string> hash_fn{};
+  //std::hash<std::string> hash_fn{};
 
   if (argc == 2 && std::string(argv[1]) == "-h")
   {
     std::cout << R"~~(
               -s                     : saves configuration files 
-              -rl <N> <file-name>    : 'runs' all experiments in this file-name with N replicates (locally)
-              -rh <N> <file-name>    : 'runs' all experiments in this file-name with N replicates (msu hpc)
-              -v <file-name>         : verify experiment in file-name
-              -a <file-name>         : generate 'analysis' for experiment in file-name
+              #-rl <N> <file-name>    : 'runs' all experiments in this file-name with N replicates (locally)
+              #-rh <N> <file-name>    : 'runs' all experiments in this file-name with N replicates (msu hpc)
+              #-v <file-name>         : verify experiment in file-name
+              #-a <file-name>         : generate 'analysis' for experiment in file-name
               -p <component-name>... : print publication for listed component names
               -pa                    : lists all components currently loaded
-              -f <N> <file-name>     : actually runs this experiment with REP N (should NOT be called manually)
+              #-f <N> <file-name>     : actually runs this experiment with REP N (should NOT be called manually)
 )~~";
   } else if (argc == 2 && std::string(argv[1]) == "-s")
   {
@@ -111,9 +125,9 @@ int
   } else if (argc > 2 && std::string(argv[1]) == "-p")
   {
     for (auto i{ 2 }; i < argc; i++)
-      life::config_manager::show_config(std::string(argv[i]));
+      life::config_manager::show_config(std::cout, std::string(argv[i]));
     std::cout << std::endl;
-  } else if (argc == 3 && std::string(argv[1]) == "-v")
+  } /* else if (argc == 3 && std::string(argv[1]) == "-v")
   {
     true_experiments(argv[2], hash_fn);
     std::cout << "\nVerified all experiments succesfully\n";
@@ -249,7 +263,7 @@ int
     std::cout << "\nExperiment " << exp_dir << "with rep:" << argv[2]
               << " run succesfully\n";
 
-  } else
+  } */ else
   {
     std::cout << "ded: unknown command line arguments. try -h\n";
   }

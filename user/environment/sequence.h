@@ -19,8 +19,8 @@ class sequence {
 
   //std::string score_tag_ = "score,double";
 
-  life::environment_spec one_{ "null_environment" };
-  life::environment_spec two_{ "null_environment" };
+  life::environment_spec one_;
+  life::environment_spec two_;
 
 public:
   sequence() { configure(publish_configuration()); }
@@ -42,7 +42,7 @@ public:
     //ec["parameters"]["one"] = { one_[0], {}, { score_tag_ }, {} };
 
     // o:in:fitness(P) must provide these tags
-	es.bind_environment("one",two_);
+	es.bind_environment("two",two_);
     //ec["parameters"]["two"] = { two_[0], {}, {}, { score_tag_ } };
 
 	es.bind_tag_flow({"one", "post"}, {"two", "pre"});

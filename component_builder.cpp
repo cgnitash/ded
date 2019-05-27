@@ -65,6 +65,17 @@ void
 
   for (auto [type, names] : build_options)
   {
+    header << type << "_spec default_" << type << "_spec(std::string name) {\n";
+    for (auto name : names)
+      header << "  if (name == \"" << name
+             << "\") {\n    auto e = " << type << "{" << name
+             << "()};\n    return e.publish_configuration();\n  }\n";
+    header << "  std::cout << \"unknown-" << type
+           << ": \" << name;\n  exit(1);\n}\n\n";
+  }
+
+  for (auto [type, names] : build_options)
+  {
     header << type << " make_" << type << "(" << type << "_spec spec) {\n";
     for (auto name : names)
       header << "  if (spec.name() == \"" << name

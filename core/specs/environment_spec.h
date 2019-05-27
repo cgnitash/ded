@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "../configuration.h"
+//#include "../configuration.h"
 #include "configuration_primitive.h"
 #include <iostream>
 #include <map>
@@ -16,8 +16,17 @@ class environment_spec {
   struct nested_spec
   {
     std::unique_ptr<environment_spec> e;
-    std::vector<std::string>          pre_constraints;
-    std::vector<std::string>          post_constraints;
+    // environment_spec *e = nullptr;
+    std::vector<std::string> pre_constraints;
+    std::vector<std::string> post_constraints;
+    nested_spec() = default;
+    nested_spec(const nested_spec &ns)
+        : e(std::make_unique<environment_spec>(*ns.e)),
+          pre_constraints(ns.pre_constraints),
+          post_constraints(ns.post_constraints)
+    {
+    }
+    //~nested_spec() { delete e; }
   };
 
   std::string                                    name_;
@@ -32,9 +41,26 @@ class environment_spec {
       tag_flow_constraints_;
 
 public:
-  environment_spec(std::string name) : name_(name) {}
+  // environment_spec() = default;
+  //~environment_spec() = default;
+
+  environment_spec(std::string name = "") : name_(name) {}
 
   auto name() const { return name_; }
+
+  auto parameters() const { return parameters_; }
+
+  auto inputs() const { return inputs_; }
+
+  auto outputs() const { return outputs_; }
+
+  auto pre_tags() const { return pre_tags_; }
+
+  auto post_tags() const { return post_tags_; }
+
+  auto nested() const { return nested_; }
+
+  auto tag_flow_constraints() const { return tag_flow_constraints_; }
 
   template <typename T> void configure_parameter(std::string name, T &value)
   {
@@ -88,7 +114,9 @@ public:
 
   void bind_environment(std::string name, environment_spec env)
   {
-    nested_[name].e = std::make_unique<environment_spec>(env);
+    //if (!env.name().empty())
+      // nested_[name].e = new environment_spec{env};
+      nested_[name].e = std::make_unique<environment_spec>(env);
   }
 
   void
@@ -106,7 +134,13 @@ public:
 
   void configure_environment(std::string name, environment_spec &e)
   {
-    e = *nested_[name].e;
+    if (!nested_[name].e)
+    {
+      std::cout << "Warning: <" << name_ << ":" << name
+                << "> environment spec has not been bind-ed (probably error)\n";
+      //      std::exit(1);
+    } else
+      e = *nested_[name].e;
   }
 
   void bind_tag_flow(std::pair<std::string, std::string> x,
@@ -115,6 +149,7 @@ public:
     tag_flow_constraints_.push_back({ x, y });
   }
 
+  /*
   void from_json(configuration con)
   {
     if (con.find("parameters") == con.end()) return;
@@ -169,6 +204,7 @@ public:
       parameters_[key] = value;
     }
   }
+  */
 };
 
 }   // namespace life

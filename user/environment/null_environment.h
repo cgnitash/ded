@@ -34,5 +34,5 @@ public:
 
   void configure(life::environment_spec) {}
 
-  life::population evaluate(life::population){}
+  life::population evaluate(life::population pop) { return pop; }
 };

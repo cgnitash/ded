@@ -18,13 +18,14 @@
 
 namespace life {
 
+extern std::string                                       global_path;
+
 using configuration      = nlohmann::json;
 using ModuleInstancePair = std::pair<std::string, std::string>;
 extern std::map<ModuleInstancePair, life::configuration> all_configs;
-extern std::map<std::string, entity_spec> all_entity_specs;
-extern std::map<std::string, environment_spec> all_environment_specs;
-extern std::map<std::string, population_spec> all_population_specs;
-extern std::string                                       global_path;
+extern std::map<std::string, entity_spec>                all_entity_specs;
+extern std::map<std::string, environment_spec>           all_environment_specs;
+extern std::map<std::string, population_spec>            all_population_specs;
 
 // component_builder will provide full specializations
 template <typename T> std::string auto_class_name_as_string() = delete;
@@ -197,128 +198,135 @@ inline auto
 }
 
 inline void
-    check_environment_correct(life::ModuleInstancePair type_name,
-                              life::configuration      config)
+    check_entity_correct()
 {
 
-  for (auto &group :
-       { "parameters", "pre-tags", "post-tags", "input-tags", "output-tags" })
-    if (config.find(group) == config.end())
-    {
-      std::cout << "User publication error: user module" << term_colours::red_fg
-                << "<" << type_name.first << ">::'" << type_name.second << "'"
-                << term_colours::reset << " must publish "
-                << term_colours::red_fg << "'" << group << "'"
-                << term_colours::reset << " group\n";
-      exit(1);
-    }
-
-  for (auto &group : { "pre-tags", "post-tags", "input-tags", "output-tags" })
-    for (auto &[name, type] : config[group].items())
-      if (name != signal_name_type(type).first)
+  /*  for (auto &group : { "parameters", "input-tags", "output-tags" })
+      if (config.find(group) == config.end())
       {
-        std::cout << "User publication error: user module"
-                  << term_colours::red_fg << "<" << type_name.first << ">::'"
-                  << type_name.second << "'" << term_colours::reset
-                  << " must synchronise name of " << group << ":"
-                  << term_colours::green_fg << "" << name << ""
-                  << term_colours::reset << " with "
-                  << "" << term_colours::green_fg << "" << type << ""
-                  << term_colours::reset << ""
-                  << "\n";
+        std::cout << "User publication error: user module" <<
+    term_colours::red_fg
+                  << "<" << type_name.first << ">::'" << type_name.second << "'"
+                  << term_colours::reset << " must publish "
+                  << term_colours::red_fg << "'" << group << "'"
+                  << term_colours::reset << " group\n";
         exit(1);
       }
 
-  if (config.size() != 5)
-  {
-    std::cout << "User publication error: user module" << term_colours::red_fg
-              << "<" << type_name.first << ">::'" << type_name.second << "'"
-              << term_colours::reset << " must not publish unspecified groups"
-              << "\n";
-    exit(1);
-  }
+    for (auto &group : { "input-tags", "output-tags" })
+      for (auto &[name, type] : config[group].items())
+        if (name != signal_name_type(type).first)
+        {
+          std::cout << "User publication error: user module"
+                    << term_colours::red_fg << "<" << type_name.first << ">::'"
+                    << type_name.second << "'" << term_colours::reset
+                    << " must synchronise name of " << group << ":"
+                    << term_colours::green_fg << "" << name << ""
+                    << term_colours::reset << " with "
+                    << "" << term_colours::green_fg << "" << type << ""
+                    << term_colours::reset << ""
+                    << "\n";
+          exit(1);
+        }
+
+    if (config.size() != 3)
+    {
+      std::cout << "User publication error: user module" << term_colours::red_fg
+                << "<" << type_name.first << ">::'" << type_name.second << "'"
+                << term_colours::reset << " must not publish unspecified groups"
+                << "\n";
+      exit(1);
+    } */
   return;
 }
 
 inline void
-    check_population_correct(life::ModuleInstancePair type_name,
-                             life::configuration      config)
+    check_environment_correct()
 {
-  if (config.find("parameters") == config.end())
-  {
-    std::cout << "User publication error: user module" << term_colours::red_fg
-              << "<" << type_name.first << ">::'" << type_name.second << "'"
-              << term_colours::reset << " must publish " << term_colours::red_fg
-              << "'parameters'" << term_colours::reset << " group"
-              << "\n";
-    exit(1);
-  }
 
-  if (config.size() != 1)
-  {
-    std::cout << "User publication error: user module" << term_colours::red_fg
-              << "<" << type_name.first << ">::'" << type_name.second << "'"
-              << term_colours::reset << " must not publish unspecified groups"
-              << "\n";
-    exit(1);
-  }
+  /*  for (auto &group :
+         { "parameters", "pre-tags", "post-tags", "input-tags", "output-tags" })
+      if (config.find(group) == config.end())
+      {
+        std::cout << "User publication error: user module" <<
+    term_colours::red_fg
+                  << "<" << type_name.first << ">::'" << type_name.second << "'"
+                  << term_colours::reset << " must publish "
+                  << term_colours::red_fg << "'" << group << "'"
+                  << term_colours::reset << " group\n";
+        exit(1);
+      }
+
+    for (auto &group : { "pre-tags", "post-tags", "input-tags", "output-tags" })
+      for (auto &[name, type] : config[group].items())
+        if (name != signal_name_type(type).first)
+        {
+          std::cout << "User publication error: user module"
+                    << term_colours::red_fg << "<" << type_name.first << ">::'"
+                    << type_name.second << "'" << term_colours::reset
+                    << " must synchronise name of " << group << ":"
+                    << term_colours::green_fg << "" << name << ""
+                    << term_colours::reset << " with "
+                    << "" << term_colours::green_fg << "" << type << ""
+                    << term_colours::reset << ""
+                    << "\n";
+          exit(1);
+        }
+
+    if (config.size() != 5)
+    {
+      std::cout << "User publication error: user module" << term_colours::red_fg
+                << "<" << type_name.first << ">::'" << type_name.second << "'"
+                << term_colours::reset << " must not publish unspecified groups"
+                << "\n";
+      exit(1);
+    } */
   return;
 }
 
 inline void
-    check_entity_correct(life::ModuleInstancePair type_name,
-                         life::configuration      config)
+    check_population_correct()
 {
-  for (auto &group : { "parameters", "input-tags", "output-tags" })
-    if (config.find(group) == config.end())
+
+  /*
+    if (config.find("parameters") == config.end())
     {
       std::cout << "User publication error: user module" << term_colours::red_fg
                 << "<" << type_name.first << ">::'" << type_name.second << "'"
-                << term_colours::reset << " must publish "
-                << term_colours::red_fg << "'" << group << "'"
-                << term_colours::reset << " group\n";
+                << term_colours::reset << " must publish " <<
+    term_colours::red_fg
+                << "'parameters'" << term_colours::reset << " group"
+                << "\n";
       exit(1);
     }
 
-  for (auto &group : { "input-tags", "output-tags" })
-    for (auto &[name, type] : config[group].items())
-      if (name != signal_name_type(type).first)
-      {
-        std::cout << "User publication error: user module"
-                  << term_colours::red_fg << "<" << type_name.first << ">::'"
-                  << type_name.second << "'" << term_colours::reset
-                  << " must synchronise name of " << group << ":"
-                  << term_colours::green_fg << "" << name << ""
-                  << term_colours::reset << " with "
-                  << "" << term_colours::green_fg << "" << type << ""
-                  << term_colours::reset << ""
-                  << "\n";
-        exit(1);
-      }
-
-  if (config.size() != 3)
-  {
-    std::cout << "User publication error: user module" << term_colours::red_fg
-              << "<" << type_name.first << ">::'" << type_name.second << "'"
-              << term_colours::reset << " must not publish unspecified groups"
-              << "\n";
-    exit(1);
-  }
+    if (config.size() != 1)
+    {
+      std::cout << "User publication error: user module" << term_colours::red_fg
+                << "<" << type_name.first << ">::'" << type_name.second << "'"
+                << term_colours::reset << " must not publish unspecified groups"
+                << "\n";
+      exit(1);
+    } */
   return;
 }
 
 inline void
     check_all_configs_correct()
 {
+  // no-op ??
+  // check_entity_correct();
+  // check_environment_correct();
+  // check_population_correct();
 
-  for (auto &[type_name, config] : life::all_configs)
-  {
-    if (type_name.first == "environment")
-      check_environment_correct(type_name, config);
-    if (type_name.first == "entity") check_entity_correct(type_name, config);
-    if (type_name.first == "population")
-      check_population_correct(type_name, config);
-  }
+  /*  for (auto &[type_name, config] : life::all_configs)
+    {
+      if (type_name.first == "environment")
+        check_environment_correct(type_name, config);
+      if (type_name.first == "entity") check_entity_correct(type_name, config);
+      if (type_name.first == "population")
+        check_population_correct(type_name, config);
+    } */
 }
 
 inline void
@@ -371,8 +379,9 @@ inline bool
   if (std::regex_match(pub, m_pub, pod) || std::regex_match(req, m_req, pod))
   { return false; }   // both pub and req must be aggs
   if (!std::regex_match(req, m_req, agg) || !std::regex_match(pub, m_pub, agg))
-  { return false; } // pub and req type must match
-  if (m_pub[1].str() != m_req[1].str()) return false;
+  { return false; }   // pub and req type must match
+  if (m_pub[1].str() != m_req[1].str())
+    return false;
 
   // req is an unconstrained agg
   if (m_req[2].str().empty()) return true;
@@ -763,68 +772,154 @@ inline life::configuration
 }
 
 inline void
-    pretty_show_entity(life::ModuleInstancePair mip, life::configuration con)
+    pretty_show_entity(std::ostream &out, entity_spec e)
 {
 
-  std::cout << "" << term_colours::red_fg << "entity::" << mip.second << ""
-            << term_colours::reset << "\n";
+  out << term_colours::red_fg << "entity::" << e.name() << term_colours::reset
+      << "\n";
 
-  for (std::string group : { "parameters", "input-tags", "output-tags" })
-  {
-    std::cout << "" << term_colours::yellow_fg << "" << group << "----"
-              << term_colours::reset << "\n";
-    for (auto &[key, value] : con[group].items())
-      if (value.type_name() != std::string{ "array" })
-        std::cout << std::setw(26) << key << " : " << value << "\n";
-    std::cout << "" << term_colours::yellow_fg << ""
-              << std::string(group.length(), ' ') << "----"
-              << term_colours::reset << "\n";
-  }
+  out << term_colours::yellow_fg << "parameters----" << term_colours::reset
+      << "\n";
+  for (auto [parameter, value] : e.parameters())
+    out << std::setw(26) << parameter << " : " << value.value_as_string()
+        << "\n";
+  out << term_colours::yellow_fg << "inputs----" << term_colours::reset << "\n";
+  for (auto [input, value] : e.inputs())
+    out << std::setw(26) << input << " : " << value << "\n";
+  out << term_colours::yellow_fg << "outputs----" << term_colours::reset
+      << "\n";
+  for (auto [output, value] : e.outputs())
+    out << std::setw(26) << output << " : " << value << "\n";
+
+  /*  for (std::string group : { "parameters", "input-tags", "output-tags" })
+    {
+      std::cout << "" << term_colours::yellow_fg << "" << group << "----"
+                << term_colours::reset << "\n";
+      for (auto &[key, value] : con[group].items())
+        if (value.type_name() != std::string{ "array" })
+          std::cout << std::setw(26) << key << " : " << value << "\n";
+      std::cout << "" << term_colours::yellow_fg << ""
+                << std::string(group.length(), ' ') << "----"
+                << term_colours::reset << "\n";
+    } */
+  return;
 }
 
 inline void
-    pretty_show_environment(life::ModuleInstancePair mip,
-                            life::configuration      con)
+    pretty_show_environment(std::ostream &out, environment_spec e)
 {
 
-  std::cout << "" << term_colours::red_fg << "environment::" << mip.second << ""
-            << term_colours::reset << "\n";
+  out << term_colours::red_fg << "environment::" << e.name()
+      << term_colours::reset << "\n";
 
-  for (std::string group :
-       { "parameters", "pre-tags", "post-tags", "input-tags", "output-tags" })
+  out << term_colours::yellow_fg << "parameters----" << term_colours::reset
+      << "\n";
+  for (auto [parameter, value] : e.parameters())
+    out << std::setw(26) << parameter << " : " << value.value_as_string()
+        << "\n";
+  out << term_colours::yellow_fg << "inputs----" << term_colours::reset << "\n";
+  for (auto [input, value] : e.inputs())
+    out << std::setw(26) << input << " : " << value << "\n";
+  out << term_colours::yellow_fg << "outputs----" << term_colours::reset
+      << "\n";
+  for (auto [output, value] : e.outputs())
+    out << std::setw(26) << output << " : " << value << "\n";
+  out << term_colours::yellow_fg << "pre-tags----" << term_colours::reset
+      << "\n";
+  for (auto [pre_tag, value] : e.pre_tags())
+    out << std::setw(26) << pre_tag << " : " << value << "\n";
+  out << term_colours::yellow_fg << "post_tags----" << term_colours::reset
+      << "\n";
+  for (auto [post_tag, value] : e.post_tags())
+    out << std::setw(26) << post_tag << " : " << value << "\n";
+
+  out << term_colours::yellow_fg << "nested----" << term_colours::reset << "\n";
+  for (auto &[name, nspec] : e.nested())
   {
-    std::cout << "" << term_colours::yellow_fg << "" << group << "----"
-              << term_colours::reset << "\n";
-    for (auto &[key, value] : con[group].items())
-      if (value.type_name() != std::string{ "array" })
-        std::cout << std::setw(26) << key << " : " << value << "\n";
-    std::cout << "" << term_colours::yellow_fg << ""
-              << std::string(group.length(), ' ') << "----"
-              << term_colours::reset << "\n";
+    out << std::setw(26) << name << " :\n";
+    if (nspec.pre_constraints.empty())
+      out << "No pre-constraints\n";
+    else
+    {
+      out << "pre-constraints:\n";
+      for (auto name : nspec.pre_constraints)
+        out << std::setw(26) << name << " :\n";
+    }
+    if (nspec.post_constraints.empty())
+      out << "No post-constraints\n";
+    else
+    {
+      out << "post-constraints:\n";
+      for (auto name : nspec.post_constraints)
+        out << std::setw(26) << name << " :\n";
+    }
   }
 
-  for (auto &[key, value] : con["parameters"].items())
-    if (value.type_name() == std::string{ "array" } &&
-        value[0] == "null_environment")
+  if (auto tfc = e.tag_flow_constraints(); !tfc.empty())
+  {
+    out << "with tag-flow-constraints:\n";
+    for (auto name : tfc)
+      out << std::setw(26) << name.first.second << "(" << name.first.first
+          << ") <=> " << name.second.second << "(" << name.second.first
+          << ")\n";
+  }
+
+  /* std::cout << "" << term_colours::red_fg << "environment::" << mip.second <<
+    ""
+              << term_colours::reset << "\n";
+
+    for (std::string group :
+         { "parameters", "pre-tags", "post-tags", "input-tags", "output-tags" })
     {
-      std::cout << "" << term_colours::green_fg << "Nested Environment ----"
-                << term_colours::reset << " " << term_colours::red_fg << ""
-                << key << "" << term_colours::reset << "\n";
-      if (value[2] != nullptr)
-        std::cout << "with pre-tag requirements " << term_colours::green_fg
-                  << "" << value[2] << "" << term_colours::reset << "\n";
-      if (value[3] != nullptr)
-        std::cout << "with post-tag requirements " << term_colours::green_fg
-                  << "" << value[3] << "" << term_colours::reset << "\n";
-      std::cout << "" << term_colours::green_fg << "                   ----"
+      std::cout << "" << term_colours::yellow_fg << "" << group << "----"
+                << term_colours::reset << "\n";
+      for (auto &[key, value] : con[group].items())
+        if (value.type_name() != std::string{ "array" })
+          std::cout << std::setw(26) << key << " : " << value << "\n";
+      std::cout << "" << term_colours::yellow_fg << ""
+                << std::string(group.length(), ' ') << "----"
                 << term_colours::reset << "\n";
     }
+
+    for (auto &[key, value] : con["parameters"].items())
+      if (value.type_name() == std::string{ "array" } &&
+          value[0] == "null_environment")
+      {
+        std::cout << "" << term_colours::green_fg << "Nested Environment ----"
+                  << term_colours::reset << " " << term_colours::red_fg << ""
+                  << key << "" << term_colours::reset << "\n";
+        if (value[2] != nullptr)
+          std::cout << "with pre-tag requirements " << term_colours::green_fg
+                    << "" << value[2] << "" << term_colours::reset << "\n";
+        if (value[3] != nullptr)
+          std::cout << "with post-tag requirements " << term_colours::green_fg
+                    << "" << value[3] << "" << term_colours::reset << "\n";
+        std::cout << "" << term_colours::green_fg << "                   ----"
+                  << term_colours::reset << "\n";
+      } */
+  return;
 }
 
 inline void
-    pretty_show_population(life::ModuleInstancePair mip,
-                           life::configuration      con)
+    pretty_show_population(std::ostream &out, population_spec &e)
 {
+  out << term_colours::red_fg << "population::" << e.name()
+      << term_colours::reset << "\n";
+
+  out << term_colours::yellow_fg << "parameters----" << term_colours::reset
+      << "\n";
+  for (auto [parameter, value] : e.parameters())
+    out << std::setw(26) << parameter << " : " << value.value_as_string()
+        << "\n";
+  out << term_colours::yellow_fg << "inputs----" << term_colours::reset << "\n";
+  for (auto [input, value] : e.inputs())
+    out << std::setw(26) << input << " : " << value << "\n";
+  out << term_colours::yellow_fg << "outputs----" << term_colours::reset
+      << "\n";
+  for (auto [output, value] : e.outputs())
+    out << std::setw(26) << output << " : " << value << "\n";
+
+  /*
   std::cout << "" << term_colours::red_fg << "population::" << mip.second << ""
             << term_colours::reset << "\n"
             << term_colours::yellow_fg << "Default Parameters ----"
@@ -833,13 +928,35 @@ inline void
     std::cout << std::setw(26) << key << " : " << value << "\n";
   std::cout << "" << term_colours::yellow_fg << "               ----"
             << term_colours::reset << "\n";
+                        */
+  return;
 }
 
 inline void
-    show_config(std::string name)
+    show_config(std::ostream &out, std::string name)
 {
-
   auto found = false;
+  if (life::all_entity_specs.find(name) != life::all_entity_specs.end())
+  {
+    pretty_show_entity(out, life::all_entity_specs[name]);
+    found = true;
+  }
+  if (life::all_environment_specs.find(name) !=
+      life::all_environment_specs.end())
+  {
+    pretty_show_environment(out, life::all_environment_specs[name]);
+    found = true;
+  }
+  if (life::all_population_specs.find(name) != life::all_population_specs.end())
+  {
+    pretty_show_population(out, life::all_population_specs[name]);
+    found = true;
+  }
+
+  if(!found)
+    out << "component " << name << " not found\n";
+
+  /*
   for (auto &[type_name, config] : life::all_configs)
   {
     if (type_name.second == name)
@@ -862,6 +979,8 @@ inline void
                   << ">::" << type_name_config.first.second << ""
                   << term_colours::reset << "?\n";
   }
+  */
+  return;
 }
 
 inline void
@@ -869,9 +988,17 @@ inline void
 {
 
   std::ofstream file("configurations.cfg");
+  for (auto [name, es] : life::all_entity_specs) pretty_show_entity(file, es);
+  for (auto [name, es] : life::all_environment_specs)
+    pretty_show_environment(file, es);
+  for (auto [name, es] : life::all_population_specs)
+    pretty_show_population(file, es);
+  /*
   for (auto &[type_name, config] : life::all_configs)
     file << "\n<" << type_name.first << ">::" << type_name.second << "\n  "
          << std::setw(4) << config << std::endl;
+                 */
+  return;
 }
 
 }   // namespace config_manager

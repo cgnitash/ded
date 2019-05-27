@@ -16,29 +16,30 @@ entity      make_entity(entity_spec);
 environment make_environment(environment_spec);
 population  make_population(population_spec);
 
-void
+entity_spec      default_entity_spec(std::string);
+environment_spec default_environment_spec(std::string);
+population_spec  default_population_spec(std::string);
+
+inline void
     generate_entity_spec(std::initializer_list<std::string> component_list)
 {
   for (auto comp_name : component_list)
-    all_entity_specs[ comp_name ] =
-        make_entity(entity_spec{ comp_name }).publish_configuration();
+    all_entity_specs[comp_name] = default_entity_spec(comp_name);
 }
 
-void
+inline void
     generate_environment_spec(std::initializer_list<std::string> component_list)
 {
   for (auto comp_name : component_list)
-    all_environment_specs[ comp_name ] =
-        make_environment(environment_spec{ comp_name }).publish_configuration();
+    all_environment_specs[comp_name] = default_environment_spec(comp_name);
 }
 
-void
+inline void
     generate_population_spec(std::initializer_list<std::string> component_list)
 {
   for (auto comp_name : component_list)
-    all_population_specs[ comp_name ] =
-        make_population(population_spec{ comp_name }).publish_configuration();
+    all_population_specs[comp_name] = default_population_spec(comp_name);
 }
 
-void generate_all_configs();
+void generate_all_specs();
 }   // namespace life

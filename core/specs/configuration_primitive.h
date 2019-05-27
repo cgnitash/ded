@@ -25,14 +25,14 @@ public:
 
   template <typename T> void set_value(T value)
   {
-    assert(std::holds_alternative<std::monostate>(value_) ||
-           std::holds_alternative<T>(value_));
+    //assert(std::holds_alternative<std::monostate>(value_) ||
+    //       std::holds_alternative<T>(value_));
     value_ = value;
   }
 
   template <typename T> void get_value(T &value)
   {
-    assert(std::holds_alternative<T>(value_));
+    //assert(std::holds_alternative<T>(value_));
     value = std::get<T>(value_);
   }
 

@@ -20,7 +20,7 @@ class cycle {
 
   std::string score_tag_ = "score,double";
 
-  life::environment_spec world_{ "null_environment" };
+  life::environment_spec world_;
 
   // not here??
   // long Seed_ = 0;
