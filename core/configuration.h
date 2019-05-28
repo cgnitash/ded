@@ -781,18 +781,18 @@ inline void
   auto found = false;
   if (life::all_entity_specs.find(name) != life::all_entity_specs.end())
   {
-    out << life::all_entity_specs[name];
+    out << life::all_entity_specs[name].pretty_print();
     found = true;
   }
   if (life::all_environment_specs.find(name) !=
       life::all_environment_specs.end())
   {
-    out << life::all_environment_specs[name];
+    out << life::all_environment_specs[name].pretty_print();
     found = true;
   }
   if (life::all_population_specs.find(name) != life::all_population_specs.end())
   {
-    out << life::all_population_specs[name];
+    out << life::all_population_specs[name].pretty_print();
     found = true;
   }
 
@@ -818,9 +818,10 @@ inline void
 {
 
   std::ofstream file("configurations.cfg");
-  for (auto [name, es] : life::all_entity_specs) file << es;
-  for (auto [name, es] : life::all_environment_specs) file << es;
-  for (auto [name, es] : life::all_population_specs) file << es;
+  for (auto [name, es] : life::all_entity_specs) file << "\n" << es.dump(0);
+  for (auto [name, es] : life::all_environment_specs)
+    file << "\n" << es.dump(0);
+  for (auto [name, es] : life::all_population_specs) file << "\n" << es.dump(0);
   return;
 }
 

@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <iostream>
 #include <map>
+#include <range/v3/all.hpp>
 #include <regex>
 #include <string>
 #include <variant>
@@ -17,11 +18,10 @@ class entity_spec {
   {
     std::unique_ptr<entity_spec> e;
     // environment_spec *e = nullptr;
-    //std::vector<std::string> pre_constraints;
-    //std::vector<std::string> post_constraints;
+    // std::vector<std::string> pre_constraints;
+    // std::vector<std::string> post_constraints;
     nested_spec() = default;
-    nested_spec(const nested_spec &ns)
-        : e(std::make_unique<entity_spec>(*ns.e))
+    nested_spec(const nested_spec &ns) : e(std::make_unique<entity_spec>(*ns.e))
     {
     }
   };
@@ -93,49 +93,60 @@ public:
       e = *nested_[name].e;
   }
 
-  friend std::ostream &operator<<(std::ostream &out, entity_spec e)
+  // friend std::ostream &operator<<(std::ostream &out, entity_spec e)
+  std::string dump(long depth)
   {
-    out << term_colours::red_fg << "entity::" << e.name_ << term_colours::reset
+    auto alignment = "\n" + std::string(depth, ' ');
+    return alignment + "population:" + name_ +
+
+           alignment + "P" +
+           (parameters_ | ranges::view::transform([&](auto parameter) {
+              return alignment + parameter.first + ":" +
+                     parameter.second.value_as_string();
+            }) |
+            ranges::action::join) +
+
+           alignment + "I" +
+           (inputs_ | ranges::view::transform([&](auto input) {
+              return alignment + input.first + ":" + input.second;
+            })   //|            ranges::view::intersperse(";"+ alignment)
+            | ranges::action::join) +
+
+           alignment + "O" +
+           (outputs_ | ranges::view::transform([&](auto output) {
+              return alignment + output.first + ":" + output.second;
+            })   // | ranges::view::intersperse(";"+ alignment)
+            | ranges::action::join) +
+
+           alignment + "n" +
+           (nested_ | ranges::view::transform([&](auto nested) {
+              return alignment + nested.first +
+                     nested.second.e->dump(depth + 1);
+            })   // | ranges::view::intersperse(";"+ alignment)
+            | ranges::action::join);
+  }
+
+  std::string pretty_print()
+  {
+    std::stringstream out;
+    out << term_colours::red_fg << "entity::" << name_ << term_colours::reset
         << "\n";
 
     out << term_colours::yellow_fg << "parameters----" << term_colours::reset
         << "\n";
-    for (auto [parameter, value] : e.parameters_)
+    for (auto [parameter, value] : parameters_)
       out << std::setw(26) << parameter << " : " << value.value_as_string()
           << "\n";
     out << term_colours::yellow_fg << "inputs----" << term_colours::reset
         << "\n";
-    for (auto [input, value] : e.inputs_)
+    for (auto [input, value] : inputs_)
       out << std::setw(26) << input << " : " << value << "\n";
     out << term_colours::yellow_fg << "outputs----" << term_colours::reset
         << "\n";
-    for (auto [output, value] : e.outputs_)
+    for (auto [output, value] : outputs_)
       out << std::setw(26) << output << " : " << value << "\n";
-    return out;
+    return out.str();
   }
 };
 
-/*
-std::ostream &
-    operator<<(std::ostream &out, entity_spec e)
-{
-
-  out << term_colours::red_fg << "entity::" << e.name() << term_colours::reset
-      << "\n";
-
-  out << term_colours::yellow_fg << "parameters----" << term_colours::reset
-      << "\n";
-  for (auto [parameter, value] : e.parameters())
-    out << std::setw(26) << parameter << " : " << value.value_as_string()
-        << "\n";
-  out << term_colours::yellow_fg << "inputs----" << term_colours::reset << "\n";
-  for (auto [input, value] : e.inputs())
-    out << std::setw(26) << input << " : " << value << "\n";
-  out << term_colours::yellow_fg << "outputs----" << term_colours::reset
-      << "\n";
-  for (auto [output, value] : e.outputs())
-    out << std::setw(26) << output << " : " << value << "\n";
-  return out;
-}
-*/
 }   // namespace life

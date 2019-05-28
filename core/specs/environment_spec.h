@@ -5,9 +5,9 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <range/v3/all.hpp>
 #include <regex>
 #include <string>
-#include <variant>
 
 #include "../term_colours.h"
 #include "configuration_primitive.h"
@@ -149,36 +149,83 @@ public:
     tag_flow_constraints_.push_back({ x, y });
   }
 
-  friend std::ostream &operator<<(std::ostream &out, const environment_spec &e)
+  // friend std::ostream &operator<<(std::ostream &out, const environment_spec
+  // &e)
+  std::string dump(long depth)
   {
-    out << term_colours::red_fg << "environment::" << e.name_
+    auto alignment = "\n" + std::string(depth, ' ');
+    return alignment + "environment:" + name_ +
+
+           alignment + "P" +
+           (parameters_ | ranges::view::transform([&](auto parameter) {
+              return alignment + parameter.first + ":" +
+                     parameter.second.value_as_string();
+            }) |
+            ranges::action::join) +
+
+           alignment + "I" +
+           (inputs_ | ranges::view::transform([&](auto input) {
+              return alignment + input.first + ":" + input.second;
+            })   //|            ranges::view::intersperse(";"+ alignment)
+            | ranges::action::join) +
+
+           alignment + "O" +
+           (outputs_ | ranges::view::transform([&](auto output) {
+              return alignment + output.first + ":" + output.second;
+            })   // | ranges::view::intersperse(";"+ alignment)
+            | ranges::action::join) +
+
+           alignment + "a" +
+           (pre_tags_ | ranges::view::transform([&](auto pre_tag) {
+              return alignment + pre_tag.first + ":" + pre_tag.second;
+            })   // | ranges::view::intersperse(";"+ alignment)
+            | ranges::action::join) +
+
+           alignment + "b" +
+           (post_tags_ | ranges::view::transform([&](auto post_tag) {
+              return alignment + post_tag.first + ":" + post_tag.second;
+            })   // | ranges::view::intersperse(";"+ alignment)
+            | ranges::action::join) +
+
+           alignment + "n" +
+           (nested_ | ranges::view::transform([&](auto nested) {
+              return alignment + nested.first +
+                     nested.second.e->dump(depth + 1);
+            })   // | ranges::view::intersperse(";"+ alignment)
+            | ranges::action::join);
+  }
+
+  std::string pretty_print()
+  {
+    std::stringstream out;
+    out << term_colours::red_fg << "environment::" << name_
         << term_colours::reset << "\n";
 
     out << term_colours::yellow_fg << "parameters----" << term_colours::reset
         << "\n";
-    for (auto [parameter, value] : e.parameters_)
+    for (auto [parameter, value] : parameters_)
       out << std::setw(26) << parameter << " : " << value.value_as_string()
           << "\n";
     out << term_colours::yellow_fg << "inputs----" << term_colours::reset
         << "\n";
-    for (auto [input, value] : e.inputs_)
+    for (auto [input, value] : inputs_)
       out << std::setw(26) << input << " : " << value << "\n";
     out << term_colours::yellow_fg << "outputs----" << term_colours::reset
         << "\n";
-    for (auto [output, value] : e.outputs_)
+    for (auto [output, value] : outputs_)
       out << std::setw(26) << output << " : " << value << "\n";
     out << term_colours::yellow_fg << "pre-tags----" << term_colours::reset
         << "\n";
-    for (auto [pre_tag, value] : e.pre_tags_)
+    for (auto [pre_tag, value] : pre_tags_)
       out << std::setw(26) << pre_tag << " : " << value << "\n";
     out << term_colours::yellow_fg << "post_tags----" << term_colours::reset
         << "\n";
-    for (auto [post_tag, value] : e.post_tags_)
+    for (auto [post_tag, value] : post_tags_)
       out << std::setw(26) << post_tag << " : " << value << "\n";
 
     out << term_colours::yellow_fg << "nested----" << term_colours::reset
         << "\n";
-    for (auto &[name, nspec] : e.nested_)
+    for (auto &[name, nspec] : nested_)
     {
       out << std::setw(26) << name << " :\n";
       if (nspec.pre_constraints.empty())
@@ -199,15 +246,15 @@ public:
       }
     }
 
-    if (!e.tag_flow_constraints_.empty())
+    if (!tag_flow_constraints_.empty())
     {
       out << "with tag-flow-constraints:\n";
-      for (auto name : e.tag_flow_constraints_)
+      for (auto name : tag_flow_constraints_)
         out << std::setw(26) << name.first.second << "(" << name.first.first
             << ") <=> " << name.second.second << "(" << name.second.first
             << ")\n";
     }
-    return out;
+    return out.str();
   }
 };
 

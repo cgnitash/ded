@@ -107,6 +107,7 @@ int
               -p <component-name>... : print publication for listed component names
               -pa                    : lists all components currently loaded
               #-f <N> <file-name>     : actually runs this experiment with REP N (should NOT be called manually)
+              -r <f> <f> : pop env   	
 )~~";
   } else if (argc == 2 && std::string(argv[1]) == "-s")
   {
@@ -121,6 +122,15 @@ int
     for (auto i{ 2 }; i < argc; i++)
       life::config_manager::show_config(std::cout, std::string(argv[i]));
     std::cout << std::endl;
+  } else if (argc > 2 && std::string(argv[1]) == "-r")
+  {
+    life::population_spec pop_con;
+    std::ifstream       pop_file(argv[1]);
+	std::vector<std::string> ls;
+	std::string l;
+    while(std::getline(pop_file, l)) ls.push_back(l);
+	pop_con = parse(ls);
+	auto pop = life::make_population(pop_con);
   } /* else if (argc == 3 && std::string(argv[1]) == "-v")
   {
     true_experiments(argv[2], hash_fn);

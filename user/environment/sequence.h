@@ -19,8 +19,8 @@ class sequence {
 
   //std::string score_tag_ = "score,double";
 
-  life::environment_spec one_;
-  life::environment_spec two_;
+  life::environment_spec one_{"null_environment"};
+  life::environment_spec two_{"null_environment"};
 
 public:
   sequence() { configure(publish_configuration()); }

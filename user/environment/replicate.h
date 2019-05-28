@@ -22,7 +22,7 @@ class replicate {
   std::string used_x_tag_ = "x,double";
 
   //life::configuration env_{ "null_environment", {} };
-  life::environment_spec env_{ "null_environment"};
+  life::environment_spec env_{ ""};
 
 public:
   replicate() { configure(publish_configuration()); }

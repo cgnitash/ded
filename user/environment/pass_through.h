@@ -16,7 +16,7 @@
 
 class pass_through {
 
-  life::environment_spec env_;
+  life::environment_spec env_{"null_environment"};
 
 public:
   pass_through() { configure(publish_configuration()); }
