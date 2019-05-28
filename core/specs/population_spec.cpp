@@ -15,28 +15,21 @@ namespace life {
   std::string population_spec::dump(long depth)
   {
     auto alignment = "\n" + std::string(depth, ' ');
-    return alignment + "population:" + name_ +
 
-           alignment + "P" +
+    auto pad = [&] {
+      return ranges::view::transform(
+                 [&](auto p) { return alignment + p.first + ":" + p.second; }) |
+             ranges::action::join;
+    };
+
+    return alignment + "population:" + name_ +
            (parameters_ | ranges::view::transform([&](auto parameter) {
               return alignment + parameter.first + ":" +
                      parameter.second.value_as_string();
             }) |
             ranges::action::join) +
-
-           alignment + "I" +
-           (inputs_ | ranges::view::transform([&](auto input) {
-              return alignment + input.first + ":" + input.second;
-            })   //|            ranges::view::intersperse(";"+ alignment)
-            | ranges::action::join) +
-
-           alignment + "O" +
-           (outputs_ | ranges::view::transform([&](auto output) {
-              return alignment + output.first + ":" + output.second;
-            })   // | ranges::view::intersperse(";"+ alignment)
-            | ranges::action::join) +
-
-           alignment + "E" + es_.dump(depth + 1);
+           alignment + "I" + (inputs_ | pad()) + alignment + "O" +
+           (outputs_ | pad()) + alignment + "E" + es_.dump(depth + 1);
   }
 
   population_spec population_spec::parse(std::vector<std::string> pop_dump)
