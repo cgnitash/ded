@@ -126,15 +126,19 @@ void
               "core/entity.h core/population.h core/encoding.h "
               "core/configuration.h core/specs/configuration_primitive.h "
               "core/specs/entity_spec.h core/specs/environment_spec.h "
-              "core/signal.h core/utilities.h core/qst_parser.h";
+              "core/signal.h core/utilities.h ";
 
   for (auto flags : { "", "debug", "asan" })
   {
     makefile << "\n\n"
              << flags << "components = " << flags << "obj_files/main.o "
              << flags << "obj_files/components.o " << flags
-             << "obj_files/qst_parser.o " << flags
-             << "obj_files/term_colours.o " << flags << "obj_files/util_csv.o "
+             //<< "obj_files/qst_parser.o " << flags
+             << "obj_files/population_spec.o " << flags
+             << "obj_files/entity_spec.o " << flags
+             << "obj_files/environment_spec.o " << flags
+             << "obj_files/term_colours.o " 
+			 << flags << "obj_files/util_csv.o "
              << flags << "obj_files/util_csvreader.o ";
 
     for (auto &[type, names] : build_options)
@@ -155,11 +159,31 @@ void
              << flags << "flags) -c main.cpp -o " << flags
              << "obj_files/main.o"
                 "\n\n"
+				/*
              << flags
              << "obj_files/qst_parser.o : core/qst_parser.cpp"
                 "\n\t$("
              << flags << "flags) -c core/qst_parser.cpp -o " << flags
              << "obj_files/qst_parser.o"
+                "\n\n"
+				*/
+             << flags
+             << "obj_files/population_spec.o : core/specs/population_spec.cpp"
+                "\n\t$("
+             << flags << "flags) -c core/specs/population_spec.cpp -o " << flags
+             << "obj_files/population_spec.o"
+                "\n\n"
+             << flags
+             << "obj_files/entity_spec.o : core/specs/entity_spec.cpp"
+                "\n\t$("
+             << flags << "flags) -c core/specs/entity_spec.cpp -o " << flags
+             << "obj_files/entity_spec.o"
+                "\n\n"
+             << flags
+             << "obj_files/environment_spec.o : core/specs/environment_spec.cpp"
+                "\n\t$("
+             << flags << "flags) -c core/specs/environment_spec.cpp -o " << flags
+             << "obj_files/environment_spec.o"
                 "\n\n"
              << flags
              << "obj_files/term_colours.o : core/term_colours.cpp"

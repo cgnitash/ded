@@ -129,7 +129,7 @@ int
 	std::vector<std::string> ls;
 	std::string l;
     while(std::getline(pop_file, l)) ls.push_back(l);
-	pop_con = parse(ls);
+	pop_con = pop_con.parse(ls);
 	auto pop = life::make_population(pop_con);
   } /* else if (argc == 3 && std::string(argv[1]) == "-v")
   {
