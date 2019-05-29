@@ -12,7 +12,7 @@ class linear {
 
   bool                      track_lineage_{ false };
   long                      size_{ 0 };
-  std::string               load_spec_{ "" };
+  std::string               load_spec_;
 
   // count of descendants per entity
   std::vector<std::pair<life::entity, long>> fossils_;

@@ -122,15 +122,36 @@ int
     for (auto i{ 2 }; i < argc; i++)
       life::config_manager::show_config(std::cout, std::string(argv[i]));
     std::cout << std::endl;
-  } else if (argc > 2 && std::string(argv[1]) == "-r")
+  } else if (argc > 3 && std::string(argv[1]) == "-r")
   {
+    std::ifstream pop_file(argv[2]);
+    if (!pop_file.is_open())
+    {
+      std::cout << "tch tch ... ";
+      std::exit(1);
+    }
+    std::vector<std::string> ls;
+    std::string              l;
+    while (std::getline(pop_file, l)) ls.push_back(l);
     life::population_spec pop_con;
-    std::ifstream       pop_file(argv[1]);
-	std::vector<std::string> ls;
-	std::string l;
-    while(std::getline(pop_file, l)) ls.push_back(l);
-	pop_con = pop_con.parse(ls);
-	auto pop = life::make_population(pop_con);
+    pop_con  = pop_con.parse(ls);
+    auto pop = life::make_population(pop_con);
+    std::ifstream env_file(argv[3]);
+    if (!env_file.is_open())
+    {
+      std::cout << "tsh tsh ... ";
+      std::exit(1);
+    }
+    std::vector<std::string> es;
+    std::string              e;
+    while (std::getline(env_file, e)) es.push_back(e);
+    life::environment_spec env_con;
+    env_con  = env_con.parse(es);
+    auto env= life::make_environment(env_con);
+	pop = env.evaluate(pop);
+    auto       v = pop.get_as_vector();
+   for(auto &org :  v)
+			std::cout <<  std::get<double>(org.data.get_value("food-eaten,double"));
   } /* else if (argc == 3 && std::string(argv[1]) == "-v")
   {
     true_experiments(argv[2], hash_fn);
@@ -192,7 +213,7 @@ int
 #SBATCH --mem=2GB
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-		)~~";
+                )~~";
       sb_file << "\n#SBATCH --array=1-" << argv[2]
               << "\ncd ${SLURM_SUBMIT_DIR}\n./ded -f "
                  "${SLURM_ARRAY_TASK_ID} "
@@ -267,7 +288,8 @@ int
     std::cout << "\nExperiment " << exp_dir << "with rep:" << argv[2]
               << " run succesfully\n";
 
-  } */ else
+  } */
+  else
   {
     std::cout << "ded: unknown command line arguments. try -h\n";
   }

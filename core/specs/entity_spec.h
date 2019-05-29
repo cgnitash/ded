@@ -95,7 +95,9 @@ public:
 
   // friend std::ostream &operator<<(std::ostream &out, entity_spec e)
   std::string dump(long depth);
+  entity_spec parse(std::vector<std::string> pop_dump);
   std::string pretty_print();
+
 };
 
 }   // namespace life

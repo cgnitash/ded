@@ -22,7 +22,7 @@ namespace life {
              ranges::action::join;
     };
 
-    return alignment + "population:" + name_ +
+    return alignment + "population:" + name_ + alignment + "P" + 
            (parameters_ | ranges::view::transform([&](auto parameter) {
               return alignment + parameter.first + ":" +
                      parameter.second.value_as_string();
@@ -32,9 +32,49 @@ namespace life {
            (outputs_ | pad()) + alignment + "E" + es_.dump(depth + 1);
   }
 
-  population_spec population_spec::parse(std::vector<std::string> pop_dump)
+  population_spec
+      population_spec::parse(std::vector<std::string> pop_dump)
   {
-    population_spec ps;
+	name_ =     *pop_dump.begin();
+	name_ = name_.substr(name_.find(':')+1);
+
+    auto            f = ranges::begin(pop_dump) + 2;
+
+    for (; *f != "I"; f++)
+    {
+      auto                          l = *f;
+      auto                          p = l.find(':');
+      life::configuration_primitive c;
+      c.parse(l.substr(p + 1));
+	  //std::cout << c.value_as_string() << std::endl
+	//	  << l.substr(0, p) << ";" << std::endl
+//		  << l.substr(p + 1) <<";" <<  std::endl;
+      parameters_[l.substr(0, p)] = c;
+	}
+
+    for (; *f != "O"; f++)
+    {
+      auto                          l = *f;
+      auto                          p = l.find(':');
+      inputs_[l.substr(0, p)] = l.substr(p + 1);
+	}
+
+    for (; *f != "E"; f++)
+    {
+      auto                          l = *f;
+      auto                          p = l.find(':');
+      outputs_[l.substr(0, p)] = l.substr(p + 1);
+	}
+
+    for (auto l = (++f) + 1; l != pop_dump.end(); l++)
+    {
+		l->erase(0,1);
+	}
+
+	entity_spec es;
+	es_ =  es.parse(std::vector<std::string>(f, pop_dump.end()));
+
+    population_spec ps = *this;
     return ps;
   }
 

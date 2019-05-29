@@ -152,6 +152,7 @@ public:
   // friend std::ostream &operator<<(std::ostream &out, const environment_spec
   // &e)
   std::string dump(long depth);
+  environment_spec parse(std::vector<std::string> pop_dump);
 
   std::string pretty_print();
 

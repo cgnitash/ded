@@ -19,21 +19,21 @@ private:
   std::regex r_long{ R"~~(^\d+$)~~" };
   std::regex r_double{ R"~~(^\d+\.\d*$)~~" };
   std::regex r_bool{ R"~~(^(true)|(false)$)~~" };
-  std::regex r_string{ R"~~(^"[^"]*"$)~~" };
+  std::regex r_string{ R"~~(^".*"$)~~" };
   std::regex r_null{ R"~~(^NULL$)~~" };
 
 public:
 
   template <typename T> void set_value(T value)
   {
-    //assert(std::holds_alternative<std::monostate>(value_) ||
-    //       std::holds_alternative<T>(value_));
+    assert(std::holds_alternative<std::monostate>(value_) ||
+           std::holds_alternative<T>(value_));
     value_ = value;
   }
 
   template <typename T> void get_value(T &value)
   {
-    //assert(std::holds_alternative<T>(value_));
+    assert(std::holds_alternative<T>(value_));
     value = std::get<T>(value_);
   }
 
@@ -60,7 +60,7 @@ public:
     if (std::regex_match(s, m, r_string))
     {
       std::string s = m.str();
-      value_        = s.substr(1, s.length() - 1);
+      value_        = s.substr(1, s.length() - 2);
       return;
     }
     std::cout << "ERROR: unable to parse configuration primitive " << s
@@ -77,7 +77,7 @@ public:
             [&](long v) { s = std::to_string(v); },
             [&](double v) { s = std::to_string(v); },
             [&](bool v) { s = v ? "true" : "false"; },
-            [&](std::string v) { s = v; } },
+            [&](std::string v) { s = "\"" + v + "\""; } },
         value_);
     return s;
   }
