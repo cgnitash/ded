@@ -1,0 +1,18 @@
+population:linear
+P
+load-from:""
+size:10
+track-lineage:true
+I
+O
+E
+ entity:markov_brain
+ P
+ hiddens:10
+ inputs:4
+ outputs:2
+ I
+ in-sense:in-sense,A<double,inputs>
+ O
+ out-sense:out-sense,A<double,outputs>
+ n
