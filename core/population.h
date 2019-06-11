@@ -65,6 +65,22 @@ public:
     self_->configure_(es);
   }
 
+  /*
+  void record(std::string trace_) {
+      auto       v = self_->get_as_vector();
+      const auto scores =
+          v | ranges::view::transform([trace_](const auto &org) {
+            return std::get<double>(org.data.get_value(trace_));
+          });
+      std::cout << "update:" << std::setw(6) << i << "   "
+                << "max:" << std::setw(6) << *ranges::max_element(scores)
+                << "   "
+                << "ave:" << std::setw(6)
+                << ranges::accumulate(scores, 0.0) / pop.size() << std::endl;
+    }
+  
+  }
+  */
 private:
   // interface/ABC for an population
   struct population_interface

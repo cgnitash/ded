@@ -3,11 +3,12 @@
 
 #include "configuration.h"
 #include "encoding.h"
-#include "entity.h"
 #include "enhanced_type_traits.h"
+#include "entity.h"
 #include "population.h"
 #include "signal.h"
 #include "specs/environment_spec.h"
+#include "specs/trace.h"
 
 #include <cassert>
 #include <experimental/filesystem>
@@ -47,10 +48,39 @@ public:
     global_path += class_name + "/";
     std::experimental::filesystem::create_directory(global_path);
 
+    for (auto n : traces_.pre_)
+      if (invocations_ && !(invocations_ % n.frequency_))
+      {
+        std::ofstream pop_stats_file{ life::global_path + n.trace_ + 
+                                      std::to_string(invocations_) + ".csv" };
+        pop_stats_file << "id," << n.trace_ << "\n";
+        for (const auto &org : p.get_as_vector())
+          pop_stats_file << org.get_id() << ","
+                         << std::get<double>(org.data.get_value(n.trace_))
+                         << std::endl;
+        // p.record(n.trace_);
+      }
+
     auto p_r = self_->evaluate_(p);
+
+    for (auto n : traces_.post_)
+      if (invocations_ && !(invocations_ % n.frequency_))
+      {
+        std::ofstream pop_stats_file{ life::global_path + n.trace_ +
+                                      std::to_string(invocations_) + ".csv" };
+        pop_stats_file << "id," << n.trace_ << "\n";
+        for (const auto &org : p_r.get_as_vector())
+          pop_stats_file << org.get_id() << ","
+                         << std::get<double>(org.data.get_value(n.trace_))
+                         << std::endl;
+        // p.record(n.trace_);
+      }
 
     life::global_path = life::global_path.substr(
         0, life::global_path.length() - class_name.length() - 1);
+
+	invocations_++;
+
     return p_r;
   }
 
@@ -59,16 +89,19 @@ public:
     return self_->publish_configuration_();
   }
 
-  void configure(environment_spec es) const
+  void configure(environment_spec es) 
   {
-	//environment_spec es =  self_->publish_configuration_(), c;
-	//c.from_json(con);
-	//es.validate_and_merge(c);
-	
-  //  auto real = publish_configuration();
-  //  validate_subset(con, real);
-  //  merge_into(con, real);
-  //  self_->configure_(con);
+    // environment_spec es =  self_->publish_configuration_(), c;
+    // c.from_json(con);
+    // es.validate_and_merge(c);
+
+    //  auto real = publish_configuration();
+    //  validate_subset(con, real);
+    //  merge_into(con, real);
+    //  self_->configure_(con);
+	//traces_.pre_ = es.pre_traces();// | ranges::copy;
+	//traces_.post_ = es.post_traces();
+	traces_= es.traces();
     self_->configure_(es);
   }
 
@@ -79,8 +112,8 @@ private:
     virtual ~environment_interface()             = default;
     virtual environment_interface *copy_() const = 0;
 
-    virtual environment_spec publish_configuration_()  = 0;
-    virtual void          configure_(environment_spec) = 0;
+    virtual environment_spec publish_configuration_()     = 0;
+    virtual void             configure_(environment_spec) = 0;
 
     virtual population  evaluate_(population)         = 0;
     virtual std::string class_name_as_string_() const = 0;
@@ -109,8 +142,8 @@ private:
     population evaluate_(population p) override { return data_.evaluate(p); }
 
     template <typename T>
-    using HasConf =
-        decltype(std::declval<T &>().configure(std::declval<environment_spec>()));
+    using HasConf = decltype(
+        std::declval<T &>().configure(std::declval<environment_spec>()));
     template <typename T>
     using HasPubConf = decltype(std::declval<T &>().publish_configuration());
     static_assert(
@@ -143,6 +176,15 @@ private:
     UserEnvironment data_;
   };
 
+  /*
+  struct trace_config 
+  {
+    std::vector<trace> pre_;
+    std::vector<trace> post_;
+  } ;*/ 
+  trace_config traces_;
+
+  int                                    invocations_ = 0;
   std::unique_ptr<environment_interface> self_;
 };
 

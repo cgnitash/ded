@@ -21,6 +21,7 @@ class cycle {
   std::string score_tag_ = "score,double";
 
   life::environment_spec world_{"null_environment"};
+  life::environment world = life::make_environment(world_);
 
   // not here??
   // long Seed_ = 0;
@@ -57,6 +58,7 @@ public:
 
     es.configure_environment("world",world_);
 
+  world = life::make_environment(world_);
     // std::srand(Seed_);
   }
 

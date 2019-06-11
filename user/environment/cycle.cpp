@@ -18,7 +18,6 @@ life::population
     cycle::evaluate(life::population pop)
 {
 
-  auto world = life::make_environment(world_);
 
   for (auto i : ranges::view::iota(0, count_))
   {

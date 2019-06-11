@@ -148,10 +148,13 @@ int
     life::environment_spec env_con;
     env_con  = env_con.parse(es);
     auto env= life::make_environment(env_con);
+
+	
+	life::global_path += "data/";
 	pop = env.evaluate(pop);
-    auto       v = pop.get_as_vector();
-   for(auto &org :  v)
-			std::cout <<  std::get<double>(org.data.get_value("food-eaten,double"));
+    //auto       v = pop.get_as_vector();
+   // for(auto &org :  v)
+	//		std::cout <<  std::get<double>(org.data.get_value("food-eaten,double"));
   } /* else if (argc == 3 && std::string(argv[1]) == "-v")
   {
     true_experiments(argv[2], hash_fn);

@@ -18,9 +18,6 @@ life::population
     sequence::evaluate(life::population pop)
 {
 
-  auto one = life::make_environment(one_);
-
-  auto two = life::make_environment(two_);
 
   pop = one.evaluate(pop);
 

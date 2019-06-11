@@ -21,6 +21,8 @@ class sequence {
 
   life::environment_spec one_{"null_environment"};
   life::environment_spec two_{"null_environment"};
+  life::environment one = life::make_environment(one_);
+  life::environment two = life::make_environment(two_);
 
 public:
   sequence() { configure(publish_configuration()); }
@@ -56,6 +58,8 @@ public:
 
     es.configure_environment("one",one_);
     es.configure_environment("two",two_);
+	one = life::make_environment(one_);
+	two = life::make_environment(two_);
   }
 
   life::population evaluate(life::population);

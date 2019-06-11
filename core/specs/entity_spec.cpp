@@ -53,14 +53,14 @@ entity_spec
     parameters_[l.substr(0, p)] = c;
   }
 
-  for (; *f != "O"; f++)
+  for (++f; *f != "O"; f++)
   {
     auto l                  = *f;
     auto p                  = l.find(':');
     inputs_[l.substr(0, p)] = l.substr(p + 1);
   }
 
-  for (; *f != "n"; f++)
+  for (++f; *f != "n"; f++)
   {
     auto l                   = *f;
     auto p                   = l.find(':');
