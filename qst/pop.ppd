@@ -1,14 +1,14 @@
 population:linear
 P
 load-from:""
-size:10
+size:50
 track-lineage:true
 I
 O
 E
  entity:markov_brain
  P
- hiddens:10
+ hiddens:5
  inputs:4
  outputs:2
  I

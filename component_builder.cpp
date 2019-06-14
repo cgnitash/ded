@@ -126,6 +126,7 @@ void
               "core/entity.h core/population.h core/encoding.h "
               "core/configuration.h core/specs/configuration_primitive.h "
               "core/specs/entity_spec.h core/specs/environment_spec.h "
+              "core/parser/token.h core/parser/parser.h "
               "core/signal.h core/utilities.h ";
 
   for (auto flags : { "", "debug", "asan" })
@@ -134,6 +135,8 @@ void
              << flags << "components = " << flags << "obj_files/main.o "
              << flags << "obj_files/components.o " << flags
              //<< "obj_files/qst_parser.o " << flags
+             << "obj_files/parser.o " << flags
+             << "obj_files/token.o " << flags
              << "obj_files/population_spec.o " << flags
              << "obj_files/entity_spec.o " << flags
              << "obj_files/environment_spec.o " << flags
@@ -167,6 +170,18 @@ void
              << "obj_files/qst_parser.o"
                 "\n\n"
 				*/
+             << flags
+             << "obj_files/token.o : core/parser/token.cpp"
+                "\n\t$("
+             << flags << "flags) -c core/parser/token.cpp -o " << flags
+             << "obj_files/token.o"
+                "\n\n"
+             << flags
+             << "obj_files/parser.o : core/parser/parser.cpp"
+                "\n\t$("
+             << flags << "flags) -c core/parser/parser.cpp -o " << flags
+             << "obj_files/parser.o"
+                "\n\n"
              << flags
              << "obj_files/population_spec.o : core/specs/population_spec.cpp"
                 "\n\t$("

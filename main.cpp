@@ -84,7 +84,7 @@ std::map<std::string, life::environment_spec>           life::all_environment_sp
 std::map<std::string, life::population_spec>            life::all_population_specs;
 
 int
-    main(int argc, char **argv)
+    main(int argc, char **argv)try 
 {
   // TODO use an actual command-line library :P
   //
@@ -108,6 +108,7 @@ int
               -pa                    : lists all components currently loaded
               #-f <N> <file-name>     : actually runs this experiment with REP N (should NOT be called manually)
               -r <f> <f> : pop env   	
+              -d <file-name>         : parse experiment in file-name
 )~~";
   } else if (argc == 2 && std::string(argv[1]) == "-s")
   {
@@ -155,8 +156,17 @@ int
     //auto       v = pop.get_as_vector();
    // for(auto &org :  v)
 	//		std::cout <<  std::get<double>(org.data.get_value("food-eaten,double"));
-  } /* else if (argc == 3 && std::string(argv[1]) == "-v")
+  } else if (argc > 2 && std::string(argv[1]) == "-d")
   {
+	  life::parser p;
+	  auto [pop_con, env_con]  = p.parse(argv[2]);
+    //auto pop= life::make_population(pop_con);
+    //auto env= life::make_environment(env_con);
+    std::cout << "done" << std::endl;
+  }
+  /*
+  }  else if (argc == 3 && std::string(argv[1]) == "-v")
+	{
     true_experiments(argv[2], hash_fn);
     std::cout << "\nVerified all experiments succesfully\n";
 
@@ -296,4 +306,4 @@ int
   {
     std::cout << "ded: unknown command line arguments. try -h\n";
   }
-}
+}  catch(...) { }

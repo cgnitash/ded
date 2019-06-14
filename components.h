@@ -8,6 +8,8 @@
 
 #include "core/configuration.h"
 
+#include "core/parser/parser.h"
+
 #include "core/utilities.h"
 
 namespace life {

@@ -181,6 +181,8 @@ std::cout << "Warning: <" << name_ << ":" << name
   environment_spec parse(std::vector<std::string> pop_dump);
 
   std::string pretty_print();
+
+  friend class parser;
 };
 
 }   // namespace life

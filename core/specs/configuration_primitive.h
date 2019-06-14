@@ -63,6 +63,7 @@ public:
       value_        = s.substr(1, s.length() - 2);
       return;
     }
+	//TODO return success/failure
     std::cout << "ERROR: unable to parse configuration primitive " << s
               << std::endl;
     std::exit(1);
