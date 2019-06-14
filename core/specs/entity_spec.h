@@ -11,6 +11,7 @@
 
 #include "../term_colours.h"
 #include "configuration_primitive.h"
+#include "../parser/parser.h"
 
 namespace life {
 class entity_spec {
@@ -36,6 +37,7 @@ public:
   // entity_spec() = default;
 
   entity_spec(std::string name = "") : name_(name) {}
+  entity_spec(parser,block);
 
   auto name() const { return name_; }
 

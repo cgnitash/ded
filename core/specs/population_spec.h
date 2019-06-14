@@ -12,8 +12,10 @@
 #include "../term_colours.h"
 #include "configuration_primitive.h"
 #include "entity_spec.h"
+#include "../parser/parser.h"
 
 namespace life {
+
 class population_spec {
   std::string                                    name_;
   std::map<std::string, configuration_primitive> parameters_;
@@ -25,6 +27,7 @@ public:
   // population_spec() = default;
 
   population_spec(std::string name = "") : name_(name) {}
+  population_spec(parser,block);
 
   auto name() const { return name_; }
 

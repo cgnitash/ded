@@ -12,7 +12,70 @@
 #include "population_spec.h"
 
 namespace life {
-  std::string population_spec::dump(long depth)
+
+population_spec::population_spec(parser p, block blk)
+{
+/*
+  *this =
+      ranges::find_if(life::all_environment_specs,
+                      [&](auto ns) { return ns.first == blk.name_.substr(1); })
+          ->second;
+  for (auto over : blk.overrides_)
+  {
+    auto name  = over.first;
+    auto value = over.second;
+
+    auto f = ranges::find_if(parameters_, [&](auto param) {
+      return param.first == name.expr_.substr(1);
+    });
+    if (f == parameters_.end())
+    {
+      p.err_invalid_token(name,
+                          "this does not override any parameters of " + name_);
+      throw parser_error{};
+    }
+
+    configuration_primitive cp;
+    cp.parse(value.expr_);
+    if (cp.type_as_string() != f->second.type_as_string())
+    {
+      p.err_invalid_token(
+          value, "type mismatch, should be " + f->second.type_as_string());
+      throw parser_error{};
+    }
+    f->second = cp;
+  }
+
+  for (auto blover : blk.nested_)
+  {
+    auto name       = blover.first;
+    auto nested_blk = blover.second;
+
+	auto ct = p.type_of_block(nested_blk);
+	  if (ct != "environment")
+    {
+      p.err_invalid_token(
+          name, "override of " + name.expr_ + " must be of type environment");
+      throw parser_error{};
+    }
+
+    auto f = ranges::find_if(nested_, [&](auto param) {
+      return param.first == name.expr_.substr(1);
+    });
+    if (f == nested_.end())
+    {
+      p.err_invalid_token(
+          name, "this does not override any nested environments " + blk.name_);
+      throw parser_error{};
+    }
+
+    f->second.e = std::make_unique<environment_spec>(
+        life::environment_spec{ p, nested_blk });
+  }
+  */
+}
+
+std::string population_spec::dump(long depth)
   {
     auto alignment = "\n" + std::string(depth, ' ');
 

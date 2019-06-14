@@ -11,6 +11,10 @@
 
 namespace life {
 
+entity_spec::entity_spec(parser , block )
+{
+}
+
 std::string
     entity_spec::dump(long depth)
 {

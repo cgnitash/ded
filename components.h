@@ -2,8 +2,8 @@
 #pragma once
 
 #include "core/entity.h"
-#include "core/environment.h"
 #include "core/population.h"
+#include "core/environment.h"
 #include "core/signal.h"
 
 #include "core/configuration.h"

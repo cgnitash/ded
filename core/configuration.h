@@ -29,6 +29,81 @@ extern std::map<std::string, population_spec>  all_population_specs;
 // component_builder will provide full specializations
 template <typename T> std::string auto_class_name_as_string() = delete;
 
+namespace config_manager {
+
+inline std::string
+    type_of_block(std::string name)
+{
+  {
+    auto find_spec = ranges::find_if(life::all_environment_specs, [&](auto ns) {
+      return ns.first == name;
+    });
+    if (find_spec != life::all_environment_specs.end()) return "environment";
+  }
+  {
+    auto find_spec = ranges::find_if(life::all_entity_specs, [&](auto ns) {
+      return ns.first == name;
+    });
+    if (find_spec != life::all_entity_specs.end()) return "entity";
+  }
+  {
+    auto find_spec = ranges::find_if(life::all_population_specs, [&](auto ns) {
+      return ns.first == name;
+    });
+    if (find_spec != life::all_population_specs.end()) return "population";
+  }
+return "NONE";
+}
+
+inline void
+    show_config(std::ostream &out, std::string name)
+{
+  auto found = false;
+  if (life::all_entity_specs.find(name) != life::all_entity_specs.end())
+  {
+    out << life::all_entity_specs[name].pretty_print();
+    found = true;
+  }
+  if (life::all_environment_specs.find(name) !=
+      life::all_environment_specs.end())
+  {
+    out << life::all_environment_specs[name].pretty_print();
+    found = true;
+  }
+  if (life::all_population_specs.find(name) != life::all_population_specs.end())
+  {
+    out << life::all_population_specs[name].pretty_print();
+    found = true;
+  }
+
+  if (!found) out << "component " << name << " not found\n";
+
+  /*
+  if (!found)
+  {
+    std::cout << "component " << name << " not found\n";
+    for (auto &type_name_config : life::all_configs)
+      if (life::config_manager::match(name, type_name_config.first.second))
+        std::cout << "Did you mean " << term_colours::green_fg << "<"
+                  << type_name_config.first.first
+                  << ">::" << type_name_config.first.second << ""
+                  << term_colours::reset << "?\n";
+  }
+  */
+  return;
+}
+
+inline void
+    save_configs()
+{
+
+  std::ofstream file("configurations.cfg");
+  for (auto [name, es] : life::all_entity_specs) file << "\n" << es.dump(0);
+  for (auto [name, es] : life::all_environment_specs)
+    file << "\n" << es.dump(0);
+  for (auto [name, es] : life::all_population_specs) file << "\n" << es.dump(0);
+  return;
+}
 /*
 // almost certainly unnecessary
 inline void
@@ -65,7 +140,6 @@ inline void
 }
 */
 
-namespace config_manager {
 
 /*
 inline auto
@@ -774,56 +848,6 @@ inline life::configuration
   return real_con;
 }
 */
-
-inline void
-    show_config(std::ostream &out, std::string name)
-{
-  auto found = false;
-  if (life::all_entity_specs.find(name) != life::all_entity_specs.end())
-  {
-    out << life::all_entity_specs[name].pretty_print();
-    found = true;
-  }
-  if (life::all_environment_specs.find(name) !=
-      life::all_environment_specs.end())
-  {
-    out << life::all_environment_specs[name].pretty_print();
-    found = true;
-  }
-  if (life::all_population_specs.find(name) != life::all_population_specs.end())
-  {
-    out << life::all_population_specs[name].pretty_print();
-    found = true;
-  }
-
-  if (!found) out << "component " << name << " not found\n";
-
-  /*
-  if (!found)
-  {
-    std::cout << "component " << name << " not found\n";
-    for (auto &type_name_config : life::all_configs)
-      if (life::config_manager::match(name, type_name_config.first.second))
-        std::cout << "Did you mean " << term_colours::green_fg << "<"
-                  << type_name_config.first.first
-                  << ">::" << type_name_config.first.second << ""
-                  << term_colours::reset << "?\n";
-  }
-  */
-  return;
-}
-
-inline void
-    save_configs()
-{
-
-  std::ofstream file("configurations.cfg");
-  for (auto [name, es] : life::all_entity_specs) file << "\n" << es.dump(0);
-  for (auto [name, es] : life::all_environment_specs)
-    file << "\n" << es.dump(0);
-  for (auto [name, es] : life::all_population_specs) file << "\n" << es.dump(0);
-  return;
-}
 
 }   // namespace config_manager
 }   // namespace life

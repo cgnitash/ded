@@ -8,8 +8,70 @@
 #include <string>
 
 #include "environment_spec.h"
+#include "../configuration.h"
 
 namespace life {
+
+environment_spec::environment_spec(parser p, block blk)
+{
+
+  *this =
+      ranges::find_if(life::all_environment_specs,
+                      [&](auto ns) { return ns.first == blk.name_.substr(1); })
+          ->second;
+  for (auto over : blk.overrides_)
+  {
+    auto name  = over.first;
+    auto value = over.second;
+
+    auto f = ranges::find_if(parameters_, [&](auto param) {
+      return param.first == name.expr_;
+    });
+    if (f == parameters_.end())
+    {
+      p.err_invalid_token(name,
+                          "this does not override any parameters of " + name_);
+      throw parser_error{};
+    }
+
+    configuration_primitive cp;
+    cp.parse(value.expr_);
+    if (cp.type_as_string() != f->second.type_as_string())
+    {
+      p.err_invalid_token(
+          value, "type mismatch, should be " + f->second.type_as_string());
+      throw parser_error{};
+    }
+    f->second = cp;
+  }
+
+  for (auto blover : blk.nested_)
+  {
+    auto name       = blover.first;
+    auto nested_blk = blover.second;
+
+	auto ct = config_manager::type_of_block(nested_blk.name_.substr(1));
+	  if (ct != "environment")
+    {
+      p.err_invalid_token(
+          name, "override of " + name.expr_ + " must be of type environment");
+      throw parser_error{};
+    }
+
+    auto f = ranges::find_if(nested_, [&](auto param) {
+      return param.first == name.expr_;
+    });
+    if (f == nested_.end())
+    {
+      p.err_invalid_token(
+          name, "this does not override any nested environments " + blk.name_);
+      throw parser_error{};
+    }
+
+    f->second.e = std::make_unique<environment_spec>(
+        life::environment_spec{ p, nested_blk });
+  }
+}
 
 std::string
     environment_spec::dump(long depth)
@@ -22,32 +84,29 @@ std::string
            ranges::action::join;
   };
 
-  return alignment + "environment:" + name_ + 
-	     alignment + "P" +
+  return alignment + "environment:" + name_ + alignment + "P" +
          (parameters_ | ranges::view::transform([&](auto parameter) {
             return alignment + parameter.first + ":" +
                    parameter.second.value_as_string();
           }) |
           ranges::action::join) +
-         alignment + "I" + (io_.inputs_ | pad()) + 
-		 alignment + "O" + (io_.outputs_ | pad()) + 
-		 alignment + "a" + (tags_ .pre_| pad()) +
-         alignment + "b" + (tags_ .post_| pad()) + 
-		 // needs to go
-	     alignment + "r" +
+         alignment + "I" + (io_.inputs_ | pad()) + alignment + "O" +
+         (io_.outputs_ | pad()) + alignment + "a" + (tags_.pre_ | pad()) +
+         alignment + "b" + (tags_.post_ | pad()) +
+         // needs to go
+         alignment + "r" +
          (traces_.pre_ | ranges::view::transform([&](auto trace) {
-            return alignment + trace.trace_ + ":" +
-                   trace.trace_;
+            return alignment + trace.trace_ + ":" + trace.trace_;
           }) |
           ranges::action::join) +
-	     alignment + "R" +
+         alignment + "R" +
          (traces_.post_ | ranges::view::transform([&](auto trace) {
             return alignment + trace.trace_ + ":" +
                    std::to_string(trace.frequency_);
           }) |
           ranges::action::join) +
-		 // needs to go *
-		 alignment + "n" +
+         // needs to go *
+         alignment + "n" +
          (nested_ | ranges::view::transform([&](auto nested) {
             return alignment + nested.first + nested.second.e->dump(depth + 1);
           }) |
@@ -73,44 +132,44 @@ environment_spec
 
   for (++f; *f != "O"; f++)
   {
-    auto l                  = *f;
-    auto p                  = l.find(':');
+    auto l                      = *f;
+    auto p                      = l.find(':');
     io_.inputs_[l.substr(0, p)] = l.substr(p + 1);
   }
 
   for (++f; *f != "a"; f++)
   {
-    auto l                   = *f;
-    auto p                   = l.find(':');
+    auto l                       = *f;
+    auto p                       = l.find(':');
     io_.outputs_[l.substr(0, p)] = l.substr(p + 1);
   }
 
   for (++f; *f != "b"; f++)
   {
-    auto l                    = *f;
-    auto p                    = l.find(':');
+    auto l                     = *f;
+    auto p                     = l.find(':');
     tags_.pre_[l.substr(0, p)] = l.substr(p + 1);
   }
 
   for (++f; *f != "r"; f++)
   {
-    auto l                    = *f;
-    auto p                    = l.find(':');
+    auto l                      = *f;
+    auto p                      = l.find(':');
     tags_.post_[l.substr(0, p)] = l.substr(p + 1);
   }
 
   for (++f; *f != "R"; f++)
   {
-    auto l                    = *f;
-    auto p                    = l.find(':');
-    traces_.pre_.push_back({l.substr(0, p), std::stoi(l.substr(p + 1))});
+    auto l = *f;
+    auto p = l.find(':');
+    traces_.pre_.push_back({ l.substr(0, p), std::stoi(l.substr(p + 1)) });
   }
 
   for (++f; *f != "n"; f++)
   {
-    auto l                     = *f;
-    auto p                     = l.find(':');
-    traces_.post_.push_back({l.substr(0, p), std::stoi(l.substr(p + 1))});
+    auto l = *f;
+    auto p = l.find(':');
+    traces_.post_.push_back({ l.substr(0, p), std::stoi(l.substr(p + 1)) });
   }
 
   for (++f; f != pop_dump.end();)

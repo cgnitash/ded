@@ -12,6 +12,7 @@
 #include "../term_colours.h"
 #include "configuration_primitive.h"
 #include "trace.h"
+#include "../parser/parser.h"
 
 namespace life {
 class environment_spec {
@@ -65,8 +66,11 @@ public:
   //~environment_spec() = default;
 
   environment_spec(std::string name = "") : name_(name) {}
+  //environment_spec(parser);
+  environment_spec(parser,block);
 
   auto name() const { return name_; }
+  /*
 
   auto parameters() const { return parameters_; }
 
@@ -82,11 +86,13 @@ public:
 
   auto post_traces() const { return traces_.post_; }
 
-  auto traces() const { return traces_; }
 
   auto nested() const { return nested_; }
 
   auto tag_flow_constraints() const { return tag_flow_constraints_; }
+  */
+
+  auto traces() const { return traces_; }
 
   template <typename T> void bind_parameter(std::string name, T value)
   {
@@ -182,7 +188,6 @@ std::cout << "Warning: <" << name_ << ":" << name
 
   std::string pretty_print();
 
-  friend class parser;
 };
 
 }   // namespace life

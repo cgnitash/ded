@@ -28,10 +28,36 @@ void
   std::cout << "population:\n";
   for (auto [name, spec] : life::all_population_specs)
     std::cout << "    " << name << "\n";
-  
+
   return;
 }
 
+std::map<std::string,
+         std::variant<life::entity_spec,
+                      life::environment_spec,
+                      life::population_spec>>
+    parse_all_parser_blocks(life::parser p)
+{
+
+  std::map<std::string,
+           std::variant<life::entity_spec,
+                        life::environment_spec,
+                        life::population_spec>>
+      m;
+
+  for (auto [name, bl] : p.variables())
+  {
+    std::cout << name.expr_ << "#\n";
+    p.print(bl);
+    auto ct = life::config_manager::type_of_block(bl.name_.substr(1));
+    if (ct == "environment") m[name.expr_] = life::environment_spec{ p, bl };
+    if (ct == "entity") m[name.expr_] = life::entity_spec{ p, bl };
+    if (ct == "population") m[name.expr_] = life::population_spec{ p, bl };
+    if (ct == "NONE") { std::cout << "oops: not a component!\n"; }
+  }
+
+  return m;
+}
 /*
 std::vector<std::tuple<life::configuration, life::configuration, std::string>>
     true_experiments(std::string file_name, std::hash<std::string> hash_fn)
@@ -78,13 +104,13 @@ long life::entity::entity_id_ = 0;
 
 std::string life::global_path = "./";
 
-//std::map<life::ModuleInstancePair, life::configuration> life::all_configs;
-std::map<std::string, life::entity_spec>                life::all_entity_specs;
-std::map<std::string, life::environment_spec>           life::all_environment_specs;
-std::map<std::string, life::population_spec>            life::all_population_specs;
+// std::map<life::ModuleInstancePair, life::configuration> life::all_configs;
+std::map<std::string, life::entity_spec>      life::all_entity_specs;
+std::map<std::string, life::environment_spec> life::all_environment_specs;
+std::map<std::string, life::population_spec>  life::all_population_specs;
 
 int
-    main(int argc, char **argv)try 
+    main(int argc, char **argv) try
 {
   // TODO use an actual command-line library :P
   //
@@ -92,9 +118,9 @@ int
   life::generate_all_specs();
   // check all things that aren't being checked statically, in particular the
   // publications of components
-  //life::config_manager::check_all_configs_correct();
+  // life::config_manager::check_all_configs_correct();
 
-  //std::hash<std::string> hash_fn{};
+  // std::hash<std::string> hash_fn{};
 
   if (argc == 2 && std::string(argv[1]) == "-h")
   {
@@ -135,8 +161,8 @@ int
     std::string              l;
     while (std::getline(pop_file, l)) ls.push_back(l);
     life::population_spec pop_con;
-    pop_con  = pop_con.parse(ls);
-    auto pop = life::make_population(pop_con);
+    pop_con           = pop_con.parse(ls);
+    auto          pop = life::make_population(pop_con);
     std::ifstream env_file(argv[3]);
     if (!env_file.is_open())
     {
@@ -148,25 +174,36 @@ int
     while (std::getline(env_file, e)) es.push_back(e);
     life::environment_spec env_con;
     env_con  = env_con.parse(es);
-    auto env= life::make_environment(env_con);
+    auto env = life::make_environment(env_con);
 
-	
-	life::global_path += "data/";
-	pop = env.evaluate(pop);
-    //auto       v = pop.get_as_vector();
-   // for(auto &org :  v)
-	//		std::cout <<  std::get<double>(org.data.get_value("food-eaten,double"));
+    life::global_path += "data/";
+    pop = env.evaluate(pop);
+    // auto       v = pop.get_as_vector();
+    // for(auto &org :  v)
+    //		std::cout <<
+    //std::get<double>(org.data.get_value("food-eaten,double"));
   } else if (argc > 2 && std::string(argv[1]) == "-d")
   {
-	  life::parser p;
-	  auto [pop_con, env_con]  = p.parse(argv[2]);
-    //auto pop= life::make_population(pop_con);
-    //auto env= life::make_environment(env_con);
+    life::parser p;
+    p.parse(argv[2]);
+    auto vars = parse_all_parser_blocks(p);
+    if (vars.find("E") == vars.end())
+    {
+      std::cout << "error: " << argv[2]
+                << " does not have environment E to generate\n";
+    } else if (!std::holds_alternative<life::environment_spec>(vars["E"]))
+    {
+      std::cout << "error: " << argv[2] << " must be of type environment\n";
+    } else
+    std::cout << std::get<life::environment_spec>(vars["E"]).dump(0);
+
+    // auto pop= life::make_population(pop_con);
+    // auto env= life::make_environment(env_con);
     std::cout << "done" << std::endl;
   }
   /*
   }  else if (argc == 3 && std::string(argv[1]) == "-v")
-	{
+        {
     true_experiments(argv[2], hash_fn);
     std::cout << "\nVerified all experiments succesfully\n";
 
@@ -306,4 +343,6 @@ int
   {
     std::cout << "ded: unknown command line arguments. try -h\n";
   }
-}  catch(...) { }
+} catch (...)
+{
+}
