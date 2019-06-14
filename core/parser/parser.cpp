@@ -223,7 +223,9 @@ void
   // match_braces();
   // check_syntax();
   // flatten_blocks();
-  if (!tokens_.empty()) parse_expression(0);
+  for (auto start = 0u; start != tokens_.size();
+      start      = variables_.back().second.range_.second )
+    parse_expression(start);
 
   for (auto [name, bl] : variables_)
   {
