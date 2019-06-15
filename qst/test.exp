@@ -1,11 +1,12 @@
 
 fs = 
- $sequence  {
-    one 	= 			$forager
-  two = $elite_replacement { 
- strength =  0.4 
+  $sequence  {
+     one 	= 		$forager
+     two = $elite_replacement { 
+ 	 	srength = 	784 
   }
- }
+}
+
 
 E = $cycle  { 
   world = !fs

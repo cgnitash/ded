@@ -116,15 +116,15 @@ void
 void
     parser::err_invalid_token(token tok, std::string message)
 {
-//	auto line = lines_[tok.location_.first - 1];
-//	line = line.substr(0,tok.location_.second);
-  std::cout << "parse-error\nLine"
-            << std::setw(4) << tok.location_.first  << ":"
-            << lines_[tok.location_.first - 1]<< term_colours::red_fg<<std::endl 
-            << std::string(tok.location_.second + 8, ' ') 
-             << std::string(tok.expr_.length(), '~')
-            << "\n"
-            << std::string(tok.location_.second + 8, ' ') <<  "^ " << message
+  auto line_with_colour = lines_[tok.location_.first - 1];
+  line_with_colour.insert(tok.location_.second + tok.expr_.length(),
+                          term_colours::reset);
+  line_with_colour.insert(tok.location_.second - 1, term_colours::red_fg);
+  std::cout << "parse-error\nLine" << std::setw(4) << tok.location_.first << ":"
+            << line_with_colour << term_colours::red_fg << std::endl
+            << std::string(tok.location_.second + 8, ' ')
+            << std::string(tok.expr_.length(), '~') << "\n"
+            << std::string(tok.location_.second + 8, ' ') << "^ " << message
             << term_colours::reset << std::endl;
 }
 
