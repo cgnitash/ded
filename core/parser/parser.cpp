@@ -12,7 +12,7 @@
 
 namespace life {
 
-const std::regex parser::valid_symbol_{ R"~~(^(\s+|\{|\}|[\.\w]+|\$\w+|\!\w+|\=))~~" };
+const std::regex parser::valid_symbol_{ R"~~(^(\s+|\{|\}|[\.\-\w]+|\$\w+|\!\w+|\=))~~" };
 
 void
     parser::open_file(std::string file_name)
@@ -48,15 +48,17 @@ void
       if (!ranges::all_of(m.str(), ::isspace))
         tokens_.push_back(token{ parse_token_type(m.str()),
                                  m.str(),
-                                 { line_number + 1, i - line.cbegin() + 1 } });
+                                 { line_number, i - line.cbegin()} });
 
     if (i != line.cend())
       err_unknown_symbol({ line_number, i - line.cbegin() });
   }
 
+  /*
   for (auto e : tokens_)
     std::cout << "symbol :" << e.expr_ << " at position " << e.location_.first
               << "," << e.location_.second << std::endl;
+			  */
 }
 
 void
@@ -116,15 +118,16 @@ void
 void
     parser::err_invalid_token(token tok, std::string message)
 {
-  auto line_with_colour = lines_[tok.location_.first - 1];
-  line_with_colour.insert(tok.location_.second + tok.expr_.length(),
-                          term_colours::reset);
-  line_with_colour.insert(tok.location_.second - 1, term_colours::red_fg);
-  std::cout << "parse-error\nLine" << std::setw(4) << tok.location_.first << ":"
+  auto line             = tok.location_.first;
+  auto column           = tok.location_.second;
+  auto line_with_colour = lines_[line];
+  line_with_colour.insert(column + tok.expr_.length(), term_colours::reset);
+  line_with_colour.insert(column, term_colours::red_fg);
+  std::cout << "parse-error\nLine" << std::setw(4) << line + 1 << ":"
             << line_with_colour << term_colours::red_fg << std::endl
-            << std::string(tok.location_.second + 8, ' ')
+            << std::string(column + 9, ' ')
             << std::string(tok.expr_.length(), '~') << "\n"
-            << std::string(tok.location_.second + 8, ' ') << "^ " << message
+            << std::string(column + 9, ' ') << "^ " << message
             << term_colours::reset << std::endl;
 }
 
@@ -220,18 +223,17 @@ void
 
   open_file(file_name);
   lex();
-  // match_braces();
-  // check_syntax();
-  // flatten_blocks();
   for (auto start = 0u; start != tokens_.size();
       start      = variables_.back().second.range_.second )
     parse_expression(start);
 
+  /*
   for (auto [name, bl] : variables_)
   {
     std::cout << name.expr_ << "\n";
     print(bl);
   }
+  */
 
   return;
 }

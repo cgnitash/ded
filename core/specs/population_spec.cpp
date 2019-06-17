@@ -10,23 +10,22 @@
 
 #include "entity_spec.h"
 #include "population_spec.h"
+#include "../configuration.h"
 
 namespace life {
 
 population_spec::population_spec(parser p, block blk)
 {
-/*
-  *this =
-      ranges::find_if(life::all_environment_specs,
-                      [&](auto ns) { return ns.first == blk.name_.substr(1); })
-          ->second;
+
+  *this = life::all_population_specs[blk.name_.substr(1)];
+
   for (auto over : blk.overrides_)
   {
     auto name  = over.first;
     auto value = over.second;
 
     auto f = ranges::find_if(parameters_, [&](auto param) {
-      return param.first == name.expr_.substr(1);
+      return param.first == name.expr_;
     });
     if (f == parameters_.end())
     {
@@ -51,28 +50,17 @@ population_spec::population_spec(parser p, block blk)
     auto name       = blover.first;
     auto nested_blk = blover.second;
 
-	auto ct = p.type_of_block(nested_blk);
-	  if (ct != "environment")
+	auto ct = config_manager::type_of_block(nested_blk.name_.substr(1));
+	  if (ct != "entity")
     {
-      p.err_invalid_token(
-          name, "override of " + name.expr_ + " must be of type environment");
+      p.err_invalid_token(name,
+                          "override of " + name.expr_ +
+                              " inside population:: must be of type entity");
       throw parser_error{};
     }
 
-    auto f = ranges::find_if(nested_, [&](auto param) {
-      return param.first == name.expr_.substr(1);
-    });
-    if (f == nested_.end())
-    {
-      p.err_invalid_token(
-          name, "this does not override any nested environments " + blk.name_);
-      throw parser_error{};
-    }
-
-    f->second.e = std::make_unique<environment_spec>(
-        life::environment_spec{ p, nested_blk });
+    es_ = life::entity_spec{ p, nested_blk };
   }
-  */
 }
 
 std::string population_spec::dump(long depth)

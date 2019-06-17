@@ -15,10 +15,8 @@ namespace life {
 environment_spec::environment_spec(parser p, block blk)
 {
 
-  *this =
-      ranges::find_if(life::all_environment_specs,
-                      [&](auto ns) { return ns.first == blk.name_.substr(1); })
-          ->second;
+  *this = life::all_environment_specs.at(blk.name_.substr(1));
+
   for (auto over : blk.overrides_)
   {
     auto name  = over.first;

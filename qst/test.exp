@@ -1,15 +1,35 @@
 
-fs = 
+
+#e = $markov_brain {
+#     hiddens = 0.5
+#	 outputs = 4
+#	}
+#
+#P = $linear { 
+#	sze = 40
+#	entity = !e # `entity` is special
+#	track-lineage = 5
+#	}
+#
+
+
+#fs = 
+#  $sequence  {
+#     one 	= 		$forager
+#     two = $elite_replacement { 
+# 	 	strength = 	0.4 
+#  }
+#}
+#
+#
+E = $cycle  { 
+ count = 1.0
+  world = #!fs
   $sequence  {
      one 	= 		$forager
      two = $elite_replacement { 
- 	 	srength = 	784 
+ 	 	strength = 	0.4 
   }
 }
-
-
-E = $cycle  { 
-  world = !fs
- count = 10
 }
 

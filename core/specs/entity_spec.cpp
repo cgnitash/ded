@@ -8,11 +8,70 @@
 #include <variant>
 
 #include "entity_spec.h"
+#include "../configuration.h"
 
 namespace life {
 
-entity_spec::entity_spec(parser , block )
+entity_spec::entity_spec(parser p, block blk)
 {
+
+
+ auto  t =  life::all_entity_specs[blk.name_.substr(1)];
+
+  *this = t;
+
+  for (auto over : blk.overrides_)
+  {
+    auto name  = over.first;
+    auto value = over.second;
+
+    auto f = ranges::find_if(parameters_, [&](auto param) {
+      return param.first == name.expr_;
+    });
+    if (f == parameters_.end())
+    {
+      p.err_invalid_token(name,
+                          "this does not override any parameters of " + name_);
+      throw parser_error{};
+    }
+
+    configuration_primitive cp;
+    cp.parse(value.expr_);
+    if (cp.type_as_string() != f->second.type_as_string())
+    {
+      p.err_invalid_token(
+          value, "type mismatch, should be " + f->second.type_as_string());
+      throw parser_error{};
+    }
+    f->second = cp;
+  }
+
+  for (auto blover : blk.nested_)
+  {
+    auto name       = blover.first;
+    auto nested_blk = blover.second;
+
+	auto ct = config_manager::type_of_block(nested_blk.name_.substr(1));
+	  if (ct != "entity")
+    {
+      p.err_invalid_token(
+          name, "override of " + name.expr_ + " must be of type entity");
+      throw parser_error{};
+    }
+
+    auto f = ranges::find_if(nested_, [&](auto param) {
+      return param.first == name.expr_;
+    });
+    if (f == nested_.end())
+    {
+      p.err_invalid_token(
+          name, "this does not override any nested entitys of " + blk.name_);
+      throw parser_error{};
+    }
+
+    f->second.e = std::make_unique<entity_spec>(
+        life::entity_spec{ p, nested_blk });
+  }
 }
 
 std::string

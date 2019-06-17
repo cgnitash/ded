@@ -47,13 +47,17 @@ std::map<std::string,
 
   for (auto [name, bl] : p.variables())
   {
-    std::cout << name.expr_ << "#\n";
-    p.print(bl);
+    //std::cout << name.expr_ << "#\n";
+    //p.print(bl);
     auto ct = life::config_manager::type_of_block(bl.name_.substr(1));
     if (ct == "environment") m[name.expr_] = life::environment_spec{ p, bl };
     if (ct == "entity") m[name.expr_] = life::entity_spec{ p, bl };
     if (ct == "population") m[name.expr_] = life::population_spec{ p, bl };
-    if (ct == "NONE") { std::cout << "oops: not a component!\n"; }
+    if (ct == "NONE")
+    {
+      std::cout << "oops: not a component!\n";
+      throw std::logic_error{ "" };
+    }
   }
 
   return m;
@@ -102,18 +106,18 @@ std::vector<std::tuple<life::configuration, life::configuration, std::string>>
 
 long life::entity::entity_id_ = 0;
 
-std::string life::global_path = "./";
 
 // std::map<life::ModuleInstancePair, life::configuration> life::all_configs;
-std::map<std::string, life::entity_spec>      life::all_entity_specs;
-std::map<std::string, life::environment_spec> life::all_environment_specs;
-std::map<std::string, life::population_spec>  life::all_population_specs;
+//std::map<std::string, life::entity_spec>      life::all_entity_specs;
+//std::map<std::string, life::environment_spec> life::all_environment_specs;
+//std::map<std::string, life::population_spec>  life::all_population_specs;
 
 int
     main(int argc, char **argv) try
 {
   // TODO use an actual command-line library :P
   //
+  life::global_path = "./";
 
   life::generate_all_specs();
   // check all things that aren't being checked statically, in particular the
@@ -186,16 +190,49 @@ int
   {
     life::parser p;
     p.parse(argv[2]);
-    auto vars = parse_all_parser_blocks(p);
+//    auto vars = parse_all_parser_blocks(p);
+
+    std::map<std::string,
+             std::variant<life::entity_spec,
+                          life::environment_spec,
+                          life::population_spec>>
+        vars;
+
+	auto vs = p.variables();
+    for (auto [name, bl] : vs)
+    {
+      // std::cout << name.expr_ << "#\n";
+      // p.print(bl);
+      auto ct = life::config_manager::type_of_block(bl.name_.substr(1));
+      if (ct == "environment") vars[name.expr_] = life::environment_spec{ p, bl };
+	  else if (ct == "entity") vars[name.expr_] = life::entity_spec{ p, bl };
+      else if (ct == "population") vars[name.expr_] = life::population_spec{ p, bl };
+	  else 
+      {
+        std::cout << "oops: not a component!\n";
+        throw std::logic_error{ "" };
+      }
+    }
+
     if (vars.find("E") == vars.end())
     {
       std::cout << "error: " << argv[2]
                 << " does not have environment E to generate\n";
     } else if (!std::holds_alternative<life::environment_spec>(vars["E"]))
     {
-      std::cout << "error: " << argv[2] << " must be of type environment\n";
+      std::cout << "error: E must be of type environment\n";
     } else
     std::cout << std::get<life::environment_spec>(vars["E"]).dump(0);
+
+    if (vars.find("P") == vars.end())
+    {
+      std::cout << "error: " << argv[2]
+                << " does not have population P to generate\n";
+    } else if (!std::holds_alternative<life::population_spec>(vars["P"]))
+    {
+      std::cout << "error: P must be of type population\n";
+    } else
+    std::cout << std::get<life::population_spec>(vars["P"]).dump(0);
 
     // auto pop= life::make_population(pop_con);
     // auto env= life::make_environment(env_con);

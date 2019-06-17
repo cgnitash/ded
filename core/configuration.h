@@ -34,25 +34,16 @@ namespace config_manager {
 inline std::string
     type_of_block(std::string name)
 {
-  {
-    auto find_spec = ranges::find_if(life::all_environment_specs, [&](auto ns) {
-      return ns.first == name;
-    });
-    if (find_spec != life::all_environment_specs.end()) return "environment";
-  }
-  {
-    auto find_spec = ranges::find_if(life::all_entity_specs, [&](auto ns) {
-      return ns.first == name;
-    });
-    if (find_spec != life::all_entity_specs.end()) return "entity";
-  }
-  {
-    auto find_spec = ranges::find_if(life::all_population_specs, [&](auto ns) {
-      return ns.first == name;
-    });
-    if (find_spec != life::all_population_specs.end()) return "population";
-  }
-return "NONE";
+  if (life::all_environment_specs.find(name) !=
+      life::all_environment_specs.end())
+    return "environment";
+  if (life::all_entity_specs.find(name) !=
+      life::all_entity_specs.end())
+    return "entity";
+  if (life::all_population_specs.find(name) !=
+      life::all_population_specs.end())
+    return "population";
+  return "NONE";
 }
 
 inline void
