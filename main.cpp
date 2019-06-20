@@ -32,36 +32,6 @@ void
   return;
 }
 
-std::map<std::string,
-         std::variant<life::entity_spec,
-                      life::environment_spec,
-                      life::population_spec>>
-    parse_all_parser_blocks(life::parser p)
-{
-
-  std::map<std::string,
-           std::variant<life::entity_spec,
-                        life::environment_spec,
-                        life::population_spec>>
-      m;
-
-  for (auto [name, bl] : p.variables())
-  {
-    //std::cout << name.expr_ << "#\n";
-    //p.print(bl);
-    auto ct = life::config_manager::type_of_block(bl.name_.substr(1));
-    if (ct == "environment") m[name.expr_] = life::environment_spec{ p, bl };
-    if (ct == "entity") m[name.expr_] = life::entity_spec{ p, bl };
-    if (ct == "population") m[name.expr_] = life::population_spec{ p, bl };
-    if (ct == "NONE")
-    {
-      std::cout << "oops: not a component!\n";
-      throw std::logic_error{ "" };
-    }
-  }
-
-  return m;
-}
 /*
 std::vector<std::tuple<life::configuration, life::configuration, std::string>>
     true_experiments(std::string file_name, std::hash<std::string> hash_fn)
@@ -106,11 +76,11 @@ std::vector<std::tuple<life::configuration, life::configuration, std::string>>
 
 long life::entity::entity_id_ = 0;
 
+std::string life::global_path = "./";
 
-// std::map<life::ModuleInstancePair, life::configuration> life::all_configs;
-//std::map<std::string, life::entity_spec>      life::all_entity_specs;
-//std::map<std::string, life::environment_spec> life::all_environment_specs;
-//std::map<std::string, life::population_spec>  life::all_population_specs;
+std::map<std::string, life::entity_spec>      life::all_entity_specs;
+std::map<std::string, life::environment_spec> life::all_environment_specs;
+std::map<std::string, life::population_spec>  life::all_population_specs;
 
 int
     main(int argc, char **argv) try
