@@ -123,14 +123,14 @@ entity_spec
   {
     auto l                  = *f;
     auto p                  = l.find(':');
-    inputs_[l.substr(0, p)] = signal_spec{l.substr(p+1)}; 
+    inputs_[l.substr(0, p)] = signal_spec{l}; 
   }
 
   for (++f; *f != "n"; f++)
   {
     auto l                   = *f;
     auto p                   = l.find(':');
-    outputs_[l.substr(0, p)] = signal_spec{l.substr(p+1)}; 
+    outputs_[l.substr(0, p)] = signal_spec{l}; 
   }
 
   for (++f; f != pop_dump.end(); )

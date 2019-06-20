@@ -1,0 +1,65 @@
+environment:cycle
+P
+count:100
+I
+O
+a
+b
+r
+R
+n
+world
+ environment:sequence
+ P
+ I
+ O
+ a
+ b
+ r
+ R
+ n
+ first
+  environment:replicate
+  P
+  num:3
+  I
+  O
+  a
+  b
+  x:tag1-double
+  r
+  R
+  x:tag1-double;10
+  n
+  env
+   environment:forager
+   P
+   density:0.100000
+   direction:true
+   grid_size:10
+   replace:true
+   sensor_range:4
+   updates:100
+   visualize:false
+   I
+   line_of_sight:in_sense-<double,inputs>
+   O
+   action:out_sense-<double,outputs>
+   a
+   b
+   food_eaten:tag1-double
+   r
+   R
+   n
+ second
+  environment:elite_replacement
+  P
+  strength:0.400000
+  I
+  O
+  a
+  value:tag1-double
+  b
+  r
+  R
+  n

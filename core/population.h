@@ -51,7 +51,7 @@ public:
 
   void snapshot(long i) { self_->snapshot_(i); }
 
-  std::vector<entity> get_as_vector() { return self_->get_as_vector_(); }
+  std::vector<entity> get_as_vector() const { return self_->get_as_vector_(); }
 
   void flush_unpruned() { self_->flush_unpruned(); }
 
@@ -92,7 +92,7 @@ private:
     virtual void          configure_(population_spec) = 0;
 
     virtual size_t                    size_() const                     = 0;
-    virtual std::vector<life::entity> get_as_vector_()                  = 0;
+    virtual std::vector<life::entity> get_as_vector_()                  const = 0;
     virtual void                      merge_(std::vector<life::entity>) = 0;
     virtual void                      prune_lineage_(long)              = 0;
     virtual void                      snapshot_(long)                   = 0;
@@ -116,7 +116,7 @@ private:
 
     void merge_(std::vector<entity> v) override { data_.merge(v); }
 
-    std::vector<entity> get_as_vector_() override
+    std::vector<entity> get_as_vector_() const override
     {
       return data_.get_as_vector();
     }

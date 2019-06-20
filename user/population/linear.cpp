@@ -41,7 +41,7 @@ void
 }
 
 std::vector<life::entity>
-    linear::get_as_vector()
+    linear::get_as_vector()const 
 {
   return pop_;
 }

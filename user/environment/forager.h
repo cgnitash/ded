@@ -19,7 +19,7 @@
 
 class forager {
 
-  std::string food_eaten_tag_ = "food_eaten,double";
+  std::string food_eaten_tag_ = "double";
 
   std::string org_input_los_tag_     = "<double,sensor_range>";
   std::string org_output_action_tag_ = "<double,2>";
@@ -92,7 +92,7 @@ public:
     es.bind_parameter("sensor_range",sensor_range_);
     es.bind_parameter("direction",directional_);
  
-    es.bind_post("food_eaten",food_eaten_tag_);
+    es.bind_post("food_eaten","double");
 
     //es.bind_input("line_of_sight",org_input_los_tag_);
     //es.bind_output("action",org_output_action_tag_);

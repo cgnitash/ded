@@ -19,9 +19,7 @@ namespace life {
 
 struct trace
 {
-  //signal_spec signal_;
-  std::string name_;
-  std::string identifier_;
+  signal_spec signal_;
   int         frequency_;
 };
 
@@ -60,8 +58,8 @@ class environment_spec {
   } io_;
   struct
   {
-    std::map<std::string, std::string> pre_;
-    std::map<std::string, std::string> post_;
+    std::map<std::string, signal_spec> pre_;
+    std::map<std::string, signal_spec> post_;
   } tags_;
   std::map<std::string, nested_spec> nested_;
   std::vector<std::pair<std::pair<std::string, std::string>,
@@ -122,42 +120,42 @@ public:
 
   void bind_pre(std::string name, std::string value)
   {
-    tags_.pre_[name] = value;
+    tags_.pre_[name] = signal_spec{ name, name, value };
   }
 
   void configure_pre(std::string name, std::string &value)
   {
-    value = tags_.pre_[name];
+    value = tags_.pre_[name].id_type_specifier() ;
   }
 
   void bind_post(std::string name, std::string value)
   {
-    tags_.post_[name] =  value;
+    tags_.post_[name] =  signal_spec{ name, name, value };
   }
 
   void configure_post(std::string name, std::string &value)
   {
-    value = tags_.post_[name];
+    value = tags_.post_[name].id_type_specifier();
   }
 
   void bind_input(std::string name, std::string value)
   {
-    io_.inputs_[name] = signal_spec{name,name + "-" + value};
+    io_.inputs_[name] = signal_spec{ name, name, value };
   }
 
   void configure_input(std::string name, std::string &value)
   {
-    value = io_.inputs_[name].identifier();
+    value = io_.inputs_[name].id_type_specifier();
   }
 
   void bind_output(std::string name, std::string value)
   {
-    io_.outputs_[name] = signal_spec{name,name + "-" + value};
+    io_.outputs_[name] = signal_spec{ name, name, value };
   }
 
   void configure_output(std::string name, std::string &value)
   {
-    value = io_.outputs_[name].identifier();
+    value = io_.outputs_[name].id_type_specifier();
   }
 
   void bind_environment(std::string name, environment_spec env)

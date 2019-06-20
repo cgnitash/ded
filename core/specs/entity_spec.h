@@ -59,22 +59,22 @@ public:
 
   void bind_input(std::string name, std::string value)
   {
-    inputs_[name] = signal_spec{name,name + "-" + value};
+    inputs_[name] = signal_spec{ name, name, value };
   }
 
   void configure_input(std::string name, std::string &value)
   {
-    value = inputs_[name].identifier();
+    value = inputs_[name].id_type_specifier();
   }
 
   void bind_output(std::string name, std::string value)
   {
-    outputs_[name] = signal_spec{name,name + "-" + value};
+    outputs_[name] = signal_spec{ name, name, value };
   }
 
   void configure_output(std::string name, std::string &value)
   {
-    value = outputs_[name].identifier();
+    value = outputs_[name].id_type_specifier();
   }
 
   void bind_entity(std::string name, entity_spec env)

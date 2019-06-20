@@ -138,6 +138,7 @@ void
              //<< "obj_files/qst_parser.o " << flags
              << "obj_files/parser.o " << flags
              << "obj_files/token.o " << flags
+             << "obj_files/signal_spec.o " << flags
              << "obj_files/population_spec.o " << flags
              << "obj_files/entity_spec.o " << flags
              << "obj_files/environment_spec.o " << flags
@@ -182,6 +183,12 @@ void
                 "\n\t$("
              << flags << "flags) -c core/parser/parser.cpp -o " << flags
              << "obj_files/parser.o"
+                "\n\n"
+             << flags
+             << "obj_files/signal_spec.o : core/specs/signal_spec.cpp"
+                "\n\t$("
+             << flags << "flags) -c core/specs/signal_spec.cpp -o " << flags
+             << "obj_files/signal_spec.o"
                 "\n\n"
              << flags
              << "obj_files/population_spec.o : core/specs/population_spec.cpp"

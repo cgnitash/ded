@@ -16,10 +16,9 @@ public:
   life::population_spec publish_configuration()
   {
     life::population_spec ps{"null_population"};
-    //con["parameters"] = nullptr;
     return ps;
   }
-  std::vector<life::entity> get_as_vector() { return {}; }
+  std::vector<life::entity> get_as_vector() const { return {}; }
 
   size_t size() const { return {}; }
   void   merge(std::vector<life::entity>) {}

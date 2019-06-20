@@ -18,7 +18,7 @@ class replicate {
 
   long num_ = 1;
 
-  std::string x_tag_ = "x,double";
+  std::string x_tag_ = "double";
 
   life::environment_spec env_{ "null_environment" };
   life::environment      env = life::make_environment(env_);
@@ -32,7 +32,7 @@ public:
 
     es.bind_parameter("num", num_);
 
-    es.bind_post("x", x_tag_);
+    es.bind_post("x", "double");
 
     es.bind_environment("env", env_);
     es.bind_environment_post_constraints("env", { x_tag_ });

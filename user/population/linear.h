@@ -53,7 +53,7 @@ public:
   }
 
   size_t                    size() const { return pop_.size(); }
-  std::vector<life::entity> get_as_vector();
+  std::vector<life::entity> get_as_vector()const ;
   void                      merge(std::vector<life::entity>);
   void                      snapshot(long) const;
   void                      prune_lineage(long);

@@ -9,9 +9,9 @@
 
 class smoosh {
 
-  std::string d1_tag_ = "d1,double";
-  std::string d2_tag_ = "d2,double";
-  std::string wd_tag_ = "wd,double";
+  std::string d1_tag_ = "double";
+  std::string d2_tag_ = "double";
+  std::string wd_tag_ = "double";
   double      weight_  = 0.5;
 
 public:
@@ -22,10 +22,10 @@ public:
     life::environment_spec es{"smoosh"};
     es.bind_parameter("weight",weight_);
 
-    es.bind_pre("d1",d1_tag_);
-    es.bind_pre("d2",d2_tag_);
+    es.bind_pre("d1", "double");
+    es.bind_pre("d2", "double");
 
-    es.bind_post("wd",wd_tag_);
+    es.bind_post("wd", "double");
 
     return es;
   }

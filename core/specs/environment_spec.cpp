@@ -79,11 +79,6 @@ environment_spec::environment_spec(parser p, block blk)
         life::environment_spec{ p, nested_blk });
   }
 
-  /*
-  for (auto tag : tag_flow_constraints_) {
-//	auto left = tag.first.first == "pre" ? std::get<environment_spec>(nested_[tag.first.second].e).pre_constraints();
-  }
- */
 }
 
 std::string
@@ -91,11 +86,13 @@ std::string
 {
   auto alignment = "\n" + std::string(depth, ' ');
 
+  /*
   auto pad = [&] {
     return ranges::view::transform(
                [&](auto p) { return alignment + p.first + ":" + p.second; }) |
            ranges::action::join;
   };
+  */
 
   return alignment + "environment:" + name_ + alignment + "P" +
          (parameters_ | ranges::view::transform([&](auto parameter) {
@@ -113,18 +110,26 @@ std::string
             return alignment + sig.second.full_name() ;
           }) |
           ranges::action::join) +
-         alignment + "a" + (tags_.pre_ | pad()) + alignment + "b" +
-         (tags_.post_ | pad()) +
+         alignment + "a" +
+         (tags_.pre_ | ranges::view::transform([&](auto sig) {
+            return alignment + sig.second.full_name() ;
+          }) |
+          ranges::action::join) +
+         alignment + "b" +
+         (tags_.post_ | ranges::view::transform([&](auto sig) {
+            return alignment + sig.second.full_name() ;
+          }) |
+          ranges::action::join) +
          // needs to go
          alignment + "r" +
          (traces_.pre_ | ranges::view::transform([&](auto trace) {
-            return alignment + trace.name_ + ":" + trace.identifier_ + ";" +
+            return alignment + trace.signal_.full_name() +
                    std::to_string(trace.frequency_);
           }) |
           ranges::action::join) +
          alignment + "R" +
          (traces_.post_ | ranges::view::transform([&](auto trace) {
-            return alignment + trace.name_ + ":" + trace.identifier_ + ";" +
+            return alignment + trace.signal_.full_name() +
                    std::to_string(trace.frequency_);
           }) |
           ranges::action::join) +
@@ -157,48 +162,44 @@ environment_spec
   {
     auto l                      = *f;
     auto p                      = l.find(':');
-    io_.inputs_[l.substr(0, p)] = signal_spec{l.substr(p+1)}; 
+    io_.inputs_[l.substr(0, p)] = signal_spec{l}; 
   }
 
   for (++f; *f != "a"; f++)
   {
     auto l                       = *f;
     auto p                       = l.find(':');
-    io_.outputs_[l.substr(0, p)] = signal_spec{l.substr(p+1)}; 
+    io_.outputs_[l.substr(0, p)] = signal_spec{l}; 
   }
 
   for (++f; *f != "b"; f++)
   {
     auto l                     = *f;
     auto p                     = l.find(':');
-    tags_.pre_[l.substr(0, p)] = l.substr(p + 1);
+    tags_.pre_[l.substr(0, p)] =  signal_spec{l};
   }
 
   for (++f; *f != "r"; f++)
   {
     auto l                      = *f;
     auto p                      = l.find(':');
-    tags_.post_[l.substr(0, p)] = l.substr(p + 1);
+    tags_.post_[l.substr(0, p)] =  signal_spec{l};
   }
 
   for (++f; *f != "R"; f++)
   {
     auto l = *f;
-    auto p = l.find(':');
-    auto q = l.find(';');
-    traces_.pre_.push_back(trace{ l.substr(0, p),
-                                  l.substr(p + 1, q - p - 1),
-                                  std::stoi(l.substr(q + 1)) });
+    auto p = l.find(';');
+	signal_spec sp{l.substr(0, p)};
+    traces_.pre_.push_back({sp, std::stoi(l.substr(p + 1)) });
   }
 
   for (++f; *f != "n"; f++)
   {
     auto l = *f;
-    auto p = l.find(':');
-    auto q = l.find(';');
-    traces_.post_.push_back(trace{ l.substr(0, p),
-                                  l.substr(p + 1, q - p - 1),
-                                  std::stoi(l.substr(q + 1)) });
+    auto p = l.find(';');
+	signal_spec sp{l.substr(0, p)};
+    traces_.post_.push_back({ sp , std::stoi(l.substr(p + 1)) });
   }
 
   for (++f; f != pop_dump.end();)
@@ -240,11 +241,11 @@ std::string
   out << term_colours::yellow_fg << "pre-tags----" << term_colours::reset
       << "\n";
   for (auto [pre_tag, value] : tags_.pre_)
-    out << std::setw(26) << pre_tag << " : " << value << "\n";
+    out << std::setw(26) << pre_tag << " : " << value.full_name() << "\n";
   out << term_colours::yellow_fg << "post_tags----" << term_colours::reset
       << "\n";
   for (auto [post_tag, value] : tags_.post_)
-    out << std::setw(26) << post_tag << " : " << value << "\n";
+    out << std::setw(26) << post_tag << " : " << value.full_name() << "\n";
 
   out << term_colours::yellow_fg << "nested----" << term_colours::reset << "\n";
   for (auto &[name, nspec] : nested_)

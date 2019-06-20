@@ -17,8 +17,6 @@ class cycle {
 
   long count_     = 1;
 
-  std::string score_tag_ = "score,double";
-
   life::environment_spec world_{"null_environment"};
   life::environment world = life::make_environment(world_);
 

@@ -62,37 +62,11 @@ public:
     global_path += class_name + "/";
     std::experimental::filesystem::create_directory(global_path);
 
-    for (auto n : traces_.pre_)
-      if (invocations_ && !(invocations_ % n.frequency_))
-      {
-        std::ofstream pop_stats_file{ life::global_path +
-                                      n.name_ + "_" +
-                                      std::to_string(invocations_) + ".csv" };
-        pop_stats_file << "id," << n.name_ << "\n";
-        for (const auto &org : p.get_as_vector())
-          pop_stats_file << org.get_id() << ","
-                         << std::get<double>(
-                                org.data.get_value(n.identifier_))
-                         << std::endl;
-        // p.record(n.trace_);
-      }
+	record_traces(p, traces_.pre_);
 
     auto p_r = self_->evaluate_(p);
 
-    for (auto n : traces_.post_)
-      if (invocations_ && !(invocations_ % n.frequency_))
-      {
-        std::ofstream pop_stats_file{ life::global_path +
-                                      n.name_ + "_" +
-                                      std::to_string(invocations_) + ".csv" };
-        pop_stats_file << "id," << n.name_ << "\n";
-        for (const auto &org : p_r.get_as_vector())
-          pop_stats_file << org.get_id() << ","
-                         << std::get<double>(
-                                org.data.get_value(n.identifier_))
-                         << std::endl;
-        // p.record(n.trace_);
-      }
+	record_traces(p_r, traces_.post_);
 
     life::global_path.pop_back();
     life::global_path = life::global_path.substr(
@@ -207,6 +181,26 @@ private:
     UserEnvironment data_;
   };
 
+  std::unique_ptr<environment_interface> self_;
+
+  void record_traces(const population& pop, std::vector<trace> ts) {
+
+    for (auto n : ts)
+      if (invocations_ && !(invocations_ % n.frequency_))
+      {
+        std::ofstream pop_stats_file{ life::global_path +
+                                      n.signal_.user_name() + "_" +
+                                      std::to_string(invocations_) + ".csv" };
+        pop_stats_file << "id," << n.signal_.user_name() << "\n";
+        for (const auto &org : pop.get_as_vector())
+          pop_stats_file << org.get_id() << ","
+                         << std::get<double>(
+                                org.data.get_value(n.signal_.id_type_specifier()))
+                         << std::endl;
+        // p.record(n.trace_);
+      }
+  }
+
   trace_config traces_;
 
   int invocations_ = 0;
@@ -214,8 +208,6 @@ private:
   // wtf? regular string compiles 'maybe' but is wrong
   // std::string user_specified_name_;
   std::vector<std::string> user_specified_name_;
-
-  std::unique_ptr<environment_interface> self_;
 };
 
 }   // namespace life

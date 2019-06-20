@@ -9,7 +9,7 @@
 
 class elite_replacement {
 
-  std::string value_tag_ = "value,double";
+  std::string value_tag_ = "double";
   double      strength_  = 0.1;
   int invoke_ = 0;
 
@@ -21,7 +21,7 @@ public:
     life::environment_spec es{"elite_replacement"};
     es.bind_parameter("strength",strength_);
 
-    es.bind_pre("value",value_tag_);
+    es.bind_pre("value", "double");
 
     return es;
   }
