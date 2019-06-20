@@ -9,18 +9,32 @@
 #include <regex>
 #include <string>
 
+#include "../parser/parser.h"
 #include "../term_colours.h"
 #include "configuration_primitive.h"
-#include "trace.h"
-#include "../parser/parser.h"
+#include "population_spec.h"
+#include "signal_spec.h"
 
 namespace life {
-class environment_spec {
 
+struct trace
+{
+  //signal_spec signal_;
+  std::string name_;
+  std::string identifier_;
+  int         frequency_;
+};
+
+struct trace_config
+{
+  std::vector<trace> pre_;
+  std::vector<trace> post_;
+};
+
+class environment_spec {
   struct nested_spec
   {
     std::unique_ptr<environment_spec> e;
-    // environment_spec *e = nullptr;
     struct
     {
       std::vector<std::string> pre_;
@@ -30,27 +44,19 @@ class environment_spec {
     nested_spec(const nested_spec &ns)
         : e(std::make_unique<environment_spec>(*ns.e)),
           constraints_(ns.constraints_)
-    // constraints_.post_(ns.constraints_.post_)
     {
     }
-    //~nested_spec() { delete e; }
   };
 
-  /*
-  struct trace_config 
-  {
-    std::vector<trace> pre_;
-    std::vector<trace> post_;
-  } ; */
- trace_config traces_;
+  trace_config traces_;
 
   std::string                                    name_;
   std::string                                    user_specified_name_;
   std::map<std::string, configuration_primitive> parameters_;
   struct
   {
-    std::map<std::string, std::string> inputs_;
-    std::map<std::string, std::string> outputs_;
+    std::map<std::string, signal_spec> inputs_;
+    std::map<std::string, signal_spec> outputs_;
   } io_;
   struct
   {
@@ -70,15 +76,18 @@ public:
   //~environment_spec() = default;
 
   environment_spec(std::string name = "") : name_(name) {}
-  //environment_spec(parser);
-  environment_spec(parser,block);
+  // environment_spec(parser);
+  environment_spec(parser, block);
 
   auto name() const { return name_; }
 
   auto traces() const { return traces_; }
 
   auto get_user_specified_name() const { return user_specified_name_; }
-  auto set_user_specified_name(std::string name) { user_specified_name_ = name; }
+  auto set_user_specified_name(std::string name)
+  {
+    user_specified_name_ = name;
+  }
   /*
 
   auto parameters() const { return parameters_; }
@@ -123,7 +132,7 @@ public:
 
   void bind_post(std::string name, std::string value)
   {
-    tags_.post_[name] = value;
+    tags_.post_[name] =  value;
   }
 
   void configure_post(std::string name, std::string &value)
@@ -133,22 +142,22 @@ public:
 
   void bind_input(std::string name, std::string value)
   {
-    io_.inputs_[name] = value;
+    io_.inputs_[name] = signal_spec{name,name + "-" + value};
   }
 
   void configure_input(std::string name, std::string &value)
   {
-    value = io_.inputs_[name];
+    value = io_.inputs_[name].identifier();
   }
 
   void bind_output(std::string name, std::string value)
   {
-    io_.outputs_[name] = value;
+    io_.outputs_[name] = signal_spec{name,name + "-" + value};
   }
 
   void configure_output(std::string name, std::string &value)
   {
-    value = io_.outputs_[name];
+    value = io_.outputs_[name].identifier();
   }
 
   void bind_environment(std::string name, environment_spec env)
@@ -158,14 +167,6 @@ public:
 
   void configure_environment(std::string name, environment_spec &e)
   {
-    /*
-if (!nested_[name].e)
-{
-std::cout << "Warning: <" << name_ << ":" << name
-          << "> environment spec has not been bind-ed (probably error)\n";
-//      std::exit(1);
-} else
-  */
     e = *nested_[name].e;
   }
 
@@ -183,13 +184,13 @@ std::cout << "Warning: <" << name_ << ":" << name
   }
 
   void bind_tag_equality(std::pair<std::string, std::string> x,
-                     std::pair<std::string, std::string> y)
+                         std::pair<std::string, std::string> y)
   {
     tag_flow_equalities.push_back({ x, y });
   }
 
   void bind_tag_inequality(std::pair<std::string, std::string> x,
-                     std::pair<std::string, std::string> y)
+                           std::pair<std::string, std::string> y)
   {
     tag_flow_inequalities.push_back({ x, y });
   }
@@ -201,6 +202,11 @@ std::cout << "Warning: <" << name_ << ":" << name
 
   std::string pretty_print();
 
+  /*
+  void bind_all_entity_signals(population_spec);
+  void bind_all_entity_inputs(population_spec);
+  void bind_all_entity_outputs(population_spec);
+  */
 };
 
 }   // namespace life

@@ -12,6 +12,15 @@
 
 namespace life {
 
+	/*
+void
+    environment_spec::bind_all_entity_signals(population_spec ps)
+{
+  bind_all_entity_inputs(ps.es_.inputs());
+  bind_all_entity_outputs(ps.es_.outputs());
+}
+	*/
+
 environment_spec::environment_spec(parser p, block blk)
 {
 
@@ -94,19 +103,28 @@ std::string
                    parameter.second.value_as_string();
           }) |
           ranges::action::join) +
-         alignment + "I" + (io_.inputs_ | pad()) + alignment + "O" +
-         (io_.outputs_ | pad()) + alignment + "a" + (tags_.pre_ | pad()) +
-         alignment + "b" + (tags_.post_ | pad()) +
+         alignment + "I" +
+         (io_.inputs_ | ranges::view::transform([&](auto sig) {
+            return alignment + sig.second.full_name() ;
+          }) |
+          ranges::action::join) +
+         alignment + "O" +
+         (io_.outputs_ | ranges::view::transform([&](auto sig) {
+            return alignment + sig.second.full_name() ;
+          }) |
+          ranges::action::join) +
+         alignment + "a" + (tags_.pre_ | pad()) + alignment + "b" +
+         (tags_.post_ | pad()) +
          // needs to go
          alignment + "r" +
          (traces_.pre_ | ranges::view::transform([&](auto trace) {
-            return alignment + trace.name_+ ";" + trace.type_ + ":" + 
+            return alignment + trace.name_ + ":" + trace.identifier_ + ";" +
                    std::to_string(trace.frequency_);
           }) |
           ranges::action::join) +
          alignment + "R" +
          (traces_.post_ | ranges::view::transform([&](auto trace) {
-            return alignment + trace.name_+ ";" + trace.type_ + ":" + 
+            return alignment + trace.name_ + ":" + trace.identifier_ + ";" +
                    std::to_string(trace.frequency_);
           }) |
           ranges::action::join) +
@@ -115,7 +133,7 @@ std::string
          (nested_ | ranges::view::transform([&](auto nested) {
             return alignment + nested.first + nested.second.e->dump(depth + 1);
           }) |
-          ranges::action::join) ;
+          ranges::action::join);
 }
 
 environment_spec
@@ -139,14 +157,14 @@ environment_spec
   {
     auto l                      = *f;
     auto p                      = l.find(':');
-    io_.inputs_[l.substr(0, p)] = l.substr(p + 1);
+    io_.inputs_[l.substr(0, p)] = signal_spec{l.substr(p+1)}; 
   }
 
   for (++f; *f != "a"; f++)
   {
     auto l                       = *f;
     auto p                       = l.find(':');
-    io_.outputs_[l.substr(0, p)] = l.substr(p + 1);
+    io_.outputs_[l.substr(0, p)] = signal_spec{l.substr(p+1)}; 
   }
 
   for (++f; *f != "b"; f++)
@@ -166,21 +184,21 @@ environment_spec
   for (++f; *f != "R"; f++)
   {
     auto l = *f;
-    auto q = l.find(';');
     auto p = l.find(':');
-    traces_.pre_.push_back(trace{ l.substr(0, q),
-                             l.substr(q + 1, p - q - 1),
-                             std::stoi(l.substr(p + 1)) });
+    auto q = l.find(';');
+    traces_.pre_.push_back(trace{ l.substr(0, p),
+                                  l.substr(p + 1, q - p - 1),
+                                  std::stoi(l.substr(q + 1)) });
   }
 
   for (++f; *f != "n"; f++)
   {
     auto l = *f;
-    auto q = l.find(';');
     auto p = l.find(':');
-    traces_.post_.push_back(trace{ l.substr(0, q),
-                             l.substr(q + 1, p - q - 1),
-                             std::stoi(l.substr(p + 1)) });
+    auto q = l.find(';');
+    traces_.post_.push_back(trace{ l.substr(0, p),
+                                  l.substr(p + 1, q - p - 1),
+                                  std::stoi(l.substr(q + 1)) });
   }
 
   for (++f; f != pop_dump.end();)
@@ -214,11 +232,11 @@ std::string
         << "\n";
   out << term_colours::yellow_fg << "inputs----" << term_colours::reset << "\n";
   for (auto [input, value] : io_.inputs_)
-    out << std::setw(26) << input << " : " << value << "\n";
+    out << std::setw(26) << input << " : " << value.full_name() << "\n";
   out << term_colours::yellow_fg << "outputs----" << term_colours::reset
       << "\n";
   for (auto [output, value] : io_.outputs_)
-    out << std::setw(26) << output << " : " << value << "\n";
+    out << std::setw(26) << output << " : " << value.full_name() << "\n";
   out << term_colours::yellow_fg << "pre-tags----" << term_colours::reset
       << "\n";
   for (auto [pre_tag, value] : tags_.pre_)

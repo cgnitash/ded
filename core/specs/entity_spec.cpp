@@ -79,20 +79,23 @@ std::string
 {
   auto alignment = "\n" + std::string(depth, ' ');
 
-  auto pad = [&] {
-    return ranges::view::transform(
-               [&](auto p) { return alignment + p.first + ":" + p.second; }) |
-           ranges::action::join;
-  };
-
   return alignment + "entity:" + name_ + alignment + "P" +
          (parameters_ | ranges::view::transform([&](auto parameter) {
             return alignment + parameter.first + ":" +
                    parameter.second.value_as_string();
           }) |
           ranges::action::join) +
-         alignment + "I" + (inputs_ | pad()) + alignment + "O" +
-         (outputs_ | pad()) + alignment + "n" +
+         alignment + "I" +
+         (inputs_ | ranges::view::transform([&](auto sig) {
+            return alignment + sig.second.full_name() ;
+          }) |
+          ranges::action::join) +
+		 alignment + "O" + 
+         (outputs_ | ranges::view::transform([&](auto sig) {
+            return alignment + sig.second.full_name() ;
+          }) |
+          ranges::action::join) +
+          alignment + "n" +
          (nested_ | ranges::view::transform([&](auto nested) {
             return alignment + nested.first + nested.second.e->dump(depth + 1);
           }) |
@@ -120,14 +123,14 @@ entity_spec
   {
     auto l                  = *f;
     auto p                  = l.find(':');
-    inputs_[l.substr(0, p)] = l.substr(p + 1);
+    inputs_[l.substr(0, p)] = signal_spec{l.substr(p+1)}; 
   }
 
   for (++f; *f != "n"; f++)
   {
     auto l                   = *f;
     auto p                   = l.find(':');
-    outputs_[l.substr(0, p)] = l.substr(p + 1);
+    outputs_[l.substr(0, p)] = signal_spec{l.substr(p+1)}; 
   }
 
   for (++f; f != pop_dump.end(); )
@@ -163,11 +166,11 @@ std::string
         << "\n";
   out << term_colours::yellow_fg << "inputs----" << term_colours::reset << "\n";
   for (auto [input, value] : inputs_)
-    out << std::setw(26) << input << " : " << value << "\n";
+    out << std::setw(26) << input << " : " << value.full_name() << "\n";
   out << term_colours::yellow_fg << "outputs----" << term_colours::reset
       << "\n";
   for (auto [output, value] : outputs_)
-    out << std::setw(26) << output << " : " << value << "\n";
+    out << std::setw(26) << output << " : " << value.full_name() << "\n";
   return out.str();
 }
 }   // namespace life

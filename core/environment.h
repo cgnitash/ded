@@ -8,7 +8,6 @@
 #include "population.h"
 #include "signal.h"
 #include "specs/environment_spec.h"
-#include "specs/trace.h"
 
 #include <cassert>
 #include <experimental/filesystem>
@@ -66,12 +65,14 @@ public:
     for (auto n : traces_.pre_)
       if (invocations_ && !(invocations_ % n.frequency_))
       {
-        std::ofstream pop_stats_file{ life::global_path + n.name_ +
+        std::ofstream pop_stats_file{ life::global_path +
+                                      n.name_ + "_" +
                                       std::to_string(invocations_) + ".csv" };
         pop_stats_file << "id," << n.name_ << "\n";
         for (const auto &org : p.get_as_vector())
           pop_stats_file << org.get_id() << ","
-                         << std::get<double>(org.data.get_value(n.type_))
+                         << std::get<double>(
+                                org.data.get_value(n.identifier_))
                          << std::endl;
         // p.record(n.trace_);
       }
@@ -81,12 +82,14 @@ public:
     for (auto n : traces_.post_)
       if (invocations_ && !(invocations_ % n.frequency_))
       {
-        std::ofstream pop_stats_file{ life::global_path + n.name_ +
+        std::ofstream pop_stats_file{ life::global_path +
+                                      n.name_ + "_" +
                                       std::to_string(invocations_) + ".csv" };
         pop_stats_file << "id," << n.name_ << "\n";
         for (const auto &org : p_r.get_as_vector())
           pop_stats_file << org.get_id() << ","
-                         << std::get<double>(org.data.get_value(n.type_))
+                         << std::get<double>(
+                                org.data.get_value(n.identifier_))
                          << std::endl;
         // p.record(n.trace_);
       }

@@ -67,11 +67,11 @@ std::string population_spec::dump(long depth)
   {
     auto alignment = "\n" + std::string(depth, ' ');
 
-    auto pad = [&] {
+	/* auto pad = [&] {
       return ranges::view::transform(
                  [&](auto p) { return alignment + p.first + ":" + p.second; }) |
              ranges::action::join;
-    };
+    };*/
 
     return alignment + "population:" + name_ + alignment + "P" + 
            (parameters_ | ranges::view::transform([&](auto parameter) {
@@ -79,8 +79,9 @@ std::string population_spec::dump(long depth)
                      parameter.second.value_as_string();
             }) |
             ranges::action::join) +
-           alignment + "I" + (inputs_ | pad()) + alignment + "O" +
-           (outputs_ | pad()) + alignment + "E" + es_.dump(depth + 1);
+           //alignment + "I" + (inputs_ | pad()) + alignment + "O" +
+           //(outputs_ | pad()) + 
+		   alignment + "E" + es_.dump(depth + 1);
   }
 
   population_spec
@@ -91,7 +92,7 @@ std::string population_spec::dump(long depth)
 
     auto            f = ranges::begin(pop_dump) + 2;
 
-    for (; *f != "I"; f++)
+    for (; *f != "E"; f++)
     {
       auto                          l = *f;
       auto                          p = l.find(':');
@@ -103,6 +104,7 @@ std::string population_spec::dump(long depth)
       parameters_[l.substr(0, p)] = c;
 	}
 
+	/*
     for (; *f != "O"; f++)
     {
       auto                          l = *f;
@@ -116,6 +118,7 @@ std::string population_spec::dump(long depth)
       auto                          p = l.find(':');
       outputs_[l.substr(0, p)] = l.substr(p + 1);
 	}
+    */
 
     for (auto l = (++f) + 1; l != pop_dump.end(); l++)
     {
@@ -140,6 +143,7 @@ std::string population_spec::dump(long depth)
     for (auto [parameter, value] : parameters_)
       out << std::setw(26) << parameter << " : " << value.value_as_string()
           << "\n";
+	/*
     out << term_colours::yellow_fg << "inputs----" << term_colours::reset
         << "\n";
     for (auto [input, value] : inputs_)
@@ -148,6 +152,7 @@ std::string population_spec::dump(long depth)
         << "\n";
     for (auto [output, value] : outputs_)
       out << std::setw(26) << output << " : " << value << "\n";
+	  */
 
     return out.str();
   }  }

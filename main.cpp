@@ -156,12 +156,12 @@ int
     // auto       v = pop.get_as_vector();
     // for(auto &org :  v)
     //		std::cout <<
-    //std::get<double>(org.data.get_value("food-eaten,double"));
+    // std::get<double>(org.data.get_value("food-eaten,double"));
   } else if (argc > 2 && std::string(argv[1]) == "-d")
   {
     life::parser p;
     p.parse(argv[2]);
-//    auto vars = parse_all_parser_blocks(p);
+    //    auto vars = parse_all_parser_blocks(p);
 
     std::map<std::string,
              std::variant<life::entity_spec,
@@ -169,16 +169,19 @@ int
                           life::population_spec>>
         vars;
 
-	auto vs = p.variables();
+    auto vs = p.variables();
     for (auto [name, bl] : vs)
     {
       // std::cout << name.expr_ << "#\n";
       // p.print(bl);
       auto ct = life::config_manager::type_of_block(bl.name_.substr(1));
-      if (ct == "environment") vars[name.expr_] = life::environment_spec{ p, bl };
-	  else if (ct == "entity") vars[name.expr_] = life::entity_spec{ p, bl };
-      else if (ct == "population") vars[name.expr_] = life::population_spec{ p, bl };
-	  else 
+      if (ct == "environment")
+        vars[name.expr_] = life::environment_spec{ p, bl };
+      else if (ct == "entity")
+        vars[name.expr_] = life::entity_spec{ p, bl };
+      else if (ct == "population")
+        vars[name.expr_] = life::population_spec{ p, bl };
+      else
       {
         std::cout << "oops: not a component!\n";
         throw std::logic_error{ "" };
@@ -189,22 +192,32 @@ int
     {
       std::cout << "error: " << argv[2]
                 << " does not have environment E to generate\n";
-    } else if (!std::holds_alternative<life::environment_spec>(vars["E"]))
+      throw std::logic_error{ "" };
+    }
+    if (!std::holds_alternative<life::environment_spec>(vars["E"]))
     {
       std::cout << "error: E must be of type environment\n";
-    } else
-    std::cout << std::get<life::environment_spec>(vars["E"]).dump(0);
+      throw std::logic_error{ "" };
+    }
+
+    auto env = std::get<life::environment_spec>(vars["E"]);
+    std::cout << env.dump(0);
 
     if (vars.find("P") == vars.end())
     {
       std::cout << "error: " << argv[2]
-                << " does not have population P to generate\n";
-    } else if (!std::holds_alternative<life::population_spec>(vars["P"]))
+                << " does not have population P to seed\n";
+      throw std::logic_error{ "" };
+    }
+    if (!std::holds_alternative<life::population_spec>(vars["P"]))
     {
       std::cout << "error: P must be of type population\n";
-    } else
-    std::cout << std::get<life::population_spec>(vars["P"]).dump(0);
+      throw std::logic_error{ "" };
+    }
+    auto pop = std::get<life::population_spec>(vars["P"]);
+    std::cout << pop.dump(0);
 
+	//env.bind_all_entity_signals(pop);
     // auto pop= life::make_population(pop_con);
     // auto env= life::make_environment(env_con);
     std::cout << std::endl;
@@ -351,6 +364,6 @@ int
   {
     std::cout << "ded: unknown command line arguments. try -h\n";
   }
-} catch (const life::parser_error&)
+} catch (const life::parser_error &)
 {
 }

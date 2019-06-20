@@ -21,8 +21,8 @@ class forager {
 
   std::string food_eaten_tag_ = "food_eaten,double";
 
-  std::string org_input_los_tag_     = "line_of_sight,A<double,sensor_range>";
-  std::string org_output_action_tag_ = "action,A<double,2>";
+  std::string org_input_los_tag_     = "<double,sensor_range>";
+  std::string org_output_action_tag_ = "<double,2>";
 
   long grid_size_    = 10;
   long sensor_range_ = 4;
@@ -94,8 +94,10 @@ public:
  
     es.bind_post("food_eaten",food_eaten_tag_);
 
-    es.bind_input("line_of_sight",org_input_los_tag_);
-    es.bind_output("action",org_output_action_tag_);
+    //es.bind_input("line_of_sight",org_input_los_tag_);
+    //es.bind_output("action",org_output_action_tag_);
+    es.bind_input("line_of_sight","<double,sensor_range>");
+    es.bind_output("action","<double,2>");
     return es;
   }
 

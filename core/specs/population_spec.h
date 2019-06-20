@@ -19,8 +19,8 @@ namespace life {
 class population_spec {
   std::string                                    name_;
   std::map<std::string, configuration_primitive> parameters_;
-  std::map<std::string, std::string>             inputs_;
-  std::map<std::string, std::string>             outputs_;
+  //std::map<std::string, std::string>             inputs_;
+  //std::map<std::string, std::string>             outputs_;
   entity_spec                                    es_{ "null_entity" };
 
 public:
@@ -33,9 +33,9 @@ public:
 
   auto parameters() const { return parameters_; }
 
-  auto inputs() const { return inputs_; }
+  //auto inputs() const { return inputs_; }
 
-  auto outputs() const { return outputs_; }
+  //auto outputs() const { return outputs_; }
 
   template <typename T> void configure_parameter(std::string name, T &value)
   {
@@ -57,6 +57,7 @@ public:
 
   //  friend std::ostream &operator<<(std::ostream &out, population_spec e)
 
+  friend class environment_spec;
 };
 
 }   // namespace life

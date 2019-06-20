@@ -11,6 +11,7 @@
 
 #include "../term_colours.h"
 #include "configuration_primitive.h"
+#include "signal_spec.h"
 #include "../parser/parser.h"
 
 namespace life {
@@ -18,9 +19,6 @@ class entity_spec {
   struct nested_spec
   {
     std::unique_ptr<entity_spec> e;
-    // environment_spec *e = nullptr;
-    // std::vector<std::string> pre_constraints;
-    // std::vector<std::string> post_constraints;
     nested_spec() = default;
     nested_spec(const nested_spec &ns) : e(std::make_unique<entity_spec>(*ns.e))
     {
@@ -29,8 +27,8 @@ class entity_spec {
 
   std::string                                    name_;
   std::map<std::string, configuration_primitive> parameters_;
-  std::map<std::string, std::string>             inputs_;
-  std::map<std::string, std::string>             outputs_;
+  std::map<std::string, signal_spec>             inputs_;
+  std::map<std::string, signal_spec>             outputs_;
   std::map<std::string, nested_spec>             nested_;
 
 public:
@@ -61,22 +59,22 @@ public:
 
   void bind_input(std::string name, std::string value)
   {
-    inputs_[name] = value;
+    inputs_[name] = signal_spec{name,name + "-" + value};
   }
 
   void configure_input(std::string name, std::string &value)
   {
-    value = inputs_[name];
+    value = inputs_[name].identifier();
   }
 
   void bind_output(std::string name, std::string value)
   {
-    outputs_[name] = value;
+    outputs_[name] = signal_spec{name,name + "-" + value};
   }
 
   void configure_output(std::string name, std::string &value)
   {
-    value = outputs_[name];
+    value = outputs_[name].identifier();
   }
 
   void bind_entity(std::string name, entity_spec env)

@@ -125,7 +125,8 @@ void
   makefile << "\ncore_headers = components.h core/environment.h "
               "core/entity.h core/population.h core/encoding.h "
               "core/configuration.h core/specs/configuration_primitive.h "
-              "core/specs/entity_spec.h core/specs/environment_spec.h "
+              "core/specs/signal_spec.h core/specs/entity_spec.h "
+              "core/specs/environment_spec.h "
               "core/parser/token.h core/parser/parser.h "
               "core/signal.h core/utilities.h ";
 
