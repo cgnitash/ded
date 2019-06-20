@@ -182,6 +182,7 @@ int
 
     life::global_path += "data/";
     pop = env.evaluate(pop);
+    pop.flush_unpruned();
     // auto       v = pop.get_as_vector();
     // for(auto &org :  v)
     //		std::cout <<
@@ -236,7 +237,7 @@ int
 
     // auto pop= life::make_population(pop_con);
     // auto env= life::make_environment(env_con);
-    std::cout << "done" << std::endl;
+    std::cout << std::endl;
   }
   /*
   }  else if (argc == 3 && std::string(argv[1]) == "-v")
@@ -380,6 +381,6 @@ int
   {
     std::cout << "ded: unknown command line arguments. try -h\n";
   }
-} catch (...)
+} catch (const life::parser_error&)
 {
 }

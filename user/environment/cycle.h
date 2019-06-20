@@ -16,15 +16,11 @@
 class cycle {
 
   long count_     = 1;
-  //long snap_freq_ = 0;
 
   std::string score_tag_ = "score,double";
 
   life::environment_spec world_{"null_environment"};
   life::environment world = life::make_environment(world_);
-
-  // not here??
-  // long Seed_ = 0;
 
 public:
   cycle() { configure(publish_configuration()); }
@@ -32,20 +28,12 @@ public:
   life::environment_spec publish_configuration()
   {
     life::environment_spec es{"cycle"};
+
     es.bind_parameter("count",count_);
-    //ec["parameters"]["snapshot-frequency"] = snap_freq_;
-    // ec["parameters"]["SEED"] = Seed_;
 
-    //ec["input-tags"]  = nullptr;
-    //ec["output-tags"] = nullptr;
-
-    //ec["pre-tags"]  = nullptr;
-    //ec["post-tags"] = nullptr;
-
-    // o:in:fitness(P) must provide these tags
 	es.bind_environment("world",world_);
-	es.bind_tag_flow({"world","pre"},{"world","post"});
-    //ec["parameters"]["world"] = { world_[0], {}, {}, { score_tag_ } };
+
+	es.bind_tag_equality({"world","pre"},{"world","post"});
 
     return es;
   }
@@ -53,13 +41,10 @@ public:
   void configure(life::environment_spec es)
   {
     es.configure_parameter("count",count_);
-    //snap_freq_ = con["parameters"]["snapshot-frequency"];
-    // Seed_ = con["parameters"]["SEED"];
 
     es.configure_environment("world",world_);
 
-  world = life::make_environment(world_);
-    // std::srand(Seed_);
+    world = life::make_environment(world_);
   }
 
   life::population evaluate(life::population);

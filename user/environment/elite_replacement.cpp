@@ -39,5 +39,6 @@ life::population
                                           })) |
                  ranges::view::take(pop.size()));
 
+  populate.prune_lineage(invoke_++);
   return populate;
 }

@@ -69,6 +69,12 @@ environment_spec::environment_spec(parser p, block blk)
     f->second.e = std::make_unique<environment_spec>(
         life::environment_spec{ p, nested_blk });
   }
+
+  /*
+  for (auto tag : tag_flow_constraints_) {
+//	auto left = tag.first.first == "pre" ? std::get<environment_spec>(nested_[tag.first.second].e).pre_constraints();
+  }
+ */
 }
 
 std::string
@@ -94,12 +100,13 @@ std::string
          // needs to go
          alignment + "r" +
          (traces_.pre_ | ranges::view::transform([&](auto trace) {
-            return alignment + trace.trace_ + ":" + trace.trace_;
+            return alignment + trace.name_+ ";" + trace.type_ + ":" + 
+                   std::to_string(trace.frequency_);
           }) |
           ranges::action::join) +
          alignment + "R" +
          (traces_.post_ | ranges::view::transform([&](auto trace) {
-            return alignment + trace.trace_ + ":" +
+            return alignment + trace.name_+ ";" + trace.type_ + ":" + 
                    std::to_string(trace.frequency_);
           }) |
           ranges::action::join) +
@@ -108,7 +115,7 @@ std::string
          (nested_ | ranges::view::transform([&](auto nested) {
             return alignment + nested.first + nested.second.e->dump(depth + 1);
           }) |
-          ranges::action::join);
+          ranges::action::join) ;
 }
 
 environment_spec
@@ -159,27 +166,34 @@ environment_spec
   for (++f; *f != "R"; f++)
   {
     auto l = *f;
+    auto q = l.find(';');
     auto p = l.find(':');
-    traces_.pre_.push_back({ l.substr(0, p), std::stoi(l.substr(p + 1)) });
+    traces_.pre_.push_back(trace{ l.substr(0, q),
+                             l.substr(q + 1, p - q - 1),
+                             std::stoi(l.substr(p + 1)) });
   }
 
   for (++f; *f != "n"; f++)
   {
     auto l = *f;
+    auto q = l.find(';');
     auto p = l.find(':');
-    traces_.post_.push_back({ l.substr(0, p), std::stoi(l.substr(p + 1)) });
+    traces_.post_.push_back(trace{ l.substr(0, q),
+                             l.substr(q + 1, p - q - 1),
+                             std::stoi(l.substr(p + 1)) });
   }
 
   for (++f; f != pop_dump.end();)
   {
-    auto p =
-        std::find_if(f + 1, pop_dump.end(), [](auto l) { return l[0] != ' '; });
+    auto p = std::find_if(
+        f + 1, pop_dump.end(), [](auto l) { return l[0] != ' '; });
 
     std::transform(f + 1, p, f + 1, [](auto l) { return l.substr(1); });
 
     environment_spec e;
+	e.set_user_specified_name(*f);
     nested_[*f].e = std::make_unique<environment_spec>(
-        e.parse(std::vector<std::string>(f + 1, pop_dump.end())));
+        e.parse(std::vector<std::string>(f + 1, p)));
 
     f = p;
   }
@@ -236,12 +250,16 @@ std::string
     }
   }
 
-  if (!tag_flow_constraints_.empty())
+  if (!tag_flow_equalities.empty() || !tag_flow_inequalities.empty())
   {
     out << "with tag-flow-constraints:\n";
-    for (auto name : tag_flow_constraints_)
+    for (auto name : tag_flow_equalities)
       out << std::setw(26) << name.first.second << "(" << name.first.first
           << ") <=> " << name.second.second << "(" << name.second.first
+          << ")\n";
+    for (auto name : tag_flow_inequalities)
+      out << std::setw(26) << name.first.second << "(" << name.first.first
+          << ") <!=> " << name.second.second << "(" << name.second.first
           << ")\n";
   }
   return out.str();

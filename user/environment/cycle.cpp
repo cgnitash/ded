@@ -18,19 +18,7 @@ life::population
     cycle::evaluate(life::population pop)
 {
 
-
-  for (auto i : ranges::view::iota(0, count_))
-  {
-
-    pop = world.evaluate(pop);
-
-    //if (snap_freq_ && !(i % snap_freq_)) pop.snapshot(i);
-
-    // this should not be necessary to say
-    pop.prune_lineage(i);
-  }
-  // this should not be necessary to say
-  pop.flush_unpruned();
+  util::repeat(count_, [&] { pop = world.evaluate(pop); });
 
   return pop;
 }

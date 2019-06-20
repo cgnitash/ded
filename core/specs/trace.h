@@ -7,7 +7,8 @@
 namespace life {
     struct trace
     {
-      std::string trace_;
+      std::string name_;
+      std::string type_;
       int         frequency_;
     };
 

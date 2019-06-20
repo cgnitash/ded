@@ -12,14 +12,22 @@ P = $linear {
 	track_lineage = true 
 	}
 
+dn = $sequence {
+     first 	= 	$fork {
+     	one = $forager
+     	two = $forager 
+			  { direction = false }
+	}
+     second = $smoosh 
+}
+
 
 
 fs = 
   $sequence  {
-     first 	= 		$forager
+     first 	= !dn 
      second = $elite_replacement { 
  	 strength = 	0.4 
-	 one>food_eaten = two<score
   }
 }
 

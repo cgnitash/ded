@@ -19,20 +19,9 @@ life::population
 {
 
 
-  pop = one.evaluate(pop);
+  pop = first.evaluate(pop);
 
-  /*
-  if (to_cout_)
-  {
-    auto vec = pop;
-    for (const auto &org : vec.get_as_vector())
-      std::cout << "id: " << org.get_id() << " : "
-                << std::get<double>(org.data.get_value(score_tag_))
-                << std::endl;
-  }
-	*/
-
-  pop = two.evaluate(pop);
+  pop = second.evaluate(pop);
 
   return pop;
 }

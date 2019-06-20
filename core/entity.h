@@ -41,24 +41,28 @@ public:
 
   bool operator==(const entity &e) const { return get_id() == e.get_id(); }
 
-  bool operator!=(const entity &e) const { return get_id() != e.get_id(); }
+  bool operator!=(const entity &e) const { return !(*this == e); }
 
   bool operator<(const entity &e) const { return get_id() < e.get_id(); }
 
-  bool operator>(const entity &e) const { return get_id() > e.get_id(); }
+  bool operator>(const entity &e) const { return e < *this; }
 
-  bool operator<=(const entity &e) const { return get_id() <= e.get_id(); }
+  bool operator<=(const entity &e) const { return !(*this > e); }
 
-  bool operator>=(const entity &e) const { return get_id() >= e.get_id(); }
+  bool operator>=(const entity &e) const { return !(*this < e); }
 
-  struct data_store
+  class data_store
   {
 
     std::map<std::string, signal> m;
+	  public:
     signal get_value(std::string n) const { return m.at(n); }
     auto   set_value(std::string n, signal v) { m[n] = v; }
     size_t size() const { return m.size(); }
     void   clear(std::string i) { m.erase(i); }
+	void merge(data_store d) {
+		m.insert(d.m.begin(),d.m.end());
+	}
   };
   data_store data;
 
@@ -103,15 +107,13 @@ private:
   // interface/ABC for an entity
   struct entity_interface
   {
+    // provided methods
     virtual ~entity_interface()             = default;
     virtual entity_interface *copy_() const = 0;
-
     virtual long     get_id_() const              = 0;
     virtual long     get_ancestor_() const        = 0;
-    virtual encoding get_encoding_() const        = 0;
-    virtual void     set_encoding_(encoding)      = 0;
-    virtual encoding parse_encoding_(std::string) = 0;
 
+    // mandatory methods
     virtual void          mutate_()                   = 0;
     virtual void          reset_()                    = 0;
     virtual void          tick_()                     = 0;
@@ -120,6 +122,12 @@ private:
     virtual void          configure_(entity_spec)     = 0;
     virtual entity_spec   publish_configuration_()    = 0;
 
+    // optional methods
+    virtual encoding get_encoding_() const        = 0;
+    virtual void     set_encoding_(encoding)      = 0;
+    virtual encoding parse_encoding_(std::string) = 0;
+
+    // prohibited methods
     virtual std::string class_name_as_string_() const = 0;
   };
 

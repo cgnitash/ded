@@ -33,6 +33,10 @@ class parser {
 
   block process_overrides(block, int);
 
+  void attempt_override(block & , int &);
+  void attempt_parameter_override(block & , int &);
+  void attempt_tag_rewrite(block & , int &);
+
 
 public:
   void parse(std::string);

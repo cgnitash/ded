@@ -177,7 +177,10 @@ void
     linear::flush_unpruned()
 {
   pop_.clear();
-  prune_lineage(-1);
+
+  // maybe losing some orgs here
+  // prune_lineage(-1);
+  
   auto unrec_file = util::open_or_append(life::global_path + "unpruned.csv",
                                          "id,recorded_at,on_lod,ancestor_id\n");
   for (auto &org : fossils_)

@@ -13,19 +13,21 @@ P = $linear {
 	}
 
 
-
 fs = 
   $sequence  {
      first 	= 		$forager
      second = $elite_replacement { 
  	 strength = 	0.4 
-	 one>food_eaten = two<score
+	 #one>food_eaten = two<score
   }
 }
 
 
 E = $cycle  { 
- count = 100
-  world = !fs
+  count = 100
+  world = $sequence {
+   first = !fs
+   second = !fs
+  }
 }
 

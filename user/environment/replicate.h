@@ -18,46 +18,35 @@ class replicate {
 
   long num_ = 1;
 
-  std::string fx_tag_     = "fx,double";
-  std::string used_x_tag_ = "x,double";
+  std::string x_tag_ = "x,double";
 
-  //life::configuration env_{ "null_environment", {} };
-  life::environment_spec env_{ ""};
+  life::environment_spec env_{ "null_environment" };
+  life::environment      env = life::make_environment(env_);
 
 public:
   replicate() { configure(publish_configuration()); }
 
   life::environment_spec publish_configuration()
   {
-    life::environment_spec es{"replicate"};
-    es.bind_parameter("num",num_);
+    life::environment_spec es{ "replicate" };
 
-    // o:in:P has no tags
-    //c["pre-tags"] = nullptr;
+    es.bind_parameter("num", num_);
 
-    //  o:in:P' must handle these tags
-    es.bind_post("fx",fx_tag_);
+    es.bind_post("x", x_tag_);
 
-    //c["input-tags"]  = nullptr;
-    //c["output-tags"] = nullptr;
-
-    //  o:in:env(P) must provide these tags
-    //c["parameters"]["env"] = {
-    //  env_[0], {}, {}, { used_x_tag_ }
-    //};   // as well as propogate population requirements
-	es.bind_environment("env",env_);
-	es.bind_environment_post_constraints("env", { used_x_tag_ });
+    es.bind_environment("env", env_);
+    es.bind_environment_post_constraints("env", { x_tag_ });
     return es;
   }
 
   void configure(life::environment_spec es)
   {
-    es.configure_parameter("num",num_);
+    es.configure_parameter("num", num_);
 
-    es.configure_environment("env",env_);
+    es.configure_environment("env", env_);
+    env = life::make_environment(env_);
 
-    es.configure_post("fx",fx_tag_);
-
+    es.configure_post("x", x_tag_);
   }
 
   life::population evaluate(life::population);

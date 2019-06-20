@@ -15,14 +15,10 @@
 
 class sequence {
 
-  // bool to_cout_ = false;
-
-  //std::string score_tag_ = "score,double";
-
-  life::environment_spec one_{"null_environment"};
-  life::environment_spec two_{"null_environment"};
-  life::environment one = life::make_environment(one_);
-  life::environment two = life::make_environment(two_);
+  life::environment_spec first_{"null_environment"};
+  life::environment_spec second_{"null_environment"};
+  life::environment first = life::make_environment(first_);
+  life::environment second = life::make_environment(second_);
 
 public:
   sequence() { configure(publish_configuration()); }
@@ -31,35 +27,21 @@ public:
   {
     life::environment_spec es{"sequence"};
 
-    //ec["parameters"]["to-cout"] = to_cout_;
+	es.bind_environment("first",first_);
 
-    //ec["input-tags"]  = nullptr;
-    //ec["output-tags"] = nullptr;
+	es.bind_environment("second",second_);
 
-    //ec["pre-tags"]  = nullptr;
-    //ec["post-tags"] = nullptr;
-
-    // o:in:selector(P) must handle these tags
-	es.bind_environment("one",one_);
-    //ec["parameters"]["one"] = { one_[0], {}, { score_tag_ }, {} };
-
-    // o:in:fitness(P) must provide these tags
-	es.bind_environment("two",two_);
-    //ec["parameters"]["two"] = { two_[0], {}, {}, { score_tag_ } };
-
-	es.bind_tag_flow({"one", "post"}, {"two", "pre"});
+	es.bind_tag_equality({"first", "post"}, {"second", "pre"});
 
     return es;
   }
 
   void configure(life::environment_spec es)
   {
-    //es.configure_("to-cout",to_cout_);
-
-    es.configure_environment("one",one_);
-    es.configure_environment("two",two_);
-	one = life::make_environment(one_);
-	two = life::make_environment(two_);
+    es.configure_environment("first",first_);
+    es.configure_environment("second",second_);
+	first = life::make_environment(first_);
+	second = life::make_environment(second_);
   }
 
   life::population evaluate(life::population);

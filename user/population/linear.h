@@ -32,8 +32,8 @@ public:
   void configure(life::population_spec ps)
   {
     ps.configure_parameter("size",size_);
-    ps.configure_parameter("load-from",load_spec_);
-    ps.configure_parameter("track-lineage",track_lineage_);
+    ps.configure_parameter("load_from",load_spec_);
+    ps.configure_parameter("track_lineage",track_lineage_);
 
     ps.configure_entity(org_);
 
@@ -43,9 +43,9 @@ public:
   life::population_spec publish_configuration()
   {
     life::population_spec ps{"linear"};
-    ps.bind_parameter("track-lineage",track_lineage_);
+    ps.bind_parameter("track_lineage",track_lineage_);
     ps.bind_parameter("size",size_);
-    ps.bind_parameter("load-from",load_spec_);
+    ps.bind_parameter("load_from",load_spec_);
 
     //con["parameters"]["entity"] = { entity_[0], {} };
 	ps.bind_entity(org_);

@@ -12,7 +12,10 @@
 
 namespace life {
 
-const std::regex parser::valid_symbol_{ R"~~(^(\s+|\{|\}|[\.\-\w]+|\$\w+|\!\w+|\=))~~" };
+// order of options matter
+const std::regex parser::valid_symbol_{
+  R"~~(^(\s+|\{|\}|\=|\$\w+|\!\w+|\w+\>\w+|\w+\<\w+|[\.\w]+))~~"
+};
 
 void
     parser::open_file(std::string file_name)
@@ -26,11 +29,12 @@ void
   }
 
   std::string line;
-  while (std::getline(file, line)) {
-	std::string::size_type f;
-	while( (f = line.find('\t') ) != std::string::npos)
-		line.replace(f,1,"    ");
-	  lines_.push_back(line);
+  while (std::getline(file, line))
+  {
+    std::string::size_type f;
+    while ((f = line.find('\t')) != std::string::npos)
+      line.replace(f, 1, "    ");
+    lines_.push_back(line);
   }
 }
 
@@ -48,17 +52,15 @@ void
       if (!ranges::all_of(m.str(), ::isspace))
         tokens_.push_back(token{ parse_token_type(m.str()),
                                  m.str(),
-                                 { line_number, i - line.cbegin()} });
+                                 { line_number, i - line.cbegin() } });
 
     if (i != line.cend())
       err_unknown_symbol({ line_number, i - line.cbegin() });
   }
 
-  /*
   for (auto e : tokens_)
     std::cout << "symbol :" << e.expr_ << " at position " << e.location_.first
               << "," << e.location_.second << std::endl;
-			  */
 }
 
 void
@@ -112,7 +114,7 @@ void
   }
   auto nested_block         = expand_block(begin + 2);
   nested_block.range_.first = begin + 2;
-  variables_.push_back({ tokens_[begin], nested_block});
+  variables_.push_back({ tokens_[begin], nested_block });
 }
 
 void
@@ -135,10 +137,9 @@ block
     parser::expand_block(int begin)
 {
 
-  auto current =
-    tokens_[begin].type_ == token_type::variable?
-      variable_block(begin):
-      component_block(begin);
+  auto current = tokens_[begin].type_ == token_type::variable
+                     ? variable_block(begin)
+                     : component_block(begin);
 
   current.range_.first = begin;
 
@@ -152,18 +153,73 @@ block
   return process_overrides(current, begin + 2);
 }
 
+void
+    parser::attempt_parameter_override(block &current, int &begin)
+{
+  switch (tokens_[begin + 2].type_)
+  {
+    case token_type::word:
+      current.overrides_.push_back({ tokens_[begin], tokens_[begin + 2] });
+	  begin+=3;
+      break;
+    case token_type::variable:
+    case token_type::component:
+      current.nested_.push_back({ tokens_[begin], expand_block(begin + 2) });
+      begin = current.nested_.back().second.range_.second;
+      break;
+    default:
+      err_invalid_token(tokens_[begin + 2],
+                        "expected override of paramater or nested spec here");
+      throw parser_error{};
+  }
+}
+
+void
+    parser::attempt_tag_rewrite(block& current, int& begin)
+{
+  if (tokens_[begin + 2].type_ != token_type::tag_rewrite)
+  {
+    err_invalid_token(tokens_[begin + 2], "expected tag-rewrite here");
+    throw parser_error{};
+  }
+  current.tag_rewrites_.push_back({ tokens_[begin], tokens_[begin + 2] });
+  begin += 3;
+}
+
+void
+    parser::attempt_override(block &current, int &begin)
+{
+  switch (tokens_[begin].type_)
+  {
+    case token_type::word:
+      attempt_parameter_override(current, begin);
+      break;
+    case token_type::tag_rewrite:
+      attempt_tag_rewrite(current, begin);
+      break;
+    default:
+      err_invalid_token(
+          tokens_[begin],
+          "unexpected symbol: expected parameter or tag-rewrite here");
+      throw parser_error{};
+  }
+}
+
 block
     parser::process_overrides(block current, int begin)
 {
 
-  for (;;)
-  {
+  auto scope_is_open = [&] {
     if (begin == static_cast<int>(tokens_.size()))
     {
       err_invalid_token(tokens_[current.range_.first + 1], "unmatched brace");
       throw parser_error{};
     }
-    if (tokens_[begin].type_ == token_type::close_brace) { break; }
+    return tokens_[begin].type_ != token_type::close_brace;
+  };
+
+  while ( scope_is_open())
+  {
 
     if (begin + 3 >= static_cast<int>(tokens_.size()) ||
         tokens_[begin + 1].type_ != token_type::assignment)
@@ -172,22 +228,9 @@ block
       throw parser_error{};
     }
 
-    switch (tokens_[begin + 2].type_)
-    {
-      case token_type::word:
-        current.overrides_.push_back({ tokens_[begin], tokens_[begin + 2] });
-        begin += 3;
-        break;
-      case token_type::variable:
-      case token_type::component:
-        current.nested_.push_back({ tokens_[begin], expand_block(begin + 2) });
-        begin = current.nested_.back().second.range_.second;
-        break;
-      default:
-        err_invalid_token(tokens_[begin + 2], "expected override of spec here");
-        throw parser_error{};
-    }
+    attempt_override(current, begin);
   }
+
   current.range_.second = begin + 1;
   return current;
 }
@@ -224,21 +267,13 @@ void
   open_file(file_name);
   lex();
   for (auto start = 0u; start != tokens_.size();
-      start      = variables_.back().second.range_.second )
+       start      = variables_.back().second.range_.second)
     parse_expression(start);
-
-  /*
-  for (auto [name, bl] : variables_)
-  {
-    std::cout << name.expr_ << "\n";
-    print(bl);
-  }
-  */
 
   return;
 }
 
-
+// debug only
 void
     parser::print(block b)
 {

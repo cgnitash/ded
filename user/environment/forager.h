@@ -19,9 +19,9 @@
 
 class forager {
 
-  std::string food_eaten_tag_ = "food-eaten,double";
+  std::string food_eaten_tag_ = "food_eaten,double";
 
-  std::string org_input_los_tag_     = "line-of-sight,A<double,sensor-range>";
+  std::string org_input_los_tag_     = "line_of_sight,A<double,sensor_range>";
   std::string org_output_action_tag_ = "action,A<double,2>";
 
   long grid_size_    = 10;
@@ -84,19 +84,17 @@ public:
   life::environment_spec publish_configuration()
   {
     life::environment_spec es{"forager"};
-    es.bind_parameter("grid-size",grid_size_);
+    es.bind_parameter("grid_size",grid_size_);
     es.bind_parameter("updates",updates_);
     es.bind_parameter("density",density_);
     es.bind_parameter("replace",replace_);
     es.bind_parameter("visualize",visualize_);
-    es.bind_parameter("sensor-range",sensor_range_);
+    es.bind_parameter("sensor_range",sensor_range_);
     es.bind_parameter("direction",directional_);
  
-    //ec["pre-tags"] = nullptr;
+    es.bind_post("food_eaten",food_eaten_tag_);
 
-    es.bind_post("food-eaten",food_eaten_tag_);
-
-    es.bind_input("line-of-sight",org_input_los_tag_);
+    es.bind_input("line_of_sight",org_input_los_tag_);
     es.bind_output("action",org_output_action_tag_);
     return es;
   }
@@ -104,19 +102,19 @@ public:
   void configure(life::environment_spec es)
   {
 
-    es.configure_parameter("grid-size",grid_size_);
+    es.configure_parameter("grid_size",grid_size_);
     es.configure_parameter("updates",updates_);
     es.configure_parameter("density",density_);
     es.configure_parameter("replace",replace_);
     es.configure_parameter("visualize",visualize_);
-    es.configure_parameter("sensor-range",sensor_range_);
+    es.configure_parameter("sensor_range",sensor_range_);
     es.configure_parameter("direction",directional_);
 
     resources_ = std::vector(grid_size_, std::vector(grid_size_, 0));
 
-    es.configure_post("food-eaten",food_eaten_tag_);
+    es.configure_post("food_eaten",food_eaten_tag_);
 
-    es.configure_input("line-of-sight",org_input_los_tag_);
+    es.configure_input("line_of_sight",org_input_los_tag_);
     es.configure_output("action",org_output_action_tag_);
   }
 

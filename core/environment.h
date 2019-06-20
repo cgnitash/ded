@@ -42,8 +42,23 @@ public:
   environment &operator=(environment &&) noexcept = default;
 
   // public interface of environments - how environments can be used
+  /*
+  std::string get_user_specified_name() const
+  {
+    return self_->get_user_specified_name_();
+  }
+
+  void set_user_specified_name(std::string name)
+  {
+    self_->set_user_specified_name_(name);
+  }
+  */
+
   population evaluate(population p)
   {
+    if (!user_specified_name_.empty())
+      global_path += user_specified_name_[0] + "_";
+
     auto class_name = self_->class_name_as_string_();
     global_path += class_name + "/";
     std::experimental::filesystem::create_directory(global_path);
@@ -51,12 +66,12 @@ public:
     for (auto n : traces_.pre_)
       if (invocations_ && !(invocations_ % n.frequency_))
       {
-        std::ofstream pop_stats_file{ life::global_path + n.trace_ + 
+        std::ofstream pop_stats_file{ life::global_path + n.name_ +
                                       std::to_string(invocations_) + ".csv" };
-        pop_stats_file << "id," << n.trace_ << "\n";
+        pop_stats_file << "id," << n.name_ << "\n";
         for (const auto &org : p.get_as_vector())
           pop_stats_file << org.get_id() << ","
-                         << std::get<double>(org.data.get_value(n.trace_))
+                         << std::get<double>(org.data.get_value(n.type_))
                          << std::endl;
         // p.record(n.trace_);
       }
@@ -66,20 +81,23 @@ public:
     for (auto n : traces_.post_)
       if (invocations_ && !(invocations_ % n.frequency_))
       {
-        std::ofstream pop_stats_file{ life::global_path + n.trace_ +
+        std::ofstream pop_stats_file{ life::global_path + n.name_ +
                                       std::to_string(invocations_) + ".csv" };
-        pop_stats_file << "id," << n.trace_ << "\n";
+        pop_stats_file << "id," << n.name_ << "\n";
         for (const auto &org : p_r.get_as_vector())
           pop_stats_file << org.get_id() << ","
-                         << std::get<double>(org.data.get_value(n.trace_))
+                         << std::get<double>(org.data.get_value(n.type_))
                          << std::endl;
         // p.record(n.trace_);
       }
 
+    life::global_path.pop_back();
     life::global_path = life::global_path.substr(
-        0, life::global_path.length() - class_name.length() - 1);
+        // 0, life::global_path.length() - class_name.length() - 1);
+        0,
+        life::global_path.find_last_of('/') + 1);
 
-	invocations_++;
+    invocations_++;
 
     return p_r;
   }
@@ -89,19 +107,12 @@ public:
     return self_->publish_configuration_();
   }
 
-  void configure(environment_spec es) 
+  void configure(environment_spec es)
   {
-    // environment_spec es =  self_->publish_configuration_(), c;
-    // c.from_json(con);
-    // es.validate_and_merge(c);
+    traces_ = es.traces();
 
-    //  auto real = publish_configuration();
-    //  validate_subset(con, real);
-    //  merge_into(con, real);
-    //  self_->configure_(con);
-	//traces_.pre_ = es.pre_traces();// | ranges::copy;
-	//traces_.post_ = es.post_traces();
-	traces_= es.traces();
+    user_specified_name_ = { es.get_user_specified_name() };
+
     self_->configure_(es);
   }
 
@@ -109,13 +120,21 @@ private:
   // interface/ABC for an environment
   struct environment_interface
   {
+  public:
+    // provided methods
     virtual ~environment_interface()             = default;
     virtual environment_interface *copy_() const = 0;
+    // virtual std::string     get_user_specified_name_() const              =
+    // 0; virtual void     set_user_specified_name_(std::string) = 0;
 
+    // mandatory methods
     virtual environment_spec publish_configuration_()     = 0;
     virtual void             configure_(environment_spec) = 0;
+    virtual population       evaluate_(population)        = 0;
 
-    virtual population  evaluate_(population)         = 0;
+    // optional methods
+
+    // prohibited methods
     virtual std::string class_name_as_string_() const = 0;
   };
 
@@ -123,13 +142,23 @@ private:
   struct environment_object final : environment_interface
   {
 
+  public:
+    // provided methods
     environment_object(UserEnvironment x) : data_(std::move(x)) {}
 
     environment_interface *copy_() const override
     {
       return new environment_object(*this);
     }
-
+    /*
+        std::string get_user_specified_name_() const override
+        {
+          return user_specified_name_;
+        }
+        virtual void     set_user_specified_name_(std::string name){
+                    user_specified_name_ = name;
+            }
+    */
     // mandatory methods
 
     template <typename T>
@@ -172,19 +201,17 @@ private:
     }
 
     // data
-
     UserEnvironment data_;
   };
 
-  /*
-  struct trace_config 
-  {
-    std::vector<trace> pre_;
-    std::vector<trace> post_;
-  } ;*/ 
   trace_config traces_;
 
-  int                                    invocations_ = 0;
+  int invocations_ = 0;
+
+  // wtf? regular string compiles 'maybe' but is wrong
+  // std::string user_specified_name_;
+  std::vector<std::string> user_specified_name_;
+
   std::unique_ptr<environment_interface> self_;
 };
 

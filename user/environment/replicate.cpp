@@ -15,10 +15,6 @@
 life::population
     replicate::evaluate(life::population pop)
 {
-
-  // make and configure nested environment
-  auto env = life::make_environment(env_);
-
   std::vector accumulated_scores(pop.size(), 0.0);
 
   util::repeat(num_, [&] {
@@ -28,8 +24,8 @@ life::population
                       accumulated_scores,
                       ranges::begin(accumulated_scores),
                       [this](const auto &org, auto score) {
-                        return score + std::get<double>(
-                                           org.data.get_value(used_x_tag_));
+                        return score +
+                               std::get<double>(org.data.get_value(x_tag_));
                       });
   });
 
@@ -40,7 +36,7 @@ life::population
                     accumulated_scores,
                     ranges::begin(vec),
                     [this](auto org, const auto score) {
-                      org.data.set_value(fx_tag_, score / this->num_);
+                      org.data.set_value(x_tag_, score / this->num_);
                       return org;
                     });
 

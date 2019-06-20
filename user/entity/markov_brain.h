@@ -7,8 +7,8 @@
 
 class markov_brain {
 
-  std::string in_sense_  = "in-sense,A<double,inputs>";
-  std::string out_sense_ = "out-sense,A<double,outputs>";
+  std::string in_sense_  = "in_sense,A<double,inputs>";
+  std::string out_sense_ = "out_sense,A<double,outputs>";
 
   life::encoding genome_;
   std::regex     encoding_parser_{ R"(([^:]+):)" };
@@ -49,8 +49,8 @@ public:
 	es.bind_parameter("outputs",output_);
 	es.bind_parameter("hiddens",hidden_);
 
-    es.bind_input("in-sense", in_sense_);
-    es.bind_output("out-sense", out_sense_);
+    es.bind_input("in_sense", in_sense_);
+    es.bind_output("out_sense", out_sense_);
     //con["input-tags"]["in-sense"]   = in_sense_;
     //con["output-tags"]["out-sense"] = out_sense_;
 
@@ -68,9 +68,9 @@ public:
 	es.configure_parameter("outputs",output_);
 	es.configure_parameter("hiddens",hidden_);
 
-    es.configure_input("in-sense", in_sense_);
+    es.configure_input("in_sense", in_sense_);
 
-    es.configure_output("out-sense", out_sense_);
+    es.configure_output("out_sense", out_sense_);
     //in_sense_  = con["input-tags"]["in-sense"];
     //out_sense_ = con["output-tags"]["out-sense"];
 

@@ -45,6 +45,7 @@ class environment_spec {
  trace_config traces_;
 
   std::string                                    name_;
+  std::string                                    user_specified_name_;
   std::map<std::string, configuration_primitive> parameters_;
   struct
   {
@@ -59,7 +60,10 @@ class environment_spec {
   std::map<std::string, nested_spec> nested_;
   std::vector<std::pair<std::pair<std::string, std::string>,
                         std::pair<std::string, std::string>>>
-      tag_flow_constraints_;
+      tag_flow_equalities;
+  std::vector<std::pair<std::pair<std::string, std::string>,
+                        std::pair<std::string, std::string>>>
+      tag_flow_inequalities;
 
 public:
   // environment_spec() = default;
@@ -70,6 +74,11 @@ public:
   environment_spec(parser,block);
 
   auto name() const { return name_; }
+
+  auto traces() const { return traces_; }
+
+  auto get_user_specified_name() const { return user_specified_name_; }
+  auto set_user_specified_name(std::string name) { user_specified_name_ = name; }
   /*
 
   auto parameters() const { return parameters_; }
@@ -91,8 +100,6 @@ public:
 
   auto tag_flow_constraints() const { return tag_flow_constraints_; }
   */
-
-  auto traces() const { return traces_; }
 
   template <typename T> void bind_parameter(std::string name, T value)
   {
@@ -175,10 +182,16 @@ std::cout << "Warning: <" << name_ << ":" << name
     nested_[name].constraints_.post_ = post_constraints;
   }
 
-  void bind_tag_flow(std::pair<std::string, std::string> x,
+  void bind_tag_equality(std::pair<std::string, std::string> x,
                      std::pair<std::string, std::string> y)
   {
-    tag_flow_constraints_.push_back({ x, y });
+    tag_flow_equalities.push_back({ x, y });
+  }
+
+  void bind_tag_inequality(std::pair<std::string, std::string> x,
+                     std::pair<std::string, std::string> y)
+  {
+    tag_flow_inequalities.push_back({ x, y });
   }
 
   // friend std::ostream &operator<<(std::ostream &out, const environment_spec

@@ -23,9 +23,13 @@ fs =
   }
 }
 
-
-E = $cycle  { 
+epoch = $cycle  { 
  count = 100
   world = !fs
 }
 
+E = $sequence {
+	first = !epoch
+    second 	= !epoch
+			{ count = 25 }
+}
