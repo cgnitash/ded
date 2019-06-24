@@ -368,4 +368,7 @@ int
   }
 } catch (const life::parser_error &)
 {
+} catch (...)
+{
+	std::cout << "\nfatal: this is a core bug - please file a bug report\n";
 }
