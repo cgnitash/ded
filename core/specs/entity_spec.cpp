@@ -7,16 +7,29 @@
 #include <string>
 #include <variant>
 
-#include "entity_spec.h"
 #include "../configuration.h"
+#include "entity_spec.h"
 
 namespace life {
+
+io_signals
+    entity_spec::instantiate_user_parameter_sizes()
+{
+  for (auto &[name, sig] : io_.inputs_)
+    for (auto &[param, cp] : parameters_)
+      if (cp.type_as_string() == "long")
+        sig.instantiate_user_parameter(param, std::stol(cp.value_as_string()));
+  for (auto &[name, sig] : io_.outputs_)
+    for (auto &[param, cp] : parameters_)
+      if (cp.type_as_string() == "long")
+        sig.instantiate_user_parameter(param, std::stol(cp.value_as_string()));
+  return io_;
+}
 
 entity_spec::entity_spec(parser p, block blk)
 {
 
-
- auto  t =  life::all_entity_specs[blk.name_.substr(1)];
+  auto t = life::all_entity_specs[blk.name_.substr(1)];
 
   *this = t;
 
@@ -25,9 +38,8 @@ entity_spec::entity_spec(parser p, block blk)
     auto name  = over.first;
     auto value = over.second;
 
-    auto f = ranges::find_if(parameters_, [&](auto param) {
-      return param.first == name.expr_;
-    });
+    auto f = ranges::find_if(
+        parameters_, [&](auto param) { return param.first == name.expr_; });
     if (f == parameters_.end())
     {
       p.err_invalid_token(name,
@@ -51,17 +63,16 @@ entity_spec::entity_spec(parser p, block blk)
     auto name       = blover.first;
     auto nested_blk = blover.second;
 
-	auto ct = config_manager::type_of_block(nested_blk.name_.substr(1));
-	  if (ct != "entity")
+    auto ct = config_manager::type_of_block(nested_blk.name_.substr(1));
+    if (ct != "entity")
     {
       p.err_invalid_token(
           name, "override of " + name.expr_ + " must be of type entity");
       throw parser_error{};
     }
 
-    auto f = ranges::find_if(nested_, [&](auto param) {
-      return param.first == name.expr_;
-    });
+    auto f = ranges::find_if(
+        nested_, [&](auto param) { return param.first == name.expr_; });
     if (f == nested_.end())
     {
       p.err_invalid_token(
@@ -69,8 +80,8 @@ entity_spec::entity_spec(parser p, block blk)
       throw parser_error{};
     }
 
-    f->second.e = std::make_unique<entity_spec>(
-        life::entity_spec{ p, nested_blk });
+    f->second.e =
+        std::make_unique<entity_spec>(life::entity_spec{ p, nested_blk });
   }
 }
 
@@ -86,16 +97,16 @@ std::string
           }) |
           ranges::action::join) +
          alignment + "I" +
-         (inputs_ | ranges::view::transform([&](auto sig) {
-            return alignment + sig.second.full_name() ;
+         (io_.inputs_ | ranges::view::transform([&](auto sig) {
+            return alignment + sig.second.full_name();
           }) |
           ranges::action::join) +
-		 alignment + "O" + 
-         (outputs_ | ranges::view::transform([&](auto sig) {
-            return alignment + sig.second.full_name() ;
+         alignment + "O" +
+         (io_.outputs_ | ranges::view::transform([&](auto sig) {
+            return alignment + sig.second.full_name();
           }) |
           ranges::action::join) +
-          alignment + "n" +
+         alignment + "n" +
          (nested_ | ranges::view::transform([&](auto nested) {
             return alignment + nested.first + nested.second.e->dump(depth + 1);
           }) |
@@ -121,19 +132,19 @@ entity_spec
 
   for (++f; *f != "O"; f++)
   {
-    auto l                  = *f;
-    auto p                  = l.find(':');
-    inputs_[l.substr(0, p)] = signal_spec{l}; 
+    auto l                      = *f;
+    auto p                      = l.find(':');
+    io_.inputs_.push_back({l.substr(0, p), signal_spec{ l }});
   }
 
   for (++f; *f != "n"; f++)
   {
-    auto l                   = *f;
-    auto p                   = l.find(':');
-    outputs_[l.substr(0, p)] = signal_spec{l}; 
+    auto l                       = *f;
+    auto p                       = l.find(':');
+    io_.outputs_.push_back({l.substr(0, p), signal_spec{ l }});
   }
 
-  for (++f; f != pop_dump.end(); )
+  for (++f; f != pop_dump.end();)
   {
     auto p =
         std::find_if(f + 1, pop_dump.end(), [](auto l) { return l[0] != ' '; });
@@ -144,13 +155,12 @@ entity_spec
     nested_[*f].e = std::make_unique<entity_spec>(
         e.parse(std::vector<std::string>(f + 1, pop_dump.end())));
 
-	f = p;
-
+    f = p;
   }
 
-    // entity_spec ps = *this;
-    return *this;
-  }
+  // entity_spec ps = *this;
+  return *this;
+}
 
 std::string
     entity_spec::pretty_print()
@@ -165,11 +175,11 @@ std::string
     out << std::setw(26) << parameter << " : " << value.value_as_string()
         << "\n";
   out << term_colours::yellow_fg << "inputs----" << term_colours::reset << "\n";
-  for (auto [input, value] : inputs_)
+  for (auto [input, value] : io_.inputs_)
     out << std::setw(26) << input << " : " << value.full_name() << "\n";
   out << term_colours::yellow_fg << "outputs----" << term_colours::reset
       << "\n";
-  for (auto [output, value] : outputs_)
+  for (auto [output, value] : io_.outputs_)
     out << std::setw(26) << output << " : " << value.full_name() << "\n";
   return out.str();
 }

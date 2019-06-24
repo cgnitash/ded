@@ -7,19 +7,77 @@
 #include <regex>
 #include <string>
 
-#include "environment_spec.h"
 #include "../configuration.h"
+#include "environment_spec.h"
 
 namespace life {
 
-	/*
 void
-    environment_spec::bind_all_entity_signals(population_spec ps)
+    environment_spec::instantiate_user_parameter_sizes()
 {
-  bind_all_entity_inputs(ps.es_.inputs());
-  bind_all_entity_outputs(ps.es_.outputs());
+  for (auto &[name, sig] : io_.inputs_)
+    for (auto &[param, cp] : parameters_)
+      if (cp.type_as_string() == "long")
+        sig.instantiate_user_parameter(param, std::stol(cp.value_as_string()));
+  for (auto &[name, sig] : io_.outputs_)
+    for (auto &[param, cp] : parameters_)
+      if (cp.type_as_string() == "long")
+        sig.instantiate_user_parameter(param, std::stol(cp.value_as_string()));
+  for (auto &es : nested_)
+	  es.second.e->instantiate_user_parameter_sizes();
 }
-	*/
+
+void
+    environment_spec::bind_entity_io(io_signals ios)
+{
+  for (auto &es : nested_) es.second.e->bind_entity_io(ios);
+
+  for (auto &[name, in_sig] : io_.inputs_)
+  {
+    auto matches = ranges::count_if(ios.inputs_, [sig = in_sig](auto ns) {
+      return ns.second.exactly_matches(sig);
+    });
+    if (matches > 1)
+    {
+      std::cout << "error: multiple input signals match exactly\n";
+      // throw;
+    }
+    if (!matches)
+    {
+      std::cout << "error: no input signals match exactly (convertible signals "
+                   "not supported yet)\n";
+      // throw;
+    }
+    auto i = ranges::find_if(ios.inputs_, [sig = in_sig](auto ns) {
+      return ns.second.exactly_matches(sig);
+    });
+	in_sig = signal_spec{in_sig.user_name(), i->second.id_type_specifier()};
+    ios.inputs_.erase(i);
+  }
+
+  for (auto &[name, out_sig] : io_.outputs_)
+  {
+    auto matches = ranges::count_if(ios.outputs_, [sig = out_sig](auto ns) {
+      return ns.second.exactly_matches(sig);
+    });
+    if (matches > 1)
+    {
+      std::cout << "error: multiple output signals match exactly\n";
+      // throw;
+    }
+    if (!matches)
+    {
+      std::cout << "error: no output signals match exactly (convertible "
+                   "signals not supported yet)\n";
+      // throw;
+    }
+    auto i = ranges::find_if(ios.outputs_, [sig = out_sig](auto ns) {
+      return ns.second.exactly_matches(sig);
+    });
+	out_sig = signal_spec{out_sig.user_name(), i->second.id_type_specifier()};
+    ios.outputs_.erase(i);
+  }
+}
 
 environment_spec::environment_spec(parser p, block blk)
 {
@@ -31,9 +89,8 @@ environment_spec::environment_spec(parser p, block blk)
     auto name  = over.first;
     auto value = over.second;
 
-    auto f = ranges::find_if(parameters_, [&](auto param) {
-      return param.first == name.expr_;
-    });
+    auto f = ranges::find_if(
+        parameters_, [&](auto param) { return param.first == name.expr_; });
     if (f == parameters_.end())
     {
       p.err_invalid_token(name,
@@ -57,17 +114,16 @@ environment_spec::environment_spec(parser p, block blk)
     auto name       = blover.first;
     auto nested_blk = blover.second;
 
-	auto ct = config_manager::type_of_block(nested_blk.name_.substr(1));
-	  if (ct != "environment")
+    auto ct = config_manager::type_of_block(nested_blk.name_.substr(1));
+    if (ct != "environment")
     {
       p.err_invalid_token(
           name, "override of " + name.expr_ + " must be of type environment");
       throw parser_error{};
     }
 
-    auto f = ranges::find_if(nested_, [&](auto param) {
-      return param.first == name.expr_;
-    });
+    auto f = ranges::find_if(
+        nested_, [&](auto param) { return param.first == name.expr_; });
     if (f == nested_.end())
     {
       p.err_invalid_token(
@@ -78,7 +134,6 @@ environment_spec::environment_spec(parser p, block blk)
     f->second.e = std::make_unique<environment_spec>(
         life::environment_spec{ p, nested_blk });
   }
-
 }
 
 std::string
@@ -102,22 +157,22 @@ std::string
           ranges::action::join) +
          alignment + "I" +
          (io_.inputs_ | ranges::view::transform([&](auto sig) {
-            return alignment + sig.second.full_name() ;
+            return alignment + sig.second.full_name();
           }) |
           ranges::action::join) +
          alignment + "O" +
          (io_.outputs_ | ranges::view::transform([&](auto sig) {
-            return alignment + sig.second.full_name() ;
+            return alignment + sig.second.full_name();
           }) |
           ranges::action::join) +
          alignment + "a" +
          (tags_.pre_ | ranges::view::transform([&](auto sig) {
-            return alignment + sig.second.full_name() ;
+            return alignment + sig.second.full_name();
           }) |
           ranges::action::join) +
          alignment + "b" +
          (tags_.post_ | ranges::view::transform([&](auto sig) {
-            return alignment + sig.second.full_name() ;
+            return alignment + sig.second.full_name();
           }) |
           ranges::action::join) +
          // needs to go
@@ -160,57 +215,57 @@ environment_spec
 
   for (++f; *f != "O"; f++)
   {
-    auto l                      = *f;
-    auto p                      = l.find(':');
-    io_.inputs_[l.substr(0, p)] = signal_spec{l}; 
+    auto l = *f;
+    auto p = l.find(':');
+    io_.inputs_.push_back({l.substr(0, p), signal_spec{ l }});
   }
 
   for (++f; *f != "a"; f++)
   {
-    auto l                       = *f;
-    auto p                       = l.find(':');
-    io_.outputs_[l.substr(0, p)] = signal_spec{l}; 
+    auto l = *f;
+    auto p = l.find(':');
+    io_.outputs_.push_back({l.substr(0, p), signal_spec{ l }});
   }
 
   for (++f; *f != "b"; f++)
   {
     auto l                     = *f;
     auto p                     = l.find(':');
-    tags_.pre_[l.substr(0, p)] =  signal_spec{l};
+    tags_.pre_[l.substr(0, p)] = signal_spec{ l };
   }
 
   for (++f; *f != "r"; f++)
   {
     auto l                      = *f;
     auto p                      = l.find(':');
-    tags_.post_[l.substr(0, p)] =  signal_spec{l};
+    tags_.post_[l.substr(0, p)] = signal_spec{ l };
   }
 
   for (++f; *f != "R"; f++)
   {
-    auto l = *f;
-    auto p = l.find(';');
-	signal_spec sp{l.substr(0, p)};
-    traces_.pre_.push_back({sp, std::stoi(l.substr(p + 1)) });
+    auto        l = *f;
+    auto        p = l.find(';');
+    signal_spec sp{ l.substr(0, p) };
+    traces_.pre_.push_back({ sp, std::stoi(l.substr(p + 1)) });
   }
 
   for (++f; *f != "n"; f++)
   {
-    auto l = *f;
-    auto p = l.find(';');
-	signal_spec sp{l.substr(0, p)};
-    traces_.post_.push_back({ sp , std::stoi(l.substr(p + 1)) });
+    auto        l = *f;
+    auto        p = l.find(';');
+    signal_spec sp{ l.substr(0, p) };
+    traces_.post_.push_back({ sp, std::stoi(l.substr(p + 1)) });
   }
 
   for (++f; f != pop_dump.end();)
   {
-    auto p = std::find_if(
-        f + 1, pop_dump.end(), [](auto l) { return l[0] != ' '; });
+    auto p =
+        std::find_if(f + 1, pop_dump.end(), [](auto l) { return l[0] != ' '; });
 
     std::transform(f + 1, p, f + 1, [](auto l) { return l.substr(1); });
 
     environment_spec e;
-	e.set_user_specified_name(*f);
+    e.set_user_specified_name(*f);
     nested_[*f].e = std::make_unique<environment_spec>(
         e.parse(std::vector<std::string>(f + 1, p)));
 

@@ -51,11 +51,9 @@ class environment_spec {
   std::string                                    name_;
   std::string                                    user_specified_name_;
   std::map<std::string, configuration_primitive> parameters_;
-  struct
-  {
-    std::map<std::string, signal_spec> inputs_;
-    std::map<std::string, signal_spec> outputs_;
-  } io_;
+
+  io_signals io_;
+
   struct
   {
     std::map<std::string, signal_spec> pre_;
@@ -140,22 +138,26 @@ public:
 
   void bind_input(std::string name, std::string value)
   {
-    io_.inputs_[name] = signal_spec{ name, name, value };
+    io_.inputs_.push_back({name, signal_spec{ name, name, value }});
   }
 
   void configure_input(std::string name, std::string &value)
   {
-    value = io_.inputs_[name].id_type_specifier();
+    value =
+        ranges::find_if(io_.inputs_, [=](auto ns) { return ns.first == name; })
+            ->second.id_type_specifier();
   }
 
   void bind_output(std::string name, std::string value)
   {
-    io_.outputs_[name] = signal_spec{ name, name, value };
+    io_.outputs_.push_back({name, signal_spec{ name, name, value }});
   }
 
   void configure_output(std::string name, std::string &value)
   {
-    value = io_.outputs_[name].id_type_specifier();
+    value =
+        ranges::find_if(io_.outputs_, [=](auto ns) { return ns.first == name; })
+            ->second.id_type_specifier();
   }
 
   void bind_environment(std::string name, environment_spec env)
@@ -200,11 +202,8 @@ public:
 
   std::string pretty_print();
 
-  /*
-  void bind_all_entity_signals(population_spec);
-  void bind_all_entity_inputs(population_spec);
-  void bind_all_entity_outputs(population_spec);
-  */
+  void instantiate_user_parameter_sizes();
+  void bind_entity_io(io_signals);
 };
 
 }   // namespace life

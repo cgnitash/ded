@@ -27,9 +27,8 @@ class entity_spec {
 
   std::string                                    name_;
   std::map<std::string, configuration_primitive> parameters_;
-  std::map<std::string, signal_spec>             inputs_;
-  std::map<std::string, signal_spec>             outputs_;
   std::map<std::string, nested_spec>             nested_;
+  io_signals io_;
 
 public:
   // entity_spec() = default;
@@ -39,6 +38,7 @@ public:
 
   auto name() const { return name_; }
 
+  /*
   auto parameters() const { return parameters_; }
 
   auto inputs() const { return inputs_; }
@@ -46,6 +46,7 @@ public:
   auto outputs() const { return outputs_; }
 
   auto nested() const { return nested_; }
+  */
 
   template <typename T> void configure_parameter(std::string name, T &value)
   {
@@ -59,22 +60,26 @@ public:
 
   void bind_input(std::string name, std::string value)
   {
-    inputs_[name] = signal_spec{ name, name, value };
+    io_.inputs_.push_back({name, signal_spec{ name, name, value }});
   }
 
   void configure_input(std::string name, std::string &value)
   {
-    value = inputs_[name].id_type_specifier();
+    auto i =
+        ranges::find_if(io_.inputs_, [=](auto ns) { return ns.first == name; });
+    value = i->second.id_type_specifier();
   }
 
   void bind_output(std::string name, std::string value)
   {
-    outputs_[name] = signal_spec{ name, name, value };
+    io_.outputs_.push_back({name, signal_spec{ name, name, value }});
   }
 
   void configure_output(std::string name, std::string &value)
   {
-    value = outputs_[name].id_type_specifier();
+    auto i =
+        ranges::find_if(io_.outputs_, [=](auto ns) { return ns.first == name; });
+    value = i->second.id_type_specifier();
   }
 
   void bind_entity(std::string name, entity_spec env)
@@ -97,6 +102,8 @@ public:
   std::string dump(long depth);
   entity_spec parse(std::vector<std::string> pop_dump);
   std::string pretty_print();
+
+  io_signals instantiate_user_parameter_sizes();
 
 };
 

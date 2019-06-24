@@ -49,8 +49,8 @@ public:
 	es.bind_parameter("outputs",output_);
 	es.bind_parameter("hiddens",hidden_);
 
-    es.bind_input("line_of_sight","<double,inputs>");
-    es.bind_output("action","<double,outputs>");
+    es.bind_input("in_sense","<double,inputs>");
+    es.bind_output("out_sense","<double,outputs>");
     //es.bind_input("in_sense", in_sense_);
     //es.bind_output("out_sense", out_sense_);
     //con["input-tags"]["in-sense"]   = in_sense_;

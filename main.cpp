@@ -201,7 +201,7 @@ int
     }
 
     auto env = std::get<life::environment_spec>(vars["E"]);
-    std::cout << env.dump(0);
+	env.instantiate_user_parameter_sizes();
 
     if (vars.find("P") == vars.end())
     {
@@ -215,9 +215,11 @@ int
       throw std::logic_error{ "" };
     }
     auto pop = std::get<life::population_spec>(vars["P"]);
+	auto io = pop.instantiate_nested_entity_user_parameter_sizes();
+	
+	env.bind_entity_io(io);
+    std::cout << env.dump(0);
     std::cout << pop.dump(0);
-
-	//env.bind_all_entity_signals(pop);
     // auto pop= life::make_population(pop_con);
     // auto env= life::make_environment(env_con);
     std::cout << std::endl;
