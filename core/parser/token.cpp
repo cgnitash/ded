@@ -13,10 +13,10 @@ token_type
   if (s == "{") return token_type::open_brace;
   if (s == "}") return token_type::close_brace;
   if (s == "=") return token_type::assignment;
+  if (s == "?") return token_type::trace;
   if (s[0] == '$') return token_type::component;
   if (s[0] == '!') return token_type::variable;
-  if ((s.find('<') != std::string::npos || s.find('>') != std::string::npos))
-    return token_type::tag_rewrite;
+  //if ((s.find('<') != std::string::npos || s.find('>') != std::string::npos))
   return token_type::word;
 }
 }

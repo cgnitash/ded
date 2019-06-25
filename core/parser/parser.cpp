@@ -1,6 +1,7 @@
 
 
 #include "parser.h"
+#include "../specs/configuration_primitive.h"
 #include "../term_colours.h"
 #include <fstream>
 #include <iomanip>
@@ -14,7 +15,7 @@ namespace life {
 
 // order of options matter
 const std::regex parser::valid_symbol_{
-  R"~~(^(\s+|\{|\}|\=|\$\w+|\!\w+|\w+\>\w+|\w+\<\w+|[\.\w]+))~~"
+  R"~~(^(\s+|\{|\}|\=|\?|\$\w+|\!\w+|[\.\w]+))~~"
 };
 
 void
@@ -160,7 +161,7 @@ void
   {
     case token_type::word:
       current.overrides_.push_back({ tokens_[begin], tokens_[begin + 2] });
-	  begin+=3;
+      begin += 3;
       break;
     case token_type::variable:
     case token_type::component:
@@ -174,8 +175,9 @@ void
   }
 }
 
+/*
 void
-    parser::attempt_tag_rewrite(block& current, int& begin)
+    parser::attempt_tag_rewrite(block &current, int &begin)
 {
   if (tokens_[begin + 2].type_ != token_type::tag_rewrite)
   {
@@ -185,18 +187,32 @@ void
   current.tag_rewrites_.push_back({ tokens_[begin], tokens_[begin + 2] });
   begin += 3;
 }
+*/
+
+void
+    parser::attempt_trace(block &current, int &begin)
+{
+  if (tokens_[begin + 1].type_ != token_type::word)
+  {
+    err_invalid_token(tokens_[begin + 1], "expected tag name here");
+    throw parser_error{};
+  }
+  if (tokens_[begin + 2].type_ != token_type::word)
+  {
+    err_invalid_token(tokens_[begin + 2], "expected tag name here");
+    throw parser_error{};
+  }
+  current.traces_.push_back({ tokens_[begin + 1], tokens_[begin + 2] });
+  begin += 3;
+}
 
 void
     parser::attempt_override(block &current, int &begin)
 {
   switch (tokens_[begin].type_)
   {
-    case token_type::word:
-      attempt_parameter_override(current, begin);
-      break;
-    case token_type::tag_rewrite:
-      attempt_tag_rewrite(current, begin);
-      break;
+    case token_type::word: attempt_parameter_override(current, begin); break;
+    case token_type::trace: attempt_trace(current, begin); break;
     default:
       err_invalid_token(
           tokens_[begin],
@@ -218,11 +234,12 @@ block
     return tokens_[begin].type_ != token_type::close_brace;
   };
 
-  while ( scope_is_open())
+  while (scope_is_open())
   {
 
     if (begin + 3 >= static_cast<int>(tokens_.size()) ||
-        tokens_[begin + 1].type_ != token_type::assignment)
+        (tokens_[begin + 1].type_ != token_type::assignment &&
+         tokens_[begin].type_ != token_type::trace))
     {
       err_invalid_token(tokens_[begin], "unable to parse override syntax");
       throw parser_error{};

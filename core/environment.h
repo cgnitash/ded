@@ -190,14 +190,15 @@ private:
     for (auto n : ts)
       if (invocations_ && !(invocations_ % n.frequency_))
       {
+		  signal_spec s_spec{n.signal_};
         std::ofstream pop_stats_file{ life::global_path +
-                                      n.signal_.user_name() + "_" +
+                                      s_spec.user_name() + "_" +
                                       std::to_string(invocations_) + ".csv" };
-        pop_stats_file << "id," << n.signal_.user_name() << "\n";
+        pop_stats_file << "id," << s_spec.user_name() << "\n";
         for (const auto &org : pop.get_as_vector())
           pop_stats_file << org.get_id() << ","
                          << std::get<double>(
-                                org.data.get_value(n.signal_.identifier()))
+                                org.data.get_value(s_spec.identifier()))
                          << std::endl;
         // p.record(n.trace_);
       }

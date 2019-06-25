@@ -221,15 +221,19 @@ int
 
     env_spec.bind_tags(0);
 
+    env_spec.record_traces();
+
     auto e_dump = env_spec.dump(0);
     std::cout << (e_dump | ranges::view::intersperse("\n") |
                   ranges::action::join);
     std::cout << pop_spec.dump(0);
+
     auto pop = life::make_population(pop_spec);
     auto env = life::make_environment(env_spec);
     life::global_path += "data/";
     pop = env.evaluate(pop);
     pop.flush_unpruned();
+
     std::cout << std::endl;
   }
   /*

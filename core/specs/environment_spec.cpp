@@ -139,12 +139,33 @@ void
   }
 }
 
-environment_spec::environment_spec(parser p, block blk)
+void 
+environment_spec::record_traces()
+{
+	for (auto &[sig, freq] : traces_.pre_)
+          sig.update_identifier(
+              ranges::find_if(
+                  tags_.pre_,
+                  [n = sig.user_name()](auto tag) { return tag.first == n; })
+                  ->second.identifier());
+
+	for (auto &[sig, freq] : traces_.post_)
+          sig.update_identifier(
+              ranges::find_if(
+                  tags_.post_,
+                  [n = sig.user_name()](auto tag) { return tag.first == n; })
+                  ->second.identifier());
+
+  for (auto &es: nested_)
+	  es.second.e->record_traces();
+}
+
+environment_spec::environment_spec(parser parser_, block block_)
 {
 
-  *this = life::all_environment_specs.at(blk.name_.substr(1));
+  *this = life::all_environment_specs.at(block_.name_.substr(1));
 
-  for (auto over : blk.overrides_)
+  for (auto over : block_.overrides_)
   {
     auto name  = over.first;
     auto value = over.second;
@@ -153,7 +174,7 @@ environment_spec::environment_spec(parser p, block blk)
         parameters_, [&](auto param) { return param.first == name.expr_; });
     if (f == parameters_.end())
     {
-      p.err_invalid_token(name,
+      parser_.err_invalid_token(name,
                           "this does not override any parameters of " + name_);
       throw parser_error{};
     }
@@ -162,14 +183,46 @@ environment_spec::environment_spec(parser p, block blk)
     cp.parse(value.expr_);
     if (cp.type_as_string() != f->second.type_as_string())
     {
-      p.err_invalid_token(
+      parser_.err_invalid_token(
           value, "type mismatch, should be " + f->second.type_as_string());
       throw parser_error{};
     }
     f->second = cp;
   }
 
-  for (auto blover : blk.nested_)
+  for (auto over : block_.traces_)
+  {
+    auto tag_name  = over.first;
+    auto frequency = over.second;
+
+    configuration_primitive cp;
+    cp.parse(frequency.expr_);
+    if (cp.type_as_string() != "long")
+    {
+      parser_.err_invalid_token(
+          frequency, "expected frequency of trace (number) here");
+      throw parser_error{};
+    }
+
+	if( auto i = ranges::find_if(tags_.pre_, [name = tag_name.expr_](auto ns) {
+				return ns.first == name;}); i != ranges::end(tags_.pre_))
+	{
+		traces_.pre_.push_back({i->second.full_name(), std::stoi(frequency.expr_)});
+	}
+	else
+	if( auto j = ranges::find_if(tags_.post_, [name = tag_name.expr_](auto ns) {
+				return ns.first == name;}); i != ranges::end(tags_.post_))
+	{
+		traces_.post_.push_back({j->second.full_name(), std::stoi(frequency.expr_)});
+	}
+	else 
+    {
+      parser_.err_invalid_token(tag_name, "this is not a pre/post tag of " + name_);
+      throw parser_error{};
+    }
+  }
+
+  for (auto blover : block_.nested_)
   {
     auto name       = blover.first;
     auto nested_blk = blover.second;
@@ -177,7 +230,7 @@ environment_spec::environment_spec(parser p, block blk)
     auto ct = config_manager::type_of_block(nested_blk.name_.substr(1));
     if (ct != "environment")
     {
-      p.err_invalid_token(
+      parser_.err_invalid_token(
           name, "override of " + name.expr_ + " must be of type environment");
       throw parser_error{};
     }
@@ -186,13 +239,13 @@ environment_spec::environment_spec(parser p, block blk)
         nested_, [&](auto param) { return param.first == name.expr_; });
     if (f == nested_.end())
     {
-      p.err_invalid_token(
-          name, "this does not override any nested environments " + blk.name_);
+      parser_.err_invalid_token(
+          name, "this does not override any nested environments " + block_.name_);
       throw parser_error{};
     }
 
     f->second.e = std::make_unique<environment_spec>(
-        life::environment_spec{ p, nested_blk });
+        life::environment_spec{ parser_, nested_blk });
     f->second.e->set_user_specified_name(name.expr_);
   }
 }
@@ -234,16 +287,16 @@ std::vector<std::string>
   lines.push_back(alignment + "r");
   ranges::transform(
       traces_.pre_, ranges::back_inserter(lines), [&](auto trace) {
-         return alignment + trace.signal_.full_name() +
-                std::to_string(trace.frequency_);
+        return alignment + trace.signal_.full_name() + ";" +
+               std::to_string(trace.frequency_);
       });
   lines.push_back(alignment + "R");
   ranges::transform(
       traces_.post_, ranges::back_inserter(lines), [&](auto trace) {
-         return alignment + trace.signal_.full_name() +
-                std::to_string(trace.frequency_);
+        return alignment + trace.signal_.full_name() + ";" +
+               std::to_string(trace.frequency_);
       });
-      // needs to go *
+  // needs to go *
   lines.push_back(alignment + "n");
   for (auto nested : nested_) {
 	  lines.push_back(alignment + nested.first);
@@ -304,16 +357,14 @@ environment_spec
   {
     auto        l = *f;
     auto        p = l.find(';');
-    signal_spec sp{ l.substr(0, p) };
-    traces_.pre_.push_back({ sp, std::stoi(l.substr(p + 1)) });
+    traces_.pre_.push_back({ l.substr(0, p - 1), std::stoi(l.substr(p + 1)) });
   }
 
   for (++f; *f != "n"; f++)
   {
     auto        l = *f;
     auto        p = l.find(';');
-    signal_spec sp{ l.substr(0, p) };
-    traces_.post_.push_back({ sp, std::stoi(l.substr(p + 1)) });
+    traces_.post_.push_back({ l.substr(0, p - 1), std::stoi(l.substr(p + 1)) });
   }
 
   for (++f; f != pop_dump.end();)

@@ -64,6 +64,9 @@ class environment_spec {
                         std::pair<std::string, std::string>>>
       tag_flow_inequalities_;
 
+  //parser parser_;
+  //block block_;
+  
 public:
   // environment_spec() = default;
   //~environment_spec() = default;
@@ -197,9 +200,11 @@ public:
 
   std::string pretty_print();
 
+  //void parser_parse();
   void instantiate_user_parameter_sizes();
   void bind_entity_io(io_signals);
   void bind_tags(int);
+  void record_traces();
 
   friend class environment;
 };

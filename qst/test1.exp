@@ -16,7 +16,7 @@ P = $linear {
 
 fs = 
   $sequence  {
-     first 	= 		$forager
+     first 	= 		$forager { ? food_eaten 15 }
      second = $elite_replacement { 
  	 strength = 	0.4 
   }

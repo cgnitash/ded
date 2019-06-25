@@ -18,7 +18,7 @@ enum class token_type {
   open_brace,
   close_brace,
   assignment,
-  tag_rewrite,
+  trace,
   word,
   component,
   variable
@@ -38,7 +38,7 @@ struct block
   std::string         name_;
   std::pair<int, int> range_;
   std::vector<std::pair<token,token>> overrides_;
-  std::vector<std::pair<token,token>> tag_rewrites_;
+  std::vector<std::pair<token,token>> traces_;
   std::vector<std::pair<token,block>> nested_;
 
 };
