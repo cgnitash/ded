@@ -39,7 +39,7 @@ public:
   markov_brain() { configure(publish_configuration()); }
   life::entity_spec publish_configuration()
   {
-    life::entity_spec es{"markov_brain"};
+    life::entity_spec es;//{"markov_brain"};
     //con["parameters"]["inputs"]        = input_;
     //con["parameters"]["outputs"]       = output_;
     //con["parameters"]["hiddens"]       = hidden_;

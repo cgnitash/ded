@@ -58,7 +58,7 @@ public:
   io_signals instantiate_nested_entity_user_parameter_sizes() { return es_.instantiate_user_parameter_sizes(); }
   //  friend std::ostream &operator<<(std::ostream &out, population_spec e)
 
-  //friend class environment_spec;
+  friend class population;
 };
 
 }   // namespace life

@@ -42,7 +42,7 @@ public:
 
   life::population_spec publish_configuration()
   {
-    life::population_spec ps{"linear"};
+    life::population_spec ps;//{"linear"};
     ps.bind_parameter("track_lineage",track_lineage_);
     ps.bind_parameter("size",size_);
     ps.bind_parameter("load_from",load_spec_);

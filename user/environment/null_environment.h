@@ -21,7 +21,7 @@ public:
 
   life::environment_spec publish_configuration()
   {
-    life::environment_spec es{"null_environment"};
+    life::environment_spec es;//{"null_environment"};
 	/*
     con["parameters"]  = nullptr;
     con["pre-tags"]    = nullptr;

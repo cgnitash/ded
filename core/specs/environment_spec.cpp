@@ -12,6 +12,13 @@
 
 namespace life {
 
+  void environment_spec::bind_tags() {
+
+	//for (auto 
+
+  }
+
+
 void
     environment_spec::instantiate_user_parameter_sizes()
 {
@@ -231,14 +238,14 @@ environment_spec
   {
     auto l                     = *f;
     auto p                     = l.find(':');
-    tags_.pre_[l.substr(0, p)] = signal_spec{ l };
+    tags_.pre_.push_back({l.substr(0, p), signal_spec{ l }});
   }
 
   for (++f; *f != "r"; f++)
   {
     auto l                      = *f;
     auto p                      = l.find(':');
-    tags_.post_[l.substr(0, p)] = signal_spec{ l };
+    tags_.post_.push_back({l.substr(0, p), signal_spec{ l }});
   }
 
   for (++f; *f != "R"; f++)

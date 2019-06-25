@@ -15,8 +15,8 @@ public:
   void configure(life::population_spec) {}
   life::population_spec publish_configuration()
   {
-    life::population_spec ps{"null_population"};
-    return ps;
+    //life::population_spec ps{"null_population"};
+    return {};
   }
   std::vector<life::entity> get_as_vector() const { return {}; }
 

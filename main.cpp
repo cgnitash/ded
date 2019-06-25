@@ -218,6 +218,9 @@ int
 	auto io = pop.instantiate_nested_entity_user_parameter_sizes();
 	
 	env.bind_entity_io(io);
+
+	env.bind_tags();
+
     std::cout << env.dump(0);
     std::cout << pop.dump(0);
     // auto pop= life::make_population(pop_con);

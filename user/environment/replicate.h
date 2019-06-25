@@ -28,14 +28,14 @@ public:
 
   life::environment_spec publish_configuration()
   {
-    life::environment_spec es{ "replicate" };
+    life::environment_spec es;//{ "replicate" };
 
     es.bind_parameter("num", num_);
 
     es.bind_post("x", "double");
 
     es.bind_environment("env", env_);
-    es.bind_environment_post_constraints("env", { x_tag_ });
+    es.bind_environment_post_constraints("env", { "double" });
     return es;
   }
 

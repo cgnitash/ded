@@ -159,7 +159,9 @@ private:
         "UserEnvironment does not satisfy 'configuration' concept requirement");
     environment_spec publish_configuration_() override
     {
-      return data_.publish_configuration();
+      auto es = data_.publish_configuration();
+	  es.name_ = auto_class_name_as_string<UserEnvironment>();
+	  return es;
     }
     void configure_(environment_spec c) override { data_.configure(c); }
 

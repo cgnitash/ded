@@ -105,6 +105,7 @@ public:
 
   io_signals instantiate_user_parameter_sizes();
 
+  friend class entity;
 };
 
 }   // namespace life

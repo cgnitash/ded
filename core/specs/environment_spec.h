@@ -54,11 +54,8 @@ class environment_spec {
 
   io_signals io_;
 
-  struct
-  {
-    std::map<std::string, signal_spec> pre_;
-    std::map<std::string, signal_spec> post_;
-  } tags_;
+  tags tags_;
+
   std::map<std::string, nested_spec> nested_;
   std::vector<std::pair<std::pair<std::string, std::string>,
                         std::pair<std::string, std::string>>>
@@ -86,12 +83,6 @@ public:
   }
   /*
 
-  auto parameters() const { return parameters_; }
-
-  auto inputs() const { return io_.inputs_; }
-
-  auto outputs() const { return io_.outputs_; }
-
   auto pre_tags() const { return tags_.pre_; }
 
   auto post_tags() const { return tags_.post_; }
@@ -118,22 +109,26 @@ public:
 
   void bind_pre(std::string name, std::string value)
   {
-    tags_.pre_[name] = signal_spec{ name, name, value };
+    tags_.pre_.push_back({name, signal_spec{ name, name, value }});
   }
 
   void configure_pre(std::string name, std::string &value)
   {
-    value = tags_.pre_[name].id_type_specifier() ;
+    value =
+        ranges::find_if(tags_.pre_, [=](auto ns) { return ns.first == name; })
+            ->second.id_type_specifier();
   }
 
   void bind_post(std::string name, std::string value)
   {
-    tags_.post_[name] =  signal_spec{ name, name, value };
+    tags_.post_.push_back({name, signal_spec{ name, name, value }});
   }
 
   void configure_post(std::string name, std::string &value)
   {
-    value = tags_.post_[name].id_type_specifier();
+    value =
+        ranges::find_if(tags_.post_, [=](auto ns) { return ns.first == name; })
+            ->second.id_type_specifier();
   }
 
   void bind_input(std::string name, std::string value)
@@ -204,6 +199,9 @@ public:
 
   void instantiate_user_parameter_sizes();
   void bind_entity_io(io_signals);
+  void bind_tags();
+
+  friend class environment;
 };
 
 }   // namespace life

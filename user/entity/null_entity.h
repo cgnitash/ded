@@ -21,7 +21,7 @@ public:
   null_entity() { configure(publish_configuration()); }
   life::entity_spec publish_configuration()
   {
-    life::entity_spec es{"null_entity"};
+    //life::entity_spec es{"null_entity"};
 	//con["parameters"] = nullptr;
 
     //es.bind_input("in-sense", in_sense_);
@@ -29,7 +29,7 @@ public:
     //con["input-tags"]["in-sense"]   = in_sense_;
     //con["output-tags"]["out-sense"] = out_sense_;
 
-    return es;
+    return {};
   }
 
   void         reset(){}

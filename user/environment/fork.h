@@ -25,7 +25,7 @@ public:
 
   life::environment_spec publish_configuration()
   {
-    life::environment_spec es{"fork"};
+    life::environment_spec es;//{"fork"};
 
 	es.bind_environment("one",one_);
 

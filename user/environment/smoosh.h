@@ -19,7 +19,7 @@ public:
 
   life::environment_spec publish_configuration()
   {
-    life::environment_spec es{"smoosh"};
+    life::environment_spec es;//{"smoosh"};
     es.bind_parameter("weight",weight_);
 
     es.bind_pre("d1", "double");

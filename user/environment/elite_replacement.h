@@ -18,7 +18,7 @@ public:
 
   life::environment_spec publish_configuration()
   {
-    life::environment_spec es{"elite_replacement"};
+    life::environment_spec es;//{"elite_replacement"};
     es.bind_parameter("strength",strength_);
 
     es.bind_pre("value", "double");

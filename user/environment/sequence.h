@@ -25,7 +25,7 @@ public:
 
   life::environment_spec publish_configuration()
   {
-    life::environment_spec es{"sequence"};
+    life::environment_spec es;//{"sequence"};
 
 	es.bind_environment("first",first_);
 

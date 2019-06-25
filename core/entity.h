@@ -204,7 +204,9 @@ private:
         "UserEntity does not satisfy 'configuration' concept requirement");
     entity_spec publish_configuration_() override
     {
-      return data_.publish_configuration();
+      auto es = data_.publish_configuration();
+	  es.name_ = auto_class_name_as_string<UserEntity>();
+	  return es;
     }
     void configure_(entity_spec c) override { data_.configure(c); }
 

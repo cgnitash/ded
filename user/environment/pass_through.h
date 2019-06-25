@@ -23,7 +23,7 @@ public:
 
   life::environment_spec publish_configuration()
   {
-    life::environment_spec es{"pass_through"};
+    life::environment_spec es;//{"pass_through"};
 	/*
     c["pre-tags"] = nullptr;
     c["post-tags"]  = nullptr;

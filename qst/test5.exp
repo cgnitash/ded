@@ -19,7 +19,6 @@ fs =
      first 	= 		$forager
      second = $elite_replacement { 
  	 strength = 	0.4 
-	 one>food_eaten = two<score
   }
 }
 
@@ -28,6 +27,7 @@ epoch = $cycle  {
   world = !fs
 }
 
+# lineage tracking gets turned off here
 E = $sequence {
 	first = !epoch
     second 	= !epoch

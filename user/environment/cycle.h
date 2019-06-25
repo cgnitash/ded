@@ -25,7 +25,7 @@ public:
 
   life::environment_spec publish_configuration()
   {
-    life::environment_spec es{"cycle"};
+    life::environment_spec es;//{"cycle"};
 
     es.bind_parameter("count",count_);
 

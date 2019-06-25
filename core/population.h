@@ -131,7 +131,9 @@ private:
 
     population_spec publish_configuration_() override
     {
-      return data_.publish_configuration();
+      auto ps = data_.publish_configuration();
+	  ps.name_ = auto_class_name_as_string<UserPopulation>();
+	  return ps;
     }
 
     void configure_(population_spec c) override { data_.configure(c); }

@@ -83,7 +83,7 @@ public:
 
   life::environment_spec publish_configuration()
   {
-    life::environment_spec es{"forager"};
+    life::environment_spec es;//{"forager"};
     es.bind_parameter("grid_size",grid_size_);
     es.bind_parameter("updates",updates_);
     es.bind_parameter("density",density_);
