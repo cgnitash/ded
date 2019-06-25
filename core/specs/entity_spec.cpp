@@ -13,16 +13,26 @@
 namespace life {
 
 io_signals
-    entity_spec::instantiate_user_parameter_sizes()
+    entity_spec::instantiate_user_parameter_sizes(int sig_count)
 {
-  for (auto &[name, sig] : io_.inputs_)
+  for (auto &n_sig : io_.inputs_)
     for (auto &[param, cp] : parameters_)
-      if (cp.type_as_string() == "long")
-        sig.instantiate_user_parameter(param, std::stol(cp.value_as_string()));
-  for (auto &[name, sig] : io_.outputs_)
+      if (cp.type_as_string() == "long" &&
+          param == n_sig.second.user_parameter())
+      {
+        n_sig.second.instantiate_user_parameter(
+             std::stol(cp.value_as_string()));
+        n_sig.second.update_identifier("sig" + std::to_string(sig_count++));
+      }
+  for (auto &n_sig : io_.outputs_)
     for (auto &[param, cp] : parameters_)
-      if (cp.type_as_string() == "long")
-        sig.instantiate_user_parameter(param, std::stol(cp.value_as_string()));
+      if (cp.type_as_string() == "long" &&
+          param == n_sig.second.user_parameter())
+      {
+        n_sig.second.instantiate_user_parameter(
+             std::stol(cp.value_as_string()));
+        n_sig.second.update_identifier("sig" + std::to_string(sig_count++));
+      }
   return io_;
 }
 
@@ -132,16 +142,16 @@ entity_spec
 
   for (++f; *f != "O"; f++)
   {
-    auto l                      = *f;
-    auto p                      = l.find(':');
-    io_.inputs_.push_back({l.substr(0, p), signal_spec{ l }});
+    auto l = *f;
+    auto p = l.find(':');
+    io_.inputs_.push_back({ l.substr(0, p), signal_spec{ l } });
   }
 
   for (++f; *f != "n"; f++)
   {
-    auto l                       = *f;
-    auto p                       = l.find(':');
-    io_.outputs_.push_back({l.substr(0, p), signal_spec{ l }});
+    auto l = *f;
+    auto p = l.find(':');
+    io_.outputs_.push_back({ l.substr(0, p), signal_spec{ l } });
   }
 
   for (++f; f != pop_dump.end();)

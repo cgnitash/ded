@@ -67,7 +67,7 @@ public:
   {
     auto i =
         ranges::find_if(io_.inputs_, [=](auto ns) { return ns.first == name; });
-    value = i->second.id_type_specifier();
+    value = i->second.identifier();
   }
 
   void bind_output(std::string name, std::string value)
@@ -79,7 +79,7 @@ public:
   {
     auto i =
         ranges::find_if(io_.outputs_, [=](auto ns) { return ns.first == name; });
-    value = i->second.id_type_specifier();
+    value = i->second.identifier();
   }
 
   void bind_entity(std::string name, entity_spec env)
@@ -103,7 +103,7 @@ public:
   entity_spec parse(std::vector<std::string> pop_dump);
   std::string pretty_print();
 
-  io_signals instantiate_user_parameter_sizes();
+  io_signals instantiate_user_parameter_sizes(int);
 
   friend class entity;
 };

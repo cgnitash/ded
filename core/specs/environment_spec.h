@@ -59,10 +59,10 @@ class environment_spec {
   std::map<std::string, nested_spec> nested_;
   std::vector<std::pair<std::pair<std::string, std::string>,
                         std::pair<std::string, std::string>>>
-      tag_flow_equalities;
+      tag_flow_equalities_;
   std::vector<std::pair<std::pair<std::string, std::string>,
                         std::pair<std::string, std::string>>>
-      tag_flow_inequalities;
+      tag_flow_inequalities_;
 
 public:
   // environment_spec() = default;
@@ -116,7 +116,7 @@ public:
   {
     value =
         ranges::find_if(tags_.pre_, [=](auto ns) { return ns.first == name; })
-            ->second.id_type_specifier();
+            ->second.identifier();
   }
 
   void bind_post(std::string name, std::string value)
@@ -128,7 +128,7 @@ public:
   {
     value =
         ranges::find_if(tags_.post_, [=](auto ns) { return ns.first == name; })
-            ->second.id_type_specifier();
+            ->second.identifier();
   }
 
   void bind_input(std::string name, std::string value)
@@ -140,7 +140,7 @@ public:
   {
     value =
         ranges::find_if(io_.inputs_, [=](auto ns) { return ns.first == name; })
-            ->second.id_type_specifier();
+            ->second.identifier();
   }
 
   void bind_output(std::string name, std::string value)
@@ -152,7 +152,7 @@ public:
   {
     value =
         ranges::find_if(io_.outputs_, [=](auto ns) { return ns.first == name; })
-            ->second.id_type_specifier();
+            ->second.identifier();
   }
 
   void bind_environment(std::string name, environment_spec env)
@@ -181,25 +181,25 @@ public:
   void bind_tag_equality(std::pair<std::string, std::string> x,
                          std::pair<std::string, std::string> y)
   {
-    tag_flow_equalities.push_back({ x, y });
+    tag_flow_equalities_.push_back({ x, y });
   }
 
   void bind_tag_inequality(std::pair<std::string, std::string> x,
                            std::pair<std::string, std::string> y)
   {
-    tag_flow_inequalities.push_back({ x, y });
+    tag_flow_inequalities_.push_back({ x, y });
   }
 
   // friend std::ostream &operator<<(std::ostream &out, const environment_spec
   // &e)
-  std::string      dump(long depth);
+  std::vector<std::string>      dump(long depth);
   environment_spec parse(std::vector<std::string> pop_dump);
 
   std::string pretty_print();
 
   void instantiate_user_parameter_sizes();
   void bind_entity_io(io_signals);
-  void bind_tags();
+  void bind_tags(int);
 
   friend class environment;
 };

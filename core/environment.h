@@ -197,7 +197,7 @@ private:
         for (const auto &org : pop.get_as_vector())
           pop_stats_file << org.get_id() << ","
                          << std::get<double>(
-                                org.data.get_value(n.signal_.id_type_specifier()))
+                                org.data.get_value(n.signal_.identifier()))
                          << std::endl;
         // p.record(n.trace_);
       }

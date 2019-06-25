@@ -55,7 +55,7 @@ public:
   population_spec parse(std::vector<std::string> pop_dump);
   std::string pretty_print();
 
-  io_signals instantiate_nested_entity_user_parameter_sizes() { return es_.instantiate_user_parameter_sizes(); }
+  io_signals instantiate_nested_entity_user_parameter_sizes() { return es_.instantiate_user_parameter_sizes(0); }
   //  friend std::ostream &operator<<(std::ostream &out, population_spec e)
 
   friend class population;

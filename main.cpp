@@ -20,14 +20,14 @@ void
 {
 
   std::cout << "entity:\n";
-  for (auto [name, spec] : life::all_entity_specs)
-    std::cout << "    " << name << "\n";
+  for (auto n_spec : life::all_entity_specs)
+    std::cout << "    " << n_spec.first << "\n";
   std::cout << "environment:\n";
-  for (auto [name, spec] : life::all_environment_specs)
-    std::cout << "    " << name << "\n";
+  for (auto n_spec : life::all_environment_specs)
+    std::cout << "    " << n_spec.first << "\n";
   std::cout << "population:\n";
-  for (auto [name, spec] : life::all_population_specs)
-    std::cout << "    " << name << "\n";
+  for (auto n_spec : life::all_population_specs)
+    std::cout << "    " << n_spec.first << "\n";
 
   return;
 }
@@ -200,8 +200,8 @@ int
       throw std::logic_error{ "" };
     }
 
-    auto env = std::get<life::environment_spec>(vars["E"]);
-	env.instantiate_user_parameter_sizes();
+    auto env_spec = std::get<life::environment_spec>(vars["E"]);
+    env_spec.instantiate_user_parameter_sizes();
 
     if (vars.find("P") == vars.end())
     {
@@ -214,17 +214,22 @@ int
       std::cout << "error: P must be of type population\n";
       throw std::logic_error{ "" };
     }
-    auto pop = std::get<life::population_spec>(vars["P"]);
-	auto io = pop.instantiate_nested_entity_user_parameter_sizes();
-	
-	env.bind_entity_io(io);
+    auto pop_spec = std::get<life::population_spec>(vars["P"]);
+    auto io       = pop_spec.instantiate_nested_entity_user_parameter_sizes();
 
-	env.bind_tags();
+    env_spec.bind_entity_io(io);
 
-    std::cout << env.dump(0);
-    std::cout << pop.dump(0);
-    // auto pop= life::make_population(pop_con);
-    // auto env= life::make_environment(env_con);
+    env_spec.bind_tags(0);
+
+    auto e_dump = env_spec.dump(0);
+    std::cout << (e_dump | ranges::view::intersperse("\n") |
+                  ranges::action::join);
+    std::cout << pop_spec.dump(0);
+    auto pop = life::make_population(pop_spec);
+    auto env = life::make_environment(env_spec);
+    life::global_path += "data/";
+    pop = env.evaluate(pop);
+    pop.flush_unpruned();
     std::cout << std::endl;
   }
   /*
@@ -373,5 +378,5 @@ int
 {
 } catch (...)
 {
-	std::cout << "\nfatal: this is a core bug - please file a bug report\n";
+  std::cout << "\nfatal: this is a core bug - please file a bug report\n";
 }

@@ -28,7 +28,7 @@ public:
 
   life::environment_spec publish_configuration()
   {
-    life::environment_spec es;//{ "replicate" };
+    life::environment_spec es;
 
     es.bind_parameter("num", num_);
 

@@ -28,12 +28,6 @@ bool
 	return size_ == other.size_;
 }
 
-void
-    signal_spec::instantiate_user_parameter(std::string name, long size)
-{
-  if (name == user_parameter_) size_ = size;
-}
-
 signal_spec::signal_spec(std::string sig)
 {
   auto p = sig.find(':');

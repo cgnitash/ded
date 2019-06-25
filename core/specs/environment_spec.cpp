@@ -12,26 +12,77 @@
 
 namespace life {
 
-  void environment_spec::bind_tags() {
+void
+    environment_spec::bind_tags(int tag_count)
+{
 
-	//for (auto 
+  for (auto [source, sink] : tag_flow_equalities_)
+  {
+    auto &source_tags = source.second == "pre"
+                           ? nested_[source.first].e->tags_.pre_
+                           : nested_[source.first].e->tags_.post_;
+    auto &sink_tags = sink.second == "pre" ? nested_[sink.first].e->tags_.pre_
+                                         : nested_[sink.first].e->tags_.post_;
+    if (source_tags.size() != sink_tags.size())
+    {
+      std::cout << "cannot match flow equality\n";
+      // throw;
+    } auto sink_tags_copy = sink_tags;
+    for (auto &n_tag : source_tags)
+    {
+      auto &src     = n_tag.second;
+      auto matches = ranges::count_if(sink_tags_copy, [sig = src](auto ns) {
+        return ns.second.exactly_matches(sig);
+      });
+      if (matches > 1)
+      {
+        std::cout << "error: multiple tags match exactly\n";
+        // throw;
+      }
+      if (!matches)
+      {
+        std::cout << "error: no tags match exactly (convertible signals "
+                     "not supported yet)\n";
+        // throw;
+      }
 
+      ranges::find_if(
+          sink_tags,
+          [sig = src](auto ns) { return ns.second.exactly_matches(sig); })
+          ->second.update_identifier("tag" + std::to_string(tag_count));
+
+      src.update_identifier("tag" + std::to_string(tag_count));
+
+      sink_tags_copy.erase(ranges::find_if(sink_tags_copy, [sig = src](auto ns) {
+        return ns.second.exactly_matches(sig);
+      }));
+
+      tag_count++;
+    }
   }
 
+  for (auto &es : nested_)
+	  es.second.e->bind_tags(tag_count);
+}
 
 void
     environment_spec::instantiate_user_parameter_sizes()
 {
-  for (auto &[name, sig] : io_.inputs_)
+  for (auto &n_sig : io_.inputs_)
     for (auto &[param, cp] : parameters_)
-      if (cp.type_as_string() == "long")
-        sig.instantiate_user_parameter(param, std::stol(cp.value_as_string()));
-  for (auto &[name, sig] : io_.outputs_)
+      if (cp.type_as_string() == "long" &&
+          param == n_sig.second.user_parameter())
+        n_sig.second.instantiate_user_parameter(
+            std::stol(cp.value_as_string()));
+
+  for (auto &n_sig : io_.outputs_)
     for (auto &[param, cp] : parameters_)
-      if (cp.type_as_string() == "long")
-        sig.instantiate_user_parameter(param, std::stol(cp.value_as_string()));
-  for (auto &es : nested_)
-	  es.second.e->instantiate_user_parameter_sizes();
+      if (cp.type_as_string() == "long" &&
+          param == n_sig.second.user_parameter())
+        n_sig.second.instantiate_user_parameter(
+            std::stol(cp.value_as_string()));
+
+  for (auto &es : nested_) es.second.e->instantiate_user_parameter_sizes();
 }
 
 void
@@ -39,8 +90,9 @@ void
 {
   for (auto &es : nested_) es.second.e->bind_entity_io(ios);
 
-  for (auto &[name, in_sig] : io_.inputs_)
+  for (auto &n_sig : io_.inputs_)
   {
+    auto &in_sig  = n_sig.second;
     auto matches = ranges::count_if(ios.inputs_, [sig = in_sig](auto ns) {
       return ns.second.exactly_matches(sig);
     });
@@ -58,12 +110,13 @@ void
     auto i = ranges::find_if(ios.inputs_, [sig = in_sig](auto ns) {
       return ns.second.exactly_matches(sig);
     });
-	in_sig = signal_spec{in_sig.user_name(), i->second.id_type_specifier()};
+    in_sig.update_identifier(i->second.identifier());
     ios.inputs_.erase(i);
   }
 
-  for (auto &[name, out_sig] : io_.outputs_)
+  for (auto &n_sig : io_.outputs_)
   {
+    auto &out_sig  = n_sig.second;
     auto matches = ranges::count_if(ios.outputs_, [sig = out_sig](auto ns) {
       return ns.second.exactly_matches(sig);
     });
@@ -78,10 +131,10 @@ void
                    "signals not supported yet)\n";
       // throw;
     }
-    auto i = ranges::find_if(ios.outputs_, [sig = out_sig](auto ns) {
+    auto i  = ranges::find_if(ios.outputs_, [sig = out_sig](auto ns) {
       return ns.second.exactly_matches(sig);
     });
-	out_sig = signal_spec{out_sig.user_name(), i->second.id_type_specifier()};
+    out_sig.update_identifier(i->second.identifier());
     ios.outputs_.erase(i);
   }
 }
@@ -140,13 +193,16 @@ environment_spec::environment_spec(parser p, block blk)
 
     f->second.e = std::make_unique<environment_spec>(
         life::environment_spec{ p, nested_blk });
+    f->second.e->set_user_specified_name(name.expr_);
   }
 }
 
-std::string
+std::vector<std::string>
     environment_spec::dump(long depth)
 {
-  auto alignment = "\n" + std::string(depth, ' ');
+	std::vector<std::string> lines;
+  //auto alignment = "\n" + std::string(depth, ' ');
+  auto alignment = std::string(depth, ' ');
 
   /*
   auto pad = [&] {
@@ -155,52 +211,48 @@ std::string
            ranges::action::join;
   };
   */
+  auto pad_signal = [&](auto sig) {
+    return alignment + sig.second.full_name();
+  };
 
-  return alignment + "environment:" + name_ + alignment + "P" +
-         (parameters_ | ranges::view::transform([&](auto parameter) {
-            return alignment + parameter.first + ":" +
-                   parameter.second.value_as_string();
-          }) |
-          ranges::action::join) +
-         alignment + "I" +
-         (io_.inputs_ | ranges::view::transform([&](auto sig) {
-            return alignment + sig.second.full_name();
-          }) |
-          ranges::action::join) +
-         alignment + "O" +
-         (io_.outputs_ | ranges::view::transform([&](auto sig) {
-            return alignment + sig.second.full_name();
-          }) |
-          ranges::action::join) +
-         alignment + "a" +
-         (tags_.pre_ | ranges::view::transform([&](auto sig) {
-            return alignment + sig.second.full_name();
-          }) |
-          ranges::action::join) +
-         alignment + "b" +
-         (tags_.post_ | ranges::view::transform([&](auto sig) {
-            return alignment + sig.second.full_name();
-          }) |
-          ranges::action::join) +
-         // needs to go
-         alignment + "r" +
-         (traces_.pre_ | ranges::view::transform([&](auto trace) {
-            return alignment + trace.signal_.full_name() +
-                   std::to_string(trace.frequency_);
-          }) |
-          ranges::action::join) +
-         alignment + "R" +
-         (traces_.post_ | ranges::view::transform([&](auto trace) {
-            return alignment + trace.signal_.full_name() +
-                   std::to_string(trace.frequency_);
-          }) |
-          ranges::action::join) +
-         // needs to go *
-         alignment + "n" +
-         (nested_ | ranges::view::transform([&](auto nested) {
-            return alignment + nested.first + nested.second.e->dump(depth + 1);
-          }) |
-          ranges::action::join);
+  lines.push_back(alignment + "environment:" + name_);
+  lines.push_back(alignment + "P");
+  ranges::transform(
+      parameters_, ranges::back_inserter(lines), [&](auto parameter) {
+        return alignment + parameter.first + ":" +
+               parameter.second.value_as_string();
+      });
+  lines.push_back(alignment + "I");
+  ranges::transform(io_.inputs_, ranges::back_inserter(lines), pad_signal);
+  lines.push_back(alignment + "O");
+  ranges::transform(io_.outputs_, ranges::back_inserter(lines), pad_signal);
+  lines.push_back(alignment + "a");
+  ranges::transform(tags_.pre_ ,ranges::back_inserter(lines), pad_signal);
+  lines.push_back(alignment + "b");
+  ranges::transform(tags_.post_ ,ranges::back_inserter(lines), pad_signal);
+      // needs to go
+  lines.push_back(alignment + "r");
+  ranges::transform(
+      traces_.pre_, ranges::back_inserter(lines), [&](auto trace) {
+         return alignment + trace.signal_.full_name() +
+                std::to_string(trace.frequency_);
+      });
+  lines.push_back(alignment + "R");
+  ranges::transform(
+      traces_.post_, ranges::back_inserter(lines), [&](auto trace) {
+         return alignment + trace.signal_.full_name() +
+                std::to_string(trace.frequency_);
+      });
+      // needs to go *
+  lines.push_back(alignment + "n");
+  for (auto nested : nested_) {
+	  lines.push_back(alignment + nested.first);
+	  auto n_dump =  
+          nested.second.e->dump(depth + 1);
+	  lines.insert(lines.end(),n_dump.begin(),n_dump.end());
+  }
+
+  return lines;
 }
 
 environment_spec
@@ -224,28 +276,28 @@ environment_spec
   {
     auto l = *f;
     auto p = l.find(':');
-    io_.inputs_.push_back({l.substr(0, p), signal_spec{ l }});
+    io_.inputs_.push_back({ l.substr(0, p), signal_spec{ l } });
   }
 
   for (++f; *f != "a"; f++)
   {
     auto l = *f;
     auto p = l.find(':');
-    io_.outputs_.push_back({l.substr(0, p), signal_spec{ l }});
+    io_.outputs_.push_back({ l.substr(0, p), signal_spec{ l } });
   }
 
   for (++f; *f != "b"; f++)
   {
-    auto l                     = *f;
-    auto p                     = l.find(':');
-    tags_.pre_.push_back({l.substr(0, p), signal_spec{ l }});
+    auto l = *f;
+    auto p = l.find(':');
+    tags_.pre_.push_back({ l.substr(0, p), signal_spec{ l } });
   }
 
   for (++f; *f != "r"; f++)
   {
-    auto l                      = *f;
-    auto p                      = l.find(':');
-    tags_.post_.push_back({l.substr(0, p), signal_spec{ l }});
+    auto l = *f;
+    auto p = l.find(':');
+    tags_.post_.push_back({ l.substr(0, p), signal_spec{ l } });
   }
 
   for (++f; *f != "R"; f++)
@@ -331,14 +383,14 @@ std::string
     }
   }
 
-  if (!tag_flow_equalities.empty() || !tag_flow_inequalities.empty())
+  if (!tag_flow_equalities_.empty() || !tag_flow_inequalities_.empty())
   {
     out << "with tag-flow-constraints:\n";
-    for (auto name : tag_flow_equalities)
+    for (auto name : tag_flow_equalities_)
       out << std::setw(26) << name.first.second << "(" << name.first.first
           << ") <=> " << name.second.second << "(" << name.second.first
           << ")\n";
-    for (auto name : tag_flow_inequalities)
+    for (auto name : tag_flow_inequalities_)
       out << std::setw(26) << name.first.second << "(" << name.first.first
           << ") <!=> " << name.second.second << "(" << name.second.first
           << ")\n";

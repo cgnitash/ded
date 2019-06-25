@@ -22,7 +22,6 @@ fs =
      first 	= !rep_for 
      second = $elite_replacement { 
  	 strength = 	0.4 
-	 #one>food_eaten = two<score
   }
 }
 

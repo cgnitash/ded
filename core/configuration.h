@@ -89,10 +89,10 @@ inline void
 {
 
   std::ofstream file("configurations.cfg");
-  for (auto [name, es] : life::all_entity_specs) file << "\n" << es.dump(0);
-  for (auto [name, es] : life::all_environment_specs)
-    file << "\n" << es.dump(0);
-  for (auto [name, es] : life::all_population_specs) file << "\n" << es.dump(0);
+  for (auto n_es : life::all_entity_specs) file << "\n" << n_es.second.dump(0);
+  for (auto n_es : life::all_environment_specs)
+    file << "\n" << (n_es.second.dump(0) | ranges::action::join);
+  for (auto n_es : life::all_population_specs) file << "\n" << n_es.second.dump(0);
   return;
 }
 /*

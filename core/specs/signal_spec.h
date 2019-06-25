@@ -32,14 +32,20 @@ public:
   {
     return user_name_ + ":" + additional_identifier_ + "-" + full_type_;
   }
+  /*
   auto id_type_specifier() const
   {
     return additional_identifier_ + "-" + full_type_;
   }
+  */
   auto user_name() const { return user_name_; }
   auto identifier() const { return additional_identifier_; }
+  void update_identifier(std::string id) { additional_identifier_ = id; }
   auto type() const { return full_type_; }
-  void instantiate_user_parameter(std::string, long);
+  auto user_parameter() const { return user_parameter_; }
+
+  void instantiate_user_parameter( long size) { size_ = size; }
+
   bool exactly_matches(signal_spec);
   bool convertible_to(signal_spec);
 };
