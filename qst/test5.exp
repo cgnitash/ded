@@ -1,4 +1,5 @@
 
+# working
 
 e = $markov_brain {
      hiddens = 5
@@ -16,7 +17,7 @@ P = $linear {
 
 fs = 
   $sequence  {
-     first 	= 		$forager
+     first 	= 		$forager { ? food_eaten 7 }
      second = $elite_replacement { 
  	 strength = 	0.4 
   }

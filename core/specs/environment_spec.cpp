@@ -19,19 +19,20 @@ void
   for (auto [source, sink] : tag_flow_equalities_)
   {
     auto &source_tags = source.second == "pre"
-                           ? nested_[source.first].e->tags_.pre_
-                           : nested_[source.first].e->tags_.post_;
+                            ? nested_[source.first].e->tags_.pre_
+                            : nested_[source.first].e->tags_.post_;
     auto &sink_tags = sink.second == "pre" ? nested_[sink.first].e->tags_.pre_
-                                         : nested_[sink.first].e->tags_.post_;
+                                           : nested_[sink.first].e->tags_.post_;
     if (source_tags.size() != sink_tags.size())
     {
       std::cout << "cannot match flow equality\n";
       // throw;
-    } auto sink_tags_copy = sink_tags;
+    }
+    auto sink_tags_copy = sink_tags;
     for (auto &n_tag : source_tags)
     {
       auto &src     = n_tag.second;
-      auto matches = ranges::count_if(sink_tags_copy, [sig = src](auto ns) {
+      auto  matches = ranges::count_if(sink_tags_copy, [sig = src](auto ns) {
         return ns.second.exactly_matches(sig);
       });
       if (matches > 1)
@@ -53,16 +54,16 @@ void
 
       src.update_identifier("tag" + std::to_string(tag_count));
 
-      sink_tags_copy.erase(ranges::find_if(sink_tags_copy, [sig = src](auto ns) {
-        return ns.second.exactly_matches(sig);
-      }));
+      sink_tags_copy.erase(
+          ranges::find_if(sink_tags_copy, [sig = src](auto ns) {
+            return ns.second.exactly_matches(sig);
+          }));
 
       tag_count++;
     }
   }
 
-  for (auto &es : nested_)
-	  es.second.e->bind_tags(tag_count);
+  for (auto &es : nested_) es.second.e->bind_tags(tag_count);
 }
 
 void
@@ -93,7 +94,7 @@ void
   for (auto &n_sig : io_.inputs_)
   {
     auto &in_sig  = n_sig.second;
-    auto matches = ranges::count_if(ios.inputs_, [sig = in_sig](auto ns) {
+    auto  matches = ranges::count_if(ios.inputs_, [sig = in_sig](auto ns) {
       return ns.second.exactly_matches(sig);
     });
     if (matches > 1)
@@ -116,8 +117,8 @@ void
 
   for (auto &n_sig : io_.outputs_)
   {
-    auto &out_sig  = n_sig.second;
-    auto matches = ranges::count_if(ios.outputs_, [sig = out_sig](auto ns) {
+    auto &out_sig = n_sig.second;
+    auto  matches = ranges::count_if(ios.outputs_, [sig = out_sig](auto ns) {
       return ns.second.exactly_matches(sig);
     });
     if (matches > 1)
@@ -131,7 +132,7 @@ void
                    "signals not supported yet)\n";
       // throw;
     }
-    auto i  = ranges::find_if(ios.outputs_, [sig = out_sig](auto ns) {
+    auto i = ranges::find_if(ios.outputs_, [sig = out_sig](auto ns) {
       return ns.second.exactly_matches(sig);
     });
     out_sig.update_identifier(i->second.identifier());
@@ -139,25 +140,24 @@ void
   }
 }
 
-void 
-environment_spec::record_traces()
+void
+    environment_spec::record_traces()
 {
-	for (auto &[sig, freq] : traces_.pre_)
-          sig.update_identifier(
-              ranges::find_if(
-                  tags_.pre_,
-                  [n = sig.user_name()](auto tag) { return tag.first == n; })
-                  ->second.identifier());
+  for (auto &[sig, freq] : traces_.pre_)
+    sig.update_identifier(ranges::find_if(tags_.pre_,
+                                          [n = sig.user_name()](auto tag) {
+                                            return tag.first == n;
+                                          })
+                              ->second.identifier());
 
-	for (auto &[sig, freq] : traces_.post_)
-          sig.update_identifier(
-              ranges::find_if(
-                  tags_.post_,
-                  [n = sig.user_name()](auto tag) { return tag.first == n; })
-                  ->second.identifier());
+  for (auto &[sig, freq] : traces_.post_)
+    sig.update_identifier(ranges::find_if(tags_.post_,
+                                          [n = sig.user_name()](auto tag) {
+                                            return tag.first == n;
+                                          })
+                              ->second.identifier());
 
-  for (auto &es: nested_)
-	  es.second.e->record_traces();
+  for (auto &es : nested_) es.second.e->record_traces();
 }
 
 environment_spec::environment_spec(parser parser_, block block_)
@@ -174,8 +174,8 @@ environment_spec::environment_spec(parser parser_, block block_)
         parameters_, [&](auto param) { return param.first == name.expr_; });
     if (f == parameters_.end())
     {
-      parser_.err_invalid_token(name,
-                          "this does not override any parameters of " + name_);
+      parser_.err_invalid_token(
+          name, "this does not override any parameters of " + name_);
       throw parser_error{};
     }
 
@@ -199,25 +199,30 @@ environment_spec::environment_spec(parser parser_, block block_)
     cp.parse(frequency.expr_);
     if (cp.type_as_string() != "long")
     {
-      parser_.err_invalid_token(
-          frequency, "expected frequency of trace (number) here");
+      parser_.err_invalid_token(frequency,
+                                "expected frequency of trace (number) here");
       throw parser_error{};
     }
 
-	if( auto i = ranges::find_if(tags_.pre_, [name = tag_name.expr_](auto ns) {
-				return ns.first == name;}); i != ranges::end(tags_.pre_))
-	{
-		traces_.pre_.push_back({i->second.full_name(), std::stoi(frequency.expr_)});
-	}
-	else
-	if( auto j = ranges::find_if(tags_.post_, [name = tag_name.expr_](auto ns) {
-				return ns.first == name;}); i != ranges::end(tags_.post_))
-	{
-		traces_.post_.push_back({j->second.full_name(), std::stoi(frequency.expr_)});
-	}
-	else 
+    if (auto i = ranges::find_if(
+            tags_.pre_,
+            [name = tag_name.expr_](auto ns) { return ns.first == name; });
+        i != ranges::end(tags_.pre_))
     {
-      parser_.err_invalid_token(tag_name, "this is not a pre/post tag of " + name_);
+      traces_.pre_.push_back(
+          { i->second.full_name(), std::stoi(frequency.expr_) });
+    } else if (auto j = ranges::find_if(tags_.post_,
+                                        [name = tag_name.expr_](auto ns) {
+                                          return ns.first == name;
+                                        });
+               i != ranges::end(tags_.post_))
+    {
+      traces_.post_.push_back(
+          { j->second.full_name(), std::stoi(frequency.expr_) });
+    } else
+    {
+      parser_.err_invalid_token(tag_name,
+                                "this is not a pre/post tag of " + name_);
       throw parser_error{};
     }
   }
@@ -240,7 +245,8 @@ environment_spec::environment_spec(parser parser_, block block_)
     if (f == nested_.end())
     {
       parser_.err_invalid_token(
-          name, "this does not override any nested environments " + block_.name_);
+          name,
+          "this does not override any nested environments " + block_.name_);
       throw parser_error{};
     }
 
@@ -253,8 +259,8 @@ environment_spec::environment_spec(parser parser_, block block_)
 std::vector<std::string>
     environment_spec::dump(long depth)
 {
-	std::vector<std::string> lines;
-  //auto alignment = "\n" + std::string(depth, ' ');
+  std::vector<std::string> lines;
+  // auto alignment = "\n" + std::string(depth, ' ');
   auto alignment = std::string(depth, ' ');
 
   /*
@@ -280,10 +286,10 @@ std::vector<std::string>
   lines.push_back(alignment + "O");
   ranges::transform(io_.outputs_, ranges::back_inserter(lines), pad_signal);
   lines.push_back(alignment + "a");
-  ranges::transform(tags_.pre_ ,ranges::back_inserter(lines), pad_signal);
+  ranges::transform(tags_.pre_, ranges::back_inserter(lines), pad_signal);
   lines.push_back(alignment + "b");
-  ranges::transform(tags_.post_ ,ranges::back_inserter(lines), pad_signal);
-      // needs to go
+  ranges::transform(tags_.post_, ranges::back_inserter(lines), pad_signal);
+  // needs to go
   lines.push_back(alignment + "r");
   ranges::transform(
       traces_.pre_, ranges::back_inserter(lines), [&](auto trace) {
@@ -298,11 +304,11 @@ std::vector<std::string>
       });
   // needs to go *
   lines.push_back(alignment + "n");
-  for (auto nested : nested_) {
-	  lines.push_back(alignment + nested.first);
-	  auto n_dump =  
-          nested.second.e->dump(depth + 1);
-	  lines.insert(lines.end(),n_dump.begin(),n_dump.end());
+  for (auto nested : nested_)
+  {
+    lines.push_back(alignment + nested.first);
+    auto n_dump = nested.second.e->dump(depth + 1);
+    lines.insert(lines.end(), n_dump.begin(), n_dump.end());
   }
 
   return lines;
@@ -355,15 +361,15 @@ environment_spec
 
   for (++f; *f != "R"; f++)
   {
-    auto        l = *f;
-    auto        p = l.find(';');
+    auto l = *f;
+    auto p = l.find(';');
     traces_.pre_.push_back({ l.substr(0, p - 1), std::stoi(l.substr(p + 1)) });
   }
 
   for (++f; *f != "n"; f++)
   {
-    auto        l = *f;
-    auto        p = l.find(';');
+    auto l = *f;
+    auto p = l.find(';');
     traces_.post_.push_back({ l.substr(0, p - 1), std::stoi(l.substr(p + 1)) });
   }
 

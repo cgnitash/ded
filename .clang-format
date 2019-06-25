@@ -8,25 +8,31 @@ AlignConsecutiveDeclarations : true
 AlignEscapedNewlinesLeft: false
 AlignOperands:   true
 AlignTrailingComments: true
-AllowAllParametersOfDeclarationOnNextLine: true
-AllowShortBlocksOnASingleLine: true
-AllowShortCaseLabelsOnASingleLine: true
-AllowShortFunctionsOnASingleLine: All
-AllowShortIfStatementsOnASingleLine: true
-AllowShortLoopsOnASingleLine: true
-AlwaysBreakAfterDefinitionReturnType: TopLevel
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AlwaysBreakAfterDefinitionReturnType: All
 AlwaysBreakBeforeMultilineStrings: true
-AlwaysBreakTemplateDeclarations: false
+AlwaysBreakTemplateDeclarations: true
 BinPackArguments: false
 BinPackParameters: false
 BreakBeforeBinaryOperators: None
-BreakBeforeBraces: Custom
-BraceWrapping :
-  AfterClass : false
-  AfterControlStatement : true
-  AfterFunction : true
-  AfterStruct : true
-  BeforeElse : false
+BreakBeforeBraces: Allman
+#BraceWrapping :
+#  AfterClass : false
+#  AfterControlStatement : true
+#  AfterEnum : true
+#  AfterFunction : true
+#  AfterNamespace : true
+#  AfterStruct : true
+#  BeforeCatch : true
+#  BeforeElse : true
+#  SplitEmptyFunction : true
+#  SplitEmptyRecord : true
+#  SplitEmptyNamespace : true
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializersBeforeComma: false
 ColumnLimit:     80
