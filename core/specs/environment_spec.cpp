@@ -105,8 +105,11 @@ void
     if (!matches)
     {
       std::cout << "error: no input signals match exactly (convertible signals "
-                   "not supported yet)\n";
-      // throw;
+                   "not supported yet)\n  "
+                << n_sig.second.full_name() << "\nviable candidates";
+	  for (auto sig : ios.inputs_)
+		  std::cout << "\n    " << sig.second.full_name();   
+      throw parser_error{};
     }
     auto i = ranges::find_if(ios.inputs_, [sig = in_sig](auto ns) {
       return ns.second.exactly_matches(sig);
@@ -128,9 +131,12 @@ void
     }
     if (!matches)
     {
-      std::cout << "error: no output signals match exactly (convertible "
-                   "signals not supported yet)\n";
-      // throw;
+      std::cout << "error: no input signals match exactly (convertible signals "
+                   "not supported yet)\n  "
+                << n_sig.second.full_name() << "\nviable candidates";
+	  for (auto sig : ios.outputs_)
+		  std::cout << "\n    " << sig.second.full_name();   
+      throw parser_error{};
     }
     auto i = ranges::find_if(ios.outputs_, [sig = out_sig](auto ns) {
       return ns.second.exactly_matches(sig);

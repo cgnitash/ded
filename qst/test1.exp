@@ -8,24 +8,24 @@ e = $markov_brain {
 	}
 
 P = $linear { 
-	size = 100
+	size = 50
 	entity = !e # `entity` is special
 	track_lineage = true 
 	}
 
 
 
-fs = 
-  $sequence  {
-     first 	= 		$forager { ? food_eaten 10 }
-     second = $elite_replacement { 
- 	 strength = 	0.25 
-  }
+fs = $sequence  
+{
+     first 	= 	$forager 	
+				{ ? food_eaten 5 }
+     second = $elite_replacement 
+			  {  strength = 	0.1  }
 }
 
 
 E = $cycle  { 
- count = 500
+ count = 1001
   world = !fs
 }
 

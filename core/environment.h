@@ -53,7 +53,8 @@ public:
   }
   */
 
-  population evaluate(population p)
+  population evaluate(population );
+	  /*
   {
     if (!user_specified_name_.empty())
       global_path += user_specified_name_[0] + "_";
@@ -78,7 +79,7 @@ public:
 
     return p_r;
   }
-
+*/
   environment_spec publish_configuration() const
   {
     return self_->publish_configuration_();
