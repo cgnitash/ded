@@ -1,3 +1,0 @@
-This folder is intentionally empty
-building ded will store debug object files here
-Note that component_builder.cpp will generate the makefile that populates this directory

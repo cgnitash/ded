@@ -2,13 +2,13 @@
 # working
 
 e = $markov_brain {
-     hiddens = 5
+     hiddens = 2
 	 outputs = 2
 	 inputs = 4
 	}
 
 P = $linear { 
-	size = 40
+	size = 100
 	entity = !e # `entity` is special
 	track_lineage = true 
 	}
@@ -17,15 +17,15 @@ P = $linear {
 
 fs = 
   $sequence  {
-     first 	= 		$forager { ? food_eaten 15 }
+     first 	= 		$forager { ? food_eaten 10 }
      second = $elite_replacement { 
- 	 strength = 	0.4 
+ 	 strength = 	0.25 
   }
 }
 
 
 E = $cycle  { 
- count = 100
+ count = 500
   world = !fs
 }
 

@@ -153,10 +153,6 @@ int
     life::global_path += "data/";
     pop = env.evaluate(pop);
     pop.flush_unpruned();
-    // auto       v = pop.get_as_vector();
-    // for(auto &org :  v)
-    //		std::cout <<
-    // std::get<double>(org.data.get_value("food-eaten,double"));
   } else if (argc > 2 && std::string(argv[1]) == "-d")
   {
     life::parser p;
@@ -224,17 +220,18 @@ int
     env_spec.record_traces();
 
     auto e_dump = env_spec.dump(0);
+	/*
     std::cout << (e_dump | ranges::view::intersperse("\n") |
                   ranges::action::join);
     std::cout << pop_spec.dump(0);
-
+	*/
     auto pop = life::make_population(pop_spec);
     auto env = life::make_environment(env_spec);
     life::global_path += "data/";
     pop = env.evaluate(pop);
     pop.flush_unpruned();
 
-    std::cout << std::endl;
+    std::cout << "successfull!" << std::endl;
   }
   /*
   }  else if (argc == 3 && std::string(argv[1]) == "-v")

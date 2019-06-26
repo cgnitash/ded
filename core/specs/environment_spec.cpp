@@ -143,19 +143,21 @@ void
 void
     environment_spec::record_traces()
 {
-  for (auto &[sig, freq] : traces_.pre_)
-    sig.update_identifier(ranges::find_if(tags_.pre_,
-                                          [n = sig.user_name()](auto tag) {
-                                            return tag.first == n;
-                                          })
-                              ->second.identifier());
+  for (auto &sig_freq : traces_.pre_)
+    sig_freq.signal_.update_identifier(
+        ranges::find_if(tags_.pre_,
+                        [n = sig_freq.signal_.user_name()](auto tag) {
+                          return tag.first == n;
+                        })
+            ->second.identifier());
 
-  for (auto &[sig, freq] : traces_.post_)
-    sig.update_identifier(ranges::find_if(tags_.post_,
-                                          [n = sig.user_name()](auto tag) {
-                                            return tag.first == n;
-                                          })
-                              ->second.identifier());
+  for (auto &sig_freq : traces_.post_)
+    sig_freq.signal_.update_identifier(
+        ranges::find_if(tags_.post_,
+                        [n = sig_freq.signal_.user_name()](auto tag) {
+                          return tag.first == n;
+                        })
+            ->second.identifier());
 
   for (auto &es : nested_) es.second.e->record_traces();
 }

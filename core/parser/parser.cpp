@@ -58,10 +58,6 @@ void
     if (i != line.cend())
       err_unknown_symbol({ line_number, i - line.cbegin() });
   }
-
-  for (auto e : tokens_)
-    std::cout << "symbol :" << e.expr_ << " at position " << e.location_.first
-              << "," << e.location_.second << std::endl;
 }
 
 void
