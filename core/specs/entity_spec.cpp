@@ -10,7 +10,8 @@
 #include "../configuration.h"
 #include "entity_spec.h"
 
-namespace life {
+namespace life
+{
 
 io_signals
     entity_spec::instantiate_user_parameter_sizes(int sig_count)
@@ -21,7 +22,7 @@ io_signals
           param == n_sig.second.user_parameter())
       {
         n_sig.second.instantiate_user_parameter(
-             std::stol(cp.value_as_string()));
+            std::stol(cp.value_as_string()));
         n_sig.second.update_identifier("sig" + std::to_string(sig_count++));
       }
   for (auto &n_sig : io_.outputs_)
@@ -30,7 +31,7 @@ io_signals
           param == n_sig.second.user_parameter())
       {
         n_sig.second.instantiate_user_parameter(
-             std::stol(cp.value_as_string()));
+            std::stol(cp.value_as_string()));
         n_sig.second.update_identifier("sig" + std::to_string(sig_count++));
       }
   return io_;
@@ -176,21 +177,19 @@ std::string
     entity_spec::pretty_print()
 {
   std::stringstream out;
-  out << term_colours::red_fg << "entity::" << name_ << term_colours::reset
-      << "\n";
+  out << "entity::" << name_ << "\n{\n";
 
-  out << term_colours::yellow_fg << "parameters----" << term_colours::reset
-      << "\n";
+  out << " parameters\n";
   for (auto [parameter, value] : parameters_)
-    out << std::setw(26) << parameter << " : " << value.value_as_string()
+    out << std::setw(16) << parameter << " : " << value.value_as_string()
         << "\n";
-  out << term_colours::yellow_fg << "inputs----" << term_colours::reset << "\n";
+  out << " inputs\n";
   for (auto [input, value] : io_.inputs_)
-    out << std::setw(26) << input << " : " << value.full_name() << "\n";
-  out << term_colours::yellow_fg << "outputs----" << term_colours::reset
-      << "\n";
+    out << std::setw(16) << input << " : " << value.full_name() << "\n";
+  out << " outputs\n";
   for (auto [output, value] : io_.outputs_)
-    out << std::setw(26) << output << " : " << value.full_name() << "\n";
+    out << std::setw(16) << output << " : " << value.full_name() << "\n";
+  out << "}\n";
   return out.str();
 }
 }   // namespace life

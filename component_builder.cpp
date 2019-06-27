@@ -107,7 +107,10 @@ void
 {
   auto as_header = [](auto s) { return s + ".h "; };
   auto as_source = [](auto s) { return s + ".cpp "; };
-  auto as_object = [](auto s) { return "obj_files/" + s + ".o "; };
+  auto as_object = [](auto s) {
+    std::replace(s.begin(), s.end(), '/', '_');
+    return "obj_files/" + s + ".o ";
+  };
 
   std::vector<std::string> core_files = {
     "core/environment",       "core/entity",
@@ -142,10 +145,10 @@ void
                ranges::action::join);
 
   makefile << "\n\nded : $(components)"
-              "\n\t$(flags) $(components) -lstdc++fs -o ded\n\n";
+              "\n\t$(flags) $(components) -lstdc++fs -o ded";
 
-  makefile << "obj_files/main.o : main.cpp "
-              "\n\t$(flags)  -c main.cpp -o obj_files/main.o\n"
+  makefile << "\n\nobj_files/main.o : main.cpp "
+              "\n\t$(flags) -c main.cpp -o obj_files/main.o\n"
            << (core_files | ranges::view::transform([&](auto file) {
                  return "\n" + as_object(file) + ": " + as_source(file) +
                         "\n\t$(flags) -c " + as_source(file) + " -o " +
@@ -159,15 +162,13 @@ void
            << "obj_files/components.o\n"
            << (user_files | ranges::view::transform([&](auto file) {
                  return "\n" + as_object(file) + ": " + as_source(file) +
-                        as_header(file) + " $(headers)\n\t$(flags) -c " +
+                        as_header(file) + " $(headers) \n\t$(flags) -c " +
                         as_source(file) + "-o " + as_object(file) + "\n";
                }) |
                ranges::action::join);
 
   makefile << "\n\nclean : "
            << "\n\trm obj_files/*.o"
-           << "\n\trm obj_files/*/*.o "
-           << "\n\trm obj_files/*/*/*.o "
            << "\n\trm ded\n\n";
 }
 

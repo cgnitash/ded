@@ -10,7 +10,8 @@
 #include "../configuration.h"
 #include "environment_spec.h"
 
-namespace life {
+namespace life
+{
 
 void
     environment_spec::bind_tags(int tag_count)
@@ -63,7 +64,8 @@ void
     }
   }
 
-  for (auto &es : nested_) es.second.e->bind_tags(tag_count);
+  for (auto &es : nested_)
+    es.second.e->bind_tags(tag_count);
 }
 
 void
@@ -83,13 +85,15 @@ void
         n_sig.second.instantiate_user_parameter(
             std::stol(cp.value_as_string()));
 
-  for (auto &es : nested_) es.second.e->instantiate_user_parameter_sizes();
+  for (auto &es : nested_)
+    es.second.e->instantiate_user_parameter_sizes();
 }
 
 void
     environment_spec::bind_entity_io(io_signals ios)
 {
-  for (auto &es : nested_) es.second.e->bind_entity_io(ios);
+  for (auto &es : nested_)
+    es.second.e->bind_entity_io(ios);
 
   for (auto &n_sig : io_.inputs_)
   {
@@ -107,8 +111,8 @@ void
       std::cout << "error: no input signals match exactly (convertible signals "
                    "not supported yet)\n  "
                 << n_sig.second.full_name() << "\nviable candidates";
-	  for (auto sig : ios.inputs_)
-		  std::cout << "\n    " << sig.second.full_name();   
+      for (auto sig : ios.inputs_)
+        std::cout << "\n    " << sig.second.full_name();
       throw parser_error{};
     }
     auto i = ranges::find_if(ios.inputs_, [sig = in_sig](auto ns) {
@@ -134,8 +138,8 @@ void
       std::cout << "error: no input signals match exactly (convertible signals "
                    "not supported yet)\n  "
                 << n_sig.second.full_name() << "\nviable candidates";
-	  for (auto sig : ios.outputs_)
-		  std::cout << "\n    " << sig.second.full_name();   
+      for (auto sig : ios.outputs_)
+        std::cout << "\n    " << sig.second.full_name();
       throw parser_error{};
     }
     auto i = ranges::find_if(ios.outputs_, [sig = out_sig](auto ns) {
@@ -165,7 +169,8 @@ void
                         })
             ->second.identifier());
 
-  for (auto &es : nested_) es.second.e->record_traces();
+  for (auto &es : nested_)
+    es.second.e->record_traces();
 }
 
 environment_spec::environment_spec(parser parser_, block block_)
@@ -219,15 +224,16 @@ environment_spec::environment_spec(parser parser_, block block_)
     {
       traces_.pre_.push_back(
           { i->second.full_name(), std::stoi(frequency.expr_) });
-    } else if (auto j = ranges::find_if(tags_.post_,
-                                        [name = tag_name.expr_](auto ns) {
-                                          return ns.first == name;
-                                        });
-               i != ranges::end(tags_.post_))
+    }
+    else if (auto j = ranges::find_if(
+                 tags_.post_,
+                 [name = tag_name.expr_](auto ns) { return ns.first == name; });
+             i != ranges::end(tags_.post_))
     {
       traces_.post_.push_back(
           { j->second.full_name(), std::stoi(frequency.expr_) });
-    } else
+    }
+    else
     {
       parser_.err_invalid_token(tag_name,
                                 "this is not a pre/post tag of " + name_);
@@ -268,16 +274,8 @@ std::vector<std::string>
     environment_spec::dump(long depth)
 {
   std::vector<std::string> lines;
-  // auto alignment = "\n" + std::string(depth, ' ');
-  auto alignment = std::string(depth, ' ');
+  auto                     alignment = std::string(depth, ' ');
 
-  /*
-  auto pad = [&] {
-    return ranges::view::transform(
-               [&](auto p) { return alignment + p.first + ":" + p.second; }) |
-           ranges::action::join;
-  };
-  */
   auto pad_signal = [&](auto sig) {
     return alignment + sig.second.full_name();
   };
@@ -402,64 +400,60 @@ std::string
     environment_spec::pretty_print()
 {
   std::stringstream out;
-  out << term_colours::red_fg << "environment::" << name_ << term_colours::reset
-      << "\n";
+  out << "environment::" << name_ << "\n{\n";
 
-  out << term_colours::yellow_fg << "parameters----" << term_colours::reset
-      << "\n";
+  out << " parameters\n";
   for (auto [parameter, value] : parameters_)
-    out << std::setw(26) << parameter << " : " << value.value_as_string()
+    out << std::setw(16) << parameter << " : " << value.value_as_string()
         << "\n";
-  out << term_colours::yellow_fg << "inputs----" << term_colours::reset << "\n";
+  out << " inputs\n";
   for (auto [input, value] : io_.inputs_)
-    out << std::setw(26) << input << " : " << value.full_name() << "\n";
-  out << term_colours::yellow_fg << "outputs----" << term_colours::reset
-      << "\n";
+    out << std::setw(16) << input << " : " << value.full_name() << "\n";
+  out << " outputs\n";
   for (auto [output, value] : io_.outputs_)
-    out << std::setw(26) << output << " : " << value.full_name() << "\n";
-  out << term_colours::yellow_fg << "pre-tags----" << term_colours::reset
-      << "\n";
+    out << std::setw(16) << output << " : " << value.full_name() << "\n";
+  out << " pre-tags\n";
   for (auto [pre_tag, value] : tags_.pre_)
-    out << std::setw(26) << pre_tag << " : " << value.full_name() << "\n";
-  out << term_colours::yellow_fg << "post_tags----" << term_colours::reset
-      << "\n";
+    out << std::setw(16) << pre_tag << " : " << value.full_name() << "\n";
+  out << " post_tag\n";
   for (auto [post_tag, value] : tags_.post_)
-    out << std::setw(26) << post_tag << " : " << value.full_name() << "\n";
+    out << std::setw(16) << post_tag << " : " << value.full_name() << "\n";
 
-  out << term_colours::yellow_fg << "nested----" << term_colours::reset << "\n";
+  out << " nested\n";
   for (auto &[name, nspec] : nested_)
   {
-    out << std::setw(26) << name << " :\n";
+    out << "  " << name << " :\n";
     if (nspec.constraints_.pre_.empty())
-      out << "No pre-constraints\n";
+      out << "   No pre-constraints\n";
     else
     {
-      out << "pre-constraints:\n";
+      out << "   pre-constraints:\n";
       for (auto name : nspec.constraints_.pre_)
-        out << std::setw(26) << name << " :\n";
+        out << std::setw(20) << name << " :\n";
     }
     if (nspec.constraints_.post_.empty())
-      out << "No post-constraints\n";
+      out << "   No post-constraints\n";
     else
     {
-      out << "post-constraints:\n";
+      out << "   post-constraints:\n";
       for (auto name : nspec.constraints_.post_)
-        out << std::setw(26) << name << " :\n";
+        out << std::setw(20) << name << " :\n";
     }
   }
 
   if (!tag_flow_equalities_.empty() || !tag_flow_inequalities_.empty())
   {
-    out << "with tag-flow-constraints:\n";
+    out << "   with tag-flow-constraints:\n";
     for (auto name : tag_flow_equalities_)
-      out << std::setw(26) << name.first.second << "(" << name.first.first
+      out << std::setw(20) << name.first.second << "(" << name.first.first
           << ") <=> " << name.second.second << "(" << name.second.first
           << ")\n";
     for (auto name : tag_flow_inequalities_)
-      out << std::setw(26) << name.first.second << "(" << name.first.first
+      out << std::setw(20) << name.first.second << "(" << name.first.first
           << ") <!=> " << name.second.second << "(" << name.second.first
           << ")\n";
   }
+  out << "}\n";
   return out.str();
 }
 }   // namespace life

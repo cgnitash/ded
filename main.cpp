@@ -15,64 +15,6 @@
 #include <thread>
 #include <vector>
 
-void
-    list_all_configs()
-{
-
-  std::cout << "entity:\n";
-  for (auto n_spec : life::all_entity_specs)
-    std::cout << "    " << n_spec.first << "\n";
-  std::cout << "environment:\n";
-  for (auto n_spec : life::all_environment_specs)
-    std::cout << "    " << n_spec.first << "\n";
-  std::cout << "population:\n";
-  for (auto n_spec : life::all_population_specs)
-    std::cout << "    " << n_spec.first << "\n";
-
-  return;
-}
-
-/*
-std::vector<std::tuple<life::configuration, life::configuration, std::string>>
-    true_experiments(std::string file_name, std::hash<std::string> hash_fn)
-{
-
-  std::vector<std::tuple<life::configuration, life::configuration, std::string>>
-      exps;
-
-  for (auto [pop_con_s, env_con_s, label] : qst_parser().parse_qst(file_name))
-  {
-
-    // why this circumlocution?
-    std::stringstream es, ps;
-    ps << pop_con_s;
-    es << env_con_s;
-    life::configuration pop_con;
-    life::configuration env_con;
-    ps >> pop_con;
-    es >> env_con;
-    auto true_pop = life::configuration::array(
-        { pop_con[0],
-          life::config_manager::true_any_object({ "population", pop_con[0] },
-                                                pop_con[1]) });
-
-    // assume population is linear *****
-    auto true_env = life::configuration::array(
-        { env_con[0],
-          life::config_manager::true_environment_object(
-              { "environment", env_con[0] },
-              env_con[1],
-              true_pop[1]["parameters"]["entity"]) });
-
-    exps.push_back(std::make_tuple(true_pop, true_env, label));
-    auto exp_name = std::to_string(hash_fn(true_pop.dump())) + "_" +
-                    std::to_string(hash_fn(true_env.dump()));
-    std::cout << "Verified experiment " << exp_name << " with label \"" << label
-              << "\"" << std::endl;
-  }
-  return exps;
-}
-*/
 
 long life::entity::entity_id_ = 0;
 
@@ -113,10 +55,10 @@ int
   } else if (argc == 2 && std::string(argv[1]) == "-s")
   {
     std::cout << "saving configurations.cfg ... \n";
-    life::config_manager::save_configs();
+    life::config_manager::save_all_configs();
   } else if (argc == 2 && std::string(argv[1]) == "-pa")
   {
-    list_all_configs();
+    life::config_manager::list_all_configs(std::cout);
     std::cout << std::endl;
   } else if (argc > 2 && std::string(argv[1]) == "-p")
   {
