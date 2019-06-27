@@ -93,6 +93,7 @@ int
     auto env = life::make_environment(env_con);
 
     life::global_path += "data/";
+    std::experimental::filesystem::create_directory(life::global_path);
     pop = env.evaluate(pop);
     pop.flush_unpruned();
   } else if (argc > 2 && std::string(argv[1]) == "-d")
@@ -176,11 +177,6 @@ int
     std::cout << "successfull!" << std::endl;
   }
   /*
-  }  else if (argc == 3 && std::string(argv[1]) == "-v")
-        {
-    true_experiments(argv[2], hash_fn);
-    std::cout << "\nVerified all experiments succesfully\n";
-
   } else if (argc == 4 && ((std::string(argv[1]) == "-rl") ||
                            (std::string(argv[1]) == "-rh")))
   {

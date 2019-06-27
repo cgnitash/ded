@@ -15,7 +15,8 @@
 
 #include "term_colours.h"
 
-namespace life {
+namespace life
+{
 
 extern std::string global_path;
 
@@ -24,83 +25,16 @@ extern std::map<std::string, environment_spec> all_environment_specs;
 extern std::map<std::string, population_spec>  all_population_specs;
 
 // component_builder will provide full specializations
-template <typename T> std::string auto_class_name_as_string() = delete;
+template <typename T>
+std::string auto_class_name_as_string() = delete;
 
-namespace config_manager {
-
-inline std::string
-    type_of_block(std::string name)
+namespace config_manager
 {
-  if (life::all_environment_specs.find(name) !=
-      life::all_environment_specs.end())
-    return "environment";
-  if (life::all_entity_specs.find(name) !=
-      life::all_entity_specs.end())
-    return "entity";
-  if (life::all_population_specs.find(name) !=
-      life::all_population_specs.end())
-    return "population";
-  return "NONE";
-}
 
-inline void
-    show_config(std::ostream &out, std::string name)
-{
-  auto found = false;
-  if (life::all_entity_specs.find(name) != life::all_entity_specs.end())
-  {
-    out << life::all_entity_specs[name].pretty_print();
-    found = true;
-  }
-  if (life::all_environment_specs.find(name) !=
-      life::all_environment_specs.end())
-  {
-    out << life::all_environment_specs[name].pretty_print();
-    found = true;
-  }
-  if (life::all_population_specs.find(name) != life::all_population_specs.end())
-  {
-    out << life::all_population_specs[name].pretty_print();
-    found = true;
-  }
-
-  if (!found) out << "component " << name << " not found\n";
-
-  return;
-}
-
-inline void
-    list_all_configs(std::ostream &out)
-{
-  out << "entity:\n";
-  for (auto n_spec : life::all_entity_specs)
-    out << "    " << n_spec.first << "\n";
-
-  out << "environment:\n";
-  for (auto n_spec : life::all_environment_specs)
-    out << "    " << n_spec.first << "\n";
-
-  out << "population:\n";
-  for (auto n_spec : life::all_population_specs)
-    out << "    " << n_spec.first << "\n";
-
-  return;
-}
-
-inline void
-    save_all_configs()
-{
-  std::ofstream file("configurations.cfg");
-  for (auto n_es : life::all_entity_specs)
-    file << "\n" << n_es.second.pretty_print();
-  for (auto n_es : life::all_environment_specs)
-    file << "\n" << n_es.second.pretty_print();
-  for (auto n_es : life::all_population_specs)
-    file << "\n" << n_es.second.pretty_print();
-  return;
-}
-
-
+std::string type_of_block(std::string name);
+void        show_config(std::ostream &out, std::string name);
+void        list_all_configs(std::ostream &out);
+void        save_all_configs();
 
 /*
 inline auto
@@ -301,7 +235,6 @@ inline void
     }
 }
 */
-
 
 }   // namespace config_manager
 }   // namespace life

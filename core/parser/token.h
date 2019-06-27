@@ -5,16 +5,15 @@
 #include <string>
 #include <vector>
 
-namespace life {
+namespace life
+{
 
 struct parser_error
 {
 };
 
-// might not need
-//enum class spec_type { environment, entity, population };
-
-enum class token_type {
+enum class token_type
+{
   open_brace,
   close_brace,
   assignment,
@@ -35,14 +34,12 @@ struct token
 
 struct block
 {
-  std::string         name_;
-  std::pair<int, int> range_;
-  std::vector<std::pair<token,token>> overrides_;
-  std::vector<std::pair<token,token>> traces_;
-  std::vector<std::pair<token,block>> nested_;
-
+  std::string                          name_;
+  std::pair<int, int>                  range_;
+  std::vector<std::pair<token, token>> overrides_;
+  std::vector<std::pair<token, token>> traces_;
+  std::vector<std::pair<token, block>> nested_;
 };
-
 
 }   // namespace life
 
