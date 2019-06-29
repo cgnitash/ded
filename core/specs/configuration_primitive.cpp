@@ -1,34 +1,69 @@
 
 #include "configuration_primitive.h"
 
-namespace ded {
-	namespace specs {
-  std::string ConfigurationPrimitive::value_as_string() const
-  {
-    std::string s;
-    std::visit(
-        utilities::TMP::overload_set{
-            [&](std::monostate) { s = "NULL"; },
-            [&](long v) { s = std::to_string(v); },
-            [&](double v) { s = std::to_string(v); },
-            [&](bool v) { s = v ? "true" : "false"; },
-            [&](std::string v) { s = "\"" + v + "\""; } },
-        value_);
-    return s;
-  }
+namespace ded
+{
+namespace specs
+{
 
-  std::string ConfigurationPrimitive::type_as_string() const
+void
+    ConfigurationPrimitive::parse(std::string s)
+{
+  std::smatch m;
+  if (std::regex_match(s, m, r_long))
   {
-    std::string s;
-    std::visit(
-        utilities::TMP::overload_set{
-            [&](std::monostate) { s = "NULL"; },
-            [&](long) { s = "long"; },
-            [&](double) { s = "double"; },
-            [&](bool) { s = "bool"; },
-            [&](std::string) { s = "string"; } },
-        value_);
-    return s;
+    value_ = std::stol(m.str());
+    return;
   }
+  if (std::regex_match(s, m, r_double))
+  {
+    value_ = std::stod(m.str());
+    return;
+  }
+  if (std::regex_match(s, m, r_bool))
+  {
+    bool b{};
+    std::istringstream{ m.str() } >> std::boolalpha >> b;
+    value_ = b;
+    return;
+  }
+  if (std::regex_match(s, m, r_string))
+  {
+    std::string s = m.str();
+    value_        = s.substr(1, s.length() - 2);
+    return;
+  }
+  // TODO return success/failure
+  std::cout << "ERROR: unable to parse configuration primitive " << s
+            << std::endl;
+  std::exit(1);
 }
+
+std::string
+    ConfigurationPrimitive::value_as_string() const
+{
+  using namespace std::literals::string_view_literals;
+  return std::visit(
+      utilities::TMP::overload_set{
+          [&](std::monostate) -> std::string { return "NULL"; },
+          [&](long v) -> std::string { return std::to_string(v); },
+          [&](double v) -> std::string { return std::to_string(v); },
+          [&](bool v) -> std::string { return v ? "true" : "false"; },
+          [&](std::string v) -> std::string { return "\"" + v + "\""; } },
+      value_);
 }
+
+std::string
+    ConfigurationPrimitive::type_as_string() const
+{
+  return std::visit(
+      utilities::TMP::overload_set{
+          [&](std::monostate) -> std::string { return "NULL"; },
+          [&](long) -> std::string { return "long"; },
+          [&](double) -> std::string { return "double"; },
+          [&](bool) -> std::string { return "bool"; },
+          [&](std::string) -> std::string { return "string"; } },
+      value_);
+}
+}   // namespace specs
+}   // namespace ded

@@ -169,6 +169,7 @@ int
     auto pop = ded::make_Population(pop_spec);
     auto env = ded::make_Environment(env_spec);
     ded::global_path += "data/";
+    std::experimental::filesystem::create_directory(ded::global_path);
     pop = env.evaluate(pop);
     pop.flush_unpruned();
 

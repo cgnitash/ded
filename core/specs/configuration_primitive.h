@@ -39,38 +39,7 @@ public:
     value = std::get<T>(value_);
   }
 
-  void parse(std::string s)
-  {
-    std::smatch m;
-    if (std::regex_match(s, m, r_long))
-    {
-      value_ = std::stol(m.str());
-      return;
-    }
-    if (std::regex_match(s, m, r_double))
-    {
-      value_ = std::stod(m.str());
-      return;
-    }
-    if (std::regex_match(s, m, r_bool))
-    {
-      bool b{};
-      std::istringstream{ m.str() } >> std::boolalpha >> b;
-      value_ = b;
-      return;
-    }
-    if (std::regex_match(s, m, r_string))
-    {
-      std::string s = m.str();
-      value_        = s.substr(1, s.length() - 2);
-      return;
-    }
-	//TODO return success/failure
-    std::cout << "ERROR: unable to parse configuration primitive " << s
-              << std::endl;
-    std::exit(1);
-  }
-
+  void parse(std::string );
   std::string value_as_string() const;
   std::string type_as_string() const;
 };
