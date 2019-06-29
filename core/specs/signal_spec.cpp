@@ -4,10 +4,11 @@
 #include <string>
 #include <vector>
 
-namespace life {
+namespace ded {
+namespace specs {
 
 bool
-    signal_spec::exactly_matches(signal_spec s)
+    SignalSpec::exactly_matches(SignalSpec s)
 {
   return is_any_type_ == s.is_any_type_ && is_vector_ == s.is_vector_ &&
          vector_type_ == s.vector_type_ &&
@@ -16,7 +17,7 @@ bool
 }
 
 bool
-    signal_spec::convertible_to(signal_spec other)
+    SignalSpec::convertible_to(SignalSpec other)
 {
 	if (other.is_any_type_) return true;
 	if(!is_vector_) {
@@ -28,19 +29,19 @@ bool
 	return size_ == other.size_;
 }
 
-signal_spec::signal_spec(std::string sig)
+SignalSpec::SignalSpec(std::string sig)
 {
   auto p = sig.find(':');
-  *this  = signal_spec(sig.substr(0, p), sig.substr(p + 1));
+  *this  = SignalSpec(sig.substr(0, p), sig.substr(p + 1));
 }
 
-signal_spec::signal_spec(std::string name, std::string idt)
+SignalSpec::SignalSpec(std::string name, std::string idt)
 {
   auto p = idt.find('-');
-  *this  = signal_spec(name, idt.substr(0, p), idt.substr(p + 1));
+  *this  = SignalSpec(name, idt.substr(0, p), idt.substr(p + 1));
 }
 
-signal_spec::signal_spec(std::string name, std::string id, std::string type)
+SignalSpec::SignalSpec(std::string name, std::string id, std::string type)
     : user_name_(name), additional_identifier_(id), full_type_(type)
 {
   // assume format is correct
@@ -68,4 +69,6 @@ signal_spec::signal_spec(std::string name, std::string id, std::string type)
     user_parameter_          = size;
   }
 }
-}   // namespace life
+
+}   // namespace specs
+}   // namespace ded

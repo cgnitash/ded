@@ -10,53 +10,63 @@
 #include <string>
 
 #include "../parser/parser.h"
-#include "../term_colours.h"
+#include "../utilities/term_colours.h"
 #include "configuration_primitive.h"
 #include "population_spec.h"
 #include "signal_spec.h"
 
-namespace life {
+namespace ded {
 
-struct trace
+// forward declaration to provide friendship
+namespace concepts
 {
-  signal_spec signal_;
+class Environment;
+}
+
+namespace specs {
+
+struct Trace
+{
+  SignalSpec signal_;
   int         frequency_;
 };
 
-struct trace_config
+struct TraceConfig
 {
-  std::vector<trace> pre_;
-  std::vector<trace> post_;
+  std::vector<Trace> pre_;
+  std::vector<Trace> post_;
 };
 
-class environment_spec {
-  struct nested_spec
+class EnvironmentSpec {
+
+  struct NestedSpec
   {
-    std::unique_ptr<environment_spec> e;
+    std::unique_ptr<EnvironmentSpec> e;
     struct
     {
       std::vector<std::string> pre_;
       std::vector<std::string> post_;
     } constraints_;
-    nested_spec() = default;
-    nested_spec(const nested_spec &ns)
-        : e(std::make_unique<environment_spec>(*ns.e)),
+    NestedSpec() = default;
+    NestedSpec(const NestedSpec &ns)
+        : e(std::make_unique<EnvironmentSpec>(*ns.e)),
           constraints_(ns.constraints_)
     {
     }
   };
 
-  trace_config traces_;
+  TraceConfig traces_;
 
   std::string                                    name_;
   std::string                                    user_specified_name_;
-  std::map<std::string, configuration_primitive> parameters_;
+  std::map<std::string, ConfigurationPrimitive> parameters_;
 
-  io_signals io_;
+  IO io_;
 
-  tags tags_;
+  Tags tags_;
 
-  std::map<std::string, nested_spec> nested_;
+  std::map<std::string, NestedSpec> nested_;
+
   std::vector<std::pair<std::pair<std::string, std::string>,
                         std::pair<std::string, std::string>>>
       tag_flow_equalities_;
@@ -64,16 +74,16 @@ class environment_spec {
                         std::pair<std::string, std::string>>>
       tag_flow_inequalities_;
 
-  //parser parser_;
-  //block block_;
+  //Parser parser_;
+  //Block block_;
   
 public:
-  // environment_spec() = default;
-  //~environment_spec() = default;
+  // EnvironmentSpec() = default;
+  //~EnvironmentSpec() = default;
 
-  environment_spec(std::string name = "") : name_(name) {}
-  // environment_spec(parser);
-  environment_spec(parser, block);
+  EnvironmentSpec(std::string name = "") : name_(name) {}
+  // EnvironmentSpec(Parser);
+  EnvironmentSpec(language::Parser, language::Block);
 
   auto name() const { return name_; }
 
@@ -84,21 +94,6 @@ public:
   {
     user_specified_name_ = name;
   }
-  /*
-
-  auto pre_tags() const { return tags_.pre_; }
-
-  auto post_tags() const { return tags_.post_; }
-
-  auto pre_traces() const { return traces_.pre_; }
-
-  auto post_traces() const { return traces_.post_; }
-
-
-  auto nested() const { return nested_; }
-
-  auto tag_flow_constraints() const { return tag_flow_constraints_; }
-  */
 
   template <typename T> void bind_parameter(std::string name, T value)
   {
@@ -112,7 +107,7 @@ public:
 
   void bind_pre(std::string name, std::string value)
   {
-    tags_.pre_.push_back({name, signal_spec{ name, name, value }});
+    tags_.pre_.push_back({name, SignalSpec{ name, name, value }});
   }
 
   void configure_pre(std::string name, std::string &value)
@@ -124,7 +119,7 @@ public:
 
   void bind_post(std::string name, std::string value)
   {
-    tags_.post_.push_back({name, signal_spec{ name, name, value }});
+    tags_.post_.push_back({name, SignalSpec{ name, name, value }});
   }
 
   void configure_post(std::string name, std::string &value)
@@ -136,7 +131,7 @@ public:
 
   void bind_input(std::string name, std::string value)
   {
-    io_.inputs_.push_back({name, signal_spec{ name, name, value }});
+    io_.inputs_.push_back({name, SignalSpec{ name, name, value }});
   }
 
   void configure_input(std::string name, std::string &value)
@@ -148,7 +143,7 @@ public:
 
   void bind_output(std::string name, std::string value)
   {
-    io_.outputs_.push_back({name, signal_spec{ name, name, value }});
+    io_.outputs_.push_back({name, SignalSpec{ name, name, value }});
   }
 
   void configure_output(std::string name, std::string &value)
@@ -158,12 +153,12 @@ public:
             ->second.identifier();
   }
 
-  void bind_environment(std::string name, environment_spec env)
+  void bind_environment(std::string name, EnvironmentSpec env)
   {
-    nested_[name].e = std::make_unique<environment_spec>(env);
+    nested_[name].e = std::make_unique<EnvironmentSpec>(env);
   }
 
-  void configure_environment(std::string name, environment_spec &e)
+  void configure_environment(std::string name, EnvironmentSpec &e)
   {
     e = *nested_[name].e;
   }
@@ -193,20 +188,21 @@ public:
     tag_flow_inequalities_.push_back({ x, y });
   }
 
-  // friend std::ostream &operator<<(std::ostream &out, const environment_spec
+  // friend std::ostream &operator<<(std::ostream &out, const EnvironmentSpec
   // &e)
   std::vector<std::string>      dump(long depth);
-  environment_spec parse(std::vector<std::string> pop_dump);
+  EnvironmentSpec parse(std::vector<std::string> pop_dump);
 
   std::string pretty_print();
 
   //void parser_parse();
   void instantiate_user_parameter_sizes();
-  void bind_entity_io(io_signals);
+  void bind_entity_io(IO);
   void bind_tags(int);
   void record_traces();
 
-  friend class environment;
+  friend class concepts::Environment;
 };
 
-}   // namespace life
+}   // namespace ded
+}   // namespace ded

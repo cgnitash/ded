@@ -16,25 +16,23 @@
 #include <vector>
 
 
-long life::entity::entity_id_ = 0;
+long ded::concepts::Entity::entity_id_ = 0;
 
-std::string life::global_path = "./";
+std::string ded::global_path = "./";
 
-std::map<std::string, life::entity_spec>      life::all_entity_specs;
-std::map<std::string, life::environment_spec> life::all_environment_specs;
-std::map<std::string, life::population_spec>  life::all_population_specs;
+std::map<std::string, ded::specs::EntitySpec>      ded::all_entity_specs;
+std::map<std::string, ded::specs::EnvironmentSpec> ded::all_environment_specs;
+std::map<std::string, ded::specs::PopulationSpec>  ded::all_population_specs;
 
 int
     main(int argc, char **argv) try
 {
-  // TODO use an actual command-line library :P
-  //
-  life::global_path = "./";
+  ded::global_path = "./";
 
-  life::generate_all_specs();
+  ded::generate_all_specs();
   // check all things that aren't being checked statically, in particular the
   // publications of components
-  // life::config_manager::check_all_configs_correct();
+  // ded::config_manager::check_all_configs_correct();
 
   // std::hash<std::string> hash_fn{};
 
@@ -55,15 +53,15 @@ int
   } else if (argc == 2 && std::string(argv[1]) == "-s")
   {
     std::cout << "saving configurations.cfg ... \n";
-    life::config_manager::save_all_configs();
+    ded::config_manager::save_all_configs();
   } else if (argc == 2 && std::string(argv[1]) == "-pa")
   {
-    life::config_manager::list_all_configs(std::cout);
+    ded::config_manager::list_all_configs(std::cout);
     std::cout << std::endl;
   } else if (argc > 2 && std::string(argv[1]) == "-p")
   {
     for (auto i{ 2 }; i < argc; i++)
-      life::config_manager::show_config(std::cout, std::string(argv[i]));
+      ded::config_manager::show_config(std::cout, std::string(argv[i]));
     std::cout << std::endl;
   } else if (argc > 3 && std::string(argv[1]) == "-r")
   {
@@ -76,9 +74,9 @@ int
     std::vector<std::string> ls;
     std::string              l;
     while (std::getline(pop_file, l)) ls.push_back(l);
-    life::population_spec pop_con;
+    ded::specs::PopulationSpec pop_con;
     pop_con           = pop_con.parse(ls);
-    auto          pop = life::make_population(pop_con);
+    auto          pop = ded::make_Population(pop_con);
     std::ifstream env_file(argv[3]);
     if (!env_file.is_open())
     {
@@ -88,24 +86,24 @@ int
     std::vector<std::string> es;
     std::string              e;
     while (std::getline(env_file, e)) es.push_back(e);
-    life::environment_spec env_con;
+    ded::specs::EnvironmentSpec env_con;
     env_con  = env_con.parse(es);
-    auto env = life::make_environment(env_con);
+    auto env = ded::make_Environment(env_con);
 
-    life::global_path += "data/";
-    std::experimental::filesystem::create_directory(life::global_path);
+    ded::global_path += "data/";
+    std::experimental::filesystem::create_directory(ded::global_path);
     pop = env.evaluate(pop);
     pop.flush_unpruned();
   } else if (argc > 2 && std::string(argv[1]) == "-d")
   {
-    life::parser p;
+    ded::language::Parser p;
     p.parse(argv[2]);
     //    auto vars = parse_all_parser_blocks(p);
 
     std::map<std::string,
-             std::variant<life::entity_spec,
-                          life::environment_spec,
-                          life::population_spec>>
+             std::variant<ded::specs::EntitySpec,
+                          ded::specs::EnvironmentSpec,
+                          ded::specs::PopulationSpec>>
         vars;
 
     auto vs = p.variables();
@@ -113,13 +111,13 @@ int
     {
       // std::cout << name.expr_ << "#\n";
       // p.print(bl);
-      auto ct = life::config_manager::type_of_block(bl.name_.substr(1));
+      auto ct = ded::config_manager::type_of_block(bl.name_.substr(1));
       if (ct == "environment")
-        vars[name.expr_] = life::environment_spec{ p, bl };
+        vars[name.expr_] = ded::specs::EnvironmentSpec{ p, bl };
       else if (ct == "entity")
-        vars[name.expr_] = life::entity_spec{ p, bl };
+        vars[name.expr_] = ded::specs::EntitySpec{ p, bl };
       else if (ct == "population")
-        vars[name.expr_] = life::population_spec{ p, bl };
+        vars[name.expr_] = ded::specs::PopulationSpec{ p, bl };
       else
       {
         std::cout << "oops: not a component!\n";
@@ -133,13 +131,13 @@ int
                 << " does not have environment E to generate\n";
       throw std::logic_error{ "" };
     }
-    if (!std::holds_alternative<life::environment_spec>(vars["E"]))
+    if (!std::holds_alternative<ded::specs::EnvironmentSpec>(vars["E"]))
     {
       std::cout << "error: E must be of type environment\n";
       throw std::logic_error{ "" };
     }
 
-    auto env_spec = std::get<life::environment_spec>(vars["E"]);
+    auto env_spec = std::get<ded::specs::EnvironmentSpec>(vars["E"]);
     env_spec.instantiate_user_parameter_sizes();
 
     if (vars.find("P") == vars.end())
@@ -148,12 +146,12 @@ int
                 << " does not have population P to seed\n";
       throw std::logic_error{ "" };
     }
-    if (!std::holds_alternative<life::population_spec>(vars["P"]))
+    if (!std::holds_alternative<ded::specs::PopulationSpec>(vars["P"]))
     {
       std::cout << "error: P must be of type population\n";
       throw std::logic_error{ "" };
     }
-    auto pop_spec = std::get<life::population_spec>(vars["P"]);
+    auto pop_spec = std::get<ded::specs::PopulationSpec>(vars["P"]);
     auto io       = pop_spec.instantiate_nested_entity_user_parameter_sizes();
 
     env_spec.bind_entity_io(io);
@@ -168,9 +166,9 @@ int
                   ranges::action::join);
     std::cout << pop_spec.dump(0);
 	*/
-    auto pop = life::make_population(pop_spec);
-    auto env = life::make_environment(env_spec);
-    life::global_path += "data/";
+    auto pop = ded::make_Population(pop_spec);
+    auto env = ded::make_Environment(env_spec);
+    ded::global_path += "data/";
     pop = env.evaluate(pop);
     pop.flush_unpruned();
 
@@ -181,11 +179,11 @@ int
                            (std::string(argv[1]) == "-rh")))
   {
     std::string qst_path = argv[3];
-    life::global_path =
+    ded::global_path =
         qst_path.substr(0, qst_path.find_last_of('/') + 1) + "data/";
 
-    if (!std::experimental::filesystem::exists(life::global_path))
-      std::experimental::filesystem::create_directory(life::global_path);
+    if (!std::experimental::filesystem::exists(ded::global_path))
+      std::experimental::filesystem::create_directory(ded::global_path);
 
     std::vector<std::string> exps;
     for (auto &[pop, env, label] : true_experiments(qst_path, hash_fn))
@@ -193,7 +191,7 @@ int
 
       auto exp_name = std::to_string(hash_fn(pop.dump())) + "_" +
                       std::to_string(hash_fn(env.dump()));
-      auto exp_path = life::global_path + exp_name;
+      auto exp_path = ded::global_path + exp_name;
       if (std::experimental::filesystem::exists(exp_path))
       {
         std::cout << "Warning: experiment " << exp_name << " with label "
@@ -223,7 +221,7 @@ int
                                      [](auto s, auto i) {
                                        return s + std::to_string(i) + " ";
                                      })
-               << " ; do ./ded -f $r " << life::global_path
+               << " ; do ./ded -f $r " << ded::global_path
                << "$i ; done  ; done";
     } else
     {   //  	if (std::string(argv[1] == "-rh")
@@ -237,19 +235,19 @@ int
       sb_file << "\n#SBATCH --array=1-" << argv[2]
               << "\ncd ${SLURM_SUBMIT_DIR}\n./ded -f "
                  "${SLURM_ARRAY_TASK_ID} "
-              << life::global_path << "$1\n";
+              << ded::global_path << "$1\n";
       for (auto &e : exps) run_file << "\nsbatch run.sb " << e;
     }
     std::cout << "\nGenerated script run.sh succesfully\n";
   } else if (argc == 3 && std::string(argv[1]) == "-a")
   {
     std::string qst_path = argv[2];
-    life::global_path =
+    ded::global_path =
         qst_path.substr(0, qst_path.find_last_of('/') + 1) + "data/";
 
-    if (!std::experimental::filesystem::exists(life::global_path))
+    if (!std::experimental::filesystem::exists(ded::global_path))
     {
-      std::cout << "Error: There is no data directory " << life::global_path
+      std::cout << "Error: There is no data directory " << ded::global_path
                 << " with experiments to analyse\n. Aborting ...\n";
       std::exit(1);
     }
@@ -261,10 +259,10 @@ int
 
       auto exp_name = std::to_string(hash_fn(pop.dump())) + "_" +
                       std::to_string(hash_fn(env.dump()));
-      auto exp_path = life::global_path + exp_name;
+      auto exp_path = ded::global_path + exp_name;
       if (!std::experimental::filesystem::exists(exp_path))
       {
-        std::cout << "Error: There is no experiment in " << life::global_path
+        std::cout << "Error: There is no experiment in " << ded::global_path
                   << " with label " << label << " to analyse\n. Aborting ...\n";
         std::exit(1);
       }
@@ -289,19 +287,19 @@ int
       std::exit(1);
     }
 
-    life::configuration env_con, pop_con;
+    ded::configuration env_con, pop_con;
     std::ifstream       pop_file(exp_dir + "/true_pop.json");
     pop_file >> pop_con;
 
     std::ifstream env_file(exp_dir + "/true_env.json");
     env_file >> env_con;
 
-    life::global_path = exp_dir + "/REP_" + argv[2] + "/";
-    std::experimental::filesystem::create_directory(life::global_path);
+    ded::global_path = exp_dir + "/REP_" + argv[2] + "/";
+    std::experimental::filesystem::create_directory(ded::global_path);
     std::srand(std::stoi(argv[2]));
-    auto pop = life::make_population(pop_con);
+    auto pop = ded::make_population(pop_con);
 
-    auto env = life::make_environment(env_con);
+    auto env = ded::make_environment(env_con);
 
     env.evaluate(pop);
 
@@ -313,7 +311,7 @@ int
   {
     std::cout << "ded: unknown command line arguments. try -h\n";
   }
-} catch (const life::parser_error &)
+} catch (const ded::language::ParserError &)
 {
 } catch (...)
 {

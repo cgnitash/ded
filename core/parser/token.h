@@ -5,14 +5,16 @@
 #include <string>
 #include <vector>
 
-namespace life
+namespace ded
+{
+namespace language
 {
 
-struct parser_error
+struct ParserError
 {
 };
 
-enum class token_type
+enum class TokenType
 {
   open_brace,
   close_brace,
@@ -23,23 +25,24 @@ enum class token_type
   variable
 };
 
-token_type parse_token_type(std::string);
+TokenType parse_token_type(std::string);
 
-struct token
+struct Token
 {
-  token_type          type_;
+  TokenType          type_;
   std::string         expr_;
   std::pair<int, int> location_;
 };
 
-struct block
+struct Block
 {
   std::string                          name_;
   std::pair<int, int>                  range_;
-  std::vector<std::pair<token, token>> overrides_;
-  std::vector<std::pair<token, token>> traces_;
-  std::vector<std::pair<token, block>> nested_;
+  std::vector<std::pair<Token, Token>> overrides_;
+  std::vector<std::pair<Token, Token>> traces_;
+  std::vector<std::pair<Token, Block>> nested_;
 };
 
-}   // namespace life
+}   // namespace language
+}   // namespace ded
 

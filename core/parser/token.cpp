@@ -3,25 +3,28 @@
 #include "token.h"
 #include <string>
 
-namespace life
+namespace ded
+{
+namespace language
 {
 
-token_type
+TokenType
     parse_token_type(std::string s)
 {
   if (s == "{")
-    return token_type::open_brace;
+    return TokenType::open_brace;
   if (s == "}")
-    return token_type::close_brace;
+    return TokenType::close_brace;
   if (s == "=")
-    return token_type::assignment;
+    return TokenType::assignment;
   if (s == "?")
-    return token_type::trace;
+    return TokenType::trace;
   if (s[0] == '$')
-    return token_type::component;
+    return TokenType::component;
   if (s[0] == '!')
-    return token_type::variable;
-  return token_type::word;
+    return TokenType::variable;
+  return TokenType::word;
 }
-}   // namespace life
+}   // namespace ded
+}   // namespace ded
 

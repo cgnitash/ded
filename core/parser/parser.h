@@ -6,13 +6,23 @@
 #include <string>
 #include <vector>
 
-namespace life {
+namespace ded {
 
-class parser {
+// forward declaration to provide friendship
+namespace specs
+{
+class EntitySpec;
+class EnvironmentSpec;
+class PopulationSpec;
+}
+
+namespace language {
+
+class Parser {
 
   std::vector<std::string>             lines_;
-  std::vector<token>                   tokens_;
-  std::vector<std::pair<token, block>> variables_;
+  std::vector<Token>                   tokens_;
+  std::vector<std::pair<Token, Block>> variables_;
 
   const static std::regex valid_symbol_;
 
@@ -23,26 +33,28 @@ class parser {
 
   void parse_expression(int);
 
-  void err_invalid_token(token, std::string);
+  void err_invalid_token(Token, std::string);
 
-  block expand_block(int);
+  Block expand_block(int);
 
-  block component_block(int);
-  block variable_block(int);
+  Block component_block(int);
+  Block variable_block(int);
 
-  block process_overrides(block, int);
+  Block process_overrides(Block, int);
 
-  void attempt_override(block &, int &);
-  void attempt_parameter_override(block &, int &);
-  void attempt_trace(block &, int &);
+  void attempt_override(Block &, int &);
+  void attempt_parameter_override(Block &, int &);
+  void attempt_trace(Block &, int &);
 
 public:
   void                                 parse(std::string);
-  std::vector<std::pair<token, block>> variables() const { return variables_; }
-  void                                 print(block b);
-  friend class environment_spec;
-  friend class entity_spec;
-  friend class population_spec;
+  std::vector<std::pair<Token, Block>> variables() const { return variables_; }
+  void                                 print(Block b);
+
+  friend class specs::EnvironmentSpec;
+  friend class specs::EntitySpec;
+  friend class specs::PopulationSpec;
 };
-}   // namespace life
+}   // namespace ded
+}   // namespace ded
 

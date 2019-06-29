@@ -8,10 +8,12 @@
 #include <variant>
 #include <cassert>
 
-#include "../enhanced_type_traits.h"
+#include "../utilities/tmp.h"
 
-namespace life {
-class configuration_primitive {
+namespace ded {
+	namespace specs {
+
+class ConfigurationPrimitive {
 private:
 
   std::variant<std::monostate, long, double, bool, std::string> value_;
@@ -69,33 +71,9 @@ public:
     std::exit(1);
   }
 
-  std::string value_as_string() const
-  {
-    std::string s;
-    std::visit(
-        enhanced_type_traits::overload_set{
-            [&](std::monostate) { s = "NULL"; },
-            [&](long v) { s = std::to_string(v); },
-            [&](double v) { s = std::to_string(v); },
-            [&](bool v) { s = v ? "true" : "false"; },
-            [&](std::string v) { s = "\"" + v + "\""; } },
-        value_);
-    return s;
-  }
-
-  std::string type_as_string() const
-  {
-    std::string s;
-    std::visit(
-        enhanced_type_traits::overload_set{
-            [&](std::monostate) { s = "NULL"; },
-            [&](long) { s = "long"; },
-            [&](double) { s = "double"; },
-            [&](bool) { s = "bool"; },
-            [&](std::string) { s = "string"; } },
-        value_);
-    return s;
-  }
+  std::string value_as_string() const;
+  std::string type_as_string() const;
 };
+}
 }
 

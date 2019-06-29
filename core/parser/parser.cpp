@@ -1,8 +1,5 @@
 
 
-#include "parser.h"
-#include "../specs/configuration_primitive.h"
-#include "../term_colours.h"
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -11,22 +8,27 @@
 #include <string>
 #include <vector>
 
-namespace life {
+#include "parser.h"
+#include "../specs/configuration_primitive.h"
+#include "../utilities/term_colours.h"
+
+namespace ded {
+namespace language {
 
 // order of options matter
-const std::regex parser::valid_symbol_{
+const std::regex Parser::valid_symbol_{
   R"~~(^(\s+|\{|\}|\=|\?|\$\w+|\!\w+|[\.\w]+))~~"
 };
 
 void
-    parser::open_file(std::string file_name)
+    Parser::open_file(std::string file_name)
 {
 
   std::ifstream file(file_name);
   if (!file.is_open())
   {
     std::cout << "error: " << file_name << " not found\n";
-    throw parser_error{};
+    throw ParserError{};
   }
 
   std::string line;
@@ -40,7 +42,7 @@ void
 }
 
 void
-    parser::lex()
+    Parser::lex()
 {
   for (auto [line_number, line] : ranges::view::enumerate(lines_))
   {
@@ -51,7 +53,7 @@ void
                         std::regex_search(i, line.cend(), m, valid_symbol_);
          i += m.str().length())
       if (!ranges::all_of(m.str(), ::isspace))
-        tokens_.push_back(token{ parse_token_type(m.str()),
+        tokens_.push_back(Token{ parse_token_type(m.str()),
                                  m.str(),
                                  { line_number, i - line.cbegin() } });
 
@@ -61,31 +63,31 @@ void
 }
 
 void
-    parser::err_unknown_symbol(std::pair<int, int> location)
+    Parser::err_unknown_symbol(std::pair<int, int> location)
 {
 
   std::cout << "parse-error:" << location.first + 1 << ":"
             << location.second + 1 << "\n"
             << lines_[location.first] << "\n"
-            << std::string(location.second, ' ') << term_colours::red_fg
+            << std::string(location.second, ' ') << utilities::TermColours::red_fg
             << "^ unknown symbol\n"
-            << term_colours::reset;
-  throw parser_error{};
+            << utilities::TermColours::reset;
+  throw ParserError{};
 }
 
 void
-    parser::parse_expression(int begin)
+    Parser::parse_expression(int begin)
 {
   if (begin + 2 >= static_cast<int>(tokens_.size()))
   {
     err_invalid_token(tokens_[begin], "unable to parse expression syntax");
-    throw parser_error{};
+    throw ParserError{};
   }
 
-  if (tokens_[begin].type_ != token_type::word)
+  if (tokens_[begin].type_ != TokenType::word)
   {
     err_invalid_token(tokens_[begin], "expected new variable name here");
-    throw parser_error{};
+    throw ParserError{};
   }
 
   if (auto prev = ranges::find_if(variables_,
@@ -96,18 +98,18 @@ void
   {
     err_invalid_token(tokens_[begin], "variable re-definition not allowed");
     err_invalid_token(prev->first, "variable already defined here");
-    throw parser_error{};
+    throw ParserError{};
   }
 
-  if (tokens_[begin + 1].type_ != token_type::assignment)
+  if (tokens_[begin + 1].type_ != TokenType::assignment)
     err_invalid_token(tokens_[begin + 1], "expected =");
 
-  if (tokens_[begin + 2].type_ != token_type::component &&
-      tokens_[begin + 2].type_ != token_type::variable)
+  if (tokens_[begin + 2].type_ != TokenType::component &&
+      tokens_[begin + 2].type_ != TokenType::variable)
   {
     err_invalid_token(tokens_[begin + 2],
                       "expected existing variable name or component here");
-    throw parser_error{};
+    throw ParserError{};
   }
   auto nested_block         = expand_block(begin + 2);
   nested_block.range_.first = begin + 2;
@@ -115,33 +117,33 @@ void
 }
 
 void
-    parser::err_invalid_token(token tok, std::string message)
+    Parser::err_invalid_token(Token tok, std::string message)
 {
   auto line             = tok.location_.first;
   auto column           = tok.location_.second;
   auto line_with_colour = lines_[line];
-  line_with_colour.insert(column + tok.expr_.length(), term_colours::reset);
-  line_with_colour.insert(column, term_colours::red_fg);
+  line_with_colour.insert(column + tok.expr_.length(), utilities::TermColours::reset);
+  line_with_colour.insert(column, utilities::TermColours::red_fg);
   std::cout << "parse-error\nLine" << std::setw(4) << line + 1 << ":"
-            << line_with_colour << term_colours::red_fg << std::endl
+            << line_with_colour << utilities::TermColours::red_fg << std::endl
             << std::string(column + 9, ' ')
             << std::string(tok.expr_.length(), '~') << "\n"
             << std::string(column + 9, ' ') << "^ " << message
-            << term_colours::reset << std::endl;
+            << utilities::TermColours::reset << std::endl;
 }
 
-block
-    parser::expand_block(int begin)
+Block
+    Parser::expand_block(int begin)
 {
 
-  auto current = tokens_[begin].type_ == token_type::variable
+  auto current = tokens_[begin].type_ == TokenType::variable
                      ? variable_block(begin)
                      : component_block(begin);
 
   current.range_.first = begin;
 
   if (begin + 1 == static_cast<int>(tokens_.size()) ||
-      tokens_[begin + 1].type_ != token_type::open_brace)
+      tokens_[begin + 1].type_ != TokenType::open_brace)
   {
     current.range_.second = begin + 1;
     return current;
@@ -151,34 +153,34 @@ block
 }
 
 void
-    parser::attempt_parameter_override(block &current, int &begin)
+    Parser::attempt_parameter_override(Block &current, int &begin)
 {
   switch (tokens_[begin + 2].type_)
   {
-    case token_type::word:
+    case TokenType::word:
       current.overrides_.push_back({ tokens_[begin], tokens_[begin + 2] });
       begin += 3;
       break;
-    case token_type::variable:
-    case token_type::component:
+    case TokenType::variable:
+    case TokenType::component:
       current.nested_.push_back({ tokens_[begin], expand_block(begin + 2) });
       begin = current.nested_.back().second.range_.second;
       break;
     default:
       err_invalid_token(tokens_[begin + 2],
                         "expected override of paramater or nested spec here");
-      throw parser_error{};
+      throw ParserError{};
   }
 }
 
 /*
 void
-    parser::attempt_tag_rewrite(block &current, int &begin)
+    Parser::attempt_tag_rewrite(Block &current, int &begin)
 {
-  if (tokens_[begin + 2].type_ != token_type::tag_rewrite)
+  if (tokens_[begin + 2].type_ != TokenType::tag_rewrite)
   {
     err_invalid_token(tokens_[begin + 2], "expected tag-rewrite here");
-    throw parser_error{};
+    throw ParserError{};
   }
   current.tag_rewrites_.push_back({ tokens_[begin], tokens_[begin + 2] });
   begin += 3;
@@ -186,59 +188,59 @@ void
 */
 
 void
-    parser::attempt_trace(block &current, int &begin)
+    Parser::attempt_trace(Block &current, int &begin)
 {
-  if (tokens_[begin + 1].type_ != token_type::word)
+  if (tokens_[begin + 1].type_ != TokenType::word)
   {
     err_invalid_token(tokens_[begin + 1], "expected tag name here");
-    throw parser_error{};
+    throw ParserError{};
   }
-  if (tokens_[begin + 2].type_ != token_type::word)
+  if (tokens_[begin + 2].type_ != TokenType::word)
   {
     err_invalid_token(tokens_[begin + 2], "expected tag name here");
-    throw parser_error{};
+    throw ParserError{};
   }
   current.traces_.push_back({ tokens_[begin + 1], tokens_[begin + 2] });
   begin += 3;
 }
 
 void
-    parser::attempt_override(block &current, int &begin)
+    Parser::attempt_override(Block &current, int &begin)
 {
   switch (tokens_[begin].type_)
   {
-    case token_type::word: attempt_parameter_override(current, begin); break;
-    case token_type::trace: attempt_trace(current, begin); break;
+    case TokenType::word: attempt_parameter_override(current, begin); break;
+    case TokenType::trace: attempt_trace(current, begin); break;
     default:
       err_invalid_token(
           tokens_[begin],
           "unexpected symbol: expected parameter or tag-rewrite here");
-      throw parser_error{};
+      throw ParserError{};
   }
 }
 
-block
-    parser::process_overrides(block current, int begin)
+Block
+    Parser::process_overrides(Block current, int begin)
 {
 
   auto scope_is_open = [&] {
     if (begin == static_cast<int>(tokens_.size()))
     {
       err_invalid_token(tokens_[current.range_.first + 1], "unmatched brace");
-      throw parser_error{};
+      throw ParserError{};
     }
-    return tokens_[begin].type_ != token_type::close_brace;
+    return tokens_[begin].type_ != TokenType::close_brace;
   };
 
   while (scope_is_open())
   {
 
     if (begin + 3 >= static_cast<int>(tokens_.size()) ||
-        (tokens_[begin + 1].type_ != token_type::assignment &&
-         tokens_[begin].type_ != token_type::trace))
+        (tokens_[begin + 1].type_ != TokenType::assignment &&
+         tokens_[begin].type_ != TokenType::trace))
     {
       err_invalid_token(tokens_[begin], "unable to parse override syntax");
-      throw parser_error{};
+      throw ParserError{};
     }
 
     attempt_override(current, begin);
@@ -248,8 +250,8 @@ block
   return current;
 }
 
-block
-    parser::variable_block(int begin)
+Block
+    Parser::variable_block(int begin)
 {
   if (auto f = ranges::find_if(variables_,
                                [tok = tokens_[begin]](auto var) {
@@ -258,23 +260,23 @@ block
       f == variables_.end())
   {
     err_invalid_token(tokens_[begin], "this variable has not been defined");
-    throw parser_error{};
+    throw ParserError{};
   } else
   {
     return f->second;
   }
 }
 
-block
-    parser::component_block(int begin)
+Block
+    Parser::component_block(int begin)
 {
-  block current;
+  Block current;
   current.name_ = tokens_[begin].expr_;
   return current;
 }
 
 void
-    parser::parse(std::string file_name)
+    Parser::parse(std::string file_name)
 {
 
   open_file(file_name);
@@ -288,7 +290,7 @@ void
 
 // debug only
 void
-    parser::print(block b)
+    Parser::print(Block b)
 {
   std::cout << b.name_ << " [" << b.range_.first << "," << b.range_.second
             << "]\n";
@@ -300,5 +302,6 @@ void
     print(value);
   }
 }
-}   // namespace life
+}   // namespace language
+}   // namespace ded
 

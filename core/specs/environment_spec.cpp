@@ -10,11 +10,13 @@
 #include "../configuration.h"
 #include "environment_spec.h"
 
-namespace life
+namespace ded
+{
+namespace specs
 {
 
 void
-    environment_spec::bind_tags(int tag_count)
+    EnvironmentSpec::bind_tags(int tag_count)
 {
 
   for (auto [source, sink] : tag_flow_equalities_)
@@ -69,7 +71,7 @@ void
 }
 
 void
-    environment_spec::instantiate_user_parameter_sizes()
+    EnvironmentSpec::instantiate_user_parameter_sizes()
 {
   for (auto &n_sig : io_.inputs_)
     for (auto &[param, cp] : parameters_)
@@ -90,7 +92,7 @@ void
 }
 
 void
-    environment_spec::bind_entity_io(io_signals ios)
+    EnvironmentSpec::bind_entity_io(IO ios)
 {
   for (auto &es : nested_)
     es.second.e->bind_entity_io(ios);
@@ -113,7 +115,7 @@ void
                 << n_sig.second.full_name() << "\nviable candidates";
       for (auto sig : ios.inputs_)
         std::cout << "\n    " << sig.second.full_name();
-      throw parser_error{};
+      throw language::ParserError{};
     }
     auto i = ranges::find_if(ios.inputs_, [sig = in_sig](auto ns) {
       return ns.second.exactly_matches(sig);
@@ -140,7 +142,7 @@ void
                 << n_sig.second.full_name() << "\nviable candidates";
       for (auto sig : ios.outputs_)
         std::cout << "\n    " << sig.second.full_name();
-      throw parser_error{};
+      throw language::ParserError{};
     }
     auto i = ranges::find_if(ios.outputs_, [sig = out_sig](auto ns) {
       return ns.second.exactly_matches(sig);
@@ -151,7 +153,7 @@ void
 }
 
 void
-    environment_spec::record_traces()
+    EnvironmentSpec::record_traces()
 {
   for (auto &sig_freq : traces_.pre_)
     sig_freq.signal_.update_identifier(
@@ -173,10 +175,10 @@ void
     es.second.e->record_traces();
 }
 
-environment_spec::environment_spec(parser parser_, block block_)
+EnvironmentSpec::EnvironmentSpec(language::Parser parser_, language::Block block_)
 {
 
-  *this = life::all_environment_specs.at(block_.name_.substr(1));
+  *this = all_environment_specs.at(block_.name_.substr(1));
 
   for (auto over : block_.overrides_)
   {
@@ -189,16 +191,16 @@ environment_spec::environment_spec(parser parser_, block block_)
     {
       parser_.err_invalid_token(
           name, "this does not override any parameters of " + name_);
-      throw parser_error{};
+      throw language::ParserError{};
     }
 
-    configuration_primitive cp;
+    ConfigurationPrimitive cp;
     cp.parse(value.expr_);
     if (cp.type_as_string() != f->second.type_as_string())
     {
       parser_.err_invalid_token(
           value, "type mismatch, should be " + f->second.type_as_string());
-      throw parser_error{};
+      throw language::ParserError{};
     }
     f->second = cp;
   }
@@ -208,13 +210,13 @@ environment_spec::environment_spec(parser parser_, block block_)
     auto tag_name  = over.first;
     auto frequency = over.second;
 
-    configuration_primitive cp;
+    ConfigurationPrimitive cp;
     cp.parse(frequency.expr_);
     if (cp.type_as_string() != "long")
     {
       parser_.err_invalid_token(frequency,
                                 "expected frequency of trace (number) here");
-      throw parser_error{};
+      throw language::ParserError{};
     }
 
     if (auto i = ranges::find_if(
@@ -237,7 +239,7 @@ environment_spec::environment_spec(parser parser_, block block_)
     {
       parser_.err_invalid_token(tag_name,
                                 "this is not a pre/post tag of " + name_);
-      throw parser_error{};
+      throw language::ParserError{};
     }
   }
 
@@ -251,7 +253,7 @@ environment_spec::environment_spec(parser parser_, block block_)
     {
       parser_.err_invalid_token(
           name, "override of " + name.expr_ + " must be of type environment");
-      throw parser_error{};
+      throw language::ParserError{};
     }
 
     auto f = ranges::find_if(
@@ -261,17 +263,17 @@ environment_spec::environment_spec(parser parser_, block block_)
       parser_.err_invalid_token(
           name,
           "this does not override any nested environments " + block_.name_);
-      throw parser_error{};
+      throw language::ParserError{};
     }
 
-    f->second.e = std::make_unique<environment_spec>(
-        life::environment_spec{ parser_, nested_blk });
+    f->second.e = std::make_unique<EnvironmentSpec>(
+        EnvironmentSpec{ parser_, nested_blk });
     f->second.e->set_user_specified_name(name.expr_);
   }
 }
 
 std::vector<std::string>
-    environment_spec::dump(long depth)
+    EnvironmentSpec::dump(long depth)
 {
   std::vector<std::string> lines;
   auto                     alignment = std::string(depth, ' ');
@@ -320,8 +322,8 @@ std::vector<std::string>
   return lines;
 }
 
-environment_spec
-    environment_spec::parse(std::vector<std::string> pop_dump)
+EnvironmentSpec
+    EnvironmentSpec::parse(std::vector<std::string> pop_dump)
 {
   name_ = *pop_dump.begin();
   name_ = name_.substr(name_.find(':') + 1);
@@ -332,7 +334,7 @@ environment_spec
   {
     auto                          l = *f;
     auto                          p = l.find(':');
-    life::configuration_primitive c;
+    ConfigurationPrimitive c;
     c.parse(l.substr(p + 1));
     parameters_[l.substr(0, p)] = c;
   }
@@ -341,28 +343,28 @@ environment_spec
   {
     auto l = *f;
     auto p = l.find(':');
-    io_.inputs_.push_back({ l.substr(0, p), signal_spec{ l } });
+    io_.inputs_.push_back({ l.substr(0, p), SignalSpec{ l } });
   }
 
   for (++f; *f != "a"; f++)
   {
     auto l = *f;
     auto p = l.find(':');
-    io_.outputs_.push_back({ l.substr(0, p), signal_spec{ l } });
+    io_.outputs_.push_back({ l.substr(0, p), SignalSpec{ l } });
   }
 
   for (++f; *f != "b"; f++)
   {
     auto l = *f;
     auto p = l.find(':');
-    tags_.pre_.push_back({ l.substr(0, p), signal_spec{ l } });
+    tags_.pre_.push_back({ l.substr(0, p), SignalSpec{ l } });
   }
 
   for (++f; *f != "r"; f++)
   {
     auto l = *f;
     auto p = l.find(':');
-    tags_.post_.push_back({ l.substr(0, p), signal_spec{ l } });
+    tags_.post_.push_back({ l.substr(0, p), SignalSpec{ l } });
   }
 
   for (++f; *f != "R"; f++)
@@ -386,9 +388,9 @@ environment_spec
 
     std::transform(f + 1, p, f + 1, [](auto l) { return l.substr(1); });
 
-    environment_spec e;
+    EnvironmentSpec e;
     e.set_user_specified_name(*f);
-    nested_[*f].e = std::make_unique<environment_spec>(
+    nested_[*f].e = std::make_unique<EnvironmentSpec>(
         e.parse(std::vector<std::string>(f + 1, p)));
 
     f = p;
@@ -397,7 +399,7 @@ environment_spec
 }
 
 std::string
-    environment_spec::pretty_print()
+    EnvironmentSpec::pretty_print()
 {
   std::stringstream out;
   out << "environment::" << name_ << "\n{\n";
@@ -456,4 +458,6 @@ std::string
   out << "}\n";
   return out.str();
 }
-}   // namespace life
+
+}   // namespace ded
+}   // namespace ded

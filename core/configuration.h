@@ -13,16 +13,16 @@
 #include "specs/environment_spec.h"
 #include "specs/population_spec.h"
 
-#include "term_colours.h"
+#include "utilities/term_colours.h"
 
-namespace life
+namespace ded
 {
 
 extern std::string global_path;
 
-extern std::map<std::string, entity_spec>      all_entity_specs;
-extern std::map<std::string, environment_spec> all_environment_specs;
-extern std::map<std::string, population_spec>  all_population_specs;
+extern std::map<std::string, specs::EntitySpec>      all_entity_specs;
+extern std::map<std::string, specs::EnvironmentSpec> all_environment_specs;
+extern std::map<std::string, specs::PopulationSpec>  all_population_specs;
 
 // component_builder will provide full specializations
 template <typename T>
@@ -36,6 +36,9 @@ void        show_config(std::ostream &out, std::string name);
 void        list_all_configs(std::ostream &out);
 void        save_all_configs();
 
+
+}   // namespace config_manager
+}   // namespace ded
 /*
 inline auto
     closeness(std::string w1, std::string w2)
@@ -235,6 +238,3 @@ inline void
     }
 }
 */
-
-}   // namespace config_manager
-}   // namespace life

@@ -5,9 +5,10 @@
 #include <string>
 #include <vector>
 
-namespace life {
+namespace ded {
+namespace specs {
 
-class signal_spec {
+class SignalSpec {
 private:
   std::string user_name_;
   std::string additional_identifier_;
@@ -20,45 +21,41 @@ private:
        is_user_set_vector_size_ = false;
 
 public:
-  signal_spec() = default;
+  SignalSpec() = default;
 
-  signal_spec(std::string sig);
+  SignalSpec(std::string sig);
 
-  signal_spec(std::string name, std::string idt);
+  SignalSpec(std::string name, std::string idt);
 
-  signal_spec(std::string name, std::string id, std::string type);
+  SignalSpec(std::string name, std::string id, std::string type);
 
   auto full_name() const
   {
     return user_name_ + ":" + additional_identifier_ + "-" + full_type_;
   }
-  /*
-  auto id_type_specifier() const
-  {
-    return additional_identifier_ + "-" + full_type_;
-  }
-  */
   auto user_name() const { return user_name_; }
   auto identifier() const { return additional_identifier_; }
-  void update_identifier(std::string id) { additional_identifier_ = id; }
   auto type() const { return full_type_; }
   auto user_parameter() const { return user_parameter_; }
 
+  void update_identifier(std::string id) { additional_identifier_ = id; }
   void instantiate_user_parameter( long size) { size_ = size; }
 
-  bool exactly_matches(signal_spec);
-  bool convertible_to(signal_spec);
+  bool exactly_matches(SignalSpec);
+  bool convertible_to(SignalSpec);
 };
 
-struct io_signals
+//struct io_signals
+struct IO
 {
-  std::vector<std::pair<std::string, signal_spec>> inputs_;
-  std::vector<std::pair<std::string, signal_spec>> outputs_;
+  std::vector<std::pair<std::string, SignalSpec>> inputs_;
+  std::vector<std::pair<std::string, SignalSpec>> outputs_;
 };
 
-struct tags
+struct Tags
 {
-  std::vector<std::pair<std::string, signal_spec>> pre_;
-  std::vector<std::pair<std::string, signal_spec>> post_;
+  std::vector<std::pair<std::string, SignalSpec>> pre_;
+  std::vector<std::pair<std::string, SignalSpec>> post_;
 };
-}   // namespace life
+}   // namespace specs
+}   // namespace ded

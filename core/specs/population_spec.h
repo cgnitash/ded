@@ -9,25 +9,33 @@
 #include <string>
 #include <variant>
 
-#include "../term_colours.h"
+#include "../utilities/term_colours.h"
 #include "configuration_primitive.h"
 #include "entity_spec.h"
 #include "../parser/parser.h"
 
-namespace life {
+namespace ded {
 
-class population_spec {
+// forward declaration to provide friendship
+namespace concepts
+{
+class Population;
+}
+
+namespace specs {
+
+class PopulationSpec {
   std::string                                    name_;
-  std::map<std::string, configuration_primitive> parameters_;
+  std::map<std::string, ConfigurationPrimitive> parameters_;
   //std::map<std::string, std::string>             inputs_;
   //std::map<std::string, std::string>             outputs_;
-  entity_spec                                    es_{ "null_entity" };
+  EntitySpec                                    es_{ "null_entity" };
 
 public:
-  // population_spec() = default;
+  // PopulationSpec() = default;
 
-  population_spec(std::string name = "") : name_(name) {}
-  population_spec(parser,block);
+  PopulationSpec(std::string name = "") : name_(name) {}
+  PopulationSpec(language::Parser,language::Block);
 
   auto name() const { return name_; }
 
@@ -47,18 +55,19 @@ public:
     parameters_[name].set_value(value);
   }
 
-  void bind_entity(entity_spec e) { es_ = e; }
+  void bind_entity(EntitySpec e) { es_ = e; }
 
-  void configure_entity(entity_spec &e) { e = es_; }
+  void configure_entity(EntitySpec &e) { e = es_; }
 
   std::string dump(long depth);
-  population_spec parse(std::vector<std::string> pop_dump);
+  PopulationSpec parse(std::vector<std::string> pop_dump);
   std::string pretty_print();
 
-  io_signals instantiate_nested_entity_user_parameter_sizes() { return es_.instantiate_user_parameter_sizes(0); }
-  //  friend std::ostream &operator<<(std::ostream &out, population_spec e)
+  IO instantiate_nested_entity_user_parameter_sizes() { return es_.instantiate_user_parameter_sizes(0); }
+  //  friend std::ostream &operator<<(std::ostream &out, PopulationSpec e)
 
-  friend class population;
+  friend class concepts::Population;
 };
 
-}   // namespace life
+}   // namespace specs
+}   // namespace ded

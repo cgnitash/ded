@@ -23,7 +23,7 @@ opts
     std::cout << "Error: component file " << fname << " not found" << std::endl;
     std::exit(1);
   }
-  std::regex r(R"~~(^\s*(entity|environment|population)\s*:\s*(\w+)\s*$)~~");
+  std::regex r(R"~~(^\s*(Entity|Environment|Population)\s*:\s*(\w+)\s*$)~~");
   std::regex comments(R"~~(#.*$)~~");
   std::regex spaces(R"~~(^\s*$)~~");
   for (std::string line; std::getline(cfg, line);)
@@ -58,13 +58,13 @@ void
     for (auto name : names)
       header << "#include\"user/" << type << "/" << name << ".h\"\n";
 
-  header << "\n#include<string_view>\n\nnamespace life {\n\n";
+  header << "\n#include<string_view>\n\nnamespace ded {\n\n";
 
   for (auto [type, names] : build_options)
   {
-    header << type << "_spec default_" << type << "_spec(std::string name) {\n";
+    header << "specs::" << type << "Spec default_" << type << "Spec(std::string name) {\n";
     for (auto name : names)
-      header << "  if (name == \"" << name << "\") {\n    auto e = " << type
+      header << "  if (name == \"" << name << "\") {\n    auto e = concepts::" << type
              << "{" << name
              << "()};\n    return e.publish_configuration();\n  }\n";
     header << "  std::cout << \"unknown-" << type
@@ -73,31 +73,31 @@ void
 
   for (auto [type, names] : build_options)
   {
-    header << type << " make_" << type << "(" << type << "_spec spec) {\n";
+    header << "concepts::" << type << " make_" << type << "(specs::" << type << "Spec spec) {\n";
     for (auto name : names)
       header << "  if (spec.name() == \"" << name
-             << "\") {\n    auto e = " << type << "{" << name
+             << "\") {\n    auto e = concepts::" << type << "{" << name
              << "()};\n    e.configure(spec);\n    return e;\n  }\n";
     header << "  std::cout << \"unknown-" << type
            << ": \" << spec.name();\n  exit(1);\n}\n\n";
   }
 
-  for (auto name : ranges::view::concat(build_options["entity"],
-                                        build_options["environment"],
-                                        build_options["population"]))
+  for (auto name : ranges::view::concat(build_options["Entity"],
+                                        build_options["Environment"],
+                                        build_options["Population"]))
     header << "template<>\nstd::string auto_class_name_as_string<" << name
            << ">() \n{ return \"" << name << "\"; }\n\n";
 
   header << "void generate_all_specs() {\n";
   for (auto [type, names] : build_options)
   {
-    header << "  generate_" << type << "_spec({"
+    header << "  generate_" << type << "Spec({"
            << (names |
                ranges::view::transform([](auto s) { return "\"" + s + "\""; }) |
                ranges::view::intersperse(",") | ranges::action::join)
            << "});\n";
   }
-  header << "}\n\n} // namespace life";
+  header << "}\n\n} // namespace ded";
 }
 
 void
@@ -112,16 +112,23 @@ void
     return "obj_files/" + s + ".o ";
   };
 
-  std::vector<std::string> core_files = {
-    "core/environment",       "core/entity",
-    "core/population",        "core/encoding",
-    "core/configuration",     "core/specs/configuration_primitive",
-    "core/specs/signal_spec", "core/specs/population_spec",
-    "core/specs/entity_spec", "core/specs/environment_spec",
-    "core/parser/token",      "core/parser/parser",
-    "core/csv/CSV",           "core/csv/CSVReader",
-    "core/term_colours",      "core/utilities"
-  };
+  std::vector<std::string> core_files = { "core/configuration",
+                                          "core/utilities/csv/csv",
+                                          "core/utilities/csv/csv_reader",
+                                          "core/utilities/term_colours",
+                                          "core/utilities/utilities",
+                                          "core/parser/token",
+                                          "core/parser/parser",
+                                          "core/specs/configuration_primitive",
+                                          "core/specs/signal_spec",
+                                          "core/specs/population_spec",
+                                          "core/specs/entity_spec",
+                                          "core/specs/environment_spec",
+                                          "core/concepts/environment",
+                                          "core/concepts/entity",
+                                          "core/concepts/population",
+                                          "core/concepts/signal",
+                                          "core/concepts/encoding" };
 
   std::vector<std::string> user_files;
   for (auto &[type, names] : build_options)
