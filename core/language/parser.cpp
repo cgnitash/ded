@@ -11,6 +11,7 @@
 #include "parser.h"
 #include "../specs/configuration_primitive.h"
 #include "../utilities/term_colours.h"
+#include "../utilities/utilities.h"
 
 namespace ded {
 namespace language {
@@ -117,7 +118,9 @@ void
 }
 
 void
-    Parser::err_invalid_token(Token tok, std::string message)
+    Parser::err_invalid_token(Token                    tok,
+                              std::string              message,
+                              std::vector<std::string> suggestions)
 {
   auto line             = tok.location_.first;
   auto column           = tok.location_.second;
@@ -128,8 +131,19 @@ void
             << line_with_colour << utilities::TermColours::red_fg << std::endl
             << std::string(column + 9, ' ')
             << std::string(tok.expr_.length(), '~') << "\n"
-            << std::string(column + 9, ' ') << "^ " << message
-            << utilities::TermColours::reset << std::endl;
+            << std::string(column + 9, ' ') << utilities::TermColours::blue_fg
+            << "^ " << message;
+
+  if (auto f = ranges::find_if(suggestions,
+                               [word = tok.expr_](auto attempt) {
+                                 return utilities::match(attempt, word);
+                               });
+      f != ranges::end(suggestions))
+    std::cout << "\n"
+              << std::string(column + 9, ' ') << "Did you mean "
+              << utilities::TermColours::green_fg << *f;
+
+  std::cout << utilities::TermColours::reset << std::endl;
 }
 
 Block
@@ -168,7 +182,7 @@ void
       break;
     default:
       err_invalid_token(tokens_[begin + 2],
-                        "expected override of paramater or nested spec here");
+                        "expected override of parameter or nested spec here");
       throw ParserError{};
   }
 }
@@ -259,7 +273,11 @@ Block
                                });
       f == variables_.end())
   {
-    err_invalid_token(tokens_[begin], "this variable has not been defined");
+    err_invalid_token(tokens_[begin],
+                      "this variable has not been defined",
+                      variables_ | ranges::view::transform([](auto var) {
+                        return var.first.expr_;
+                      }));
     throw ParserError{};
   } else
   {

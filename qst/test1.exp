@@ -15,7 +15,7 @@ P = $linear {
 
 
 
-fs = $sequence  
+fors = $sequence  
 {
      first 	= 	$forager 	
 				{ ? food_eaten 5 }
@@ -26,6 +26,6 @@ fs = $sequence
 
 E = $cycle  { 
  count = 1001
-  world = !fs
+  world = !fors
 }
 

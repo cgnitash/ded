@@ -190,7 +190,10 @@ EnvironmentSpec::EnvironmentSpec(language::Parser parser_, language::Block block
     if (f == parameters_.end())
     {
       parser_.err_invalid_token(
-          name, "this does not override any parameters of " + name_);
+          name,
+          "this does not override any parameters of " + name_,
+          parameters_ |
+              ranges::view::transform([](auto param) { return param.first; }));
       throw language::ParserError{};
     }
 
@@ -237,8 +240,14 @@ EnvironmentSpec::EnvironmentSpec(language::Parser parser_, language::Block block
     }
     else
     {
-      parser_.err_invalid_token(tag_name,
-                                "this is not a pre/post tag of " + name_);
+      parser_.err_invalid_token(
+          tag_name,
+          "this is not a pre/post tag of " + name_,
+          ranges::view::concat(
+              tags_.pre_ |
+                  ranges::view::transform([](auto tag) { return tag.first; }),
+              tags_.post_ |
+                  ranges::view::transform([](auto tag) { return tag.first; })));
       throw language::ParserError{};
     }
   }
@@ -262,7 +271,9 @@ EnvironmentSpec::EnvironmentSpec(language::Parser parser_, language::Block block
     {
       parser_.err_invalid_token(
           name,
-          "this does not override any nested environments " + block_.name_);
+          "this does not override any nested environments " + block_.name_,
+          nested_ |
+              ranges::view::transform([](auto param) { return param.first; }));
       throw language::ParserError{};
     }
 

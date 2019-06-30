@@ -6,6 +6,10 @@ namespace ded
 namespace specs
 {
 
+struct SpecError
+{
+};
+
 void
     ConfigurationPrimitive::parse(std::string s)
 {

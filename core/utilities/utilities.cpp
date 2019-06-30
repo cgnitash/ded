@@ -28,5 +28,68 @@ std::ofstream
   return file;
 }
 
+int
+    closeness(std::string w1, std::string w2)
+{
+  return ranges::inner_product(
+      w1, w2, 0, std::plus<int>(), [](auto c1, auto c2) {
+        return c1 != c2 ? 1 : 0;
+      });
+}
+
+
+bool
+    match(std::string attempt, std::string word)
+{
+  // In : abc
+  // Out : [" abc","a bc","ab c","abc "]
+  auto all_spaces = [](std::string word) {
+    return ranges::view::repeat_n(word, word.size() + 1) |
+           ranges::view::transform([n = -1](auto str) mutable {
+             n++;
+             return str.substr(0, n) + " " + str.substr(n);
+           });
+  };
+
+  auto tolerance            = 3;
+  auto [min, max, distance] = [w1 = attempt, w2 = word] {
+    int l1 = w1.length();
+    int l2 = w2.length();
+
+    if (l1 < l2)
+      return std::make_tuple(w1, w2, l2 - l1);
+    if (l1 > l2)
+      return std::make_tuple(w2, w1, l1 - l2);
+    return std::make_tuple(w1, w2, 0);
+  }();
+
+  if (distance == 0)
+  {
+    // at most deletion + insertion, or at most 2 changes
+    for (auto space_one : all_spaces(min))
+      for (auto space_two : all_spaces(max))
+        if (closeness(space_one, space_two) < tolerance) return true;
+  }
+
+  if (distance == 1)
+  {
+    // at most symmetrically (deletion + change, or insertion + change)
+    for (auto spaced : all_spaces(min))
+      if (closeness(spaced, max) < tolerance) return true;
+  }
+  if (distance == 2)
+  {
+    // at most symmetrically ( 2 deletions , or 2 insertions)
+    for (auto spaced :
+         all_spaces(min) | ranges::view::transform([all_spaces](auto r) {
+           return all_spaces(r);
+         }) | ranges::view::join)
+      if (closeness(spaced, max) < tolerance) return true;
+  }
+
+  // if (distance >= tolerance)
+  return false;
+}
+
 }   // namespace util
 }   // namespace util

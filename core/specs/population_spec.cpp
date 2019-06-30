@@ -31,7 +31,10 @@ PopulationSpec::PopulationSpec(language::Parser p, language::Block blk)
     if (f == parameters_.end())
     {
       p.err_invalid_token(name,
-                          "this does not override any parameters of " + name_);
+                          "this does not override any parameters of " + name_,
+                          parameters_ | ranges::view::transform([](auto param) {
+                            return param.first;
+                          }));
       throw language::ParserError{};
     }
 

@@ -56,7 +56,10 @@ EntitySpec::EntitySpec(language::Parser p, language::Block blk)
     if (f == parameters_.end())
     {
       p.err_invalid_token(name,
-                          "this does not override any parameters of " + name_);
+                          "this does not override any parameters of " + name_,
+                          parameters_ | ranges::view::transform([](auto param) {
+                            return param.first;
+                          }));
       throw language::ParserError{};
     }
 
@@ -89,7 +92,10 @@ EntitySpec::EntitySpec(language::Parser p, language::Block blk)
     if (f == nested_.end())
     {
       p.err_invalid_token(
-          name, "this does not override any nested entitys of " + blk.name_);
+          name,
+          "this does not override any nested entitys of " + blk.name_,
+          nested_ |
+              ranges::view::transform([](auto param) { return param.first; }));
       throw language::ParserError{};
     }
 

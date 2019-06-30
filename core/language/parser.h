@@ -33,7 +33,7 @@ class Parser {
 
   void parse_expression(int);
 
-  void err_invalid_token(Token, std::string);
+  void err_invalid_token(Token, std::string, std::vector<std::string> = {});
 
   Block expand_block(int);
 
