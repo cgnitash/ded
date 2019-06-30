@@ -9,7 +9,7 @@
 #include <regex>
 #include <string>
 
-#include "../parser/parser.h"
+#include "../language/parser.h"
 #include "../utilities/term_colours.h"
 #include "configuration_primitive.h"
 #include "population_spec.h"

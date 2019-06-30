@@ -8,7 +8,7 @@
 
 #include "core/configuration.h"
 
-#include "core/parser/parser.h"
+#include "core/language/parser.h"
 
 #include "core/utilities/utilities.h"
 

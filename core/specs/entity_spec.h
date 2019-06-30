@@ -12,7 +12,7 @@
 #include "../utilities/term_colours.h"
 #include "configuration_primitive.h"
 #include "signal_spec.h"
-#include "../parser/parser.h"
+#include "../language/parser.h"
 
 namespace ded {
 

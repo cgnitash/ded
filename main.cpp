@@ -314,6 +314,8 @@ int
   }
 } catch (const ded::language::ParserError &)
 {
+} catch (const ded::specs::SpecError &)
+{
 } catch (...)
 {
   std::cout << "\nfatal: this is a core bug - please file a bug report\n";

@@ -62,24 +62,26 @@ void
 
   for (auto [type, names] : build_options)
   {
-    header << "specs::" << type << "Spec default_" << type << "Spec(std::string name) {\n";
+    header << "specs::" << type << "Spec default_" << type
+           << "Spec(std::string name) \n{\n";
     for (auto name : names)
-      header << "  if (name == \"" << name << "\") {\n    auto e = concepts::" << type
-             << "{" << name
+      header << "  if (name == \"" << name
+             << "\") \n  {\n    auto e = concepts::" << type << "{" << name
              << "()};\n    return e.publish_configuration();\n  }\n";
     header << "  std::cout << \"unknown-" << type
-           << ": \" << name;\n  exit(1);\n}\n\n";
+           << ": \" << name;\n  throw specs::SpecError{};\n}\n\n";
   }
 
   for (auto [type, names] : build_options)
   {
-    header << "concepts::" << type << " make_" << type << "(specs::" << type << "Spec spec) {\n";
+    header << "concepts::" << type << " make_" << type << "(specs::" << type
+           << "Spec spec) \n{\n";
     for (auto name : names)
       header << "  if (spec.name() == \"" << name
-             << "\") {\n    auto e = concepts::" << type << "{" << name
+             << "\") \n  {\n    auto e = concepts::" << type << "{" << name
              << "()};\n    e.configure(spec);\n    return e;\n  }\n";
     header << "  std::cout << \"unknown-" << type
-           << ": \" << spec.name();\n  exit(1);\n}\n\n";
+           << ": \" << spec.name();\n  throw specs::SpecError{};\n}\n\n";
   }
 
   for (auto name : ranges::view::concat(build_options["Entity"],
@@ -117,8 +119,8 @@ void
                                           "core/utilities/csv/csv_reader",
                                           "core/utilities/term_colours",
                                           "core/utilities/utilities",
-                                          "core/parser/token",
-                                          "core/parser/parser",
+                                          "core/language/token",
+                                          "core/language/parser",
                                           "core/specs/configuration_primitive",
                                           "core/specs/signal_spec",
                                           "core/specs/population_spec",

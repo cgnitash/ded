@@ -18,6 +18,13 @@
 namespace ded
 {
 
+namespace specs
+{
+struct SpecError
+{
+};
+}
+
 extern std::string global_path;
 
 extern std::map<std::string, specs::EntitySpec>      all_entity_specs;
