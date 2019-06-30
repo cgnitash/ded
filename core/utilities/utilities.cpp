@@ -1,14 +1,16 @@
 
 
-#include <range/v3/all.hpp>
 #include <cmath>
 #include <experimental/filesystem>
 #include <fstream>
+#include <range/v3/all.hpp>
 
 #include "utilities.h"
 
-namespace ded {
-namespace utilities {
+namespace ded
+{
+namespace utilities
+{
 double
     Bit(double d)
 {
@@ -23,7 +25,8 @@ std::ofstream
   {
     file.open(file_name);
     file << header;
-  } else
+  }
+  else
     file.open(file_name, std::ios::app);
   return file;
 }
@@ -36,7 +39,6 @@ int
         return c1 != c2 ? 1 : 0;
       });
 }
-
 
 bool
     match(std::string attempt, std::string word)
@@ -68,14 +70,16 @@ bool
     // at most deletion + insertion, or at most 2 changes
     for (auto space_one : all_spaces(min))
       for (auto space_two : all_spaces(max))
-        if (closeness(space_one, space_two) < tolerance) return true;
+        if (closeness(space_one, space_two) < tolerance)
+          return true;
   }
 
   if (distance == 1)
   {
     // at most symmetrically (deletion + change, or insertion + change)
     for (auto spaced : all_spaces(min))
-      if (closeness(spaced, max) < tolerance) return true;
+      if (closeness(spaced, max) < tolerance)
+        return true;
   }
   if (distance == 2)
   {
@@ -84,12 +88,13 @@ bool
          all_spaces(min) | ranges::view::transform([all_spaces](auto r) {
            return all_spaces(r);
          }) | ranges::view::join)
-      if (closeness(spaced, max) < tolerance) return true;
+      if (closeness(spaced, max) < tolerance)
+        return true;
   }
 
   // if (distance >= tolerance)
   return false;
 }
 
-}   // namespace util
-}   // namespace util
+}   // namespace utilities
+}   // namespace ded

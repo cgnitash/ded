@@ -26,13 +26,12 @@ Population
   record_traces(p_r, traces_.post_);
 
   global_path.pop_back();
-  global_path =
-      global_path.substr(0, global_path.find_last_of('/') + 1);
+  global_path = global_path.substr(0, global_path.find_last_of('/') + 1);
 
   invocations_++;
 
   return p_r;
 }
 
-}   // namespace ded
+}   // namespace concepts
 }   // namespace ded

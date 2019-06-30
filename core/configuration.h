@@ -23,7 +23,7 @@ namespace specs
 struct SpecError
 {
 };
-}
+}   // namespace specs
 
 extern std::string global_path;
 
@@ -42,7 +42,6 @@ std::string type_of_block(std::string name);
 void        show_config(std::ostream &out, std::string name);
 void        list_all_configs(std::ostream &out);
 void        save_all_configs();
-
 
 }   // namespace config_manager
 }   // namespace ded

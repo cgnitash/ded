@@ -9,12 +9,13 @@
 #include <string>
 #include <variant>
 
+#include "../language/parser.h"
 #include "../utilities/term_colours.h"
 #include "configuration_primitive.h"
 #include "signal_spec.h"
-#include "../language/parser.h"
 
-namespace ded {
+namespace ded
+{
 
 // forward declaration to provide friendship
 namespace concepts
@@ -22,9 +23,11 @@ namespace concepts
 class Entity;
 }
 
-namespace specs {
+namespace specs
+{
 
-class EntitySpec {
+class EntitySpec
+{
   struct NestedSpec
   {
     std::unique_ptr<EntitySpec> e;
@@ -34,71 +37,87 @@ class EntitySpec {
     }
   };
 
-  std::string                                    name_;
+  std::string                                   name_;
   std::map<std::string, ConfigurationPrimitive> parameters_;
   std::map<std::string, NestedSpec>             nested_;
-  IO io_;
+  IO                                            io_;
 
 public:
+  EntitySpec(std::string name = "") : name_(name)
+  {
+  }
+  EntitySpec(language::Parser, language::Block);
 
-  EntitySpec(std::string name = "") : name_(name) {}
-  EntitySpec(language::Parser ,language::Block);
+  auto
+      name() const
+  {
+    return name_;
+  }
 
-  auto name() const { return name_; }
-
-  template <typename T> void configure_parameter(std::string name, T &value)
+  template <typename T>
+  void
+      configure_parameter(std::string name, T &value)
   {
     parameters_[name].get_value(value);
   }
 
-  template <typename T> void bind_parameter(std::string name, T value)
+  template <typename T>
+  void
+      bind_parameter(std::string name, T value)
   {
     parameters_[name].set_value(value);
   }
 
-  void bind_input(std::string name, std::string value)
+  void
+      bind_input(std::string name, std::string value)
   {
-    io_.inputs_.push_back({name, SignalSpec{ name, name, value }});
+    io_.inputs_.push_back({ name, SignalSpec{ name, name, value } });
   }
 
-  void configure_input(std::string name, std::string &value)
+  void
+      configure_input(std::string name, std::string &value)
   {
     auto i =
         ranges::find_if(io_.inputs_, [=](auto ns) { return ns.first == name; });
     value = i->second.identifier();
   }
 
-  void bind_output(std::string name, std::string value)
+  void
+      bind_output(std::string name, std::string value)
   {
-    io_.outputs_.push_back({name,SignalSpec{ name, name, value }});
+    io_.outputs_.push_back({ name, SignalSpec{ name, name, value } });
   }
 
-  void configure_output(std::string name, std::string &value)
+  void
+      configure_output(std::string name, std::string &value)
   {
-    auto i =
-        ranges::find_if(io_.outputs_, [=](auto ns) { return ns.first == name; });
-    value = i->second.identifier();
+    auto i = ranges::find_if(io_.outputs_,
+                             [=](auto ns) { return ns.first == name; });
+    value  = i->second.identifier();
   }
 
-  void bind_entity(std::string name, EntitySpec env)
+  void
+      bind_entity(std::string name, EntitySpec env)
   {
     nested_[name].e = std::make_unique<EntitySpec>(env);
   }
 
-  void configure_entity(std::string name, EntitySpec &e)
+  void
+      configure_entity(std::string name, EntitySpec &e)
   {
     if (!nested_[name].e)
     {
       std::cout << "Warning: <" << name_ << ":" << name
                 << "> environment spec has not been bind-ed (probably error)\n";
       //      std::exit(1);
-    } else
+    }
+    else
       e = *nested_[name].e;
   }
 
   // friend std::ostream &operator<<(std::ostream &out, EntitySpec e)
   std::string dump(long depth);
-  EntitySpec parse(std::vector<std::string> pop_dump);
+  EntitySpec  parse(std::vector<std::string> pop_dump);
   std::string pretty_print();
 
   IO instantiate_user_parameter_sizes(int);

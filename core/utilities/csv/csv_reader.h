@@ -13,22 +13,33 @@
 #include <sstream>
 #include <vector>
 
-namespace ded {
-namespace utilities {
-namespace csv {
+namespace ded
+{
+namespace utilities
+{
+namespace csv
+{
 // parses a csv string into a vector of strings
 // The delimiter and quotation character can be specified:
 // by default  , and "
 
-class CSVReader {
+class CSVReader
+{
 
   char                     delimiter_ = ',', quotation_ = '"';
   std::string              current_string_;
   std::vector<std::string> fields_;
-  enum class input { chars, delim, quote, wh_sp };
+  enum class input
+  {
+    chars,
+    delim,
+    quote,
+    wh_sp
+  };
   // Warning, order of values in state have semantics
   // Do Not change
-  enum class state {
+  enum class state
+  {
     precw,   // leading whitespace
     field,   // non quoted field
     delim,   // found delim
@@ -59,9 +70,14 @@ class CSVReader {
 
 public:
   CSVReader() = default;
-  CSVReader(char d) : delimiter_(d) {}
-  CSVReader(char d, char oq) : delimiter_(d), quotation_(oq) {}
+  CSVReader(char d) : delimiter_(d)
+  {
+  }
+  CSVReader(char d, char oq) : delimiter_(d), quotation_(oq)
+  {
+  }
   std::vector<std::string> parse_line(const std::string &s);
 };
-}}
-}
+}   // namespace csv
+}   // namespace utilities
+}   // namespace ded

@@ -4,29 +4,35 @@
 #include <string>
 #include <vector>
 
-namespace ded {
-namespace specs {
+namespace ded
+{
+namespace specs
+{
 
 bool
     SignalSpec::exactly_matches(SignalSpec s)
 {
   return is_any_type_ == s.is_any_type_ && is_vector_ == s.is_vector_ &&
          vector_type_ == s.vector_type_ &&
-         is_any_vector_size_ == s.is_any_vector_size_ &&
-         size_ == s.size_;
+         is_any_vector_size_ == s.is_any_vector_size_ && size_ == s.size_;
 }
 
 bool
     SignalSpec::convertible_to(SignalSpec other)
 {
-	if (other.is_any_type_) return true;
-	if(!is_vector_) {
-		if (other.is_vector_) return false;
-		return full_type_ == other.full_type_;
-	}
-	if (!other.is_vector_ || vector_type_ != other.vector_type_) return false;
-	if (other.is_any_vector_size_) return true;
-	return size_ == other.size_;
+  if (other.is_any_type_)
+    return true;
+  if (!is_vector_)
+  {
+    if (other.is_vector_)
+      return false;
+    return full_type_ == other.full_type_;
+  }
+  if (!other.is_vector_ || vector_type_ != other.vector_type_)
+    return false;
+  if (other.is_any_vector_size_)
+    return true;
+  return size_ == other.size_;
 }
 
 SignalSpec::SignalSpec(std::string sig)
@@ -50,7 +56,10 @@ SignalSpec::SignalSpec(std::string name, std::string id, std::string type)
     is_any_type_ = true;
     return;
   }
-  if (full_type_[0] != '<') { return; }
+  if (full_type_[0] != '<')
+  {
+    return;
+  }
   is_vector_     = true;
   auto comma_pos = full_type_.find(',');
   vector_type_   = full_type_.substr(1, comma_pos - 1);

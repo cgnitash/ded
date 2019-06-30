@@ -2,10 +2,10 @@
 #pragma once
 
 #include "../configuration.h"
-#include "encoding.h"
-#include "signal.h"
 #include "../specs/entity_spec.h"
 #include "../utilities/tmp.h"
+#include "encoding.h"
+#include "signal.h"
 
 #include <cassert>
 #include <deque>
@@ -163,17 +163,17 @@ private:
     // provided methods
     virtual ~EntityInterface()                     = default;
     virtual EntityInterface *copy_() const         = 0;
-    virtual long              get_id_() const       = 0;
-    virtual long              get_ancestor_() const = 0;
+    virtual long             get_id_() const       = 0;
+    virtual long             get_ancestor_() const = 0;
 
     // mandatory methods
-    virtual void        mutate_()                   = 0;
-    virtual void        reset_()                    = 0;
-    virtual void        tick_()                     = 0;
-    virtual void        input_(std::string, Signal) = 0;
-    virtual Signal      output_(std::string)        = 0;
-    virtual void        configure_(specs::EntitySpec)     = 0;
-    virtual specs::EntitySpec publish_configuration_()    = 0;
+    virtual void              mutate_()                     = 0;
+    virtual void              reset_()                      = 0;
+    virtual void              tick_()                       = 0;
+    virtual void              input_(std::string, Signal)   = 0;
+    virtual Signal            output_(std::string)          = 0;
+    virtual void              configure_(specs::EntitySpec) = 0;
+    virtual specs::EntitySpec publish_configuration_()      = 0;
 
     // optional methods
     virtual Encoding get_encoding_() const        = 0;
@@ -218,9 +218,8 @@ private:
     using HasInput =
         decltype(std::declval<T &>().input(std::declval<std::string>(),
                                            std::declval<Signal>()));
-    static_assert(
-        utilities::TMP::has_signature<UserEntity, void, HasInput>{},
-        "UserEntity does not satisfy 'input' concept requirement");
+    static_assert(utilities::TMP::has_signature<UserEntity, void, HasInput>{},
+                  "UserEntity does not satisfy 'input' concept requirement");
     void
         input_(std::string n, Signal s) override
     {
@@ -241,9 +240,8 @@ private:
 
     template <typename T>
     using HasTick = decltype(std::declval<T &>().tick());
-    static_assert(
-        utilities::TMP::has_signature<UserEntity, void, HasTick>{},
-        "UserEntity does not satisfy 'tick' concept requirement");
+    static_assert(utilities::TMP::has_signature<UserEntity, void, HasTick>{},
+                  "UserEntity does not satisfy 'tick' concept requirement");
     void
         tick_() override
     {
@@ -252,9 +250,8 @@ private:
 
     template <typename T>
     using HasReset = decltype(std::declval<T &>().reset());
-    static_assert(
-       utilities::TMP::has_signature<UserEntity, void, HasReset>{},
-        "UserEntity does not satisfy 'reset' concept requirement");
+    static_assert(utilities::TMP::has_signature<UserEntity, void, HasReset>{},
+                  "UserEntity does not satisfy 'reset' concept requirement");
     void
         reset_() override
     {
@@ -263,9 +260,8 @@ private:
 
     template <typename T>
     using HasMutate = decltype(std::declval<T &>().mutate());
-    static_assert(
-        utilities::TMP::has_signature<UserEntity, void, HasMutate>{},
-        "UserEntity does not satisfy 'mutate' concept requirement");
+    static_assert(utilities::TMP::has_signature<UserEntity, void, HasMutate>{},
+                  "UserEntity does not satisfy 'mutate' concept requirement");
     void
         mutate_() override
     {
@@ -275,13 +271,13 @@ private:
     }
 
     template <typename T>
-    using HasConf =
-        decltype(std::declval<T &>().configure(std::declval<specs::EntitySpec>()));
+    using HasConf = decltype(
+        std::declval<T &>().configure(std::declval<specs::EntitySpec>()));
     template <typename T>
     using HasPubConf = decltype(std::declval<T &>().publish_configuration());
     static_assert(
         utilities::TMP::has_signature<UserEntity, void, HasConf>{} &&
-           utilities::TMP::
+            utilities::TMP::
                 has_signature<UserEntity, specs::EntitySpec, HasPubConf>{},
         "UserEntity does not satisfy 'configuration' concept requirement");
     specs::EntitySpec
@@ -304,8 +300,7 @@ private:
     Encoding
         get_encoding_() const override
     {
-      if constexpr (utilities::TMP::is_detected<UserEntity,
-                                                      EncodingGettable>{})
+      if constexpr (utilities::TMP::is_detected<UserEntity, EncodingGettable>{})
       {
         return data_.get_encoding();
       }
@@ -322,8 +317,7 @@ private:
     void
         set_encoding_(Encoding e) override
     {
-      if constexpr (utilities::TMP::is_detected<UserEntity,
-                                                      EncodingSettable>{})
+      if constexpr (utilities::TMP::is_detected<UserEntity, EncodingSettable>{})
       {
         data_.set_encoding(e);
       }
@@ -336,8 +330,7 @@ private:
     Encoding
         parse_encoding_(std::string s) override
     {
-      if constexpr (utilities::TMP::is_detected<UserEntity,
-                                                      EncodingParsable>{})
+      if constexpr (utilities::TMP::is_detected<UserEntity, EncodingParsable>{})
       {
         return data_.parse_encoding(s);
       }
@@ -350,9 +343,9 @@ private:
     // prohibited methods
     template <typename T>
     using Nameable = decltype(std::declval<T &>().class_name_as_string());
-    static_assert(std::negation<utilities::TMP::is_detected<UserEntity,
-                                                                  Nameable>>{},
-                  "Environment class cannot provide class_name_as_string()");
+    static_assert(
+        std::negation<utilities::TMP::is_detected<UserEntity, Nameable>>{},
+        "Environment class cannot provide class_name_as_string()");
     std::string
         class_name_as_string_() const override
     {
@@ -366,7 +359,7 @@ private:
     UserEntity data_;
   };
 
-  static long                       entity_id_;
+  static long                      entity_id_;
   std::unique_ptr<EntityInterface> self_;
 };
 

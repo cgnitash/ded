@@ -99,8 +99,7 @@ EntitySpec::EntitySpec(language::Parser p, language::Block blk)
       throw language::ParserError{};
     }
 
-    f->second.e =
-        std::make_unique<EntitySpec>(EntitySpec{ p, nested_blk });
+    f->second.e = std::make_unique<EntitySpec>(EntitySpec{ p, nested_blk });
   }
 }
 
@@ -142,8 +141,8 @@ EntitySpec
 
   for (; *f != "I"; f++)
   {
-    auto                          l = *f;
-    auto                          p = l.find(':');
+    auto                   l = *f;
+    auto                   p = l.find(':');
     ConfigurationPrimitive c;
     c.parse(l.substr(p + 1));
     parameters_[l.substr(0, p)] = c;

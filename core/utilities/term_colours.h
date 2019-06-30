@@ -1,8 +1,10 @@
 #pragma once
 #include <string>
 
-namespace ded {
-namespace utilities {
+namespace ded
+{
+namespace utilities
+{
 // convenience struct for printing out colours
 struct TermColours
 {
@@ -11,4 +13,5 @@ struct TermColours
       blue_bg, magenta_bg, cyan_bg, white_bg, reset, bold_on, underline_on,
       inverse_on, bold_off, underline_off, inverse_off;
 };
-}}
+}   // namespace utilities
+}   // namespace ded

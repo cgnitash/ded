@@ -14,9 +14,12 @@
 #include <sstream>
 #include <vector>
 
-namespace ded {
-namespace utilities {
-namespace csv {
+namespace ded
+{
+namespace utilities
+{
+namespace csv
+{
 CSVReader::input
     CSVReader::symbol(char c)
 {
@@ -86,7 +89,7 @@ std::vector<std::string>
 {
   fields_.clear();
   state curr = state::precw;
-  //auto  index{ 0 };
+  // auto  index{ 0 };
   for (auto [i, c] : ranges::view::enumerate(s))
   {
     // cast to int to index into more
@@ -107,4 +110,6 @@ std::vector<std::string>
   current_string_.clear();
   return fields_;
 }
-}}}
+}   // namespace csv
+}   // namespace utilities
+}   // namespace ded

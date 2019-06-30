@@ -15,7 +15,6 @@
 #include <thread>
 #include <vector>
 
-
 long ded::concepts::Entity::entity_id_ = 0;
 
 std::string ded::global_path = "./";
@@ -50,20 +49,24 @@ int
               -r <f> <f> : pop env   	
               -d <file-name>         : parse experiment in file-name
 )~~";
-  } else if (argc == 2 && std::string(argv[1]) == "-s")
+  }
+  else if (argc == 2 && std::string(argv[1]) == "-s")
   {
     std::cout << "saving configurations.cfg ... \n";
     ded::config_manager::save_all_configs();
-  } else if (argc == 2 && std::string(argv[1]) == "-pa")
+  }
+  else if (argc == 2 && std::string(argv[1]) == "-pa")
   {
     ded::config_manager::list_all_configs(std::cout);
     std::cout << std::endl;
-  } else if (argc > 2 && std::string(argv[1]) == "-p")
+  }
+  else if (argc > 2 && std::string(argv[1]) == "-p")
   {
     for (auto i{ 2 }; i < argc; i++)
       ded::config_manager::show_config(std::cout, std::string(argv[i]));
     std::cout << std::endl;
-  } else if (argc > 3 && std::string(argv[1]) == "-r")
+  }
+  else if (argc > 3 && std::string(argv[1]) == "-r")
   {
     std::ifstream pop_file(argv[2]);
     if (!pop_file.is_open())
@@ -73,7 +76,8 @@ int
     }
     std::vector<std::string> ls;
     std::string              l;
-    while (std::getline(pop_file, l)) ls.push_back(l);
+    while (std::getline(pop_file, l))
+      ls.push_back(l);
     ded::specs::PopulationSpec pop_con;
     pop_con           = pop_con.parse(ls);
     auto          pop = ded::make_Population(pop_con);
@@ -85,7 +89,8 @@ int
     }
     std::vector<std::string> es;
     std::string              e;
-    while (std::getline(env_file, e)) es.push_back(e);
+    while (std::getline(env_file, e))
+      es.push_back(e);
     ded::specs::EnvironmentSpec env_con;
     env_con  = env_con.parse(es);
     auto env = ded::make_Environment(env_con);
@@ -94,7 +99,8 @@ int
     std::experimental::filesystem::create_directory(ded::global_path);
     pop = env.evaluate(pop);
     pop.flush_unpruned();
-  } else if (argc > 2 && std::string(argv[1]) == "-d")
+  }
+  else if (argc > 2 && std::string(argv[1]) == "-d")
   {
     ded::language::Parser p;
     p.parse(argv[2]);
@@ -161,11 +167,11 @@ int
     env_spec.record_traces();
 
     auto e_dump = env_spec.dump(0);
-	/*
-    std::cout << (e_dump | ranges::view::intersperse("\n") |
-                  ranges::action::join);
-    std::cout << pop_spec.dump(0);
-	*/
+    /*
+std::cout << (e_dump | ranges::view::intersperse("\n") |
+              ranges::action::join);
+std::cout << pop_spec.dump(0);
+    */
     auto pop = ded::make_Population(pop_spec);
     auto env = ded::make_Environment(env_spec);
     ded::global_path += "data/";
@@ -312,11 +318,14 @@ int
   {
     std::cout << "ded: unknown command line arguments. try -h\n";
   }
-} catch (const ded::language::ParserError &)
+}
+catch (const ded::language::ParserError &)
 {
-} catch (const ded::specs::SpecError &)
+}
+catch (const ded::specs::SpecError &)
 {
-} catch (...)
+}
+catch (...)
 {
   std::cout << "\nfatal: this is a core bug - please file a bug report\n";
 }

@@ -10,8 +10,7 @@ namespace config_manager
 std::string
     type_of_block(std::string name)
 {
-  if (all_environment_specs.find(name) !=
-      all_environment_specs.end())
+  if (all_environment_specs.find(name) != all_environment_specs.end())
     return "environment";
   if (all_entity_specs.find(name) != all_entity_specs.end())
     return "entity";
@@ -29,8 +28,7 @@ void
     out << all_entity_specs[name].pretty_print();
     found = true;
   }
-  if (all_environment_specs.find(name) !=
-      all_environment_specs.end())
+  if (all_environment_specs.find(name) != all_environment_specs.end())
   {
     out << all_environment_specs[name].pretty_print();
     found = true;

@@ -29,7 +29,7 @@ TokenType parse_token_type(std::string);
 
 struct Token
 {
-  TokenType          type_;
+  TokenType           type_;
   std::string         expr_;
   std::pair<int, int> location_;
 };
@@ -45,4 +45,3 @@ struct Block
 
 }   // namespace language
 }   // namespace ded
-

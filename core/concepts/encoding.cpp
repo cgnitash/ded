@@ -80,5 +80,5 @@ void
   del_chunk();
 }
 
-}   // namespace ded
+}   // namespace concepts
 }   // namespace ded

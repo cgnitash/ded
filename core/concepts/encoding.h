@@ -10,10 +10,13 @@
 #include "../configuration.h"
 #include "../utilities/utilities.h"
 
-namespace ded {
-namespace concepts {
+namespace ded
+{
+namespace concepts
+{
 
-class Encoding {
+class Encoding
+{
   size_t alphabet_{ 128 };
   double copy_prob_{ 0.01 };
   size_t del_size_{ 20 };
@@ -28,18 +31,40 @@ class Encoding {
   std::vector<long> enc_;
 
 public:
+  auto
+      begin()
+  {
+    return std::begin(enc_);
+  }
 
-  auto begin() { return std::begin(enc_); }
+  auto
+      clear()
+  {
+    enc_.clear();
+  }
 
-  auto clear() { enc_.clear(); }
+  auto
+      push_back(long n)
+  {
+    enc_.push_back(n);
+  }
 
-  auto push_back(long n) { enc_.push_back(n); }
+  auto
+      end()
+  {
+    return std::end(enc_);
+  }
 
-  auto end() { return std::end(enc_); }
+  auto &operator[](size_t i)
+  {
+    return enc_[i];
+  }
 
-  auto &operator[](size_t i) { return enc_[i]; }
-
-  size_t size() { return enc_.size(); }
+  size_t
+      size()
+  {
+    return enc_.size();
+  }
 
   void generate(long = 100);
 
@@ -55,25 +80,30 @@ public:
 
   void all_deletions();
 
-  inline void all_insertions()
+  inline void
+      all_insertions()
   {
-    if (enc_.size() > max_length_) return;
+    if (enc_.size() > max_length_)
+      return;
     point_insert();
     copy_chunk();
   }
 
-  inline void all_mutations()
+  inline void
+      all_mutations()
   {
     all_insertions();
     all_deletions();
     point_mutate();
   }
 
-  friend std::ostream &operator<<(std::ostream &o, const Encoding &e)
+  friend std::ostream &
+      operator<<(std::ostream &o, const Encoding &e)
   {
-    for (auto &site : e.enc_) o << site << ":";
+    for (auto &site : e.enc_)
+      o << site << ":";
     return o;
   }
 };
-}   // namespace ded
+}   // namespace concepts
 }   // namespace ded

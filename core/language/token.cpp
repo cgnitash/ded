@@ -25,6 +25,5 @@ TokenType
     return TokenType::variable;
   return TokenType::word;
 }
+}   // namespace language
 }   // namespace ded
-}   // namespace ded
-

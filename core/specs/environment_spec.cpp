@@ -175,7 +175,8 @@ void
     es.second.e->record_traces();
 }
 
-EnvironmentSpec::EnvironmentSpec(language::Parser parser_, language::Block block_)
+EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
+                                 language::Block  block_)
 {
 
   *this = all_environment_specs.at(block_.name_.substr(1));
@@ -343,8 +344,8 @@ EnvironmentSpec
 
   for (; *f != "I"; f++)
   {
-    auto                          l = *f;
-    auto                          p = l.find(':');
+    auto                   l = *f;
+    auto                   p = l.find(':');
     ConfigurationPrimitive c;
     c.parse(l.substr(p + 1));
     parameters_[l.substr(0, p)] = c;
@@ -470,5 +471,5 @@ std::string
   return out.str();
 }
 
-}   // namespace ded
+}   // namespace specs
 }   // namespace ded

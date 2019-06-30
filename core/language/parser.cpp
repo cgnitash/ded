@@ -8,13 +8,15 @@
 #include <string>
 #include <vector>
 
-#include "parser.h"
 #include "../specs/configuration_primitive.h"
 #include "../utilities/term_colours.h"
 #include "../utilities/utilities.h"
+#include "parser.h"
 
-namespace ded {
-namespace language {
+namespace ded
+{
+namespace language
+{
 
 // order of options matter
 const std::regex Parser::valid_symbol_{
@@ -70,8 +72,8 @@ void
   std::cout << "parse-error:" << location.first + 1 << ":"
             << location.second + 1 << "\n"
             << lines_[location.first] << "\n"
-            << std::string(location.second, ' ') << utilities::TermColours::red_fg
-            << "^ unknown symbol\n"
+            << std::string(location.second, ' ')
+            << utilities::TermColours::red_fg << "^ unknown symbol\n"
             << utilities::TermColours::reset;
   throw ParserError{};
 }
@@ -125,7 +127,8 @@ void
   auto line             = tok.location_.first;
   auto column           = tok.location_.second;
   auto line_with_colour = lines_[line];
-  line_with_colour.insert(column + tok.expr_.length(), utilities::TermColours::reset);
+  line_with_colour.insert(column + tok.expr_.length(),
+                          utilities::TermColours::reset);
   line_with_colour.insert(column, utilities::TermColours::red_fg);
   std::cout << "parse-error\nLine" << std::setw(4) << line + 1 << ":"
             << line_with_colour << utilities::TermColours::red_fg << std::endl
@@ -223,8 +226,12 @@ void
 {
   switch (tokens_[begin].type_)
   {
-    case TokenType::word: attempt_parameter_override(current, begin); break;
-    case TokenType::trace: attempt_trace(current, begin); break;
+    case TokenType::word:
+      attempt_parameter_override(current, begin);
+      break;
+    case TokenType::trace:
+      attempt_trace(current, begin);
+      break;
     default:
       err_invalid_token(
           tokens_[begin],
@@ -279,7 +286,8 @@ Block
                         return var.first.expr_;
                       }));
     throw ParserError{};
-  } else
+  }
+  else
   {
     return f->second;
   }
@@ -322,4 +330,3 @@ void
 }
 }   // namespace language
 }   // namespace ded
-

@@ -8,15 +8,18 @@
 #include <iostream>
 #include <map>
 #include <numeric>
+#include <range/v3/all.hpp>
 #include <regex>
 #include <set>
 #include <sstream>
 #include <vector>
-#include <range/v3/all.hpp>
 
-namespace ded {
-namespace utilities {
-namespace csv {
+namespace ded
+{
+namespace utilities
+{
+namespace csv
+{
 std::vector<std::string>
     CSV::single_column(std::string column)
 {
@@ -26,7 +29,7 @@ std::vector<std::string>
   {
     std::cout << " Error : could not find column " << column
               << " to merge from file " << file_name_ << std::endl;
-	std::exit(1);
+    std::exit(1);
   }
 
   return rows_ | ranges::view::transform(
@@ -36,8 +39,8 @@ std::vector<std::string>
 
 std::string
     CSV::look_up(std::string lookup_column,
-                std::string value,
-                std::string return_column) const
+                 std::string value,
+                 std::string return_column) const
 {
 
   // find position of lookup column
@@ -46,7 +49,7 @@ std::string
   {
     std::cout << " Error : could not find column " << lookup_column
               << " in file " << file_name_ << std::endl;
-	std::exit(1);
+    std::exit(1);
   }
 
   // find position of return column
@@ -55,14 +58,14 @@ std::string
   {
     std::cout << " Error : could not find column " << return_column
               << " in file " << file_name_ << std::endl;
-	std::exit(1);
+    std::exit(1);
   }
 
   // find number of values in lookup column
-  auto const value_count =
-      ranges::count_if(rows_,
-                       [value, c = column_iter - ranges::begin(column_names_)](
-                           auto row) { return row[c] == value; });
+  auto const value_count = ranges::count_if(
+      rows_, [value, c = column_iter - ranges::begin(column_names_)](auto row) {
+        return row[c] == value;
+      });
 
   if (!value_count)
   {
@@ -84,7 +87,8 @@ std::string
   auto const value_index =
       ranges::find_if(rows_,
                       [value, c = column_iter - ranges::begin(column_names_)](
-                          auto row) { return row[c] == value; }) - ranges::begin(rows_);
+                          auto row) { return row[c] == value; }) -
+      ranges::begin(rows_);
 
   return rows_[value_index][return_iter - ranges::begin(column_names_)];
 }
@@ -162,8 +166,8 @@ void
 
   // ensure column in second file has matching values for all values in this
   // file and are unique
-  auto merge_values =
-      merge_csv.single_column(column) | ranges::action::sort | ranges::action::unique;
+  auto merge_values = merge_csv.single_column(column) | ranges::action::sort |
+                      ranges::action::unique;
   if (merge_values.size() != merge_csv.single_column(column).size())
   {
     std::cout << "Error: CSV file " << merge_csv.file_name()
@@ -191,11 +195,13 @@ void
     {
       column_names_.push_back(merge_column);
       // for each column add value to every row
-      for (auto &row : rows_)   
+      for (auto &row : rows_)
         row.push_back(
             merge_csv.look_up(column, row[column_index], merge_column));
     }
   }
 }
 
-}}}
+}   // namespace csv
+}   // namespace utilities
+}   // namespace ded

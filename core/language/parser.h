@@ -6,7 +6,8 @@
 #include <string>
 #include <vector>
 
-namespace ded {
+namespace ded
+{
 
 // forward declaration to provide friendship
 namespace specs
@@ -14,11 +15,13 @@ namespace specs
 class EntitySpec;
 class EnvironmentSpec;
 class PopulationSpec;
-}
+}   // namespace specs
 
-namespace language {
+namespace language
+{
 
-class Parser {
+class Parser
+{
 
   std::vector<std::string>             lines_;
   std::vector<Token>                   tokens_;
@@ -47,14 +50,17 @@ class Parser {
   void attempt_trace(Block &, int &);
 
 public:
-  void                                 parse(std::string);
-  std::vector<std::pair<Token, Block>> variables() const { return variables_; }
-  void                                 print(Block b);
+  void parse(std::string);
+  std::vector<std::pair<Token, Block>>
+      variables() const
+  {
+    return variables_;
+  }
+  void print(Block b);
 
   friend class specs::EnvironmentSpec;
   friend class specs::EntitySpec;
   friend class specs::PopulationSpec;
 };
+}   // namespace language
 }   // namespace ded
-}   // namespace ded
-

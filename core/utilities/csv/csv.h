@@ -10,20 +10,24 @@
 #include <iostream>
 #include <map>
 #include <numeric>
+#include <range/v3/all.hpp>
 #include <regex>
 #include <set>
 #include <sstream>
 #include <vector>
-#include <range/v3/all.hpp>
 
-namespace ded {
-namespace utilities {
-namespace csv {
+namespace ded
+{
+namespace utilities
+{
+namespace csv
+{
 // parses a csv file and stores in memory.
 // the first line of the file is treated as the column headers
 // The delimiter and quotation character can be specified:
 // by default  , and "
-class CSV {
+class CSV
+{
 
   std::string file_name_;
 
@@ -36,28 +40,51 @@ class CSV {
 
 public:
   CSV(std::string fn, char s, char se);
-  CSV(std::string fn) : CSV(fn, ',', '"') {}
+  CSV(std::string fn) : CSV(fn, ',', '"')
+  {
+  }
 
   // return csv file name
-  std::string file_name() const { return file_name_; }
+  std::string
+      file_name() const
+  {
+    return file_name_;
+  }
 
   // number of columns in the file
-  auto column_count() const { return column_names_.size(); }
+  auto
+      column_count() const
+  {
+    return column_names_.size();
+  }
 
   // number of rows in the file
-  auto row_count() const { return rows_.size(); }
+  auto
+      row_count() const
+  {
+    return rows_.size();
+  }
 
   // return all columns in the file
-  std::vector<std::string> column_names() const { return column_names_; }
+  std::vector<std::string>
+      column_names() const
+  {
+    return column_names_;
+  }
 
   // check existence of a column
-  bool has_column(std::string name) const
+  bool
+      has_column(std::string name) const
   {
     return ranges::find(column_names_, name) != ranges::end(column_names_);
   }
 
   // return all rows in the file
-  std::vector<std::vector<std::string>> rows() const { return rows_; }
+  std::vector<std::vector<std::string>>
+      rows() const
+  {
+    return rows_;
+  }
 
   // return all values corresponding to a single column
   std::vector<std::string> single_column(std::string column);
@@ -73,6 +100,7 @@ public:
   // only rows in the other file that have matching values in this
   // file are merged
   void merge(CSV merge_csv, std::string column);
-
 };
-}}}
+}   // namespace csv
+}   // namespace utilities
+}   // namespace ded

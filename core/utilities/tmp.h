@@ -1,13 +1,14 @@
 
-// a collection of template meta-programs 
+// a collection of template meta-programs
 
 #pragma once
 
 #include <type_traits>
 
-
-namespace ded {
-namespace utilities {
+namespace ded
+{
+namespace utilities
+{
 namespace TMP
 {
 
@@ -42,5 +43,6 @@ struct overload_set : lambdas...
 template <typename... lambdas>
 overload_set(lambdas...)->overload_set<lambdas...>;
 
-}   // namespace tmp
-}}
+}   // namespace TMP
+}   // namespace utilities
+}   // namespace ded

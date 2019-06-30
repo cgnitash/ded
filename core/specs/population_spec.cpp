@@ -91,8 +91,8 @@ PopulationSpec
 
   for (; *f != "E"; f++)
   {
-    auto                          l = *f;
-    auto                          p = l.find(':');
+    auto                   l = *f;
+    auto                   p = l.find(':');
     ConfigurationPrimitive c;
     c.parse(l.substr(p + 1));
     parameters_[l.substr(0, p)] = c;
@@ -134,5 +134,5 @@ out << std::setw(26) << output << " : " << value << "\n";
   out << "}\n";
   return out.str();
 }
-}   // namespace ded
+}   // namespace specs
 }   // namespace ded
