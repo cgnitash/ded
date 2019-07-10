@@ -20,23 +20,30 @@ class PopulationSpec;
 namespace language
 {
 
+struct SourceTokens
+{
+  std::string                          file_name;
+  std::vector<std::string>             lines;
+  std::vector<Token>                   tokens;
+};
+
 class Parser
 {
 
-  std::vector<std::string>             lines_;
-  std::vector<Token>                   tokens_;
+  SourceTokens source_tokens_;
+
   std::vector<std::pair<Token, Block>> variables_;
 
-  const static std::regex valid_symbol_;
 
+  void err_invalid_token(Token, std::string, std::vector<std::string> = {});
+  /*
   void open_file(std::string);
 
   void lex();
   void err_unknown_symbol(std::pair<int, int>);
+	*/
 
   void parse_expression(int);
-
-  void err_invalid_token(Token, std::string, std::vector<std::string> = {});
 
   Block expand_block(int);
 
@@ -49,13 +56,36 @@ class Parser
   void attempt_parameter_override(Block &, int &);
   void attempt_trace(Block &, int &);
 
+
 public:
-  void parse(std::string);
+  const static std::regex valid_symbol_;
+  //void parse(std::string);
+  Parser(SourceTokens s) { source_tokens_ = s; }
+  Parser() = default;
+
+  auto
+      lines() const
+  {
+    return source_tokens_.lines;
+  }
+  auto
+      file_name() const
+  {
+    return source_tokens_.file_name;
+  }
+  auto
+      source_tokens() const
+  {
+    return source_tokens_;
+  }
+  void parse(SourceTokens);
   std::vector<std::pair<Token, Block>>
       variables() const
   {
     return variables_;
   }
+  std::vector<Parser> vary_parameter();
+  std::optional<std::pair<int, int>> has_varied_parameter();
   void print(Block b);
 
   friend class specs::EnvironmentSpec;

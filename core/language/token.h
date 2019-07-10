@@ -22,7 +22,9 @@ enum class TokenType
   trace,
   word,
   component,
-  variable
+  variable,
+  open_varied_argument,
+  close_varied_argument
 };
 
 TokenType parse_token_type(std::string);

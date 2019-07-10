@@ -44,6 +44,22 @@ void        list_all_configs(std::ostream &out);
 void        save_all_configs();
 
 }   // namespace config_manager
+
+namespace experiments
+{
+
+std::vector<std::string> open_file(std::string);
+
+std::vector<language::Token> lex(std::vector<std::string>);
+
+std::vector<language::Parser> explode_all_tokens(language::Parser);
+
+std::pair<specs::PopulationSpec, specs::EnvironmentSpec>
+    parse_simulation(language::Parser);
+
+std::vector<std::pair<specs::PopulationSpec, specs::EnvironmentSpec>>
+    parse_all_simulations(std::string);
+}
 }   // namespace ded
 /*
 

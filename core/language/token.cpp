@@ -11,6 +11,10 @@ namespace language
 TokenType
     parse_token_type(std::string s)
 {
+  if (s == "[")
+    return TokenType::open_varied_argument;
+  if (s == "]")
+    return TokenType::close_varied_argument;
   if (s == "{")
     return TokenType::open_brace;
   if (s == "}")

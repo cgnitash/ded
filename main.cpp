@@ -33,7 +33,7 @@ int
   // publications of components
   // ded::config_manager::check_all_configs_correct();
 
-  // std::hash<std::string> hash_fn{};
+  std::hash<std::string> hash_fn{};
 
   if (argc == 2 && std::string(argv[1]) == "-h")
   {
@@ -102,84 +102,42 @@ int
   }
   else if (argc > 2 && std::string(argv[1]) == "-d")
   {
-    ded::language::Parser p;
-    p.parse(argv[2]);
-    //    auto vars = parse_all_parser_blocks(p);
 
-    std::map<std::string,
-             std::variant<ded::specs::EntitySpec,
-                          ded::specs::EnvironmentSpec,
-                          ded::specs::PopulationSpec>>
-        vars;
+    ded::global_path += "data/";
+    if (!std::experimental::filesystem::exists(ded::global_path))
+      std::experimental::filesystem::create_directory(ded::global_path);
 
-    auto vs = p.variables();
-    for (auto [name, bl] : vs)
+    for (auto [pop_spec, env_spec] :
+         ded::experiments::parse_all_simulations(argv[2]))
     {
-      // std::cout << name.expr_ << "#\n";
-      // p.print(bl);
-      auto ct = ded::config_manager::type_of_block(bl.name_.substr(1));
-      if (ct == "environment")
-        vars[name.expr_] = ded::specs::EnvironmentSpec{ p, bl };
-      else if (ct == "entity")
-        vars[name.expr_] = ded::specs::EntitySpec{ p, bl };
-      else if (ct == "population")
-        vars[name.expr_] = ded::specs::PopulationSpec{ p, bl };
+
+      auto exp_name =
+          std::to_string(hash_fn(pop_spec.dump(0))) + "_" +
+          std::to_string(hash_fn(env_spec.dump(0) | ranges::action::join));
+	  auto data_path = ded::global_path;
+      ded::global_path += exp_name + "/";
+      if (std::experimental::filesystem::exists(ded::global_path))
+      {
+        std::cout << "Error: experiment " << exp_name
+                  << " already exists. Skipping this experiment\n";
+      }
       else
       {
-        std::cout << "oops: not a component!\n";
-        throw std::logic_error{ "" };
+        std::cout << "running experiment " << exp_name << "\n";
+		  /*
+        for (auto l : env_spec.dump(0))
+          std::cout << l << "\n";
+        std::cout << pop_spec.dump(0);
+		*/
+        std::experimental::filesystem::create_directory(ded::global_path);
+        auto pop = ded::make_Population(pop_spec);
+        auto env = ded::make_Environment(env_spec);
+        pop      = env.evaluate(pop);
+        pop.flush_unpruned();
+        std::cout << "successfull!" << std::endl;
       }
+      ded::global_path = data_path;
     }
-
-    if (vars.find("E") == vars.end())
-    {
-      std::cout << "error: " << argv[2]
-                << " does not have environment E to generate\n";
-      throw std::logic_error{ "" };
-    }
-    if (!std::holds_alternative<ded::specs::EnvironmentSpec>(vars["E"]))
-    {
-      std::cout << "error: E must be of type environment\n";
-      throw std::logic_error{ "" };
-    }
-
-    auto env_spec = std::get<ded::specs::EnvironmentSpec>(vars["E"]);
-    env_spec.instantiate_user_parameter_sizes();
-
-    if (vars.find("P") == vars.end())
-    {
-      std::cout << "error: " << argv[2]
-                << " does not have population P to seed\n";
-      throw std::logic_error{ "" };
-    }
-    if (!std::holds_alternative<ded::specs::PopulationSpec>(vars["P"]))
-    {
-      std::cout << "error: P must be of type population\n";
-      throw std::logic_error{ "" };
-    }
-    auto pop_spec = std::get<ded::specs::PopulationSpec>(vars["P"]);
-    auto io       = pop_spec.instantiate_nested_entity_user_parameter_sizes();
-
-    env_spec.bind_entity_io(io);
-
-    env_spec.bind_tags(0);
-
-    env_spec.record_traces();
-
-    auto e_dump = env_spec.dump(0);
-    /*
-std::cout << (e_dump | ranges::view::intersperse("\n") |
-              ranges::action::join);
-std::cout << pop_spec.dump(0);
-    */
-    auto pop = ded::make_Population(pop_spec);
-    auto env = ded::make_Environment(env_spec);
-    ded::global_path += "data/";
-    std::experimental::filesystem::create_directory(ded::global_path);
-    pop = env.evaluate(pop);
-    pop.flush_unpruned();
-
-    std::cout << "successfull!" << std::endl;
   }
   /*
   } else if (argc == 4 && ((std::string(argv[1]) == "-rl") ||
