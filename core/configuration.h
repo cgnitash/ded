@@ -59,7 +59,18 @@ std::pair<specs::PopulationSpec, specs::EnvironmentSpec>
 
 std::vector<std::pair<specs::PopulationSpec, specs::EnvironmentSpec>>
     parse_all_simulations(std::string);
-}
+
+std::pair<specs::PopulationSpec, specs::EnvironmentSpec>
+    load_simulation(std::string);
+
+void prepare_simulations_locally(const std::hash<std::string> &,
+                                 std::string,
+                                 int);
+void prepare_simulations_msuhpc(const std::hash<std::string> &,
+                                 std::string,
+                                 int);
+
+}   // namespace experiments
 }   // namespace ded
 /*
 

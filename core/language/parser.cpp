@@ -342,11 +342,9 @@ std::vector<Parser>
                                   pos->second + 1);
 
   return subs | ranges::view::transform([&](auto token) {
-           Parser p;
            auto   temp = source_tokens_;
            temp.tokens.insert(ranges::begin(temp.tokens) + pos->first, token);
-           p.parse(temp);
-           return p;
+           return Parser{temp};
          });
 }
 

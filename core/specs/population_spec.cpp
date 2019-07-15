@@ -70,14 +70,14 @@ PopulationSpec::PopulationSpec(language::Parser p, language::Block blk)
 std::string
     PopulationSpec::dump(long depth)
 {
-  auto alignment = "\n" + std::string(depth, ' ');
+  auto alignment = std::string(depth, ' ');
 
-  return alignment + "population:" + name_ + alignment + "P" +
+  return alignment + "population:" + name_ + "\n" + alignment + "P\n" +
          (parameters_ | ranges::view::transform([&](auto parameter) {
             return alignment + parameter.first + ":" +
-                   parameter.second.value_as_string();
+                   parameter.second.value_as_string() + "\n";
           }) |
-          ranges::action::join) +
+          ranges::action::join)+
          alignment + "E" + es_.dump(depth + 1);
 }
 

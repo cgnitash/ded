@@ -44,6 +44,9 @@ public:
   }
   Entity &operator=(Entity &&) noexcept = default;
 
+  // this should not be used except when beginning a specific simulation
+  void reset_global_entity_ids() { entity_id_ = 0; }
+
   // public interface of Entitys - how Entitys can be used
 
   bool

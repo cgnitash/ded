@@ -285,7 +285,7 @@ EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
 }
 
 std::vector<std::string>
-    EnvironmentSpec::dump(long depth)
+    EnvironmentSpec::dump(long depth, bool with_traces)
 {
   std::vector<std::string> lines;
   auto                     alignment = std::string(depth, ' ');
@@ -309,25 +309,28 @@ std::vector<std::string>
   ranges::transform(tags_.pre_, ranges::back_inserter(lines), pad_signal);
   lines.push_back(alignment + "b");
   ranges::transform(tags_.post_, ranges::back_inserter(lines), pad_signal);
-  // needs to go
-  lines.push_back(alignment + "r");
-  ranges::transform(
-      traces_.pre_, ranges::back_inserter(lines), [&](auto trace) {
-        return alignment + trace.signal_.full_name() + ";" +
-               std::to_string(trace.frequency_);
-      });
-  lines.push_back(alignment + "R");
-  ranges::transform(
-      traces_.post_, ranges::back_inserter(lines), [&](auto trace) {
-        return alignment + trace.signal_.full_name() + ";" +
-               std::to_string(trace.frequency_);
-      });
-  // needs to go *
+  if (with_traces)
+  {
+    // needs to go
+    lines.push_back(alignment + "r");
+    ranges::transform(
+        traces_.pre_, ranges::back_inserter(lines), [&](auto trace) {
+          return alignment + trace.signal_.full_name() + ";" +
+                 std::to_string(trace.frequency_);
+        });
+    lines.push_back(alignment + "R");
+    ranges::transform(
+        traces_.post_, ranges::back_inserter(lines), [&](auto trace) {
+          return alignment + trace.signal_.full_name() + ";" +
+                 std::to_string(trace.frequency_);
+        });
+    // needs to go *
+  }
   lines.push_back(alignment + "n");
   for (auto nested : nested_)
   {
     lines.push_back(alignment + nested.first);
-    auto n_dump = nested.second.e->dump(depth + 1);
+    auto n_dump = nested.second.e->dump(depth + 1, with_traces);
     lines.insert(lines.end(), n_dump.begin(), n_dump.end());
   }
 

@@ -226,7 +226,7 @@ public:
 
   // friend std::ostream &operator<<(std::ostream &out, const EnvironmentSpec
   // &e)
-  std::vector<std::string> dump(long depth);
+  std::vector<std::string> dump(long depth, bool);
   EnvironmentSpec          parse(std::vector<std::string> pop_dump);
 
   std::string pretty_print();

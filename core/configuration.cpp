@@ -1,5 +1,7 @@
 
 
+#include <experimental/filesystem>
+
 #include "configuration.h"
 
 namespace ded
@@ -146,8 +148,8 @@ std::pair<specs::PopulationSpec, specs::EnvironmentSpec>
                         ded::specs::PopulationSpec>>
       vars;
 
-  auto parser_variables = p.variables(); 
-  for (auto [name, bl] :parser_variables)
+  auto parser_variables = p.variables();
+  for (auto [name, bl] : parser_variables)
   {
     auto ct = ded::config_manager::type_of_block(bl.name_.substr(1));
     if (ct == "environment")
@@ -204,7 +206,7 @@ std::pair<specs::PopulationSpec, specs::EnvironmentSpec>
 std::vector<language::Parser>
     explode_all_tokens(language::Parser p)
 {
-  std::vector<language::Parser> exploded_parsers = {p};
+  std::vector<language::Parser> exploded_parsers = { p };
 
   while (true)
   {
@@ -217,20 +219,100 @@ std::vector<language::Parser>
     exploded_parsers = next_explosion;
   }
 
-   return exploded_parsers;
+  return exploded_parsers;
 }
 
 std::vector<std::pair<specs::PopulationSpec, specs::EnvironmentSpec>>
     parse_all_simulations(std::string file_name)
 {
-  auto                  lines  = open_file(file_name);
-  auto                  tokens = lex(lines);
+  auto lines  = open_file(file_name);
+  auto tokens = lex(lines);
 
   ded::language::Parser p(language::SourceTokens{ file_name, lines, tokens });
 
   auto exploded_parsers = explode_all_tokens(p);
 
   return exploded_parsers | ranges::view::transform(parse_simulation);
+}
+
+std::pair<specs::PopulationSpec, specs::EnvironmentSpec>
+    load_simulation(std::string exp_name)
+{
+
+  auto exp_path = "./data/" + exp_name;
+
+  std::ifstream            pop_file(exp_path + "/pop.spec");
+  std::vector<std::string> ls;
+  std::string              l;
+  while (std::getline(pop_file, l))
+    ls.push_back(l);
+  ded::specs::PopulationSpec pop_spec;
+  pop_spec.parse(ls);
+
+  std::ifstream            env_file(exp_path + "/env.spec");
+  std::vector<std::string> es;
+  std::string              e;
+  while (std::getline(env_file, e))
+    es.push_back(e);
+  ded::specs::EnvironmentSpec env_spec;
+  env_spec.parse(es);
+
+  return { pop_spec, env_spec };
+}
+
+void
+    prepare_simulations_locally(const std::hash<std::string> & hash_fn,
+                                std::string file_name,
+                                int replicate_count)
+{
+
+  auto all_simulations = ded::experiments::parse_all_simulations(file_name);
+
+  auto data_path = "./data/";
+  if (!std::experimental::filesystem::exists(data_path))
+    std::experimental::filesystem::create_directory(data_path);
+
+  std::vector<std::string> exp_names;
+
+  for (auto [pop_spec, env_spec] : all_simulations)
+  {
+    auto exp_name =
+        std::to_string(hash_fn(pop_spec.dump(0))) + "_" +
+        std::to_string(hash_fn(env_spec.dump(0, false) | ranges::action::join));
+    auto exp_data_path = data_path + exp_name + "/";
+
+    if (std::experimental::filesystem::exists(exp_data_path))
+    {
+      std::cout << "Warning: simulation " << exp_name
+                << " already exists. Skipping this simulation\n";
+    }
+    else
+    {
+      std::cout << "preparing simulation " << exp_name << "\n";
+      std::experimental::filesystem::create_directory(exp_data_path);
+
+      std::ofstream env_spec_file(exp_data_path + "env.spec");
+      for (auto l : env_spec.dump(0, true))
+        env_spec_file << l << "\n";
+      std::ofstream pop_spec_file(exp_data_path + "pop.spec");
+      pop_spec_file << pop_spec.dump(0);
+
+      exp_names.push_back(exp_name);
+      std::cout << "simulation " << exp_name << " successfully prepared\n";
+    }
+  }
+
+  std::ofstream experiment_script("./run.sh");
+  if (!exp_names.empty())
+  {
+    experiment_script << "\nfor exp in ";
+    for (auto e : exp_names)
+      experiment_script << e << " ";
+    experiment_script << "; do for rep in ";
+    for (auto i : ranges::view::iota(0, replicate_count))
+      experiment_script << i << " ";
+    experiment_script << "; do ./ded -f $exp $rep ; done ; done\n";
+  }
 }
 }   // namespace experiments
 }   // namespace ded

@@ -2,13 +2,13 @@
 # working
 
 e = $markov_brain {
-     hiddens =  2 
+     hiddens =  [ 2 3 4 ] 
 	 outputs =  2
 	 inputs = 4
 	}
 
 P = $linear { 
-	size = 50
+	size = 50 
 	entity = !e # `entity` is special
 	track_lineage = true 
 	}
@@ -25,7 +25,7 @@ fors = $sequence
 
 
 E = $cycle  { 
- count = 31
+ count = [ 31 61 ]
   world = !fors
 }
 
