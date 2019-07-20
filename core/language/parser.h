@@ -20,6 +20,8 @@ class PopulationSpec;
 namespace language
 {
 
+using Labels = std::vector<std::pair<std::string, std::string>>;
+
 struct SourceTokens
 {
   std::string                          file_name;
@@ -33,6 +35,8 @@ class Parser
   SourceTokens source_tokens_;
 
   std::vector<std::pair<Token, Block>> variables_;
+
+  Labels labels_;
 
 
   void err_invalid_token(Token, std::string, std::vector<std::string> = {});
@@ -59,10 +63,13 @@ class Parser
 
 public:
   const static std::regex valid_symbol_;
-  //void parse(std::string);
-  Parser(SourceTokens s) { source_tokens_ = s; }
-  Parser() = default;
+  //Parser() = default;
 
+  auto
+      labels() const
+  {
+    return labels_;
+  }
   auto
       lines() const
   {
@@ -78,15 +85,29 @@ public:
   {
     return source_tokens_;
   }
-  void parse(SourceTokens);
   std::vector<std::pair<Token, Block>>
       variables() const
   {
     return variables_;
   }
+
+  void parse(SourceTokens);
+
   std::vector<Parser> vary_parameter();
   std::optional<std::pair<int, int>> has_varied_parameter();
   void print(Block b);
+
+  void
+      update_source_tokens(SourceTokens s)
+  {
+    source_tokens_ = s;
+  }
+
+  void
+      update_labels(std::pair<std::string, std::string> label)
+  {
+    labels_.push_back(label);
+  }
 
   friend class specs::EnvironmentSpec;
   friend class specs::EntitySpec;

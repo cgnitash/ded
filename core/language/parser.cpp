@@ -324,7 +324,7 @@ std::optional<std::pair<int, int>>
 std::vector<Parser>
     Parser::vary_parameter()
 {
-  std::vector<Parser> res;
+  //std::vector<Parser> res;
   auto                pos = has_varied_parameter();
   if (!pos)
   {
@@ -344,7 +344,12 @@ std::vector<Parser>
   return subs | ranges::view::transform([&](auto token) {
            auto   temp = source_tokens_;
            temp.tokens.insert(ranges::begin(temp.tokens) + pos->first, token);
-           return Parser{temp};
+           Parser p{*this};
+           p.update_source_tokens(temp);
+           p.update_labels(
+               { (ranges::begin(temp.tokens) + pos->first - 2)->expr_,
+                 token.expr_ });
+           return p;
          });
 }
 

@@ -18,14 +18,17 @@ P = $linear {
 fors = $sequence  
 {
      first 	= 	$forager 	
-				{ ? food_eaten 5 }
+				{ 
+				  ? food_eaten 5 
+			      #replace = [ true false ]   
+				}
      second = $elite_replacement 
-			  {  strength = 	0.1  }
+			  {  strength = [ 0.25 0.5 ]  }
 }
 
 
 E = $cycle  { 
- count = [ 31 61 ]
+ count = 501
   world = !fors
 }
 

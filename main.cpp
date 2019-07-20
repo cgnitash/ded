@@ -35,12 +35,14 @@ int
 
   std::hash<std::string> hash_fn{};
 
-  if (argc == 2 && std::string(argv[1]) == "-h")
+  std::string mode = argv[1]; 
+
+  if (argc == 2 && mode == "-h")
   {
     std::cout << R"~~(
               -s                     : saves configuration files 
-              -rl <N> <file-name>    : 'runs' all experiments in this file-name with N replicates (locally)
-              #-rh <N> <file-name>    : 'runs' all experiments in this file-name with N replicates (msu hpc)
+              -rl <file-name> <N>    : 'runs' all experiments in this file-name with N replicates (locally)
+              #-rh <file-name> <N>    : 'runs' all experiments in this file-name with N replicates (msu hpc)
               -v <file-name>         : verify experiment in file-name
               #-a <file-name>         : generate 'analysis' for experiment in file-name
               -p <component-name>... : print publication for listed component names
@@ -48,28 +50,38 @@ int
               -f <exp-name> <N>      : actually runs this experiment with REP N (should NOT be called manually)
 )~~";
   }
-  else if (argc == 2 && std::string(argv[1]) == "-s")
+  else if (argc == 2 && mode == "-s")
   {
     std::cout << "saving configurations.cfg ... \n";
     ded::config_manager::save_all_configs();
   }
-  else if (argc == 2 && std::string(argv[1]) == "-pa")
+  else if (argc == 2 && mode == "-pa")
   {
     ded::config_manager::list_all_configs(std::cout);
     std::cout << std::endl;
   }
-  else if (argc > 2 && std::string(argv[1]) == "-p")
+  else if (argc > 2 && mode == "-p")
   {
     for (auto i{ 2 }; i < argc; i++)
       ded::config_manager::show_config(std::cout, std::string(argv[i]));
     std::cout << std::endl;
   }
-  else if (argc == 3 && std::string(argv[1]) == "-v")
+  else if (argc == 3 && mode == "-v")
   {
     ded::experiments::parse_all_simulations(argv[2]);
     std::cout << "All simulations are valid - this experiment is correct\n";
   }
-  else if (argc == 4 && std::string(argv[1]) == "-f")
+  else if (argc == 4 && ((mode == "-rl")))
+  {
+    ded::experiments::prepare_simulations_locally(
+        hash_fn, argv[2], std::stoi(argv[3]));
+  }
+  else if (argc == 4 && ((mode == "-rh")))
+  {
+    ded::experiments::prepare_simulations_msuhpc(
+        hash_fn, argv[2], std::stoi(argv[3]));
+  }
+  else if (argc == 4 && mode == "-f")
   {
     auto [pop_spec, env_spec] = ded::experiments::load_simulation(argv[2]);
 
@@ -77,26 +89,20 @@ int
     auto env         = ded::make_Environment(env_spec);
     ded::global_path = "./data/" + std::string{ argv[2] } + "/" + argv[3] + "/";
     std::experimental::filesystem::create_directory(ded::global_path);
+
+	std::srand(std::stoi(argv[3]));
+
     pop = env.evaluate(pop);
     pop.flush_unpruned();
 
+	// should write success report to file
     std::cout << "simulation " << argv[2] << " - Replicate # " << argv[3]
               << " successfully simulated\n";
   }
-  else if (argc == 4 && ((std::string(argv[1]) == "-rl")))
-  {
-    ded::experiments::prepare_simulations_locally(
-        hash_fn, argv[2], std::stoi(argv[3]));
-  }
-  else if (argc == 4 && ((std::string(argv[1]) == "-rh")))
-  {
-    ded::experiments::prepare_simulations_msuhpc(
-        hash_fn, argv[2], std::stoi(argv[3]));
-  }
 
   /*
-   }  else if (argc == 4 && ((std::string(argv[1]) == "-rl") ||
-                             (std::string(argv[1]) == "-rh")))
+   }  else if (argc == 4 && ((mode == "-rl") ||
+                             (mode == "-rh")))
     {
       std::string qst_path = argv[3];
       ded::global_path =
@@ -128,7 +134,7 @@ int
         env_file << env.dump(4);
       }
       std::ofstream run_file("run.sh");
-      if (std::string(argv[1]) == "-rl")
+      if (mode == "-rl")
       {
         run_file << "for i in "
                  << ranges::accumulate(
@@ -159,7 +165,7 @@ int
         for (auto &e : exps) run_file << "\nsbatch run.sb " << e;
       }
       std::cout << "\nGenerated script run.sh succesfully\n";
-    } else if (argc == 3 && std::string(argv[1]) == "-a")
+    } else if (argc == 3 && mode == "-a")
     {
       std::string qst_path = argv[2];
       ded::global_path =
@@ -197,7 +203,7 @@ int
       std::cout << "\nGenerated analysis script anal.R succesfully\nThese "
                    "experiments can be referred to by the indices 1 2 3 ... "
                    "as listed above\n";
-    } else if (argc == 4 && std::string(argv[1]) == "-f")
+    } else if (argc == 4 && mode == "-f")
     {
       auto exp_dir = std::string{ argv[3] };
       if (!std::experimental::filesystem::exists(exp_dir))

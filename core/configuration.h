@@ -48,16 +48,22 @@ void        save_all_configs();
 namespace experiments
 {
 
+struct Simulation
+{
+  specs::PopulationSpec                             population_spec;
+  specs::EnvironmentSpec                            environment_spec;
+  language::Labels labels;
+};
+
 std::vector<std::string> open_file(std::string);
 
 std::vector<language::Token> lex(std::vector<std::string>);
 
-std::vector<language::Parser> explode_all_tokens(language::Parser);
+std::vector<language::Parser> expand_all_tokens(language::Parser);
 
-std::pair<specs::PopulationSpec, specs::EnvironmentSpec>
-    parse_simulation(language::Parser);
+Simulation parse_simulation(language::Parser);
 
-std::vector<std::pair<specs::PopulationSpec, specs::EnvironmentSpec>>
+std::vector<Simulation>
     parse_all_simulations(std::string);
 
 std::pair<specs::PopulationSpec, specs::EnvironmentSpec>

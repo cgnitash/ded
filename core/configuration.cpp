@@ -138,7 +138,7 @@ std::vector<language::Token>
   return tokens;
 }
 
-std::pair<specs::PopulationSpec, specs::EnvironmentSpec>
+Simulation
     parse_simulation(language::Parser p)
 {
 
@@ -200,11 +200,11 @@ std::pair<specs::PopulationSpec, specs::EnvironmentSpec>
 
   env_spec.record_traces();
 
-  return { pop_spec, env_spec };
+  return { pop_spec, env_spec , p.labels()};
 }
 
 std::vector<language::Parser>
-    explode_all_tokens(language::Parser p)
+    expand_all_tokens(language::Parser p)
 {
   std::vector<language::Parser> exploded_parsers = { p };
 
@@ -222,15 +222,16 @@ std::vector<language::Parser>
   return exploded_parsers;
 }
 
-std::vector<std::pair<specs::PopulationSpec, specs::EnvironmentSpec>>
+std::vector<Simulation>
     parse_all_simulations(std::string file_name)
 {
   auto lines  = open_file(file_name);
   auto tokens = lex(lines);
 
-  ded::language::Parser p(language::SourceTokens{ file_name, lines, tokens });
+  ded::language::Parser p;
+  p.update_source_tokens(language::SourceTokens{ file_name, lines, tokens });
 
-  auto exploded_parsers = explode_all_tokens(p);
+  auto exploded_parsers = expand_all_tokens(p);
 
   return exploded_parsers | ranges::view::transform(parse_simulation);
 }
@@ -261,6 +262,13 @@ std::pair<specs::PopulationSpec, specs::EnvironmentSpec>
 }
 
 void
+    prepare_simulations_msuhpc(const std::hash<std::string> & ,
+                                std::string ,
+                                int )
+{
+}
+
+void
     prepare_simulations_locally(const std::hash<std::string> & hash_fn,
                                 std::string file_name,
                                 int replicate_count)
@@ -274,21 +282,30 @@ void
 
   std::vector<std::string> exp_names;
 
-  for (auto [pop_spec, env_spec] : all_simulations)
+  for (auto [pop_spec, env_spec, all_labels] : all_simulations)
   {
-    auto exp_name =
-        std::to_string(hash_fn(pop_spec.dump(0))) + "_" +
-        std::to_string(hash_fn(env_spec.dump(0, false) | ranges::action::join));
+
+    auto exp_name = std::to_string(
+        hash_fn(pop_spec.dump(0) + "_" +
+                (env_spec.dump(0, false) | ranges::action::join)));
     auto exp_data_path = data_path + exp_name + "/";
+
+    std::string pretty_name =
+        exp_name.substr(0, 4) + "... with labels [ " +
+        (all_labels | ranges::view::transform([](auto label) {
+           return label.first + " = " + label.second;
+         }) | ranges::view::intersperse(", ") |
+         ranges::action::join) +
+        " ]";
 
     if (std::experimental::filesystem::exists(exp_data_path))
     {
-      std::cout << "Warning: simulation " << exp_name
+      std::cout << "Warning: simulation " << pretty_name
                 << " already exists. Skipping this simulation\n";
     }
     else
     {
-      std::cout << "preparing simulation " << exp_name << "\n";
+      std::cout << "preparing simulation....\n";
       std::experimental::filesystem::create_directory(exp_data_path);
 
       std::ofstream env_spec_file(exp_data_path + "env.spec");
@@ -298,7 +315,8 @@ void
       pop_spec_file << pop_spec.dump(0);
 
       exp_names.push_back(exp_name);
-      std::cout << "simulation " << exp_name << " successfully prepared\n";
+      std::cout << "simulation " << pretty_name 
+                << " successfully prepared\n";
     }
   }
 
