@@ -330,28 +330,32 @@ void
     return;
   }
 
-  std::ofstream analysis_file("anal.R");
-  analysis_file << "\n#!/usr/bin/env Rscript\nsource(\"plot.R\")\nexps=list("
-                << (simulations | ranges::view::transform([](auto sim) {
-                      return "\"data/" + sim.bar_code() + "/\"";
-                    }) |
-                    ranges::view::intersperse(",") | ranges::action::join)
-                << ")\nlabels=c("
-                << (simulations | ranges::view::transform([](auto sim) {
-                      return "\"" + sim.full_label() + "\"";
-                    }) |
-                    ranges::view::intersperse(",") | ranges::action::join)
-                << ")\ndata=un_reported_data(exps,\"/" + trace.second << "\",\""
-                << trace.first.signal_.user_name()
-                << "\",0:" << replicate_count - 1 << ",seq("
-                << trace.first.frequency_ << "," << *low << ","
-                << trace.first.frequency_
-                << "))\nall_avg = "
-                   "compute_all(avg,exps,labels,data)\npdf(\"pic.pdf\")"
-                   "\ncluster_plots(all_avg,\"avg\",labels,1:"
-                << simulations.size() << ",palette(rainbow("
-                << simulations.size() + 1 << ")),\"" << file_name
-                << " Replicates " << replicate_count << "\")\ndev.off()\n";
+  std::ofstream analysis_file("analysis.R");
+  analysis_file
+      << "\n#!/usr/bin/env Rscript\nsource(\"dedli/plot.R\")\nexps=list("
+      << (simulations | ranges::view::transform([](auto sim) {
+            return "\"data/" + sim.bar_code() + "/\"";
+          }) |
+          ranges::view::intersperse(",") | ranges::action::join)
+      << ")\nlabels=c("
+      << (simulations | ranges::view::transform([](auto sim) {
+            return "\"" + sim.full_label() + "\"";
+          }) |
+          ranges::view::intersperse(",") | ranges::action::join)
+      << ")\ndata=un_reported_data(exps,\"/" + trace.second << "\",\""
+      << trace.first.signal_.user_name() << "\",0:" << replicate_count - 1
+      << ",seq(" << trace.first.frequency_ << "," << *low << ","
+      << trace.first.frequency_
+      << "))\nall_avg = "
+         "compute_all(avg,exps,labels,data)\npdf(\"result.pdf\")"
+         "\ncluster_plots(all_avg,\"avg\",labels,1:"
+      << simulations.size() << ",palette(rainbow(" << simulations.size() + 1
+      << ")),\"" << file_name << " Replicates " << replicate_count
+      << "\")\nfinal_fitness_plots(all_avg,\"Final avg\",labels)\nfor (i in 1:"
+      << simulations.size()
+      << ")\n{\n "
+         "plot(cluster_plots(all_avg,\"avg\",labels,i:i,palette(rainbow(2)),"
+         "labels[i]))\n}\ndev.off()\n";
 }
 
 void

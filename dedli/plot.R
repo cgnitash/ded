@@ -36,14 +36,28 @@ report = function(var,data) {
 }
 
 compute_all = function(stats,exps,labels,un_reported_data) {
+  stats = enquo(stats)
+  agg_datas = lapply(un_reported_data, function(e) report(!!stats,e))
+  
+  agg_exps = agg_datas[[1]] 
+  for(i in 1:(length(labels))) {
+    agg_exps <- merge(agg_exps, agg_datas[[i]], all = TRUE, 
+                      suffixes = c("",labels[[i]]), by = "update")
+  }
+  
+  list(agg_exps[-seq(2,6)], xrange = range(lapply(agg_datas, function(d) d$update)),
+       yrange = range(lapply(agg_datas, function(d) d$mean)))
+}
+
+compute_all_oldv = function(stats,exps,labels,un_reported_data) {
  stats = enquo(stats)
  agg_datas = lapply(un_reported_data, function(e) report(!!stats,e))
 
  agg_exps = agg_datas[[1]]
- for(i in head(seq_along(agg_datas), -1)) {
-  agg_exps <- merge(agg_exps, agg_datas[[i+1]], all = TRUE, 
-               suffixes = labels[i:(i+1)], by = "update")
- }
+   for(i in 1:(length(labels)-1)) {
+     agg_exps <- merge(agg_exps, agg_datas[[i+1]], all = TRUE, 
+                 suffixes = labels[i:(i+1)], by = "update")
+  }
  
  list(agg_exps, xrange = range(lapply(agg_datas, function(d) d$update)),
              yrange = range(lapply(agg_datas, function(d) d$mean)))
@@ -61,7 +75,7 @@ un_reported_data = function(exps,component,tag,reps,cycles) {
   lapply(exps, function(e) across_reps(e,component,tag,reps,cycles))
 }
 
-cluster_plots = function(all_exps,ylabel,labs,indices,cols) {
+cluster_plots = function(all_exps,ylabel,labs,indices,cols,cap) {
   exps = all_exps[[1]]
   xrange = all_exps[[2]]
   yrange = all_exps[[3]]
@@ -70,14 +84,14 @@ cluster_plots = function(all_exps,ylabel,labs,indices,cols) {
    scale_colour_manual("", 
                        breaks = lapply(indices, function(i) labs[i]),
                        values = cols) +
-   xlab("update") + 
-   ylab(ylabel) +
+    labs(caption = cap,
+         x = "update", y = ylabel) +
    theme_xkcd() +  
    xkcdaxis(xrange,yrange) 
   
-   for(i in indices) {
-     master_plot = master_plot + single_plot(exps,labs[i])
-   }
+  for(i in indices) {
+   master_plot = master_plot + single_plot(exps,labs[i])
+  }
   master_plot
 }
 
@@ -102,8 +116,8 @@ final_fitness_plots = function(all_exps,ylabel,x_labs) {
   ddf$mean = as.numeric(as.character(ddf$mean))
   ddf$sem = as.numeric(as.character(ddf$sem))
   ddf$sep = as.numeric(as.character(ddf$sep))
-  #xrange = range(seq(1,length(x_labs)))
-  #yrange = range(min(as.numeric(ddf$mean)),max(as.numeric(ddf$mean)))
+  xrange = range(seq(1,length(x_labs)))
+  yrange = range(min(as.numeric(ddf$mean)),max(as.numeric(ddf$mean)))
   
   ylabel = "finav"
   ggplot(data=ddf,aes(x=label)) + 
@@ -111,8 +125,8 @@ final_fitness_plots = function(all_exps,ylabel,x_labs) {
     geom_line(aes(y=sep,group=1),color="green") +
     geom_line(aes(y=sem,group=1),color="blue") +
     ylab(ylabel) +
-    theme(axis.text.x=element_text(angle=40, hjust=1)) #+
-    #theme_xkcd() 
+    theme(axis.text.x=element_text(angle=40, hjust=1)) +
+    theme_xkcd() 
 }
 
 # --------
@@ -129,13 +143,13 @@ final_fitness_plots = function(all_exps,ylabel,x_labs) {
 #            "size=100 replace=false")
 
 #source("anal.R")
-exps = list("data/13622521537752480560/", "data/1571991371793291181/","data/1979364337868570630/","data/2112679148773337681/","data/4511916868046805703/","data/11362886132779152776/")
-labels = c("hiddens = 2, strength = 0.25","hiddens = 2, strength = 0.5","hiddens = 3, strength = 0.25","hiddens = 3, strength = 0.5","hiddens = 4, strength = 0.5","hiddens = 4, strength = 0.5")
+#exps = list("data/13622521537752480560/", "data/1571991371793291181/","data/1979364337868570630/","data/2112679148773337681/","data/4511916868046805703/","data/11362886132779152776/")
+#labels = c("hiddens = 2, strength = 0.25","hiddens = 2, strength = 0.5","hiddens = 3, strength = 0.25","hiddens = 3, strength = 0.5","hiddens = 4, strength = 0.25","hiddens = 4, strength = 0.5")
 
 #extracted_exps = across_reps(e,component,tag,reps,cycles)
 
 #  VERY expensive
-unr_data = un_reported_data(exps,"/_cycle/world_sequence/first_forager","food_eaten",0:4,seq(5,500,5))
+#unr_data = un_reported_data(exps,"/_cycle/world_sequence/first_forager","food_eaten",0:4,seq(5,500,5))
 
 #  VERY expensive
 #for_unr_data = un_reported_data(exps,"two_cycle","score",0:19,0:300)
@@ -144,14 +158,16 @@ unr_data = un_reported_data(exps,"/_cycle/world_sequence/first_forager","food_ea
 
 #all_avg = compute_all(avg,exps,labels,for_unr_data)
 
-all_avg = compute_all(avg,exps,labels,unr_data)
+#all_avg = compute_all(avg,exps,labels,unr_data)
 
-exps
-labels
+#exps
+#labels
 
-pdf("pic.pdf")
-cluster_plots(all_avg,"avg",labels, c(1,2,3,4), palette(rainbow(5)))
-dev.off()
+#pdf("pic.pdf")
+#cluster_plots(all_avg,"avg",labels, c(1,2,3,4,5,6), palette(rainbow(7)), "qst/test1.exp")
+#final_fitness_plots(all_avg,"Final avg",labels)
+#dev.off()
+
 
 #p2 = cluster_plots(all_avg,"avg",labels, 5:7, palette(rainbow(4)))
 #p3 = cluster_plots(all_avg,"avg",labels, 8:10, palette(rainbow(4)))
