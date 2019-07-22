@@ -68,7 +68,7 @@ PopulationSpec::PopulationSpec(language::Parser p, language::Block blk)
 }
 
 std::string
-    PopulationSpec::dump(long depth)
+    PopulationSpec::dump(long depth) const
 {
   auto alignment = std::string(depth, ' ');
 

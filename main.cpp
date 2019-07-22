@@ -33,7 +33,7 @@ int
   // publications of components
   // ded::config_manager::check_all_configs_correct();
 
-  std::hash<std::string> hash_fn{};
+  //std::hash<std::string> hash_fn{};
 
   std::string mode = argv[1]; 
 
@@ -68,22 +68,32 @@ int
   }
   else if (argc == 3 && mode == "-v")
   {
-    ded::experiments::parse_all_simulations(argv[2]);
+    auto simulations = ded::experiments::parse_all_simulations(argv[2]);
+    for (auto sim : simulations)
+      std::cout << sim.pretty_name() << "\n";
     std::cout << "All simulations are valid - this experiment is correct\n";
   }
   else if (argc == 4 && ((mode == "-rl")))
   {
-    ded::experiments::prepare_simulations_locally(
-        hash_fn, argv[2], std::stoi(argv[3]));
+    auto simulations = ded::experiments::parse_all_simulations(argv[2]);
+    ded::experiments::prepare_simulations_locally(simulations,
+                                                  std::stoi(argv[3]));
   }
   else if (argc == 4 && ((mode == "-rh")))
   {
-    ded::experiments::prepare_simulations_msuhpc(
-        hash_fn, argv[2], std::stoi(argv[3]));
+    auto simulations = ded::experiments::parse_all_simulations(argv[2]);
+    ded::experiments::prepare_simulations_msuhpc(simulations,
+                                                 std::stoi(argv[3]));
+  }
+  else if (argc == 4 && ((mode == "-a")))
+  {
+    ded::experiments::analyse_all_simulations(argv[2], std::stoi(argv[3]));
   }
   else if (argc == 4 && mode == "-f")
   {
     auto [pop_spec, env_spec] = ded::experiments::load_simulation(argv[2]);
+
+	env_spec.record_traces();
 
     auto pop         = ded::make_Population(pop_spec);
     auto env         = ded::make_Environment(env_spec);

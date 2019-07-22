@@ -152,27 +152,41 @@ void
   }
 }
 
-void
+std::vector<std::pair<Trace, std::string>>
     EnvironmentSpec::record_traces()
 {
+std::vector<std::pair<Trace, std::string> >res;
+
   for (auto &sig_freq : traces_.pre_)
+  {
     sig_freq.signal_.update_identifier(
         ranges::find_if(tags_.pre_,
                         [n = sig_freq.signal_.user_name()](auto tag) {
                           return tag.first == n;
                         })
             ->second.identifier());
+	res.push_back({sig_freq, {}});
+  }
 
   for (auto &sig_freq : traces_.post_)
+  {
     sig_freq.signal_.update_identifier(
         ranges::find_if(tags_.post_,
                         [n = sig_freq.signal_.user_name()](auto tag) {
                           return tag.first == n;
                         })
             ->second.identifier());
+	res.push_back({sig_freq,{}});
+  }
 
-  for (auto &es : nested_)
-    es.second.e->record_traces();
+  for (auto &es : nested_) 
+  	for (auto ts : es.second.e->record_traces())
+		res.push_back(ts);
+  
+  for (auto &r : res)
+    r.second = user_specified_name_ + "_" + name_ + "/" + r.second;
+
+  return res;
 }
 
 EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
@@ -285,7 +299,7 @@ EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
 }
 
 std::vector<std::string>
-    EnvironmentSpec::dump(long depth, bool with_traces)
+    EnvironmentSpec::dump(long depth, bool with_traces) const
 {
   std::vector<std::string> lines;
   auto                     alignment = std::string(depth, ' ');

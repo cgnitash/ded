@@ -138,6 +138,30 @@ std::vector<language::Token>
   return tokens;
 }
 
+std::string
+    Simulation::bar_code() const
+{
+std::hash<std::string>  hash_fn;
+  return std::to_string(
+      hash_fn(population_spec.dump(0) + "_" +
+              (environment_spec.dump(0, false) | ranges::action::join)));
+}
+
+std::string
+    Simulation::full_label()const
+{
+  return (labels | ranges::view::transform([](auto label) {
+            return label.first + " = " + label.second;
+          }) |
+          ranges::view::intersperse(", ") | ranges::action::join);
+}
+
+std::string
+    Simulation::pretty_name() const
+{
+  return bar_code().substr(0, 4) + "... with labels [ " + full_label() + " ]";
+}
+
 Simulation
     parse_simulation(language::Parser p)
 {
@@ -198,9 +222,9 @@ Simulation
 
   env_spec.bind_tags(0);
 
-  env_spec.record_traces();
+  //env_spec.record_traces();
 
-  return { pop_spec, env_spec , p.labels()};
+  return { pop_spec, env_spec , p.labels(), env_spec.record_traces()};
 }
 
 std::vector<language::Parser>
@@ -262,19 +286,78 @@ std::pair<specs::PopulationSpec, specs::EnvironmentSpec>
 }
 
 void
-    prepare_simulations_msuhpc(const std::hash<std::string> & ,
-                                std::string ,
-                                int )
+    prepare_simulations_msuhpc(const std::vector<Simulation> &, int)
 {
 }
 
 void
-    prepare_simulations_locally(const std::hash<std::string> & hash_fn,
-                                std::string file_name,
-                                int replicate_count)
+    analyse_all_simulations(std::string file_name, int replicate_count)
 {
 
-  auto all_simulations = ded::experiments::parse_all_simulations(file_name);
+  auto simulations = ded::experiments::parse_all_simulations(file_name);
+  for (auto sim : simulations)
+  {
+	  if (sim.traces.size() != 1) {
+		  std::cout << "error: no analysis available for multiple traces\n";
+		  return;
+	  }
+  }
+
+  auto trace = *(simulations.begin()->traces.begin());
+  auto trace_name = trace.second + trace.first.signal_.user_name() + "_";
+  std::vector<int> max_invocation_counts;
+  for (auto sim : simulations)
+  {
+    auto bar_code = sim.bar_code();
+    for (auto rep : ranges::view::iota(0, replicate_count))
+    {
+      auto rep_path =
+          "data/" + bar_code + "/" + std::to_string(rep) + "/" + trace_name;
+      std::cout << rep_path << "\n";
+      int invocation = trace.first.frequency_;
+      while (std::experimental::filesystem::exists(
+          rep_path + std::to_string(invocation) + ".csv"))
+        invocation += trace.first.frequency_;
+      max_invocation_counts.push_back(invocation - trace.first.frequency_);
+      std::cout << invocation << "\n";
+    }
+  }
+  
+  auto [low, high] = ranges::minmax_element(max_invocation_counts);
+  if (*low != *high)
+  {
+    std::cout << "error: misalignment of max trace invocation counts\n";
+    return;
+  }
+
+  std::ofstream analysis_file("anal.R");
+  analysis_file << "\n#!/usr/bin/env Rscript\nsource(\"plot.R\")\nexps=list("
+                << (simulations | ranges::view::transform([](auto sim) {
+                      return "\"data/" + sim.bar_code() + "/\"";
+                    }) |
+                    ranges::view::intersperse(",") | ranges::action::join)
+                << ")\nlabels=c("
+                << (simulations | ranges::view::transform([](auto sim) {
+                      return "\"" + sim.full_label() + "\"";
+                    }) |
+                    ranges::view::intersperse(",") | ranges::action::join)
+                << ")\ndata=un_reported_data(exps,\"/" + trace.second << "\",\""
+                << trace.first.signal_.user_name()
+                << "\",0:" << replicate_count - 1 << ",seq("
+                << trace.first.frequency_ << "," << *low << ","
+                << trace.first.frequency_
+                << "))\nall_avg = "
+                   "compute_all(avg,exps,labels,data)\npdf(\"pic.pdf\")"
+                   "\ncluster_plots(all_avg,\"avg\",labels,1:"
+                << simulations.size() << ",palette(rainbow("
+                << simulations.size() + 1 << ")),\"" << file_name
+                << " Replicates " << replicate_count << "\")\ndev.off()\n";
+}
+
+void
+    prepare_simulations_locally(const std::vector<Simulation>& simulations,
+                                int replicate_count)
+{
 
   auto data_path = "./data/";
   if (!std::experimental::filesystem::exists(data_path))
@@ -282,21 +365,20 @@ void
 
   std::vector<std::string> exp_names;
 
-  for (auto [pop_spec, env_spec, all_labels] : all_simulations)
+  for (auto sim : simulations)
   {
 
-    auto exp_name = std::to_string(
-        hash_fn(pop_spec.dump(0) + "_" +
-                (env_spec.dump(0, false) | ranges::action::join)));
+	  /*
+	auto traces = sim.environment_spec.record_traces();
+	for (auto ts : traces)
+          std::cout << "trace of " << ts.first.signal_.user_name() << " at freq "
+                    << ts.first.frequency_ << " located at " << ts.second
+                    << "\n";
+	*/
+	auto exp_name = sim.bar_code();
     auto exp_data_path = data_path + exp_name + "/";
 
-    std::string pretty_name =
-        exp_name.substr(0, 4) + "... with labels [ " +
-        (all_labels | ranges::view::transform([](auto label) {
-           return label.first + " = " + label.second;
-         }) | ranges::view::intersperse(", ") |
-         ranges::action::join) +
-        " ]";
+    std::string pretty_name = sim.pretty_name();
 
     if (std::experimental::filesystem::exists(exp_data_path))
     {
@@ -309,10 +391,10 @@ void
       std::experimental::filesystem::create_directory(exp_data_path);
 
       std::ofstream env_spec_file(exp_data_path + "env.spec");
-      for (auto l : env_spec.dump(0, true))
+      for (auto l : sim.environment_spec.dump(0, true))
         env_spec_file << l << "\n";
       std::ofstream pop_spec_file(exp_data_path + "pop.spec");
-      pop_spec_file << pop_spec.dump(0);
+      pop_spec_file << sim.population_spec.dump(0);
 
       exp_names.push_back(exp_name);
       std::cout << "simulation " << pretty_name 

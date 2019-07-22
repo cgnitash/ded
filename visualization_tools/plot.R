@@ -3,11 +3,11 @@ library("plyr")
 library("dplyr")
 library("ggplot2")
 library("xkcd")
-library("patchwork")
+#library("patchwork")
 
 summarize_population = function(path,i) {
   d = read.csv(path)
-  c(i,mean(d$score),max(d$score),min(d$score))
+  c(i,mean(d$food_eaten),max(d$food_eaten),min(d$food_eaten))
 }
 
 aggregate_population = function(path,cycle_range,recorded_tag) {
@@ -18,21 +18,21 @@ aggregate_population = function(path,cycle_range,recorded_tag) {
 
 
 across_reps = function(file,component_name,recorded_tag,rep_range,cycle_range) {
-  paths = lapply(rep_range, function(i) paste(file,"REP_",i,"/pass_through/",component_name,"/",sep=""))
+  paths = lapply(rep_range, function(i) paste(file,i,component_name,"/",sep=""))
   plyr::ldply(lapply(paths,aggregate_population,cycle_range=cycle_range,recorded_tag=recorded_tag),rbind)
 }
 
 report = function(var,data) {
   var = enquo(var)
   data %>% 
-  dplyr::group_by(update) %>%
-  dplyr::summarise(
-      N = n(),
-      mean = mean(!! var),
-      median = median(!! var),
-      sd  =  sd(!! var),
-      se   = sd / sqrt(N)
-  )
+    dplyr::group_by(update) %>%
+      dplyr::summarise(
+          N = n(),
+          mean = mean(!! var),
+          median = median(!! var),
+          sd  =  sd(!! var),
+          se   = sd / sqrt(N)
+      )
 }
 
 compute_all = function(stats,exps,labels,un_reported_data) {
@@ -111,8 +111,8 @@ final_fitness_plots = function(all_exps,ylabel,x_labs) {
     geom_line(aes(y=sep,group=1),color="green") +
     geom_line(aes(y=sem,group=1),color="blue") +
     ylab(ylabel) +
-    theme(axis.text.x=element_text(angle=40, hjust=1)) +
-    theme_xkcd() 
+    theme(axis.text.x=element_text(angle=40, hjust=1)) #+
+    #theme_xkcd() 
 }
 
 # --------
@@ -128,37 +128,43 @@ final_fitness_plots = function(all_exps,ylabel,x_labs) {
 #            "size=100 replace=true", 
 #            "size=100 replace=false")
 
-source("anal.R")
-                                            
+#source("anal.R")
+exps = list("data/13622521537752480560/", "data/1571991371793291181/","data/1979364337868570630/","data/2112679148773337681/","data/4511916868046805703/","data/11362886132779152776/")
+labels = c("hiddens = 2, strength = 0.25","hiddens = 2, strength = 0.5","hiddens = 3, strength = 0.25","hiddens = 3, strength = 0.5","hiddens = 4, strength = 0.5","hiddens = 4, strength = 0.5")
+
 #extracted_exps = across_reps(e,component,tag,reps,cycles)
 
 #  VERY expensive
-unr_data = un_reported_data(exps,"two_cycle","score",0:19,0:1000)
+unr_data = un_reported_data(exps,"/_cycle/world_sequence/first_forager","food_eaten",0:4,seq(5,500,5))
 
 #  VERY expensive
-for_unr_data = un_reported_data(exps,"two_cycle","score",0:19,0:300)
+#for_unr_data = un_reported_data(exps,"two_cycle","score",0:19,0:300)
 
 #all_max = compute_all(max,exps,labels,unr_data)
 
-all_avg = compute_all(avg,exps,labels,for_unr_data)
+#all_avg = compute_all(avg,exps,labels,for_unr_data)
+
 all_avg = compute_all(avg,exps,labels,unr_data)
 
 exps
 labels
 
-p1 = cluster_plots(all_avg,"avg",labels, 1:4, palette(rainbow(5)))
-p2 = cluster_plots(all_avg,"avg",labels, 5:7, palette(rainbow(4)))
-p3 = cluster_plots(all_avg,"avg",labels, 8:10, palette(rainbow(4)))
+pdf("pic.pdf")
+cluster_plots(all_avg,"avg",labels, c(1,2,3,4), palette(rainbow(5)))
+dev.off()
 
-p = cluster_plots(all_avg,"avg",labels, 1:10, palette(rainbow(11)))
-p
+#p2 = cluster_plots(all_avg,"avg",labels, 5:7, palette(rainbow(4)))
+#p3 = cluster_plots(all_avg,"avg",labels, 8:10, palette(rainbow(4)))
 
-f1 = final_fitness_plots(all_avg,"Final avg",labels)
-f1
+#p = cluster_plots(all_avg,"avg",labels, 1:10, palette(rainbow(11)))
+#p
+
+#f1 = final_fitness_plots(all_avg,"Final avg",labels)
+#f1
 
 #p1 / p2
 
-x =palette(rainbow(5))
+#x =palette(rainbow(5))
 #p2 = cluster_plots(all_avg,"avg",labels,c(1,2),c("red", "green")) 
   
 #p2

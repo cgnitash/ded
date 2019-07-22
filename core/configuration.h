@@ -53,6 +53,10 @@ struct Simulation
   specs::PopulationSpec                             population_spec;
   specs::EnvironmentSpec                            environment_spec;
   language::Labels labels;
+  std::vector<std::pair<specs::Trace, std::string>> traces;
+  std::string                                       bar_code() const;
+  std::string                                       pretty_name() const;
+  std::string                                       full_label() const;
 };
 
 std::vector<std::string> open_file(std::string);
@@ -60,6 +64,7 @@ std::vector<std::string> open_file(std::string);
 std::vector<language::Token> lex(std::vector<std::string>);
 
 std::vector<language::Parser> expand_all_tokens(language::Parser);
+
 
 Simulation parse_simulation(language::Parser);
 
@@ -69,12 +74,9 @@ std::vector<Simulation>
 std::pair<specs::PopulationSpec, specs::EnvironmentSpec>
     load_simulation(std::string);
 
-void prepare_simulations_locally(const std::hash<std::string> &,
-                                 std::string,
-                                 int);
-void prepare_simulations_msuhpc(const std::hash<std::string> &,
-                                 std::string,
-                                 int);
+void prepare_simulations_locally(const std::vector<Simulation> &, int);
+void prepare_simulations_msuhpc(const std::vector<Simulation> &, int);
+void analyse_all_simulations(std::string, int);
 
 }   // namespace experiments
 }   // namespace ded

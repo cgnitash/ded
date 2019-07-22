@@ -226,7 +226,7 @@ public:
 
   // friend std::ostream &operator<<(std::ostream &out, const EnvironmentSpec
   // &e)
-  std::vector<std::string> dump(long depth, bool);
+  std::vector<std::string> dump(long depth, bool) const;
   EnvironmentSpec          parse(std::vector<std::string> pop_dump);
 
   std::string pretty_print();
@@ -235,7 +235,7 @@ public:
   void instantiate_user_parameter_sizes();
   void bind_entity_io(IO);
   void bind_tags(int);
-  void record_traces();
+  std::vector<std::pair<Trace, std::string>> record_traces();
 
   friend class concepts::Environment;
 };

@@ -104,7 +104,7 @@ EntitySpec::EntitySpec(language::Parser p, language::Block blk)
 }
 
 std::string
-    EntitySpec::dump(long depth)
+    EntitySpec::dump(long depth) const
 {
   auto alignment = "\n" + std::string(depth, ' ');
 

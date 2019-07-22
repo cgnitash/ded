@@ -2,7 +2,7 @@
 # working
 
 e = $markov_brain {
-     hiddens =  [ 2 3 4 ] 
+     hiddens =  [ 2 3 4 5  ] 
 	 outputs =  2
 	 inputs = 4
 	}
@@ -23,12 +23,12 @@ fors = $sequence
 			      #replace = [ true false ]   
 				}
      second = $elite_replacement 
-			  {  strength = [ 0.25 0.5 ]  }
+			  {  strength = 0.1  }
 }
 
 
 E = $cycle  { 
- count = 501
+ count = 1001
   world = !fors
 }
 

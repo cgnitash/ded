@@ -116,7 +116,7 @@ public:
   }
 
   // friend std::ostream &operator<<(std::ostream &out, EntitySpec e)
-  std::string dump(long depth);
+  std::string dump(long depth)const ;
   EntitySpec  parse(std::vector<std::string> pop_dump);
   std::string pretty_print();
 
