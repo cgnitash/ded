@@ -245,13 +245,13 @@ EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
       traces_.pre_.push_back(
           { i->second.full_name(), std::stoi(frequency.expr_) });
     }
-    else if (auto j = ranges::find_if(
+    else if (i = ranges::find_if(
                  tags_.post_,
                  [name = tag_name.expr_](auto ns) { return ns.first == name; });
              i != ranges::end(tags_.post_))
     {
       traces_.post_.push_back(
-          { j->second.full_name(), std::stoi(frequency.expr_) });
+          { i->second.full_name(), std::stoi(frequency.expr_) });
     }
     else
     {
