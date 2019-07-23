@@ -78,6 +78,35 @@ void
   return;
 }
 
+std::vector<std::string>
+    all_entity_names()
+{
+  return all_entity_specs |
+         ranges::view::transform([](auto spec) { return spec.first; });
+}
+
+std::vector<std::string>
+    all_environment_names()
+{
+  return all_environment_specs |
+         ranges::view::transform([](auto spec) { return spec.first; });
+}
+
+std::vector<std::string>
+    all_population_names()
+{
+  return all_population_specs |
+         ranges::view::transform([](auto spec) { return spec.first; });
+}
+
+std::vector<std::string>
+    all_component_names()
+{
+      auto a = all_entity_names();
+      auto b = all_environment_names();
+      auto c = all_population_names();
+  return ranges::view::concat(a,b,c);
+}
 }   // namespace config_manager
 
 namespace experiments

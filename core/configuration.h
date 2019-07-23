@@ -43,6 +43,10 @@ void        show_config(std::ostream &out, std::string name);
 void        list_all_configs(std::ostream &out);
 void        save_all_configs();
 
+std::vector<std::string> all_component_names();
+std::vector<std::string> all_entity_names();
+std::vector<std::string> all_environment_names();
+std::vector<std::string> all_population_names();
 }   // namespace config_manager
 
 namespace experiments

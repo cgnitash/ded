@@ -10,6 +10,11 @@ namespace ded
 {
 
 // forward declaration to provide friendship
+namespace config_manager
+{
+std::vector<std::string> all_component_names();
+}
+// forward declaration to provide friendship
 namespace specs
 {
 class EntitySpec;

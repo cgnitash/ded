@@ -279,7 +279,17 @@ Block
 {
   Block current;
   current.name_ = source_tokens_.tokens[begin].expr_;
-  return current;
+  if (ranges::none_of(
+          config_manager::all_component_names(),
+          [&](auto comp_name) { return comp_name == current.name_.substr(1); }))
+  {
+    err_invalid_token(source_tokens_.tokens[begin],
+                      "this variable has not been defined",
+                      config_manager::all_component_names());
+    throw ParserError{};
+  }
+
+    return current;
 }
 
 void
