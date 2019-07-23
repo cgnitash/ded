@@ -11,7 +11,7 @@
 class linear {
 
   bool                      track_lineage_{ false };
-  long                      size_{ 0 };
+  long                      size_{ 100 };
   std::string               load_spec_;
 
   // count of descendants per entity
@@ -36,6 +36,12 @@ public:
     ps.configure_parameter("track_lineage",track_lineage_);
 
     ps.configure_entity(org_);
+
+    if (!size_)
+    {
+      std::cout << "error: cannot have an empty linear population\n";
+      throw ded::specs::SpecError{};
+    }
 
     initialize();
   }
