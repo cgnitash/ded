@@ -8,7 +8,7 @@ e = $markov_brain {
 	}
 
 P = $linear { 
-	size = 50 
+	size = 100 
 	entity = !e # `entity` is special
 	track_lineage = true 
 	}
@@ -19,11 +19,12 @@ fors = $sequence
 {
      first 	= 	$forager 	
 				{ 
-				  ? food_eaten 5 
+				  #? food_eaten 5 
 			      #replace = [ true false ]   
 				}
      second = $elite_replacement 
-			  {  strength = 0.1  }
+			  {  strength = 0.1  
+				  ? value 5 }
 }
 
 
