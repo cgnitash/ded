@@ -75,8 +75,8 @@ void
 {
 
   resources_ = std::vector(grid_size_, std::vector(grid_size_, 0));
-  for (auto i : ranges::view::iota(0u, grid_size_))
-    for (auto j : ranges::view::iota(0u, grid_size_))
+  for (auto i : ranges::view::iota(0, grid_size_))
+    for (auto j : ranges::view::iota(0, grid_size_))
       if ((std::rand() % 1000) / 1000.0 < density_) resources_[i][j] = 1;
 }
 
@@ -89,8 +89,8 @@ void
 
   out << position.x_ << " " << position.y_ << " " << static_cast<int>(facing)
       << " " << score << " " << grid_size_ << " ";
-  for (auto i : ranges::view::iota(0u, grid_size_))
-    for (auto j : ranges::view::iota(0u, grid_size_))
+  for (auto i : ranges::view::iota(0, grid_size_))
+    for (auto j : ranges::view::iota(0, grid_size_))
       if (resources_[i][j]) out << i << "," << j << " ";
   out << std::endl;
 }

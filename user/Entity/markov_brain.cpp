@@ -130,16 +130,16 @@ void
       gate g;
       // translate input wires
       auto in = *(pos + 2) % 4 + 1;
-      for (auto i : ranges::view::iota(0u, in))
+      for (auto i : ranges::view::iota(0, in))
         g.ins_.push_back(*(pos + 3 + i) % addresses);
 
       // translate output wires
       auto out = *(pos + 7) % 4 + 1;
-      for (auto i : ranges::view::iota(0u, out))
+      for (auto i : ranges::view::iota(0, out))
         g.outs_.push_back(*(pos + 8 + i) % addresses);
 
       // translate logic
-      for (auto i : ranges::view::iota(0u, 16))
+      for (auto i : ranges::view::iota(0, 16))
         g.logic_.push_back(*(pos + 13 + i) % 2);
 
       gates_.push_back(g);

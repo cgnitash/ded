@@ -23,12 +23,12 @@ fors = $sequence
 			      #replace = [ true false ]   
 				}
      second = $elite_replacement 
-			  {  strength = 0.1  }
+			  {  strength = 0.4  }
 }
 
 
 E = $cycle  { 
- count = 1001
+ count = 101
   world = !fors
 }
 
