@@ -5,14 +5,14 @@ library("ggplot2")
 library("xkcd")
 #library("patchwork")
 
-summarize_population = function(path,i) {
+summarize_population = function(path,i,tag) {
   d = read.csv(path)
-  c(i,mean(d$food_eaten),max(d$food_eaten),min(d$food_eaten))
+  c(i,mean(d[,tag]),max(d[,tag]),min(d[,tag]))
 }
 
 aggregate_population = function(path,cycle_range,recorded_tag) {
  dfs = lapply(cycle_range, function(i) summarize_population(
-  paste(path,recorded_tag,"_",i,".csv",sep=""),i))
+  paste(path,recorded_tag,"_",i,".csv",sep=""),i,recorded_tag))
  t(as.data.frame(dfs,row.names = c("update","avg","max","min")))
 }
 
