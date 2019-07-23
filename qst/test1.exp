@@ -22,8 +22,7 @@ fors = $sequence
 				  ? food_eaten 5 
 			      #replace = [ true false ]   
 				}
-     second = $elite_replacement 
-			  {  strength = 0.4  }
+     second = $elite_replacement  {  strength = 0.4  }
 }
 
 

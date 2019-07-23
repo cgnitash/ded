@@ -124,12 +124,37 @@ void
   switch (source_tokens_.tokens[begin + 2].type_)
   {
     case TokenType::word:
+      if (auto f = ranges::find_if(current.overrides_,
+                                   [&](auto over) {
+                                     return over.first.expr_ ==
+                                            source_tokens_.tokens[begin].expr_;
+                                   });
+          f != ranges::end(current.overrides_))
+      {
+        err_invalid_token(f->first, "parameters already overridden here");
+        err_invalid_token(source_tokens_.tokens[begin],
+                          "cannot override this parameter again");
+        throw ParserError{};
+      }
+
       current.overrides_.push_back(
           { source_tokens_.tokens[begin], source_tokens_.tokens[begin + 2] });
       begin += 3;
       break;
     case TokenType::variable:
     case TokenType::component:
+      if (auto f = ranges::find_if(current.nested_,
+                                   [&](auto over) {
+                                     return over.first.expr_ ==
+                                            source_tokens_.tokens[begin].expr_;
+                                   });
+          f != ranges::end(current.nested_))
+      {
+        err_invalid_token(f->first, "nested component already overridden here");
+        err_invalid_token(source_tokens_.tokens[begin],
+                          "cannot override this nested component again");
+        throw ParserError{};
+      }
       current.nested_.push_back(
           { source_tokens_.tokens[begin], expand_block(begin + 2) });
       begin = current.nested_.back().second.range_.second;
@@ -189,7 +214,7 @@ void
     default:
       err_invalid_token(
           source_tokens_.tokens[begin],
-          "unexpected symbol: expected parameter or tag-rewrite here");
+          "unexpected symbol: expected parameter or tag-rewrite? here");
       throw ParserError{};
   }
 }
