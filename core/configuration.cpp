@@ -221,13 +221,13 @@ Simulation
   if (vars.find("E") == vars.end())
   {
     std::cout << "error: " << p.file_name()
-              << " does not have environment E to generate\n";
-    throw std::logic_error{ "" };
+              << " does not define an environment named E\n";
+    throw specs::SpecError{};
   }
   if (!std::holds_alternative<ded::specs::EnvironmentSpec>(vars["E"]))
   {
     std::cout << "error: E must be of type environment\n";
-    throw std::logic_error{ "" };
+    throw specs::SpecError{};
   }
 
   auto env_spec = std::get<ded::specs::EnvironmentSpec>(vars["E"]);
@@ -236,13 +236,13 @@ Simulation
   if (vars.find("P") == vars.end())
   {
     std::cout << "error: " << p.file_name()
-              << " does not have population P to seed\n";
-    throw std::logic_error{ "" };
+              << " does not define population P\n";
+    throw specs::SpecError{};
   }
   if (!std::holds_alternative<ded::specs::PopulationSpec>(vars["P"]))
   {
     std::cout << "error: P must be of type population\n";
-    throw std::logic_error{ "" };
+    throw specs::SpecError{};
   }
   auto pop_spec = std::get<ded::specs::PopulationSpec>(vars["P"]);
   auto io       = pop_spec.instantiate_nested_entity_user_parameter_sizes();

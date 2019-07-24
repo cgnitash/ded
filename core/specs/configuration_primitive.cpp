@@ -38,22 +38,18 @@ void
     return;
   }
   // TODO return success/failure
-  std::cout << "ERROR: unable to parse configuration primitive " << s
-            << std::endl;
-  throw SpecError{};
 }
 
 std::string
     ConfigurationPrimitive::value_as_string() const
 {
-  using namespace std::literals::string_view_literals;
   return std::visit(
       utilities::TMP::overload_set{
-          [&](std::monostate) -> std::string { return "NULL"; },
-          [&](long v) -> std::string { return std::to_string(v); },
-          [&](double v) -> std::string { return std::to_string(v); },
-          [&](bool v) -> std::string { return v ? "true" : "false"; },
-          [&](std::string v) -> std::string { return "\"" + v + "\""; } },
+          [](std::monostate) -> std::string { return "NULL"; },
+          [](long v) -> std::string { return std::to_string(v); },
+          [](double v) -> std::string { return std::to_string(v); },
+          [](bool v) -> std::string { return v ? "true" : "false"; },
+          [](std::string v) -> std::string { return "\"" + v + "\""; } },
       value_);
 }
 
@@ -62,11 +58,11 @@ std::string
 {
   return std::visit(
       utilities::TMP::overload_set{
-          [&](std::monostate) -> std::string { return "NULL"; },
-          [&](long) -> std::string { return "long"; },
-          [&](double) -> std::string { return "double"; },
-          [&](bool) -> std::string { return "bool"; },
-          [&](std::string) -> std::string { return "string"; } },
+          [](std::monostate) -> std::string { return "NULL"; },
+          [](long) -> std::string { return "long"; },
+          [](double) -> std::string { return "double"; },
+          [](bool) -> std::string { return "bool"; },
+          [](std::string) -> std::string { return "string"; } },
       value_);
 }
 }   // namespace specs

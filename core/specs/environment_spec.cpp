@@ -216,8 +216,13 @@ EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
     cp.parse(value.expr_);
     if (cp.type_as_string() != f->second.type_as_string())
     {
+      using namespace std::literals::string_literals;
       parser_.err_invalid_token(
-          value, "type mismatch, should be " + f->second.type_as_string());
+          value,
+          (cp.type_as_string() == "NULL"
+               ? "unable to parse configuration primitive"s
+               : "type mismatch"s) +
+              ", should be '" + f->second.type_as_string() + "'");
       throw language::ParserError{};
     }
     f->second = cp;

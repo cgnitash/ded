@@ -11,6 +11,7 @@ P = $linear {
 	size = 50 
 	entity = !e # `entity` is special
 	track_lineage = true 
+	load_from = ""
 	}
 
 
@@ -27,7 +28,7 @@ fors = $sequence
 
 
 E = $cycle  { 
- count = 101
+ count = 1001
   world = !fors
 }
 

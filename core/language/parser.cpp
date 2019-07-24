@@ -20,7 +20,7 @@ namespace language
 
 // order of options matter
 const std::regex Parser::valid_symbol_{
-  R"~~(^(\s+|\[|\]|\{|\}|\=|\?|\$\w+|\!\w+|[\.\w]+))~~"
+  R"~~(^(\s+|\[|\]|\{|\}|\=|\?|\$\w+|\!\w+|["\.\w]+))~~"
 };
 
 void

@@ -24,8 +24,8 @@ void
     if (!std::experimental::filesystem::exists(ded::global_path + load_spec_))
     {
       std::cout << "error: path \"" << ded::global_path + load_spec_
-                << "\" does not exist";
-      std::exit(1);
+                << "\" does not exist\n";
+	  throw ded::specs::SpecError{};
     }
 	ded::utilities::csv::CSV  csv(ded::global_path + load_spec_);
     auto ids = csv.single_column("id");
