@@ -45,11 +45,14 @@ class EnvironmentSpec
   struct NestedSpec
   {
     std::unique_ptr<EnvironmentSpec> e;
-    struct
+   /*
+	   struct
     {
       std::vector<std::string> pre_;
       std::vector<std::string> post_;
     } constraints_;
+	*/
+	Tags constraints_;
     NestedSpec() = default;
     NestedSpec(const NestedSpec &ns)
         : e(std::make_unique<EnvironmentSpec>(*ns.e)),
@@ -80,6 +83,11 @@ class EnvironmentSpec
   // Parser parser_;
   // Block block_;
 
+  void match_tags(SignalSpecSet &source_tags, SignalSpecSet &sink_tags, int &tag_count);
+  void update_and_match_tags(SignalSpecSet &source_tags, SignalSpecSet &sink_tags, int &tag_count);
+  void update_nested_constraints(SignalSpecSet &constraints);
+  void match_tag_flow_equalities(int &tag_count);
+  void match_nested_tag_constraints(int &tag_count);
 public:
   // EnvironmentSpec() = default;
   //~EnvironmentSpec() = default;
@@ -196,18 +204,34 @@ public:
   }
 
   void
-      bind_environment_pre_constraints(std::string              name,
-                                       std::vector<std::string> pre_constraints)
+      bind_environment_pre_constraints(
+          std::string                                     env_name,
+          std::vector<std::pair<std::string, std::string>> pre_constraints)
   {
-    nested_[name].constraints_.pre_ = pre_constraints;
+    //tags_.post_.push_back({ name, SignalSpec{ name, name, value } });
+    nested_[env_name].constraints_.pre_ =
+        pre_constraints |
+        ranges::view::transform(
+            [](auto tag) -> std::pair<std::string, SignalSpec> {
+              auto name  = tag.first;
+              auto value = tag.second;
+              return { name, SignalSpec{ name, name, value } };
+            });
   }
 
   void
       bind_environment_post_constraints(
-          std::string              name,
-          std::vector<std::string> post_constraints)
+          std::string                                      env_name,
+          std::vector<std::pair<std::string, std::string>> post_constraints)
   {
-    nested_[name].constraints_.post_ = post_constraints;
+    nested_[env_name].constraints_.post_ =
+        post_constraints |
+        ranges::view::transform(
+            [](auto tag) -> std::pair<std::string, SignalSpec> {
+              auto name  = tag.first;
+              auto value = tag.second;
+              return { name, SignalSpec{ name, name, value } };
+            });
   }
 
   void

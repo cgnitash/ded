@@ -11,7 +11,8 @@ ded::concepts::Population
   ded::utilities::repeat(num_, [&] {
     // evaluate the entire population
     // add scores to accumulated scores
-    ranges::transform(env.evaluate(pop).get_as_vector(),
+	auto res_pop = env.evaluate(pop);
+    ranges::transform(res_pop.get_as_vector(),
                       accumulated_scores,
                       ranges::begin(accumulated_scores),
                       [this](const auto &org, auto score) {

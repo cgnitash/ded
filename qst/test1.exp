@@ -2,7 +2,7 @@
 # working
 
 e = $markov_brain {
-     hiddens =  [ 2 3 ] 
+     hiddens =   2 
 	 outputs =  2
 	 inputs = 4
 	}
@@ -28,7 +28,7 @@ fors = $sequence
 
 
 E = $cycle  { 
- count = 1001
+ count = 101
   world = !fors
 }
 

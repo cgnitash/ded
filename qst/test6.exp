@@ -1,0 +1,36 @@
+
+
+e = $markov_brain 
+ {
+     hiddens = 5
+	 outputs = 2
+	 inputs = 4
+ }
+
+P = $linear 
+ { 
+	size = 40
+	entity = !e # `entity` is special
+	track_lineage = true 
+ }
+
+day_night = $sequence 
+ {
+    first 	= 	$fork 
+	{
+     	one = $forager
+     	two = $forager { direction = false }
+	}
+    second = $elite_replacement 
+	{ 
+		? value 5
+ 		strength = [ 0.4 0.6 ] 
+    }
+ }
+
+E = $cycle  
+ { 
+  count = 100
+  world = !day_night
+ }
+

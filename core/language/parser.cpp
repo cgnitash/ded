@@ -351,6 +351,19 @@ std::optional<std::pair<int, int>>
     throw ParserError{};
   }
 
+  if (open_variance_position + 1 == close_variance_position)
+  {
+    err_invalid_token(*open_variance_position, "varying range is empty ");
+    throw ParserError{};
+  }
+
+  if (open_variance_position + 2 == close_variance_position)
+  {
+    err_invalid_token(*(open_variance_position + 1),
+                      "varying on a single value is redundant");
+    throw ParserError{};
+  }
+
   return std::make_pair(
       open_variance_position - ranges::begin(source_tokens_.tokens),
       close_variance_position - ranges::begin(source_tokens_.tokens));
@@ -359,8 +372,7 @@ std::optional<std::pair<int, int>>
 std::vector<Parser>
     Parser::vary_parameter()
 {
-  //std::vector<Parser> res;
-  auto                pos = has_varied_parameter();
+  auto pos = has_varied_parameter();
   if (!pos)
   {
     parse(source_tokens_);

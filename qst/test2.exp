@@ -14,7 +14,8 @@ P = $linear {
 
 rep_for = $replicate {
 		num = 3
-		env = $forager
+		env = $forager 
+			#	{ ? food_eaten 5 }
 		? x 10 
 	}
 
@@ -22,13 +23,13 @@ fs =
   $sequence  {
      first 	= !rep_for 
      second = $elite_replacement { 
- 	 strength = [ 0.1 0.25	0.4 ]  
+ 	 strength = 0.4   
   }
 }
 
 
 E = $cycle  { 
- count = 501
+ count = 101
   world = !fs
 }
 

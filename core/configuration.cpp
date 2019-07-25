@@ -249,6 +249,7 @@ Simulation
 
   env_spec.bind_entity_io(io);
 
+  //int start_tag_count = 0;
   env_spec.bind_tags(0);
 
   //env_spec.record_traces();

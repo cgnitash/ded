@@ -1,39 +1,55 @@
 
 
-e = $markov_brain {
+e = $markov_brain 
+ {
      hiddens = 5
 	 outputs = 2
 	 inputs = 4
-	}
+ }
 
-P = $linear { 
+P = $linear 
+ { 
 	size = 40
 	entity = !e # `entity` is special
 	track_lineage = true 
+ }
+
+ night = $cycle 
+ {
+ 	count = 10
+  	world = $sequence 
+	{
+		first = $forager { replace = [ true false ] }
+		second = $elite_replacement 
+		{ 
+			? value 5 
+		}
 	}
+ }
 
-dn = $sequence {
-     first 	= 	$fork {
-     	one = $forager
-     	two = $forager 
-			  { direction = false }
+day = $cycle 
+ {
+ 	count = 10
+  	world = $sequence 
+	{
+		first = $forager 
+     	second = $elite_replacement  
+		{ 
+			#? value 5 
+		}
 	}
-     second = $smoosh 
-}
+ }
+
+day_night = $sequence 
+ {
+	first = !day
+	second = !night
+ }
 
 
-
-fs = 
-  $sequence  {
-     first 	= !dn 
-     second = $elite_replacement { 
- 	 strength = 	0.4 
-  }
-}
-
-
-E = $cycle  { 
- count = 100
-  world = !fs
-}
+E = $cycle  
+ { 
+ 	count = 100
+  world = !day_night
+ }
 

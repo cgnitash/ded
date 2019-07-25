@@ -37,7 +37,7 @@ void
     value_        = s.substr(1, s.length() - 2);
     return;
   }
-  // TODO return success/failure
+  return;
 }
 
 std::string

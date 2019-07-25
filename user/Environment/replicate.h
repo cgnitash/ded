@@ -35,7 +35,7 @@ public:
     es.bind_post("x", "double");
 
     es.bind_environment("env", env_);
-    es.bind_environment_post_constraints("env", { "double" });
+    es.bind_environment_post_constraints("env", { { "x", "double" } });
     return es;
   }
 

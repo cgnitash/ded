@@ -73,17 +73,19 @@ public:
   bool convertible_to(SignalSpec);
 };
 
+using SignalSpecSet = 
+  std::vector<std::pair<std::string, SignalSpec>>;
 // struct io_signals
 struct IO
 {
-  std::vector<std::pair<std::string, SignalSpec>> inputs_;
-  std::vector<std::pair<std::string, SignalSpec>> outputs_;
+  SignalSpecSet inputs_;
+  SignalSpecSet outputs_;
 };
 
 struct Tags
 {
-  std::vector<std::pair<std::string, SignalSpec>> pre_;
-  std::vector<std::pair<std::string, SignalSpec>> post_;
+  SignalSpecSet pre_;
+  SignalSpecSet post_;
 };
 }   // namespace specs
 }   // namespace ded
