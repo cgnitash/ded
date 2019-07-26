@@ -259,7 +259,8 @@ public:
   void instantiate_user_parameter_sizes();
   void bind_entity_io(IO);
   void bind_tags(int);
-  std::vector<std::pair<Trace, std::string>> record_traces();
+  void record_traces();
+  std::vector<std::pair<Trace, std::string>> query_traces();
 
   friend class concepts::Environment;
 };

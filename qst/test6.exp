@@ -18,8 +18,8 @@ day_night = $sequence
  {
     first 	= 	$fork 
 	{
-     	one = $forager
-     	two = $forager { direction = false }
+     	one = $forager { ? food_eaten 2 }
+     	two = $forager { direction = false  ? food_eaten 2  }
 	}
     second = $elite_replacement 
 	{ 

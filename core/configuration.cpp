@@ -249,12 +249,11 @@ Simulation
 
   env_spec.bind_entity_io(io);
 
-  //int start_tag_count = 0;
   env_spec.bind_tags(0);
 
-  //env_spec.record_traces();
+  env_spec.record_traces();
 
-  return { pop_spec, env_spec , p.labels(), env_spec.record_traces()};
+  return { pop_spec, env_spec , p.labels(), env_spec.query_traces()};
 }
 
 std::vector<language::Parser>
@@ -402,13 +401,6 @@ void
   for (auto sim : simulations)
   {
 
-	  /*
-	auto traces = sim.environment_spec.record_traces();
-	for (auto ts : traces)
-          std::cout << "trace of " << ts.first.signal_.user_name() << " at freq "
-                    << ts.first.frequency_ << " located at " << ts.second
-                    << "\n";
-	*/
 	auto exp_name = sim.bar_code();
     auto exp_data_path = data_path + exp_name + "/";
 

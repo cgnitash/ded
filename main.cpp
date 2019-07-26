@@ -93,8 +93,6 @@ int
   {
     auto [pop_spec, env_spec] = ded::experiments::load_simulation(argv[2]);
 
-	env_spec.record_traces();
-
     auto pop         = ded::make_Population(pop_spec);
     auto env         = ded::make_Environment(env_spec);
     ded::global_path = "./data/" + std::string{ argv[2] } + "/" + argv[3] + "/";

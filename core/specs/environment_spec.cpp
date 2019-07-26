@@ -85,8 +85,7 @@ void
 }
 
 void
-    EnvironmentSpec::match_tag_flow_equalities(
-        int &tag_count)
+    EnvironmentSpec::match_tag_flow_equalities(int &tag_count)
 {
 
   for (auto [source, sink] : tag_flow_equalities_)
@@ -108,7 +107,7 @@ void
     auto same_user_name = [&source_tag](auto tag) {
       return tag.second.user_name() == source_tag.second.user_name();
     };
-    if (auto f = ranges::find_if(tags_.pre_,same_user_name);
+    if (auto f = ranges::find_if(tags_.pre_, same_user_name);
         f != ranges::end(tags_.pre_))
       source_tag.second.update_identifier(f->second.identifier());
     else if (f = ranges::find_if(tags_.post_, same_user_name);
@@ -130,8 +129,7 @@ void
 }
 
 void
-    EnvironmentSpec::match_nested_tag_constraints(
-        int &tag_count)
+    EnvironmentSpec::match_nested_tag_constraints(int &tag_count)
 {
   for (auto &es : nested_)
   {
@@ -236,40 +234,49 @@ void
 }
 
 std::vector<std::pair<Trace, std::string>>
-    EnvironmentSpec::record_traces()
+    EnvironmentSpec::query_traces()
 {
+
   std::vector<std::pair<Trace, std::string>> res;
 
   for (auto &sig_freq : traces_.pre_)
-  {
-    sig_freq.signal_.update_identifier(
-        ranges::find_if(tags_.pre_,
-                        [n = sig_freq.signal_.user_name()](auto tag) {
-                          return tag.first == n;
-                        })
-            ->second.identifier());
     res.push_back({ sig_freq, {} });
-  }
 
   for (auto &sig_freq : traces_.post_)
-  {
-    sig_freq.signal_.update_identifier(
-        ranges::find_if(tags_.post_,
-                        [n = sig_freq.signal_.user_name()](auto tag) {
-                          return tag.first == n;
-                        })
-            ->second.identifier());
     res.push_back({ sig_freq, {} });
-  }
 
   for (auto &es : nested_)
-    for (auto ts : es.second.e->record_traces())
+    for (auto ts : es.second.e->query_traces())
       res.push_back(ts);
 
   for (auto &r : res)
     r.second = user_specified_name_ + "_" + name_ + "/" + r.second;
 
   return res;
+}
+
+void
+    EnvironmentSpec::record_traces()
+{
+
+  for (auto &sig_freq : traces_.pre_)
+    sig_freq.signal_.update_identifier(
+        ranges::find_if(tags_.pre_,
+                        [n = sig_freq.signal_.user_name()](auto tag) {
+                          return tag.first == n;
+                        })
+            ->second.identifier());
+
+  for (auto &sig_freq : traces_.post_)
+    sig_freq.signal_.update_identifier(
+        ranges::find_if(tags_.post_,
+                        [n = sig_freq.signal_.user_name()](auto tag) {
+                          return tag.first == n;
+                        })
+            ->second.identifier());
+
+  for (auto &es : nested_)
+    es.second.e->record_traces();
 }
 
 EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
