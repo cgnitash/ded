@@ -102,10 +102,10 @@ std::vector<std::string>
 std::vector<std::string>
     all_component_names()
 {
-      auto a = all_entity_names();
-      auto b = all_environment_names();
-      auto c = all_population_names();
-  return ranges::view::concat(a,b,c);
+  auto a = all_entity_names();
+  auto b = all_environment_names();
+  auto c = all_population_names();
+  return ranges::view::concat(a, b, c);
 }
 }   // namespace config_manager
 
@@ -170,14 +170,14 @@ std::vector<language::Token>
 std::string
     Simulation::bar_code() const
 {
-std::hash<std::string>  hash_fn;
+  std::hash<std::string> hash_fn;
   return std::to_string(
       hash_fn(population_spec.dump(0) + "_" +
               (environment_spec.dump(0, false) | ranges::action::join)));
 }
 
 std::string
-    Simulation::full_label()const
+    Simulation::full_label() const
 {
   return (labels | ranges::view::transform([](auto label) {
             return label.first + " = " + label.second;
@@ -253,7 +253,7 @@ Simulation
 
   env_spec.record_traces();
 
-  return { pop_spec, env_spec , p.labels(), env_spec.query_traces()};
+  return { pop_spec, env_spec, p.labels(), env_spec.query_traces() };
 }
 
 std::vector<language::Parser>
@@ -326,13 +326,14 @@ void
   auto simulations = ded::experiments::parse_all_simulations(file_name);
   for (auto sim : simulations)
   {
-	  if (sim.traces.size() != 1) {
-		  std::cout << "error: no analysis available for multiple traces\n";
-		  return;
-	  }
+    if (sim.traces.size() != 1)
+    {
+      std::cout << "error: no analysis available for multiple traces\n";
+      return;
+    }
   }
 
-  auto trace = *(simulations.begin()->traces.begin());
+  auto trace      = *(simulations.begin()->traces.begin());
   auto trace_name = trace.second + trace.first.signal_.user_name() + "_";
   std::vector<int> max_invocation_counts;
   for (auto sim : simulations)
@@ -351,7 +352,7 @@ void
       std::cout << invocation << "\n";
     }
   }
-  
+
   auto [low, high] = ranges::minmax_element(max_invocation_counts);
   if (*low != *high)
   {
@@ -360,36 +361,42 @@ void
   }
 
   std::ofstream analysis_file("analysis.R");
+  analysis_file << "#!/usr/bin/env Rscript";
+  analysis_file << "\nsource(\"dedli/plot.R\")";
+  analysis_file << "\nexps=list("
+                << (simulations | ranges::view::transform([](auto sim) {
+                      return "\"data/" + sim.bar_code() + "/\"";
+                    }) |
+                    ranges::view::intersperse(",") | ranges::action::join)
+                << ")\n";
+  analysis_file << "labels=c("
+                << (simulations | ranges::view::transform([](auto sim) {
+                      return "\"" + sim.full_label() + "\"";
+                    }) |
+                    ranges::view::intersperse(",") | ranges::action::join)
+                << ")\n";
+  analysis_file << "data=un_reported_data(exps,\"/" + trace.second << "\",\""
+                << trace.first.signal_.user_name()
+                << "\",0:" << replicate_count - 1 << ",seq("
+                << trace.first.frequency_ << "," << *low << ","
+                << trace.first.frequency_ << "))";
+  analysis_file << "\nall_avg = "
+                   "compute_all(avg,exps,labels,data)\npdf(\"result.pdf\")\n";
+  analysis_file << "cluster_plots(all_avg,\"avg\",labels,1:"
+                << simulations.size() << ",palette(rainbow("
+                << simulations.size() + 1 << ")),\"" << file_name
+                << " Replicates " << replicate_count << "\")\n";
+  analysis_file << "final_fitness_plots(all_avg,\"Final avg\",labels)";
   analysis_file
-      << "\n#!/usr/bin/env Rscript\nsource(\"dedli/plot.R\")\nexps=list("
-      << (simulations | ranges::view::transform([](auto sim) {
-            return "\"data/" + sim.bar_code() + "/\"";
-          }) |
-          ranges::view::intersperse(",") | ranges::action::join)
-      << ")\nlabels=c("
-      << (simulations | ranges::view::transform([](auto sim) {
-            return "\"" + sim.full_label() + "\"";
-          }) |
-          ranges::view::intersperse(",") | ranges::action::join)
-      << ")\ndata=un_reported_data(exps,\"/" + trace.second << "\",\""
-      << trace.first.signal_.user_name() << "\",0:" << replicate_count - 1
-      << ",seq(" << trace.first.frequency_ << "," << *low << ","
-      << trace.first.frequency_
-      << "))\nall_avg = "
-         "compute_all(avg,exps,labels,data)\npdf(\"result.pdf\")"
-         "\ncluster_plots(all_avg,\"avg\",labels,1:"
-      << simulations.size() << ",palette(rainbow(" << simulations.size() + 1
-      << ")),\"" << file_name << " Replicates " << replicate_count
-      << "\")\nfinal_fitness_plots(all_avg,\"Final avg\",labels)\nfor (i in 1:"
-      << simulations.size()
+      << "\nfor (i in 1:" << simulations.size()
       << ")\n{\n "
          "plot(cluster_plots(all_avg,\"avg\",labels,i:i,palette(rainbow(2)),"
          "labels[i]))\n}\ndev.off()\n";
 }
 
 void
-    prepare_simulations_locally(const std::vector<Simulation>& simulations,
-                                int replicate_count)
+    prepare_simulations_locally(const std::vector<Simulation> &simulations,
+                                int                            replicate_count)
 {
 
   auto data_path = "./data/";
@@ -401,7 +408,7 @@ void
   for (auto sim : simulations)
   {
 
-	auto exp_name = sim.bar_code();
+    auto exp_name      = sim.bar_code();
     auto exp_data_path = data_path + exp_name + "/";
 
     std::string pretty_name = sim.pretty_name();
@@ -423,8 +430,7 @@ void
       pop_spec_file << sim.population_spec.dump(0);
 
       exp_names.push_back(exp_name);
-      std::cout << "simulation " << pretty_name 
-                << " successfully prepared\n";
+      std::cout << "simulation " << pretty_name << " successfully prepared\n";
     }
   }
 
