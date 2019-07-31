@@ -44,7 +44,7 @@ int
               -rl <file-name> <N>    : 'runs' all experiments in this file-name with N replicates (locally)
               #-rh <file-name> <N>    : 'runs' all experiments in this file-name with N replicates (msu hpc)
               -v <file-name>         : verify experiment in file-name
-              #-a <file-name>         : generate 'analysis' for experiment in file-name
+              -a <file-name> <trace-name>        : generate 'analysis' for experiment in file-name
               -p <component-name>... : print publication for listed component names
               -pa                    : lists all components currently loaded
               -f <exp-name> <N>      : actually runs this experiment with REP N (should NOT be called manually)
@@ -87,7 +87,7 @@ int
   }
   else if (argc == 4 && ((mode == "-a")))
   {
-    ded::experiments::analyse_all_simulations(argv[2], std::stoi(argv[3]));
+    ded::experiments::analyse_all_simulations(argv[2], argv[3]);
   }
   else if (argc == 4 && mode == "-f")
   {

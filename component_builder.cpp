@@ -115,6 +115,8 @@ void
   };
 
   std::vector<std::string> core_files = { "core/configuration",
+                                          "core/experiments",
+                                          "core/analysis",
                                           "core/utilities/csv/csv",
                                           "core/utilities/csv/csv_reader",
                                           "core/utilities/term_colours",

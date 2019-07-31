@@ -1,11 +1,7 @@
 
 #pragma once
 
-#include <fstream>
-#include <iomanip>
-#include <iostream>
 #include <map>
-#include <range/v3/all.hpp>
 #include <string>
 #include <vector>
 
@@ -13,7 +9,6 @@
 #include "specs/environment_spec.h"
 #include "specs/population_spec.h"
 
-#include "utilities/term_colours.h"
 
 namespace ded
 {
@@ -38,6 +33,7 @@ std::string auto_class_name_as_string() = delete;
 namespace config_manager
 {
 
+
 std::string type_of_block(std::string name);
 void        show_config(std::ostream &out, std::string name);
 void        list_all_configs(std::ostream &out);
@@ -49,40 +45,6 @@ std::vector<std::string> all_environment_names();
 std::vector<std::string> all_population_names();
 }   // namespace config_manager
 
-namespace experiments
-{
-
-struct Simulation
-{
-  specs::PopulationSpec                             population_spec;
-  specs::EnvironmentSpec                            environment_spec;
-  language::Labels labels;
-  std::vector<std::pair<specs::Trace, std::string>> traces;
-  std::string                                       bar_code() const;
-  std::string                                       pretty_name() const;
-  std::string                                       full_label() const;
-};
-
-std::vector<std::string> open_file(std::string);
-
-std::vector<language::Token> lex(std::vector<std::string>);
-
-std::vector<language::Parser> expand_all_tokens(language::Parser);
-
-
-Simulation parse_simulation(language::Parser);
-
-std::vector<Simulation>
-    parse_all_simulations(std::string);
-
-std::pair<specs::PopulationSpec, specs::EnvironmentSpec>
-    load_simulation(std::string);
-
-void prepare_simulations_locally(const std::vector<Simulation> &, int);
-void prepare_simulations_msuhpc(const std::vector<Simulation> &, int);
-void analyse_all_simulations(std::string, int);
-
-}   // namespace experiments
 }   // namespace ded
 /*
 

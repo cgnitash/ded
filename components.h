@@ -7,6 +7,8 @@
 #include "core/concepts/signal.h"
 
 #include "core/configuration.h"
+#include "core/experiments.h"
+#include "core/analysis.h"
 
 #include "core/language/parser.h"
 
