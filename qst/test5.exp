@@ -8,7 +8,7 @@ e = $markov_brain {
 	}
 
 P = $linear { 
-	size = 40
+	size = [ 20 40 60 80 ]
 	entity = !e # `entity` is special
 	track_lineage = true 
 	}
@@ -24,13 +24,13 @@ fs =
 }
 
 epoch = $cycle  { 
- count = 100
   world = !fs
 }
 
 # lineage tracking gets turned off here
 E = $sequence {
 	first = !epoch
+			{ count = 100 }
     second 	= !epoch
 			{ count = 25 }
 }

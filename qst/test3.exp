@@ -19,7 +19,7 @@ P = $linear
  	count = 10
   	world = $sequence 
 	{
-		first = $forager { replace = [ true false ] }
+		first = $forager { replace = false }
 		second = $elite_replacement 
 		{ 
 			? value 5 
@@ -32,10 +32,10 @@ day = $cycle
  	count = 10
   	world = $sequence 
 	{
-		first = $forager 
+		first = $forager { replace = true }
      	second = $elite_replacement  
 		{ 
-			#? value 5 
+			? value 5 
 		}
 	}
  }
@@ -49,7 +49,7 @@ day_night = $sequence
 
 E = $cycle  
  { 
- 	count = 100
+  count = 40
   world = !day_night
  }
 

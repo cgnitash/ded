@@ -6,16 +6,18 @@ e = $markov_brain {
 	 inputs = 4
 	}
 
-P = $linear { 
+P = $linear 
+	{ 
 	size = 40
 	entity = !e # `entity` is special
 	track_lineage = true 
 	}
 
-rep_for = $replicate {
-		num = 3
+rep_for = $replicate 
+	{
+		num = [ 1 2 3 ]
 		env = $forager 
-			#	{ ? food_eaten 5 }
+				{ ? food_eaten 3 }
 		? x 10 
 	}
 

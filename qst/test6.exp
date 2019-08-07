@@ -19,12 +19,16 @@ day_night = $sequence
     first 	= 	$fork 
 	{
      	one = $forager { ? food_eaten 2 }
-     	two = $forager { direction = false  ? food_eaten 2  }
+     	two = $forager 
+		{ 
+			direction = false  
+			? food_eaten 3  
+		}
 	}
     second = $elite_replacement 
 	{ 
 		? value 5
- 		strength = [ 0.4 0.6 ] 
+ 		strength = [ 0.1 0.4 0.6 ] 
     }
  }
 

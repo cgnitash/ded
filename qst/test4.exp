@@ -1,5 +1,4 @@
 
-# working
 
 e = $markov_brain {
      hiddens = 5
