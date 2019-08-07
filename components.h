@@ -6,9 +6,9 @@
 #include "core/concepts/population.h"
 #include "core/concepts/signal.h"
 
+#include "core/analysis.h"
 #include "core/configuration.h"
 #include "core/experiments.h"
-#include "core/analysis.h"
 
 #include "core/language/parser.h"
 
@@ -25,27 +25,10 @@ specs::EntitySpec      default_EntitySpec(std::string);
 specs::EnvironmentSpec default_EnvironmentSpec(std::string);
 specs::PopulationSpec  default_PopulationSpec(std::string);
 
-inline void
-    generate_EntitySpec(std::initializer_list<std::string> component_list)
-{
-  for (auto comp_name : component_list)
-    all_entity_specs[comp_name] = default_EntitySpec(comp_name);
-}
-
-inline void
-    generate_EnvironmentSpec(std::initializer_list<std::string> component_list)
-{
-  for (auto comp_name : component_list)
-    all_environment_specs[comp_name] = default_EnvironmentSpec(comp_name);
-}
-
-inline void
-    generate_PopulationSpec(std::initializer_list<std::string> component_list)
-{
-  for (auto comp_name : component_list)
-    all_population_specs[comp_name] = default_PopulationSpec(comp_name);
-}
-
+void generate_EntitySpec(std::initializer_list<std::string> component_list);
+void
+     generate_EnvironmentSpec(std::initializer_list<std::string> component_list);
+void generate_PopulationSpec(std::initializer_list<std::string> component_list);
 void generate_all_specs();
 
 }   // namespace ded

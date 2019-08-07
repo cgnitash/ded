@@ -99,7 +99,62 @@ void
                ranges::view::intersperse(",") | ranges::action::join)
            << "});\n";
   }
-  header << "}\n\n} // namespace ded";
+  header << "}\n";
+
+  header << R"~(
+void
+    generate_EntitySpec(std::initializer_list<std::string> component_list)
+{
+  for (auto comp_name : component_list)
+    try
+    {
+      auto c =  ded::default_EntitySpec(comp_name);
+      ded::make_Entity(c);
+      ded::all_entity_specs[comp_name] = c;
+    }
+    catch (ded::specs::SpecError const &e)
+    {
+      std::cout << "Error in component Entity/" << comp_name << "\n";
+      throw e;
+    }
+}
+
+inline void
+    generate_EnvironmentSpec(std::initializer_list<std::string> component_list)
+{
+  for (auto comp_name : component_list)
+    try
+    {
+      auto c =  ded::default_EnvironmentSpec(comp_name);
+      ded::make_Environment(c);
+      ded::all_environment_specs[comp_name] = c;
+    }
+    catch (ded::specs::SpecError const &e)
+    {
+      std::cout << "Error in component Environment/" << comp_name << "\n";
+      throw e;
+    }
+}
+
+inline void
+    generate_PopulationSpec(std::initializer_list<std::string> component_list)
+{
+  for (auto comp_name : component_list)
+    try
+    {
+      auto c =  ded::default_PopulationSpec(comp_name);
+      ded::make_Population(c);
+      ded::all_population_specs[comp_name] = c;
+    }
+    catch (ded::specs::SpecError const &e)
+    {
+      std::cout << "Error in component Population/" << comp_name << "\n";
+      throw e;
+    }
+}
+)~";
+  
+  header << "\n} // namespace ded";
 }
 
 void

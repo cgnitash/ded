@@ -15,10 +15,19 @@ namespace ded
 namespace specs
 {
 
+struct SpecError
+{
+};
+
 class ConfigurationPrimitive
 {
 private:
-  std::variant<std::monostate, long, double, bool, std::string> value_;
+  std::variant<std::monostate, long, double, bool, std::string>    value_;
+  std::vector<std::pair<std::function<bool(long)>, std::string>>   long_cons_;
+  std::vector<std::pair<std::function<bool(double)>, std::string>> double_cons_;
+  std::vector<std::pair<std::function<bool(bool)>, std::string>>   bool_cons_;
+  std::vector<std::pair<std::function<bool(std::string)>, std::string>>
+      string_cons_;
 
   std::regex r_long{ R"~~(^\d+$)~~" };
   std::regex r_double{ R"~~(^\d+\.\d*$)~~" };
@@ -34,6 +43,72 @@ public:
     assert(std::holds_alternative<std::monostate>(value_) ||
            std::holds_alternative<T>(value_));
     value_ = value;
+  }
+
+  void
+      set_constraints(
+          std::vector<std::pair<std::function<bool(long)>, std::string>> cons)
+  {
+    assert(std::holds_alternative<long>(value_));
+    long_cons_ = cons;
+  }
+
+  void
+      set_constraints(
+          std::vector<std::pair<std::function<bool(double)>, std::string>> cons)
+  {
+    assert(std::holds_alternative<double>(value_));
+    double_cons_ = cons;
+  }
+
+  void
+      set_constraints(
+          std::vector<std::pair<std::function<bool(bool)>, std::string>> cons)
+  {
+    assert(std::holds_alternative<bool>(value_));
+    bool_cons_ = cons;
+  }
+
+  void
+      set_constraints(
+          std::vector<std::pair<std::function<bool(std::string)>, std::string>> cons)
+  {
+    assert(std::holds_alternative<std::string>(value_));
+    string_cons_ = cons;
+  }
+
+  std::optional<std::string>
+      check_constraints() const
+  {
+
+    return std::visit(
+        utilities::TMP::overload_set{
+            [](std::monostate) ->  std::optional<std::string>{ return {}; },
+            [this](long v) -> std::optional<std::string> {
+              for (auto c : long_cons_)
+                if (!c.first(v))
+                  return c.second;
+              return {};
+            },
+            [this](double v) -> std::optional<std::string> {
+              for (auto c : double_cons_)
+                if (!c.first(v))
+                  return c.second;
+              return {};
+            },
+            [this](bool v) -> std::optional<std::string> {
+              for (auto c : bool_cons_)
+                if (!c.first(v))
+                  return c.second;
+              return {};
+            },
+            [this](std::string v) -> std::optional<std::string> {
+              for (auto c : string_cons_)
+                if (!c.first(v))
+                  return c.second;
+              return {};
+            } },
+        value_);
   }
 
   template <typename T>

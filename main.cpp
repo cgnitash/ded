@@ -23,19 +23,62 @@ std::string ded::global_path = "./";
 std::map<std::string, ded::specs::EntitySpec>      ded::all_entity_specs;
 std::map<std::string, ded::specs::EnvironmentSpec> ded::all_environment_specs;
 std::map<std::string, ded::specs::PopulationSpec>  ded::all_population_specs;
+/*
+void
+    check_all_configs_correct()
+{
 
+  for (auto &[type_name, config] : ded::all_environment_specs)
+  {
+    try
+    {
+      ded::default_EnvironmentSpec(type_name);
+      ded::make_Environment(config);
+    }
+    catch (ded::specs::SpecError const &e)
+    {
+      std::cout << "Error in component Entity/" << type_name << "\n";
+      throw e;
+    }
+  }
+  for (auto &[type_name, config] : ded::all_entity_specs)
+  {
+    try
+    {
+      ded::default_EntitySpec(type_name);
+      ded::make_Entity(config);
+    }
+    catch (ded::specs::SpecError const &e)
+    {
+      std::cout << "Error in component Entity/" << type_name << "\n";
+      throw e;
+    }
+  }
+  for (auto &[type_name, config] : ded::all_population_specs)
+  {
+    try
+    {
+      ded::default_PopulationSpec(type_name);
+      ded::make_Population(config);
+    }
+    catch (ded::specs::SpecError const &e)
+    {
+      std::cout << "Error in component Entity/" << type_name << "\n";
+      throw e;
+    }
+  }
+}
+*/
 int
     main(int argc, char **argv) try
 {
 
-  ded::generate_all_specs();
+  //check_all_configs_correct();
   // check all things that aren't being checked statically, in particular the
   // publications of components
-  // ded::config_manager::check_all_configs_correct();
+  ded::generate_all_specs();
 
-  //std::hash<std::string> hash_fn{};
-
-  std::string mode = argv[1]; 
+  std::string mode = argv[1];
 
   if (argc == 2 && mode == "-h")
   {
@@ -98,12 +141,12 @@ int
     ded::global_path = "./data/" + std::string{ argv[2] } + "/" + argv[3] + "/";
     std::experimental::filesystem::create_directory(ded::global_path);
 
-	std::srand(std::stoi(argv[3]));
+    std::srand(std::stoi(argv[3]));
 
     pop = env.evaluate(pop);
     pop.flush_unpruned();
 
-	// should write success report to file
+    // should write success report to file
     std::cout << "simulation " << argv[2] << " - Replicate # " << argv[3]
               << " successfully simulated\n";
   }

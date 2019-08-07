@@ -315,7 +315,15 @@ EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
               ", should be '" + f->second.type_as_string() + "'");
       throw language::ParserError{};
     }
-    f->second = cp;
+    f->second.parse(cp.value_as_string());
+    auto con = f->second.check_constraints();
+    if (con)
+    {
+      parser_.err_invalid_token(
+          value,
+              "parameter constraint not satisfied: " + *con );
+      throw language::ParserError{};
+    }
   }
 
   for (auto over : block_.traces_)
