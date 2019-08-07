@@ -32,7 +32,7 @@ public:
   {
   }
 
-  Population(const Population &x) : data(x.data), self_(x.self_->copy_())
+  Population(const Population &x) : self_(x.self_->copy_())
   {
   }
   Population(Population &&) noexcept = default;
@@ -48,7 +48,7 @@ public:
 
   // public interface of populations - how populations can be used
   // life::configuration data;
-  std::map<std::string, specs::ConfigurationPrimitive> data;
+  // std::map<std::string, specs::ConfigurationPrimitive> data;
 
   size_t
       size() const
@@ -134,42 +134,87 @@ private:
     // mandatory methods
     //
 
+    template <typename T>
+    using HasMerge = decltype(
+        std::declval<T &>().merge(std::declval<std::vector<Entity>>()));
+    static_assert(
+        utilities::TMP::has_signature<UserPopulation, void, HasMerge>{},
+        "UserPopulation does not satisfy 'merge' concept requirement");
     void
         merge_(std::vector<Entity> v) override
     {
       data_.merge(v);
     }
 
+    template <typename T>
+    using HasGetAsVector = decltype(std::declval<T &>().get_as_vector());
+    static_assert(
+        utilities::TMP::has_signature<UserPopulation,
+                                      std::vector<Entity>,
+                                      HasGetAsVector>{},
+        "UserPopulation does not satisfy 'get_as_vector' concept requirement");
     std::vector<Entity>
         get_as_vector_() const override
     {
       return data_.get_as_vector();
     }
 
+    template <typename T>
+    using HasSize = decltype(std::declval<T &>().size());
+    static_assert(
+        utilities::TMP::has_signature<UserPopulation, size_t, HasSize>{},
+        "UserPopulation does not satisfy 'size' concept requirement");
     size_t
         size_() const override
     {
       return data_.size();
     }
 
+    template <typename T>
+    using HasFlush = decltype(std::declval<T &>().flush_unpruned());
+    static_assert(
+        utilities::TMP::has_signature<UserPopulation, void, HasFlush>{},
+        "UserPopulation does not satisfy 'flush_unpruned' concept requirement");
     void
         flush_unpruned() override
     {
       data_.flush_unpruned();
     }
 
+    template <typename T>
+    using HasPruneLineage =
+        decltype(std::declval<T &>().prune_lineage(std::declval<long>()));
+    static_assert(
+        utilities::TMP::has_signature<UserPopulation, void, HasPruneLineage>{},
+        "UserPopulation does not satisfy 'prune_lineage' concept requirement");
     void
         prune_lineage_(long i) override
     {
       data_.prune_lineage(i);
     }
 
+    template <typename T>
+    using HasSnapshot =
+        decltype(std::declval<T &>().snapshot(std::declval<long>()));
+    static_assert(
+        utilities::TMP::has_signature<UserPopulation, void, HasSnapshot>{},
+        "UserPopulation does not satisfy 'snapshot' concept requirement");
     void
         snapshot_(long i) override
     {
       data_.snapshot(i);
     }
 
+    template <typename T>
+    using HasConf = decltype(
+        std::declval<T &>().configure(std::declval<specs::PopulationSpec>()));
+    template <typename T>
+    using HasPubConf = decltype(std::declval<T &>().publish_configuration());
+    static_assert(
+        utilities::TMP::has_signature<UserPopulation, void, HasConf>{} &&
+            utilities::TMP::
+                has_signature<UserPopulation, specs::PopulationSpec, HasPubConf>{},
+        "UserPopulation does not satisfy 'configuration' concept requirement");
     specs::PopulationSpec
         publish_configuration_() override
     {
