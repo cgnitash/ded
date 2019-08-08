@@ -37,12 +37,6 @@ public:
 
     ps.configure_entity(org_);
 
-    if (!size_)
-    {
-      std::cout << "error: cannot have an empty linear population\n";
-      throw ded::specs::SpecError{};
-    }
-
     initialize();
   }
 
@@ -50,7 +44,11 @@ public:
   {
     ded::specs::PopulationSpec ps;//{"linear"};
     ps.bind_parameter("track_lineage",track_lineage_);
-    ps.bind_parameter("size",size_);
+    ps.bind_parameter(
+        "size",
+        size_,
+        { { [](long s) { return s > 0; },
+            "linear population must contain at least 1 entity" } });
     ps.bind_parameter("load_from",load_spec_);
 
     //con["parameters"]["entity"] = { entity_[0], {} };

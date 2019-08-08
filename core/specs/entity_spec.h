@@ -56,16 +56,33 @@ public:
 
   template <typename T>
   void
-      configure_parameter(std::string name, T &value)
+      bind_parameter(
+          std::string                                                 name,
+          T                                                           value,
+          std::vector<std::pair<std::function<bool(T)>, std::string>> cons = {})
+
   {
-    parameters_[name].get_value(value);
+    if (parameters_.find(name) != parameters_.end())
+    {
+      std::cout << "User error: parameter " << name
+                << " has already been declared\n";
+      throw SpecError{};
+    }
+    parameters_[name].set_value(value);
+    parameters_[name].set_constraints(cons);
   }
 
   template <typename T>
   void
-      bind_parameter(std::string name, T value)
+      configure_parameter(std::string name, T &value)
   {
-    parameters_[name].set_value(value);
+    if (parameters_.find(name) == parameters_.end())
+    {
+      std::cout << "User error: parameter " << name
+                << " has not been declared\n";
+      throw SpecError{};
+    }
+    parameters_[name].get_value(value);
   }
 
   void
@@ -116,7 +133,7 @@ public:
   }
 
   // friend std::ostream &operator<<(std::ostream &out, EntitySpec e)
-  std::string dump(long depth)const ;
+  std::string dump(long depth) const;
   EntitySpec  parse(std::vector<std::string> pop_dump);
   std::string pretty_print();
 

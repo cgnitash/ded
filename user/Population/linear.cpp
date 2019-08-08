@@ -188,6 +188,6 @@ void
   {
     unrec_file << org.first.get_id() << ",-1," << 0 << ","
                << org.first.get_ancestor() << std::endl;
-    if (org.second == size_) std::cout << org.first.get_id();
+    //if (org.second == size_) std::cout << org.first.get_id();
   }
 }

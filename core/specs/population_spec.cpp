@@ -16,12 +16,12 @@ namespace ded
 namespace specs
 {
 
-PopulationSpec::PopulationSpec(language::Parser p, language::Block blk)
+PopulationSpec::PopulationSpec(language::Parser parser, language::Block block)
 {
 
-  *this = all_population_specs[blk.name_.substr(1)];
+  *this = all_population_specs[block.name_.substr(1)];
 
-  for (auto over : blk.overrides_)
+  for (auto over : block.overrides_)
   {
     auto name  = over.first;
     auto value = over.second;
@@ -30,7 +30,7 @@ PopulationSpec::PopulationSpec(language::Parser p, language::Block blk)
         parameters_, [&](auto param) { return param.first == name.expr_; });
     if (f == parameters_.end())
     {
-      p.err_invalid_token(name,
+      parser.err_invalid_token(name,
                           "this does not override any parameters of " + name_,
                           parameters_ | ranges::view::transform([](auto param) {
                             return param.first;
@@ -42,14 +42,22 @@ PopulationSpec::PopulationSpec(language::Parser p, language::Block blk)
     cp.parse(value.expr_);
     if (cp.type_as_string() != f->second.type_as_string())
     {
-      p.err_invalid_token(
+      parser.err_invalid_token(
           value, "type mismatch, should be " + f->second.type_as_string());
       throw language::ParserError{};
     }
-    f->second = cp;
+    f->second.parse(cp.value_as_string());
+    auto con = f->second.check_constraints();
+    if (con)
+    {
+      parser.err_invalid_token(
+          value,
+              "parameter constraint not satisfied: " + *con );
+      throw language::ParserError{};
+    }
   }
 
-  for (auto blover : blk.nested_)
+  for (auto blover : block.nested_)
   {
     auto name       = blover.first;
     auto nested_blk = blover.second;
@@ -57,13 +65,13 @@ PopulationSpec::PopulationSpec(language::Parser p, language::Block blk)
     auto ct = config_manager::type_of_block(nested_blk.name_.substr(1));
     if (ct != "entity")
     {
-      p.err_invalid_token(name,
+      parser.err_invalid_token(name,
                           "override of " + name.expr_ +
                               " inside population:: must be of type entity");
       throw language::ParserError{};
     }
 
-    es_ = EntitySpec{ p, nested_blk };
+    es_ = EntitySpec{ parser, nested_blk };
   }
 }
 

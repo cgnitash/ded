@@ -10,11 +10,12 @@ ded::concepts::Population
 
   auto pop = populate.get_as_vector();
   // find the strength_ fraction of highest "score"s
-  const auto fraction = pop.size() * strength_;
+  const auto fraction =
+      std::max(size_t{ 1 }, static_cast<size_t>(pop.size() * strength_));
 
   ranges::partial_sort(
       ranges::begin(pop),
-      ranges::begin(pop) + std::max(size_t{ 1 }, static_cast<size_t>(fraction)),
+      ranges::begin(pop) +  fraction,
       ranges::end(pop),
       [this](const auto &org1, const auto &org2) {
         return std::get<double>(org1.data.get_value(value_tag_)) >

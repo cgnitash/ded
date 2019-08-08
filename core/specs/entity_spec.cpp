@@ -71,7 +71,15 @@ EntitySpec::EntitySpec(language::Parser p, language::Block blk)
           value, "type mismatch, should be " + f->second.type_as_string());
       throw language::ParserError{};
     }
-    f->second = cp;
+    f->second.parse(cp.value_as_string());
+    auto con = f->second.check_constraints();
+    if (con)
+    {
+      p.err_invalid_token(
+          value,
+              "parameter constraint not satisfied: " + *con );
+      throw language::ParserError{};
+    }
   }
 
   for (auto blover : blk.nested_)
