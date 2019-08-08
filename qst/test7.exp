@@ -1,0 +1,33 @@
+
+# working
+
+e = $markov_brain {
+     hiddens =   2 
+	 outputs =  8
+	}
+
+P = $linear { 
+	size = [ 10 20 30 40 50 ] 
+	entity = !e # `entity` is special
+	track_lineage = true 
+	load_from = ""
+	}
+
+
+
+fors = $sequence  
+{
+     first 	= 	$max_one 	
+				{ 
+				  ? ones 1 
+			      length =  8   
+				}
+     second = $elite_replacement  {  strength = 0.4  }
+}
+
+
+E = $cycle  { 
+ count = 101
+  world = !fors
+}
+

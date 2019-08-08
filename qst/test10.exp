@@ -1,0 +1,39 @@
+
+
+
+e = $markov_brain 
+	{	
+		outputs =  ^env-length 
+		#outputs =  8
+	}
+
+pop = $linear 
+	{ 
+	entity = !e # `entity` is special
+	track_lineage = true 
+	load_from = ""
+	}
+
+correct_pop = !pop { size = 40 }
+
+
+P =  !correct_pop 
+
+env = 	$max_one 	
+		{ 
+			? ones 1 
+		    length = [ 4 8 16 32 ]
+		}
+
+correct_env = $sequence  
+{
+	 first = !env
+     second = $elite_replacement  {  strength = 0.4  }
+}
+
+
+E = $cycle  { 
+ count = 1001
+  world = !correct_env 
+}
+

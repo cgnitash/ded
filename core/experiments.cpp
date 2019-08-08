@@ -48,10 +48,15 @@ std::vector<language::Token>
          std::regex_search(i, line.cend(), m, language::Parser::valid_symbol_);
          i += m.str().length())
       if (!ranges::all_of(m.str(), ::isspace))
-        tokens.push_back(language::Token{ language::parse_token_type(m.str()),
-                                          m.str(),
-                                          { line_number, i - line.cbegin() } });
-
+      {
+        auto type = language::parse_token_type(m.str());
+        tokens.push_back(language::Token{
+            type,
+            m.str(),
+            { line_number, i - line.cbegin() },
+            type == language::TokenType::tracked_word ? m.str()
+                                                      : std::string{} });
+      }
     if (i != line.cend())
     {
 
@@ -162,7 +167,10 @@ std::vector<Simulation>
 
   auto exploded_parsers = expand_all_tokens(p);
 
-  return exploded_parsers | ranges::view::transform(parse_simulation);
+  for (auto & p : exploded_parsers) p.resolve_tracked_words();
+
+  return exploded_parsers |
+         ranges::view::transform(parse_simulation);
 }
 
 std::pair<specs::PopulationSpec, specs::EnvironmentSpec>

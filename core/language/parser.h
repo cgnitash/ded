@@ -65,6 +65,8 @@ class Parser
   void attempt_parameter_override(Block &, int &);
   void attempt_trace(Block &, int &);
 
+  void replace_tw(Block& );
+  std::string look_up_tw(Token);
 
 public:
   const static std::regex valid_symbol_;
@@ -113,6 +115,8 @@ public:
   {
     labels_.push_back(label);
   }
+
+  void resolve_tracked_words();
 
   friend class specs::EnvironmentSpec;
   friend class specs::EntitySpec;

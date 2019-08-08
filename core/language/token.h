@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 
 namespace ded
 {
@@ -20,6 +21,7 @@ enum class TokenType
   close_brace,
   assignment,
   trace,
+  tracked_word,
   word,
   component,
   variable,
@@ -34,6 +36,7 @@ struct Token
   TokenType           type_;
   std::string         expr_;
   std::pair<int, int> location_;
+  std::string refers_;
 };
 
 struct Block

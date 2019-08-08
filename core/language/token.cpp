@@ -27,6 +27,8 @@ TokenType
     return TokenType::component;
   if (s[0] == '!')
     return TokenType::variable;
+  if (s[0] == '^')
+    return TokenType::tracked_word;
   return TokenType::word;
 }
 }   // namespace language

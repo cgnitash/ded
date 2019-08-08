@@ -20,7 +20,7 @@ namespace language
 
 // order of options matter
 const std::regex Parser::valid_symbol_{
-  R"~~(^(\s+|\[|\]|\{|\}|\=|\?|\$\w+|\!\w+|["\.\w]+))~~"
+  R"~~(^(\s+|\[|\]|\{|\}|\=|\?|\$\w+|\!\w+|\^[-\w]+|["\.\w]+))~~"
 };
 
 void
@@ -118,12 +118,65 @@ Block
   return process_overrides(current, begin + 2);
 }
 
+Block
+    Parser::process_overrides(Block current, int begin)
+{
+
+  auto scope_is_open = [&] {
+    if (begin == static_cast<int>(source_tokens_.tokens.size()))
+    {
+      err_invalid_token(source_tokens_.tokens[current.range_.first + 1],
+                        "unmatched brace");
+      throw ParserError{};
+    }
+    return source_tokens_.tokens[begin].type_ != TokenType::close_brace;
+  };
+
+  while (scope_is_open())
+  {
+
+    if (begin + 3 >= static_cast<int>(source_tokens_.tokens.size()) ||
+        (source_tokens_.tokens[begin + 1].type_ != TokenType::assignment &&
+         source_tokens_.tokens[begin].type_ != TokenType::trace))
+    {
+      err_invalid_token(source_tokens_.tokens[begin],
+                        "unable to parse override syntax");
+      throw ParserError{};
+    }
+
+    attempt_override(current, begin);
+  }
+
+  current.range_.second = begin + 1;
+  return current;
+}
+
+void
+    Parser::attempt_override(Block &current, int &begin)
+{
+  switch (source_tokens_.tokens[begin].type_)
+  {
+    case TokenType::word:
+      attempt_parameter_override(current, begin);
+      break;
+    case TokenType::trace:
+      attempt_trace(current, begin);
+      break;
+    default:
+      err_invalid_token(
+          source_tokens_.tokens[begin],
+          "unexpected symbol: expected parameter or tag-rewrite? here");
+      throw ParserError{};
+  }
+}
+
 void
     Parser::attempt_parameter_override(Block &current, int &begin)
 {
   switch (source_tokens_.tokens[begin + 2].type_)
   {
     case TokenType::word:
+    case TokenType::tracked_word:
       if (auto f = ranges::find_if(current.overrides_,
                                    [&](auto over) {
                                      return over.first.expr_ ==
@@ -200,58 +253,6 @@ void
   begin += 3;
 }
 
-void
-    Parser::attempt_override(Block &current, int &begin)
-{
-  switch (source_tokens_.tokens[begin].type_)
-  {
-    case TokenType::word:
-      attempt_parameter_override(current, begin);
-      break;
-    case TokenType::trace:
-      attempt_trace(current, begin);
-      break;
-    default:
-      err_invalid_token(
-          source_tokens_.tokens[begin],
-          "unexpected symbol: expected parameter or tag-rewrite? here");
-      throw ParserError{};
-  }
-}
-
-Block
-    Parser::process_overrides(Block current, int begin)
-{
-
-  auto scope_is_open = [&] {
-    if (begin == static_cast<int>(source_tokens_.tokens.size()))
-    {
-      err_invalid_token(source_tokens_.tokens[current.range_.first + 1],
-                        "unmatched brace");
-      throw ParserError{};
-    }
-    return source_tokens_.tokens[begin].type_ != TokenType::close_brace;
-  };
-
-  while (scope_is_open())
-  {
-
-    if (begin + 3 >= static_cast<int>(source_tokens_.tokens.size()) ||
-        (source_tokens_.tokens[begin + 1].type_ != TokenType::assignment &&
-         source_tokens_.tokens[begin].type_ != TokenType::trace))
-    {
-      err_invalid_token(source_tokens_.tokens[begin],
-                        "unable to parse override syntax");
-      throw ParserError{};
-    }
-
-    attempt_override(current, begin);
-  }
-
-  current.range_.second = begin + 1;
-  return current;
-}
-
 Block
     Parser::variable_block(int begin)
 {
@@ -289,7 +290,7 @@ Block
     throw ParserError{};
   }
 
-    return current;
+  return current;
 }
 
 void
@@ -389,9 +390,9 @@ std::vector<Parser>
                                   pos->second + 1);
 
   return subs | ranges::view::transform([&](auto token) {
-           auto   temp = source_tokens_;
+           auto temp = source_tokens_;
            temp.tokens.insert(ranges::begin(temp.tokens) + pos->first, token);
-           Parser p{*this};
+           Parser p{ *this };
            p.update_source_tokens(temp);
            p.update_labels(
                { (ranges::begin(temp.tokens) + pos->first - 2)->expr_,
@@ -413,6 +414,74 @@ void
     std::cout << name.expr_ << "->\n";
     print(value);
   }
+}
+void
+    Parser::resolve_tracked_words()
+{
+
+  for (auto &var : variables_)
+  {
+    replace_tw(var.second);
+  }
+}
+
+void
+    Parser::replace_tw(Block &block)
+{
+  for (auto &over : block.overrides_)
+  {
+    if (!over.second.refers_.empty())
+      over.second.expr_ = look_up_tw(over.second);
+  }
+  {
+    for (auto &nested : block.nested_)
+      replace_tw(nested.second);
+  }
+}
+
+std::string
+    Parser::look_up_tw(Token token)
+{
+  auto                     refers = token.refers_.substr(1);
+  std::vector<std::string> pats   = refers | ranges::view::split('-');
+
+  auto f = ranges::find_if(
+      variables_, [&](auto var) { return var.first.expr_ == pats[0]; });
+  if (f == ranges::end(variables_))
+  {
+    err_invalid_token(token, "tracked path " + refers + " is not valid");
+    throw ParserError{};
+  }
+
+  auto b = f->second;
+  for (auto i = 1u; i < pats.size() - 1; i++)
+  {
+    auto nested = pats[i];
+
+    auto nb = ranges::find_if(
+        b.nested_, [&](auto var) { return var.first.expr_ == nested; });
+    if (nb == ranges::end(b.nested_))
+    {
+      err_invalid_token(token,
+                        "tracked path " + refers + " is not valid: '" + nested +
+                            "' is not a nested component");
+      throw ParserError{};
+    }
+    b = nb->second;
+  }
+
+  auto param = pats.back();
+
+  auto par = ranges::find_if(
+      b.overrides_, [&](auto var) { return var.first.expr_ == param; });
+  if (par == ranges::end(b.overrides_))
+  {
+    err_invalid_token(token,
+                      "tracked path " + refers + " is not valid: '" + param +
+                          "' is not a parameter");
+    throw ParserError{};
+  }
+  return par->second.expr_;
 }
 }   // namespace language
 }   // namespace ded
