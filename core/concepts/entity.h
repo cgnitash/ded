@@ -21,7 +21,7 @@ namespace ded
 namespace concepts
 {
 
-// polymorphic wrapper for types that walk, talk, and quack like organisms
+// polymorphic wrapper for types that walk, talk, and quack like Entitys
 class Entity
 {
 public:
