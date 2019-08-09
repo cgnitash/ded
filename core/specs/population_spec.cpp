@@ -30,7 +30,7 @@ PopulationSpec::PopulationSpec(language::Parser parser, language::Block block)
         parameters_, [&](auto param) { return param.first == name.expr_; });
     if (f == parameters_.end())
     {
-      parser.err_invalid_token(name,
+      parser.errInvalidToken(name,
                           "this does not override any parameters of " + name_,
                           parameters_ | ranges::view::transform([](auto param) {
                             return param.first;
@@ -40,17 +40,17 @@ PopulationSpec::PopulationSpec(language::Parser parser, language::Block block)
 
     ConfigurationPrimitive cp;
     cp.parse(value.expr_);
-    if (cp.type_as_string() != f->second.type_as_string())
+    if (cp.typeAsString() != f->second.typeAsString())
     {
-      parser.err_invalid_token(
-          value, "type mismatch, should be " + f->second.type_as_string());
+      parser.errInvalidToken(
+          value, "type mismatch, should be " + f->second.typeAsString());
       throw language::ParserError{};
     }
-    f->second.parse(cp.value_as_string());
-    auto con = f->second.check_constraints();
+    f->second.parse(cp.valueAsString());
+    auto con = f->second.checkConstraints();
     if (con)
     {
-      parser.err_invalid_token(
+      parser.errInvalidToken(
           value,
               "parameter constraint not satisfied: " + *con );
       throw language::ParserError{};
@@ -62,10 +62,10 @@ PopulationSpec::PopulationSpec(language::Parser parser, language::Block block)
     auto name       = blover.first;
     auto nested_blk = blover.second;
 
-    auto ct = config_manager::type_of_block(nested_blk.name_.substr(1));
+    auto ct = config_manager::typeOfBlock(nested_blk.name_.substr(1));
     if (ct != "entity")
     {
-      parser.err_invalid_token(name,
+      parser.errInvalidToken(name,
                           "override of " + name.expr_ +
                               " inside population:: must be of type entity");
       throw language::ParserError{};
@@ -83,7 +83,7 @@ std::string
   return alignment + "population:" + name_ + "\n" + alignment + "P\n" +
          (parameters_ | ranges::view::transform([&](auto parameter) {
             return alignment + parameter.first + ":" +
-                   parameter.second.value_as_string() + "\n";
+                   parameter.second.valueAsString() + "\n";
           }) |
           ranges::action::join)+
          alignment + "E" + es_.dump(depth + 1);
@@ -119,14 +119,14 @@ PopulationSpec
 }
 
 std::string
-    PopulationSpec::pretty_print()
+    PopulationSpec::prettyPrint()
 {
   std::stringstream out;
   out << "population::" << name_ << "\n{\n";
 
   out << " parameters\n";
   for (auto [parameter, value] : parameters_)
-    out << std::setw(16) << parameter << " : " << value.value_as_string()
+    out << std::setw(16) << parameter << " : " << value.valueAsString()
         << "\n";
   /*
 out << TermColours::yellow_fg << "inputs----" << TermColours::reset

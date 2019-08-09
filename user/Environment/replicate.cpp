@@ -17,7 +17,7 @@ ded::concepts::Population
                       ranges::begin(accumulated_scores),
                       [this](const auto &org, auto score) {
                         return score +
-                               std::get<double>(org.data.get_value(x_tag_));
+                               std::get<double>(org.data.getValue(x_tag_));
                       });
   });
 
@@ -28,7 +28,7 @@ ded::concepts::Population
                     accumulated_scores,
                     ranges::begin(vec),
                     [this](auto org, const auto score) {
-                      org.data.set_value(x_tag_, score / this->num_);
+                      org.data.setValue(x_tag_, score / this->num_);
                       return org;
                     });
 

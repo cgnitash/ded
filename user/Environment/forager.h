@@ -84,40 +84,40 @@ public:
   ded::specs::EnvironmentSpec publish_configuration()
   {
     ded::specs::EnvironmentSpec es;//{"forager"};
-    es.bind_parameter("grid_size",grid_size_);
-    es.bind_parameter("updates",updates_);
-    es.bind_parameter("density",density_);
-    es.bind_parameter("replace",replace_);
-    es.bind_parameter("visualize",visualize_);
-    es.bind_parameter("sensor_range",sensor_range_);
-    es.bind_parameter("direction",directional_);
+    es.bindParameter("grid_size",grid_size_);
+    es.bindParameter("updates",updates_);
+    es.bindParameter("density",density_);
+    es.bindParameter("replace",replace_);
+    es.bindParameter("visualize",visualize_);
+    es.bindParameter("sensor_range",sensor_range_);
+    es.bindParameter("direction",directional_);
  
-    es.bind_post("food_eaten","double");
+    es.bindPostTag("food_eaten","double");
 
-    //es.bind_input("line_of_sight",org_input_los_tag_);
-    //es.bind_output("action",org_output_action_tag_);
-    es.bind_input("line_of_sight","<double,sensor_range>");
-    es.bind_output("action","<double,2>");
+    //es.bindIinput("line_of_sight",org_input_los_tag_);
+    //es.bindOutput("action",org_output_action_tag_);
+    es.bindIinput("line_of_sight","<double,sensor_range>");
+    es.bindOutput("action","<double,2>");
     return es;
   }
 
   void configure(ded::specs::EnvironmentSpec es)
   {
 
-    es.configure_parameter("grid_size",grid_size_);
-    es.configure_parameter("updates",updates_);
-    es.configure_parameter("density",density_);
-    es.configure_parameter("replace",replace_);
-    es.configure_parameter("visualize",visualize_);
-    es.configure_parameter("sensor_range",sensor_range_);
-    es.configure_parameter("direction",directional_);
+    es.configureParameter("grid_size",grid_size_);
+    es.configureParameter("updates",updates_);
+    es.configureParameter("density",density_);
+    es.configureParameter("replace",replace_);
+    es.configureParameter("visualize",visualize_);
+    es.configureParameter("sensor_range",sensor_range_);
+    es.configureParameter("direction",directional_);
 
     resources_ = std::vector(grid_size_, std::vector(grid_size_, 0));
 
-    es.configure_post("food_eaten",food_eaten_tag_);
+    es.configurePostTag("food_eaten",food_eaten_tag_);
 
-    es.configure_input("line_of_sight",org_input_los_tag_);
-    es.configure_output("action",org_output_action_tag_);
+    es.configureInput("line_of_sight",org_input_los_tag_);
+    es.configureOutput("action",org_output_action_tag_);
   }
 
   ded::concepts::Population evaluate(ded::concepts::Population);

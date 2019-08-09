@@ -38,7 +38,7 @@ private:
 public:
   template <typename T>
   void
-      set_value(T value)
+      setValue(T value)
   {
     assert(std::holds_alternative<std::monostate>(value_) ||
            std::holds_alternative<T>(value_));
@@ -46,7 +46,7 @@ public:
   }
 
   void
-      set_constraints(
+      setConstraints(
           std::vector<std::pair<std::function<bool(long)>, std::string>> cons)
   {
     assert(std::holds_alternative<long>(value_));
@@ -54,7 +54,7 @@ public:
   }
 
   void
-      set_constraints(
+      setConstraints(
           std::vector<std::pair<std::function<bool(double)>, std::string>> cons)
   {
     assert(std::holds_alternative<double>(value_));
@@ -62,7 +62,7 @@ public:
   }
 
   void
-      set_constraints(
+      setConstraints(
           std::vector<std::pair<std::function<bool(bool)>, std::string>> cons)
   {
     assert(std::holds_alternative<bool>(value_));
@@ -70,7 +70,7 @@ public:
   }
 
   void
-      set_constraints(
+      setConstraints(
           std::vector<std::pair<std::function<bool(std::string)>, std::string>> cons)
   {
     assert(std::holds_alternative<std::string>(value_));
@@ -78,7 +78,7 @@ public:
   }
 
   std::optional<std::string>
-      check_constraints() const
+      checkConstraints() const
   {
 
     return std::visit(
@@ -120,8 +120,8 @@ public:
   }
 
   void        parse(std::string);
-  std::string value_as_string() const;
-  std::string type_as_string() const;
+  std::string valueAsString() const;
+  std::string typeAsString() const;
 };
 }   // namespace specs
 }   // namespace ded

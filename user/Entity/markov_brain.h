@@ -41,30 +41,30 @@ public:
   {
     ded::specs::EntitySpec es;
 
-	es.bind_parameter("inputs",input_);
-	es.bind_parameter("outputs",output_);
-	es.bind_parameter("hiddens",hidden_);
+	es.bindParameter("inputs",input_);
+	es.bindParameter("outputs",output_);
+	es.bindParameter("hiddens",hidden_);
 
-    es.bind_input("in_sense","<double,inputs>");
-    es.bind_output("out_sense","<double,outputs>");
+    es.bindIinput("in_sense","<double,inputs>");
+    es.bindOutput("out_sense","<double,outputs>");
 
     return es;
   }
   void configure(ded::specs::EntitySpec es)
   {
   
-	es.configure_parameter("inputs",input_);
-	es.configure_parameter("outputs",output_);
-	es.configure_parameter("hiddens",hidden_);
+	es.configureParameter("inputs",input_);
+	es.configureParameter("outputs",output_);
+	es.configureParameter("hiddens",hidden_);
 
-    es.configure_input("in_sense", in_sense_);
+    es.configureInput("in_sense", in_sense_);
 
-    es.configure_output("out_sense", out_sense_);
+    es.configureOutput("out_sense", out_sense_);
 
 	  // MUST BE ADDRESSED
   //genome_config_ = con["parameters"]["genome-params"];
     //genome_.configure(genome_config_);
-    //es.configure_entity("genome", genome_spec_ );
+    //es.configureEntity("genome", genome_spec_ );
 
     genome_.generate(500);
     buffer_ = std::vector(input_ + output_ + hidden_, 0.);

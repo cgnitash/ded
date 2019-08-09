@@ -13,7 +13,7 @@ namespace experiments
 {
 
 std::vector<std::string>
-    open_file(std::string file_name)
+    openFile(std::string file_name)
 {
   std::vector<std::string> lines;
   std::ifstream            file(file_name);
@@ -35,7 +35,7 @@ std::vector<std::string>
 }
 
 std::vector<language::Token>
-    lex(std::vector<std::string> lines)
+    lexTokens(std::vector<std::string> lines)
 {
   std::vector<language::Token> tokens;
   for (auto [line_number, line] : ranges::view::enumerate(lines))
@@ -49,7 +49,7 @@ std::vector<language::Token>
          i += m.str().length())
       if (!ranges::all_of(m.str(), ::isspace))
       {
-        auto type = language::parse_token_type(m.str());
+        auto type = language::parseTokenType(m.str());
         tokens.push_back(language::Token{
             type,
             m.str(),
@@ -73,7 +73,7 @@ std::vector<language::Token>
 }
 
 Simulation
-    parse_simulation(language::Parser p)
+    parseSimulation(language::Parser p)
 {
 
   std::map<std::string,
@@ -85,7 +85,7 @@ Simulation
   auto parser_variables = p.variables();
   for (auto [name, bl] : parser_variables)
   {
-    auto ct = ded::config_manager::type_of_block(bl.name_.substr(1));
+    auto ct = ded::config_manager::typeOfBlock(bl.name_.substr(1));
     if (ct == "environment")
       vars[name.expr_] = ded::specs::EnvironmentSpec{ p, bl };
     else if (ct == "entity")
@@ -112,7 +112,7 @@ Simulation
   }
 
   auto env_spec = std::get<ded::specs::EnvironmentSpec>(vars["E"]);
-  env_spec.instantiate_user_parameter_sizes();
+  env_spec.instantiateUserParameterSizes();
 
   if (vars.find("P") == vars.end())
   {
@@ -126,19 +126,19 @@ Simulation
     throw specs::SpecError{};
   }
   auto pop_spec = std::get<ded::specs::PopulationSpec>(vars["P"]);
-  auto io       = pop_spec.instantiate_nested_entity_user_parameter_sizes();
+  auto io       = pop_spec.instantiateNestedEntityUserParameterSizes();
 
-  env_spec.bind_entity_io(io);
+  env_spec.bindEntityIO(io);
 
-  env_spec.bind_tags(0);
+  env_spec.bindTags(0);
 
-  env_spec.record_traces();
+  env_spec.recordTraces();
 
-  return { pop_spec, env_spec, p.labels(), env_spec.query_traces() };
+  return { pop_spec, env_spec, p.labels(), env_spec.queryTraces() };
 }
 
 std::vector<language::Parser>
-    expand_all_tokens(language::Parser p)
+    expandAllTokens(language::Parser p)
 {
   std::vector<language::Parser> exploded_parsers = { p };
 
@@ -146,7 +146,7 @@ std::vector<language::Parser>
   {
     std::vector<language::Parser> next_explosion =
         exploded_parsers |
-        ranges::view::transform(&language::Parser::vary_parameter) |
+        ranges::view::transform(&language::Parser::varyParameter) |
         ranges::action::join;
     if (next_explosion.size() == exploded_parsers.size())
       break;
@@ -157,24 +157,24 @@ std::vector<language::Parser>
 }
 
 std::vector<Simulation>
-    parse_all_simulations(std::string file_name)
+    parseAllSimulations(std::string file_name)
 {
-  auto lines  = open_file(file_name);
-  auto tokens = lex(lines);
+  auto lines  = openFile(file_name);
+  auto tokens = lexTokens(lines);
 
   ded::language::Parser p;
-  p.update_source_tokens(language::SourceTokens{ file_name, lines, tokens });
+  p.updateSourceTokens(language::SourceTokens{ file_name, lines, tokens });
 
-  auto exploded_parsers = expand_all_tokens(p);
+  auto exploded_parsers = expandAllTokens(p);
 
-  for (auto & p : exploded_parsers) p.resolve_tracked_words();
+  for (auto & p : exploded_parsers) p.resolveTrackedWords();
 
   return exploded_parsers |
-         ranges::view::transform(parse_simulation);
+         ranges::view::transform(parseSimulation);
 }
 
 std::pair<specs::PopulationSpec, specs::EnvironmentSpec>
-    load_simulation(std::string exp_name)
+    loadSimulation(std::string exp_name)
 {
 
   auto exp_path = "./data/" + exp_name;
@@ -199,12 +199,12 @@ std::pair<specs::PopulationSpec, specs::EnvironmentSpec>
 }
 
 void
-    prepare_simulations_msuhpc(const std::vector<Simulation> &, int)
+    prepareSimulationsMsuHpcc(const std::vector<Simulation> &, int)
 {
 }
 
 void
-    prepare_simulations_locally(const std::vector<Simulation> &simulations,
+    prepareSimulationsLocally(const std::vector<Simulation> &simulations,
                                 int                            replicate_count)
 {
 
@@ -217,14 +217,14 @@ void
   for (auto sim : simulations)
   {
 
-    auto exp_name      = sim.bar_code();
+    auto exp_name      = sim.barCode();
     auto exp_data_path = data_path + exp_name + "/";
 
-    std::string pretty_name = sim.pretty_name();
+    std::string prettyName = sim.prettyName();
 
     if (std::experimental::filesystem::exists(exp_data_path))
     {
-      std::cout << "Warning: simulation " << pretty_name
+      std::cout << "Warning: simulation " << prettyName
                 << " already exists. Skipping this simulation\n";
     }
     else
@@ -239,7 +239,7 @@ void
       pop_spec_file << sim.population_spec.dump(0);
 
       exp_names.push_back(exp_name);
-      std::cout << "simulation " << pretty_name << " successfully prepared\n";
+      std::cout << "simulation " << prettyName << " successfully prepared\n";
     }
   }
 

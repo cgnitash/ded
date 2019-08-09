@@ -26,21 +26,21 @@ public:
   ded::specs::EnvironmentSpec publish_configuration()
   {
     ded::specs::EnvironmentSpec es;
-    es.bind_parameter("length",length_);
+    es.bindParameter("length",length_);
  
-    es.bind_post("ones","double");
+    es.bindPostTag("ones","double");
 
-    es.bind_output("ons","<double,length>");
+    es.bindOutput("ons","<double,length>");
     return es;
   }
   void configure(ded::specs::EnvironmentSpec es)
   {
 
-    es.configure_parameter("length",length_);
+    es.configureParameter("length",length_);
 
-    es.configure_post("ones",ones_tag_);
+    es.configurePostTag("ones",ones_tag_);
 
-    es.configure_output("ons",org_output_ones_tag_);
+    es.configureOutput("ons",org_output_ones_tag_);
   }
 
   ded::concepts::Population evaluate(ded::concepts::Population);

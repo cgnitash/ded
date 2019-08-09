@@ -29,7 +29,7 @@ enum class TokenType
   close_varied_argument
 };
 
-TokenType parse_token_type(std::string);
+TokenType parseTokenType(std::string);
 
 struct Token
 {

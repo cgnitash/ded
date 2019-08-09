@@ -21,11 +21,11 @@ public:
   {
     ded::specs::EnvironmentSpec es;
 
-    es.bind_parameter("count", count_);
+    es.bindParameter("count", count_);
 
-    es.bind_environment("world", world_);
+    es.bindEnvironment("world", world_);
 
-    es.bind_tag_equality({ "world", "pre" }, { "world", "post" });
+    es.bindTagEquality({ "world", "pre" }, { "world", "post" });
 
     return es;
   }
@@ -33,9 +33,9 @@ public:
   void
       configure(ded::specs::EnvironmentSpec es)
   {
-    es.configure_parameter("count", count_);
+    es.configureParameter("count", count_);
 
-    es.configure_environment("world", world_);
+    es.configureEnvironment("world", world_);
 
     world = ded::make_Environment(world_);
   }

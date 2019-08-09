@@ -31,11 +31,11 @@ public:
 
   void configure(ded::specs::PopulationSpec ps)
   {
-    ps.configure_parameter("size",size_);
-    ps.configure_parameter("load_from",load_spec_);
-    ps.configure_parameter("track_lineage",track_lineage_);
+    ps.configureParameter("size",size_);
+    ps.configureParameter("load_from",load_spec_);
+    ps.configureParameter("track_lineage",track_lineage_);
 
-    ps.configure_entity(org_);
+    ps.configureEntity(org_);
 
     initialize();
   }
@@ -43,16 +43,16 @@ public:
   ded::specs::PopulationSpec publish_configuration()
   {
     ded::specs::PopulationSpec ps;//{"linear"};
-    ps.bind_parameter("track_lineage",track_lineage_);
-    ps.bind_parameter(
+    ps.bindParameter("track_lineage",track_lineage_);
+    ps.bindParameter(
         "size",
         size_,
         { { [](long s) { return s > 0; },
             "linear population must contain at least 1 entity" } });
-    ps.bind_parameter("load_from",load_spec_);
+    ps.bindParameter("load_from",load_spec_);
 
     //con["parameters"]["entity"] = { entity_[0], {} };
-	ps.bind_entity(org_);
+	ps.bindEntity(org_);
     return ps;
   }
 

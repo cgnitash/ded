@@ -12,7 +12,7 @@ namespace ded
 // forward declaration to provide friendship
 namespace config_manager
 {
-std::vector<std::string> all_component_names();
+std::vector<std::string> allComponentNames();
 }
 // forward declaration to provide friendship
 namespace specs
@@ -44,29 +44,29 @@ class Parser
   Labels labels_;
 
 
-  void err_invalid_token(Token, std::string, std::vector<std::string> = {});
+  void errInvalidToken(Token, std::string, std::vector<std::string> = {});
   /*
-  void open_file(std::string);
+  void openFile(std::string);
 
-  void lex();
+  void lexTokens();
   void err_unknown_symbol(std::pair<int, int>);
 	*/
 
-  void parse_expression(int);
+  void parseExpression(int);
 
-  Block expand_block(int);
+  Block expandBlock(int);
 
-  Block component_block(int);
-  Block variable_block(int);
+  Block componentBlock(int);
+  Block variableBlock(int);
 
-  Block process_overrides(Block, int);
+  Block processOverrides(Block, int);
 
-  void attempt_override(Block &, int &);
-  void attempt_parameter_override(Block &, int &);
-  void attempt_trace(Block &, int &);
+  void attemptOverride(Block &, int &);
+  void attemptParameterOverride(Block &, int &);
+  void attemptTrace(Block &, int &);
 
-  void replace_tw(Block& );
-  std::string look_up_tw(Token);
+  void replaceTokenWord(Block& );
+  std::string lookUpTokenWord(Token);
 
 public:
   const static std::regex valid_symbol_;
@@ -100,23 +100,23 @@ public:
 
   void parse(SourceTokens);
 
-  std::vector<Parser> vary_parameter();
-  std::optional<std::pair<int, int>> has_varied_parameter();
+  std::vector<Parser> varyParameter();
+  std::optional<std::pair<int, int>> hasVariedParameter();
   void print(Block b);
 
   void
-      update_source_tokens(SourceTokens s)
+      updateSourceTokens(SourceTokens s)
   {
     source_tokens_ = s;
   }
 
   void
-      update_labels(std::pair<std::string, std::string> label)
+      updateLabels(std::pair<std::string, std::string> label)
   {
     labels_.push_back(label);
   }
 
-  void resolve_tracked_words();
+  void resolveTrackedWords();
 
   friend class specs::EnvironmentSpec;
   friend class specs::EntitySpec;

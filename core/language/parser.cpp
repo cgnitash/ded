@@ -24,18 +24,18 @@ const std::regex Parser::valid_symbol_{
 };
 
 void
-    Parser::parse_expression(int begin)
+    Parser::parseExpression(int begin)
 {
   if (begin + 2 >= static_cast<int>(source_tokens_.tokens.size()))
   {
-    err_invalid_token(source_tokens_.tokens[begin],
+    errInvalidToken(source_tokens_.tokens[begin],
                       "unable to parse expression syntax");
     throw ParserError{};
   }
 
   if (source_tokens_.tokens[begin].type_ != TokenType::word)
   {
-    err_invalid_token(source_tokens_.tokens[begin],
+    errInvalidToken(source_tokens_.tokens[begin],
                       "expected new variable name here");
     throw ParserError{};
   }
@@ -47,29 +47,29 @@ void
                           });
       prev != variables_.end())
   {
-    err_invalid_token(source_tokens_.tokens[begin],
+    errInvalidToken(source_tokens_.tokens[begin],
                       "variable re-definition not allowed");
-    err_invalid_token(prev->first, "variable already defined here");
+    errInvalidToken(prev->first, "variable already defined here");
     throw ParserError{};
   }
 
   if (source_tokens_.tokens[begin + 1].type_ != TokenType::assignment)
-    err_invalid_token(source_tokens_.tokens[begin + 1], "expected =");
+    errInvalidToken(source_tokens_.tokens[begin + 1], "expected =");
 
   if (source_tokens_.tokens[begin + 2].type_ != TokenType::component &&
       source_tokens_.tokens[begin + 2].type_ != TokenType::variable)
   {
-    err_invalid_token(source_tokens_.tokens[begin + 2],
+    errInvalidToken(source_tokens_.tokens[begin + 2],
                       "expected existing variable name or component here");
     throw ParserError{};
   }
-  auto nested_block         = expand_block(begin + 2);
+  auto nested_block         = expandBlock(begin + 2);
   nested_block.range_.first = begin + 2;
   variables_.push_back({ source_tokens_.tokens[begin], nested_block });
 }
 
 void
-    Parser::err_invalid_token(Token                    tok,
+    Parser::errInvalidToken(Token                    tok,
                               std::string              message,
                               std::vector<std::string> suggestions)
 {
@@ -99,12 +99,12 @@ void
 }
 
 Block
-    Parser::expand_block(int begin)
+    Parser::expandBlock(int begin)
 {
 
   auto current = source_tokens_.tokens[begin].type_ == TokenType::variable
-                     ? variable_block(begin)
-                     : component_block(begin);
+                     ? variableBlock(begin)
+                     : componentBlock(begin);
 
   current.range_.first = begin;
 
@@ -115,17 +115,17 @@ Block
     return current;
   }
 
-  return process_overrides(current, begin + 2);
+  return processOverrides(current, begin + 2);
 }
 
 Block
-    Parser::process_overrides(Block current, int begin)
+    Parser::processOverrides(Block current, int begin)
 {
 
   auto scope_is_open = [&] {
     if (begin == static_cast<int>(source_tokens_.tokens.size()))
     {
-      err_invalid_token(source_tokens_.tokens[current.range_.first + 1],
+      errInvalidToken(source_tokens_.tokens[current.range_.first + 1],
                         "unmatched brace");
       throw ParserError{};
     }
@@ -139,12 +139,12 @@ Block
         (source_tokens_.tokens[begin + 1].type_ != TokenType::assignment &&
          source_tokens_.tokens[begin].type_ != TokenType::trace))
     {
-      err_invalid_token(source_tokens_.tokens[begin],
+      errInvalidToken(source_tokens_.tokens[begin],
                         "unable to parse override syntax");
       throw ParserError{};
     }
 
-    attempt_override(current, begin);
+    attemptOverride(current, begin);
   }
 
   current.range_.second = begin + 1;
@@ -152,18 +152,18 @@ Block
 }
 
 void
-    Parser::attempt_override(Block &current, int &begin)
+    Parser::attemptOverride(Block &current, int &begin)
 {
   switch (source_tokens_.tokens[begin].type_)
   {
     case TokenType::word:
-      attempt_parameter_override(current, begin);
+      attemptParameterOverride(current, begin);
       break;
     case TokenType::trace:
-      attempt_trace(current, begin);
+      attemptTrace(current, begin);
       break;
     default:
-      err_invalid_token(
+      errInvalidToken(
           source_tokens_.tokens[begin],
           "unexpected symbol: expected parameter or tag-rewrite? here");
       throw ParserError{};
@@ -171,7 +171,7 @@ void
 }
 
 void
-    Parser::attempt_parameter_override(Block &current, int &begin)
+    Parser::attemptParameterOverride(Block &current, int &begin)
 {
   switch (source_tokens_.tokens[begin + 2].type_)
   {
@@ -184,8 +184,8 @@ void
                                    });
           f != ranges::end(current.overrides_))
       {
-        err_invalid_token(f->first, "parameters already overridden here");
-        err_invalid_token(source_tokens_.tokens[begin],
+        errInvalidToken(f->first, "parameters already overridden here");
+        errInvalidToken(source_tokens_.tokens[begin],
                           "cannot override this parameter again");
         throw ParserError{};
       }
@@ -203,17 +203,17 @@ void
                                    });
           f != ranges::end(current.nested_))
       {
-        err_invalid_token(f->first, "nested component already overridden here");
-        err_invalid_token(source_tokens_.tokens[begin],
+        errInvalidToken(f->first, "nested component already overridden here");
+        errInvalidToken(source_tokens_.tokens[begin],
                           "cannot override this nested component again");
         throw ParserError{};
       }
       current.nested_.push_back(
-          { source_tokens_.tokens[begin], expand_block(begin + 2) });
+          { source_tokens_.tokens[begin], expandBlock(begin + 2) });
       begin = current.nested_.back().second.range_.second;
       break;
     default:
-      err_invalid_token(source_tokens_.tokens[begin + 2],
+      errInvalidToken(source_tokens_.tokens[begin + 2],
                         "expected override of parameter or nested spec here");
       throw ParserError{};
   }
@@ -225,7 +225,7 @@ void
 {
   if (tokens_[begin + 2].type_ != TokenType::tag_rewrite)
   {
-    err_invalid_token(tokens_[begin + 2], "expected tag-rewrite here");
+    errInvalidToken(tokens_[begin + 2], "expected tag-rewrite here");
     throw ParserError{};
   }
   current.tag_rewrites_.push_back({ tokens_[begin], tokens_[begin + 2] });
@@ -234,17 +234,17 @@ void
 */
 
 void
-    Parser::attempt_trace(Block &current, int &begin)
+    Parser::attemptTrace(Block &current, int &begin)
 {
   if (source_tokens_.tokens[begin + 1].type_ != TokenType::word)
   {
-    err_invalid_token(source_tokens_.tokens[begin + 1],
+    errInvalidToken(source_tokens_.tokens[begin + 1],
                       "expected tag name here");
     throw ParserError{};
   }
   if (source_tokens_.tokens[begin + 2].type_ != TokenType::word)
   {
-    err_invalid_token(source_tokens_.tokens[begin + 2],
+    errInvalidToken(source_tokens_.tokens[begin + 2],
                       "expected tag name here");
     throw ParserError{};
   }
@@ -254,7 +254,7 @@ void
 }
 
 Block
-    Parser::variable_block(int begin)
+    Parser::variableBlock(int begin)
 {
   if (auto f = ranges::find_if(variables_,
                                [tok = source_tokens_.tokens[begin]](auto var) {
@@ -262,7 +262,7 @@ Block
                                });
       f == variables_.end())
   {
-    err_invalid_token(source_tokens_.tokens[begin],
+    errInvalidToken(source_tokens_.tokens[begin],
                       "this variable has not been defined",
                       variables_ | ranges::view::transform([](auto var) {
                         return var.first.expr_;
@@ -276,17 +276,17 @@ Block
 }
 
 Block
-    Parser::component_block(int begin)
+    Parser::componentBlock(int begin)
 {
   Block current;
   current.name_ = source_tokens_.tokens[begin].expr_;
   if (ranges::none_of(
-          config_manager::all_component_names(),
+          config_manager::allComponentNames(),
           [&](auto comp_name) { return comp_name == current.name_.substr(1); }))
   {
-    err_invalid_token(source_tokens_.tokens[begin],
+    errInvalidToken(source_tokens_.tokens[begin],
                       "this variable has not been defined",
-                      config_manager::all_component_names());
+                      config_manager::allComponentNames());
     throw ParserError{};
   }
 
@@ -297,18 +297,18 @@ void
     Parser::parse(SourceTokens source_tokens)
 {
   source_tokens_ = source_tokens;
-  //  open_file(file_name);
-  //  lex();
+  //  openFile(file_name);
+  //  lexTokens();
 
   for (auto start = 0u; start != source_tokens_.tokens.size();
        start      = variables_.back().second.range_.second)
-    parse_expression(start);
+    parseExpression(start);
 
   return;
 }
 
 std::optional<std::pair<int, int>>
-    Parser::has_varied_parameter()
+    Parser::hasVariedParameter()
 {
 
   auto open_variance_position = ranges::find(
@@ -323,21 +323,21 @@ std::optional<std::pair<int, int>>
       (open_variance_position - 1)->type_ != TokenType::assignment ||
       (open_variance_position - 2)->type_ != TokenType::word)
   {
-    err_invalid_token(*open_variance_position,
+    errInvalidToken(*open_variance_position,
                       "varied parameter syntax error here");
     throw ParserError{};
   }
 
   if (close_variance_position == ranges::end(source_tokens_.tokens))
   {
-    err_invalid_token(*open_variance_position,
+    errInvalidToken(*open_variance_position,
                       "varied parameter is not closed");
     throw ParserError{};
   }
 
   if (close_variance_position < open_variance_position)
   {
-    err_invalid_token(*close_variance_position,
+    errInvalidToken(*close_variance_position,
                       "unexpected ']' no varied parameter to close here");
     throw ParserError{};
   }
@@ -348,19 +348,19 @@ std::optional<std::pair<int, int>>
                             &Token::type_);
       f != close_variance_position)
   {
-    err_invalid_token(*f, "varied parameters cannot be nested");
+    errInvalidToken(*f, "varied parameters cannot be nested");
     throw ParserError{};
   }
 
   if (open_variance_position + 1 == close_variance_position)
   {
-    err_invalid_token(*open_variance_position, "varying range is empty ");
+    errInvalidToken(*open_variance_position, "varying range is empty ");
     throw ParserError{};
   }
 
   if (open_variance_position + 2 == close_variance_position)
   {
-    err_invalid_token(*(open_variance_position + 1),
+    errInvalidToken(*(open_variance_position + 1),
                       "varying on a single value is redundant");
     throw ParserError{};
   }
@@ -371,9 +371,9 @@ std::optional<std::pair<int, int>>
 }
 
 std::vector<Parser>
-    Parser::vary_parameter()
+    Parser::varyParameter()
 {
-  auto pos = has_varied_parameter();
+  auto pos = hasVariedParameter();
   if (!pos)
   {
     parse(source_tokens_);
@@ -393,8 +393,8 @@ std::vector<Parser>
            auto temp = source_tokens_;
            temp.tokens.insert(ranges::begin(temp.tokens) + pos->first, token);
            Parser p{ *this };
-           p.update_source_tokens(temp);
-           p.update_labels(
+           p.updateSourceTokens(temp);
+           p.updateLabels(
                { (ranges::begin(temp.tokens) + pos->first - 2)->expr_,
                  token.expr_ });
            return p;
@@ -416,31 +416,31 @@ void
   }
 }
 void
-    Parser::resolve_tracked_words()
+    Parser::resolveTrackedWords()
 {
 
   for (auto &var : variables_)
   {
-    replace_tw(var.second);
+    replaceTokenWord(var.second);
   }
 }
 
 void
-    Parser::replace_tw(Block &block)
+    Parser::replaceTokenWord(Block &block)
 {
   for (auto &over : block.overrides_)
   {
     if (!over.second.refers_.empty())
-      over.second.expr_ = look_up_tw(over.second);
+      over.second.expr_ = lookUpTokenWord(over.second);
   }
   {
     for (auto &nested : block.nested_)
-      replace_tw(nested.second);
+      replaceTokenWord(nested.second);
   }
 }
 
 std::string
-    Parser::look_up_tw(Token token)
+    Parser::lookUpTokenWord(Token token)
 {
   auto                     refers = token.refers_.substr(1);
   std::vector<std::string> pats   = refers | ranges::view::split('-');
@@ -449,7 +449,7 @@ std::string
       variables_, [&](auto var) { return var.first.expr_ == pats[0]; });
   if (f == ranges::end(variables_))
   {
-    err_invalid_token(token, "tracked path " + refers + " is not valid");
+    errInvalidToken(token, "tracked path " + refers + " is not valid");
     throw ParserError{};
   }
 
@@ -462,7 +462,7 @@ std::string
         b.nested_, [&](auto var) { return var.first.expr_ == nested; });
     if (nb == ranges::end(b.nested_))
     {
-      err_invalid_token(token,
+      errInvalidToken(token,
                         "tracked path " + refers + " is not valid: '" + nested +
                             "' is not a nested component");
       throw ParserError{};
@@ -476,7 +476,7 @@ std::string
       b.overrides_, [&](auto var) { return var.first.expr_ == param; });
   if (par == ranges::end(b.overrides_))
   {
-    err_invalid_token(token,
+    errInvalidToken(token,
                       "tracked path " + refers + " is not valid: '" + param +
                           "' is not a parameter");
     throw ParserError{};

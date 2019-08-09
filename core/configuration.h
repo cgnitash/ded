@@ -26,15 +26,15 @@ std::string auto_class_name_as_string() = delete;
 namespace config_manager
 {
 
-std::string type_of_block(std::string name);
+std::string typeOfBlock(std::string name);
 void        show_config(std::ostream &out, std::string name);
-void        list_all_configs(std::ostream &out);
-void        save_all_configs();
+void        listAllConfigs(std::ostream &out);
+void        saveAllConfigs();
 
-std::vector<std::string> all_component_names();
-std::vector<std::string> all_entity_names();
-std::vector<std::string> all_environment_names();
-std::vector<std::string> all_population_names();
+std::vector<std::string> allComponentNames();
+std::vector<std::string> allEntityNames();
+std::vector<std::string> allEnvironmentNames();
+std::vector<std::string> allPopulationNames();
 }   // namespace config_manager
 
 }   // namespace ded

@@ -83,15 +83,15 @@ class EnvironmentSpec
   // Parser parser_;
   // Block block_;
 
-  void match_tags(SignalSpecSet &source_tags,
+  void matchTags(SignalSpecSet &source_tags,
                   SignalSpecSet &sink_tags,
                   int &          tag_count);
-  void update_and_match_tags(SignalSpecSet &source_tags,
+  void updateAndMatchTags(SignalSpecSet &source_tags,
                              SignalSpecSet &sink_tags,
                              int &          tag_count);
-  void update_nested_constraints(SignalSpecSet &constraints);
-  void match_tag_flow_equalities(int &tag_count);
-  void match_nested_tag_constraints(int &tag_count);
+  void updateNestedConstraints(SignalSpecSet &constraints);
+  void matchTagFlowEqualities(int &tag_count);
+  void matchNestedTagConstraints(int &tag_count);
 
 public:
   // EnvironmentSpec() = default;
@@ -116,19 +116,19 @@ public:
   }
 
   auto
-      get_user_specified_name() const
+      getUserSpecifiedName() const
   {
     return user_specified_name_;
   }
   auto
-      set_user_specified_name(std::string name)
+      setUserSpecifiedName(std::string name)
   {
     user_specified_name_ = name;
   }
 
   template <typename T>
   void
-      bind_parameter(
+      bindParameter(
           std::string                                                 name,
           T                                                           value,
           std::vector<std::pair<std::function<bool(T)>, std::string>> cons = {})
@@ -140,14 +140,14 @@ public:
                 << " has already been declared\n";
       throw SpecError{};
     }
-    parameters_[name].set_value(value);
-	parameters_[name].set_constraints(cons);
+    parameters_[name].setValue(value);
+	parameters_[name].setConstraints(cons);
 
   }
 
   template <typename T>
   void
-      configure_parameter(std::string name, T &value)
+      configureParameter(std::string name, T &value)
   {
     if (parameters_.find(name) == parameters_.end())
     {
@@ -159,13 +159,13 @@ public:
   }
 
   void
-      bind_pre(std::string name, std::string value)
+      bindPreTag(std::string name, std::string value)
   {
     tags_.pre_.push_back({ name, SignalSpec{ name, name, value } });
   }
 
   void
-      configure_pre(std::string name, std::string &value)
+      configurePreTag(std::string name, std::string &value)
   {
     value =
         ranges::find_if(tags_.pre_, [=](auto ns) { return ns.first == name; })
@@ -173,13 +173,13 @@ public:
   }
 
   void
-      bind_post(std::string name, std::string value)
+      bindPostTag(std::string name, std::string value)
   {
     tags_.post_.push_back({ name, SignalSpec{ name, name, value } });
   }
 
   void
-      configure_post(std::string name, std::string &value)
+      configurePostTag(std::string name, std::string &value)
   {
     value =
         ranges::find_if(tags_.post_, [=](auto ns) { return ns.first == name; })
@@ -187,13 +187,13 @@ public:
   }
 
   void
-      bind_input(std::string name, std::string value)
+      bindIinput(std::string name, std::string value)
   {
     io_.inputs_.push_back({ name, SignalSpec{ name, name, value } });
   }
 
   void
-      configure_input(std::string name, std::string &value)
+      configureInput(std::string name, std::string &value)
   {
     value =
         ranges::find_if(io_.inputs_, [=](auto ns) { return ns.first == name; })
@@ -201,13 +201,13 @@ public:
   }
 
   void
-      bind_output(std::string name, std::string value)
+      bindOutput(std::string name, std::string value)
   {
     io_.outputs_.push_back({ name, SignalSpec{ name, name, value } });
   }
 
   void
-      configure_output(std::string name, std::string &value)
+      configureOutput(std::string name, std::string &value)
   {
     value =
         ranges::find_if(io_.outputs_, [=](auto ns) { return ns.first == name; })
@@ -215,7 +215,7 @@ public:
   }
 
   void
-      bind_environment(std::string name, EnvironmentSpec env)
+      bindEnvironment(std::string name, EnvironmentSpec env)
   {
     if (nested_.find(name) != nested_.end())
     {
@@ -227,7 +227,7 @@ public:
   }
 
   void
-      configure_environment(std::string name, EnvironmentSpec &e)
+      configureEnvironment(std::string name, EnvironmentSpec &e)
   {
     if (nested_.find(name) == nested_.end())
     {
@@ -239,7 +239,7 @@ public:
   }
 
   void
-      bind_environment_pre_constraints(
+      bindEnvironmentPreConstraints(
           std::string                                      env_name,
           std::vector<std::pair<std::string, std::string>> pre_constraints)
   {
@@ -255,7 +255,7 @@ public:
   }
 
   void
-      bind_environment_post_constraints(
+      bindEnvironmentPostConstraints(
           std::string                                      env_name,
           std::vector<std::pair<std::string, std::string>> post_constraints)
   {
@@ -270,7 +270,7 @@ public:
   }
 
   void
-      bind_tag_equality(std::pair<std::string, std::string> x,
+      bindTagEquality(std::pair<std::string, std::string> x,
                         std::pair<std::string, std::string> y)
   {
     auto        is_pre_post = [](auto s) { return s == "pre" || s == "post"; };
@@ -300,14 +300,14 @@ public:
   std::vector<std::string> dump(long depth, bool) const;
   EnvironmentSpec          parse(std::vector<std::string> pop_dump);
 
-  std::string pretty_print();
+  std::string prettyPrint();
 
   // void parser_parse();
-  void                                       instantiate_user_parameter_sizes();
-  void                                       bind_entity_io(IO);
-  void                                       bind_tags(int);
-  void                                       record_traces();
-  std::vector<std::pair<Trace, std::string>> query_traces();
+  void                                       instantiateUserParameterSizes();
+  void                                       bindEntityIO(IO);
+  void                                       bindTags(int);
+  void                                       recordTraces();
+  std::vector<std::pair<Trace, std::string>> queryTraces();
 
   friend class concepts::Environment;
 };

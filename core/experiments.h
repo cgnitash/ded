@@ -30,7 +30,7 @@ struct Simulation
   std::vector<std::pair<specs::Trace, std::string>> traces;
 
   std::string
-      bar_code() const
+      barCode() const
   {
     std::hash<std::string> hash_fn;
     return std::to_string(
@@ -39,7 +39,7 @@ struct Simulation
   }
 
   std::string
-      full_label() const
+      fullLabel() const
   {
     return (labels | ranges::view::transform([](auto label) {
               return label.first + " = " + label.second;
@@ -48,26 +48,26 @@ struct Simulation
   }
 
   std::string
-      pretty_name() const
+      prettyName() const
   {
-    return bar_code().substr(0, 4) + "... with labels [ " + full_label() + " ]";
+    return barCode().substr(0, 4) + "... with labels [ " + fullLabel() + " ]";
   }
 };
-std::vector<std::string> open_file(std::string);
+std::vector<std::string> openFile(std::string);
 
-std::vector<language::Token> lex(std::vector<std::string>);
+std::vector<language::Token> lexTokens(std::vector<std::string>);
 
-std::vector<language::Parser> expand_all_tokens(language::Parser);
+std::vector<language::Parser> expandAllTokens(language::Parser);
 
-Simulation parse_simulation(language::Parser);
+Simulation parseSimulation(language::Parser);
 
-std::vector<Simulation> parse_all_simulations(std::string);
+std::vector<Simulation> parseAllSimulations(std::string);
 
 std::pair<specs::PopulationSpec, specs::EnvironmentSpec>
-    load_simulation(std::string);
+    loadSimulation(std::string);
 
-void prepare_simulations_locally(const std::vector<Simulation> &, int);
-void prepare_simulations_msuhpc(const std::vector<Simulation> &, int);
+void prepareSimulationsLocally(const std::vector<Simulation> &, int);
+void prepareSimulationsMsuHpcc(const std::vector<Simulation> &, int);
 
 }   // namespace experiments
 }   // namespace ded

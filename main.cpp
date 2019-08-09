@@ -96,11 +96,11 @@ int
   else if (argc == 2 && mode == "-s")
   {
     std::cout << "saving configurations.cfg ... \n";
-    ded::config_manager::save_all_configs();
+    ded::config_manager::saveAllConfigs();
   }
   else if (argc == 2 && mode == "-pa")
   {
-    ded::config_manager::list_all_configs(std::cout);
+    ded::config_manager::listAllConfigs(std::cout);
     std::cout << std::endl;
   }
   else if (argc > 2 && mode == "-p")
@@ -111,30 +111,30 @@ int
   }
   else if (argc == 3 && mode == "-v")
   {
-    auto simulations = ded::experiments::parse_all_simulations(argv[2]);
+    auto simulations = ded::experiments::parseAllSimulations(argv[2]);
     for (auto sim : simulations)
-      std::cout << sim.pretty_name() << "\n";
+      std::cout << sim.prettyName() << "\n";
     std::cout << "All simulations are valid - this experiment is correct\n";
   }
   else if (argc == 4 && ((mode == "-rl")))
   {
-    auto simulations = ded::experiments::parse_all_simulations(argv[2]);
-    ded::experiments::prepare_simulations_locally(simulations,
+    auto simulations = ded::experiments::parseAllSimulations(argv[2]);
+    ded::experiments::prepareSimulationsLocally(simulations,
                                                   std::stoi(argv[3]));
   }
   else if (argc == 4 && ((mode == "-rh")))
   {
-    auto simulations = ded::experiments::parse_all_simulations(argv[2]);
-    ded::experiments::prepare_simulations_msuhpc(simulations,
+    auto simulations = ded::experiments::parseAllSimulations(argv[2]);
+    ded::experiments::prepareSimulationsMsuHpcc(simulations,
                                                  std::stoi(argv[3]));
   }
   else if (argc == 4 && ((mode == "-a")))
   {
-    ded::experiments::analyse_all_simulations(argv[2], argv[3]);
+    ded::experiments::analyseAllSimulations(argv[2], argv[3]);
   }
   else if (argc == 4 && mode == "-f")
   {
-    auto [pop_spec, env_spec] = ded::experiments::load_simulation(argv[2]);
+    auto [pop_spec, env_spec] = ded::experiments::loadSimulation(argv[2]);
 
     auto pop         = ded::make_Population(pop_spec);
     auto env         = ded::make_Environment(env_spec);

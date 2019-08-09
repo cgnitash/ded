@@ -18,8 +18,8 @@ ded::concepts::Population
       ranges::begin(pop) +  fraction,
       ranges::end(pop),
       [this](const auto &org1, const auto &org2) {
-        return std::get<double>(org1.data.get_value(value_tag_)) >
-               std::get<double>(org2.data.get_value(value_tag_));
+        return std::get<double>(org1.data.getValue(value_tag_)) >
+               std::get<double>(org2.data.getValue(value_tag_));
       });
 
   // done with value_tag_

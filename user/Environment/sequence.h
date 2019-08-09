@@ -17,19 +17,19 @@ public:
   {
     ded::specs::EnvironmentSpec es;
 
-	es.bind_environment("first",first_);
+	es.bindEnvironment("first",first_);
 
-	es.bind_environment("second",second_);
+	es.bindEnvironment("second",second_);
 
-	es.bind_tag_equality({"first", "post"}, {"second", "pre"});
+	es.bindTagEquality({"first", "post"}, {"second", "pre"});
 
     return es;
   }
 
   void configure(ded::specs::EnvironmentSpec es)
   {
-    es.configure_environment("first",first_);
-    es.configure_environment("second",second_);
+    es.configureEnvironment("first",first_);
+    es.configureEnvironment("second",second_);
 	first = ded::make_Environment(first_);
 	second = ded::make_Environment(second_);
   }

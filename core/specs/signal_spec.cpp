@@ -10,7 +10,7 @@ namespace specs
 {
 
 bool
-    SignalSpec::exactly_matches(SignalSpec s)
+    SignalSpec::exactlyMatches(SignalSpec s)
 {
   return is_any_type_ == s.is_any_type_ && is_vector_ == s.is_vector_ &&
          vector_type_ == s.vector_type_ &&
@@ -18,7 +18,7 @@ bool
 }
 
 bool
-    SignalSpec::convertible_to(SignalSpec other)
+    SignalSpec::convertibleTo(SignalSpec other)
 {
   if (other.is_any_type_)
     return true;

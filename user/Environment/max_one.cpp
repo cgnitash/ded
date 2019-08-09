@@ -11,7 +11,7 @@ ded::concepts::Population
   {
     org.reset();
     org.tick();
-    org.data.set_value(ones_tag_,
+    org.data.setValue(ones_tag_,
                        ranges::accumulate(std::get<std::vector<double>>(
                                               org.output(org_output_ones_tag_)),
                                           0.0) /

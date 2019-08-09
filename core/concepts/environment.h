@@ -60,7 +60,7 @@ public:
   {
     traces_ = es.traces();
 
-    user_specified_name_ = { es.get_user_specified_name() };
+    user_specified_name_ = { es.getUserSpecifiedName() };
 
     self_->configure_(es);
   }
@@ -169,14 +169,14 @@ private:
       if (invocations_ && !(invocations_ % n.frequency_))
       {
         specs::SignalSpec s_spec{ n.signal_ };
-        std::ofstream pop_stats_file{ ded::global_path + s_spec.user_name() +
+        std::ofstream pop_stats_file{ ded::global_path + s_spec.userName() +
                                       "_" + std::to_string(invocations_) +
                                       ".csv" };
-        pop_stats_file << "id," << s_spec.user_name() << "\n";
+        pop_stats_file << "id," << s_spec.userName() << "\n";
         for (const auto &org : pop.get_as_vector())
           pop_stats_file << org.get_id() << ","
                          << std::get<double>(
-                                org.data.get_value(s_spec.identifier()))
+                                org.data.getValue(s_spec.identifier()))
                          << std::endl;
       }
   }

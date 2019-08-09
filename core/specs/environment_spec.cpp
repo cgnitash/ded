@@ -16,7 +16,7 @@ namespace specs
 {
 
 void
-    EnvironmentSpec::match_tags(SignalSpecSet &source_tags,
+    EnvironmentSpec::matchTags(SignalSpecSet &source_tags,
                                 SignalSpecSet &sink_tags,
                                 int &          tag_count)
 {
@@ -31,7 +31,7 @@ void
   {
     auto &src     = n_tag.second;
     auto  matches = ranges::count_if(sink_tags_copy, [sig = src](auto ns) {
-      return ns.second.exactly_matches(sig);
+      return ns.second.exactlyMatches(sig);
     });
     if (matches > 1)
     {
@@ -46,13 +46,13 @@ void
     }
 
     auto snk = ranges::find_if(sink_tags, [sig = src](auto ns) {
-      return ns.second.exactly_matches(sig);
+      return ns.second.exactlyMatches(sig);
     });
 
     if (snk->second.identifier()[0] == '~')
     {
       if (src.identifier()[0] != '~')
-        src.update_identifier(snk->second.identifier());
+        src.updateIdentifier(snk->second.identifier());
       if (snk->second.identifier() != src.identifier())
       {
         std::cout
@@ -63,7 +63,7 @@ void
     else if (src.identifier()[0] == '~')
     {
       if (snk->second.identifier()[0] != '~')
-        snk->second.update_identifier(src.identifier());
+        snk->second.updateIdentifier(src.identifier());
       if (snk->second.identifier() != src.identifier())
       {
         std::cout << "error: tags were previously bound, and are in "
@@ -74,18 +74,18 @@ void
     else
     {
       tag_count++;
-      snk->second.update_identifier("~tag" + std::to_string(tag_count));
-      src.update_identifier("~tag" + std::to_string(tag_count));
+      snk->second.updateIdentifier("~tag" + std::to_string(tag_count));
+      src.updateIdentifier("~tag" + std::to_string(tag_count));
     }
 
     sink_tags_copy.erase(ranges::find_if(sink_tags_copy, [sig = src](auto ns) {
-      return ns.second.exactly_matches(sig);
+      return ns.second.exactlyMatches(sig);
     }));
   }
 }
 
 void
-    EnvironmentSpec::match_tag_flow_equalities(int &tag_count)
+    EnvironmentSpec::matchTagFlowEqualities(int &tag_count)
 {
 
   for (auto [source, sink] : tag_flow_equalities_)
@@ -95,94 +95,94 @@ void
                             : nested_[source.first].e->tags_.post_;
     auto &sink_tags = sink.second == "pre" ? nested_[sink.first].e->tags_.pre_
                                            : nested_[sink.first].e->tags_.post_;
-    match_tags(source_tags, sink_tags, tag_count);
+    matchTags(source_tags, sink_tags, tag_count);
   }
 }
 
 void
-    EnvironmentSpec::update_nested_constraints(SignalSpecSet &constraints)
+    EnvironmentSpec::updateNestedConstraints(SignalSpecSet &constraints)
 {
   for (auto &source_tag : constraints)
   {
     auto same_user_name = [&source_tag](auto tag) {
-      return tag.second.user_name() == source_tag.second.user_name();
+      return tag.second.userName() == source_tag.second.userName();
     };
     if (auto f = ranges::find_if(tags_.pre_, same_user_name);
         f != ranges::end(tags_.pre_))
-      source_tag.second.update_identifier(f->second.identifier());
+      source_tag.second.updateIdentifier(f->second.identifier());
     else if (f = ranges::find_if(tags_.post_, same_user_name);
              f != ranges::end(tags_.post_))
-      source_tag.second.update_identifier(f->second.identifier());
+      source_tag.second.updateIdentifier(f->second.identifier());
   }
 }
 
 void
-    EnvironmentSpec::update_and_match_tags(SignalSpecSet &source_tags,
+    EnvironmentSpec::updateAndMatchTags(SignalSpecSet &source_tags,
                                            SignalSpecSet &sink_tags,
                                            int &          tag_count)
 {
   if (!source_tags.empty())
   {
-    update_nested_constraints(source_tags);
-    match_tags(source_tags, sink_tags, tag_count);
+    updateNestedConstraints(source_tags);
+    matchTags(source_tags, sink_tags, tag_count);
   }
 }
 
 void
-    EnvironmentSpec::match_nested_tag_constraints(int &tag_count)
+    EnvironmentSpec::matchNestedTagConstraints(int &tag_count)
 {
   for (auto &es : nested_)
   {
-    update_and_match_tags(
+    updateAndMatchTags(
         es.second.constraints_.pre_, es.second.e->tags_.pre_, tag_count);
-    update_and_match_tags(
+    updateAndMatchTags(
         es.second.constraints_.post_, es.second.e->tags_.post_, tag_count);
   }
 }
 void
-    EnvironmentSpec::bind_tags(int tag_count)
+    EnvironmentSpec::bindTags(int tag_count)
 {
 
-  match_tag_flow_equalities(tag_count);
+  matchTagFlowEqualities(tag_count);
 
-  match_nested_tag_constraints(tag_count);
+  matchNestedTagConstraints(tag_count);
 
   for (auto &es : nested_)
-    es.second.e->bind_tags(tag_count);
+    es.second.e->bindTags(tag_count);
 }
 
 void
-    EnvironmentSpec::instantiate_user_parameter_sizes()
+    EnvironmentSpec::instantiateUserParameterSizes()
 {
   for (auto &n_sig : io_.inputs_)
     for (auto &[param, cp] : parameters_)
-      if (cp.type_as_string() == "long" &&
-          param == n_sig.second.user_parameter())
-        n_sig.second.instantiate_user_parameter(
-            std::stol(cp.value_as_string()));
+      if (cp.typeAsString() == "long" &&
+          param == n_sig.second.userParameter())
+        n_sig.second.instantiateUserParameter(
+            std::stol(cp.valueAsString()));
 
   for (auto &n_sig : io_.outputs_)
     for (auto &[param, cp] : parameters_)
-      if (cp.type_as_string() == "long" &&
-          param == n_sig.second.user_parameter())
-        n_sig.second.instantiate_user_parameter(
-            std::stol(cp.value_as_string()));
+      if (cp.typeAsString() == "long" &&
+          param == n_sig.second.userParameter())
+        n_sig.second.instantiateUserParameter(
+            std::stol(cp.valueAsString()));
 
   for (auto &es : nested_)
-    es.second.e->instantiate_user_parameter_sizes();
+    es.second.e->instantiateUserParameterSizes();
 }
 
 void
-    EnvironmentSpec::bind_entity_io(IO ios)
+    EnvironmentSpec::bindEntityIO(IO ios)
 {
   for (auto &es : nested_)
-    es.second.e->bind_entity_io(ios);
+    es.second.e->bindEntityIO(ios);
 
   for (auto &n_sig : io_.inputs_)
   {
     auto &in_sig  = n_sig.second;
     auto  matches = ranges::count_if(ios.inputs_, [sig = in_sig](auto ns) {
-      return ns.second.exactly_matches(sig);
+      return ns.second.exactlyMatches(sig);
     });
     if (matches > 1)
     {
@@ -193,15 +193,15 @@ void
     {
       std::cout << "error: no input signals match exactly (convertible signals "
                    "not supported yet)\n  "
-                << n_sig.second.full_name() << "\nviable candidates";
+                << n_sig.second.fullName() << "\nviable candidates";
       for (auto sig : ios.inputs_)
-        std::cout << "\n    " << sig.second.full_name();
+        std::cout << "\n    " << sig.second.fullName();
       throw language::ParserError{};
     }
     auto i = ranges::find_if(ios.inputs_, [sig = in_sig](auto ns) {
-      return ns.second.exactly_matches(sig);
+      return ns.second.exactlyMatches(sig);
     });
-    in_sig.update_identifier(i->second.identifier());
+    in_sig.updateIdentifier(i->second.identifier());
     ios.inputs_.erase(i);
   }
 
@@ -209,7 +209,7 @@ void
   {
     auto &out_sig = n_sig.second;
     auto  matches = ranges::count_if(ios.outputs_, [sig = out_sig](auto ns) {
-      return ns.second.exactly_matches(sig);
+      return ns.second.exactlyMatches(sig);
     });
     if (matches > 1)
     {
@@ -220,21 +220,21 @@ void
     {
       std::cout << "error: no input signals match exactly (convertible signals "
                    "not supported yet)\n  "
-                << n_sig.second.full_name() << "\nviable candidates";
+                << n_sig.second.fullName() << "\nviable candidates";
       for (auto sig : ios.outputs_)
-        std::cout << "\n    " << sig.second.full_name();
+        std::cout << "\n    " << sig.second.fullName();
       throw language::ParserError{};
     }
     auto i = ranges::find_if(ios.outputs_, [sig = out_sig](auto ns) {
-      return ns.second.exactly_matches(sig);
+      return ns.second.exactlyMatches(sig);
     });
-    out_sig.update_identifier(i->second.identifier());
+    out_sig.updateIdentifier(i->second.identifier());
     ios.outputs_.erase(i);
   }
 }
 
 std::vector<std::pair<Trace, std::string>>
-    EnvironmentSpec::query_traces()
+    EnvironmentSpec::queryTraces()
 {
 
   std::vector<std::pair<Trace, std::string>> res;
@@ -246,7 +246,7 @@ std::vector<std::pair<Trace, std::string>>
     res.push_back({ sig_freq, {} });
 
   for (auto &es : nested_)
-    for (auto ts : es.second.e->query_traces())
+    for (auto ts : es.second.e->queryTraces())
       res.push_back(ts);
 
   for (auto &r : res)
@@ -256,27 +256,27 @@ std::vector<std::pair<Trace, std::string>>
 }
 
 void
-    EnvironmentSpec::record_traces()
+    EnvironmentSpec::recordTraces()
 {
 
   for (auto &sig_freq : traces_.pre_)
-    sig_freq.signal_.update_identifier(
+    sig_freq.signal_.updateIdentifier(
         ranges::find_if(tags_.pre_,
-                        [n = sig_freq.signal_.user_name()](auto tag) {
+                        [n = sig_freq.signal_.userName()](auto tag) {
                           return tag.first == n;
                         })
             ->second.identifier());
 
   for (auto &sig_freq : traces_.post_)
-    sig_freq.signal_.update_identifier(
+    sig_freq.signal_.updateIdentifier(
         ranges::find_if(tags_.post_,
-                        [n = sig_freq.signal_.user_name()](auto tag) {
+                        [n = sig_freq.signal_.userName()](auto tag) {
                           return tag.first == n;
                         })
             ->second.identifier());
 
   for (auto &es : nested_)
-    es.second.e->record_traces();
+    es.second.e->recordTraces();
 }
 
 EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
@@ -294,7 +294,7 @@ EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
         parameters_, [&](auto param) { return param.first == name.expr_; });
     if (f == parameters_.end())
     {
-      parser_.err_invalid_token(
+      parser_.errInvalidToken(
           name,
           "this does not override any parameters of " + name_,
           parameters_ |
@@ -304,22 +304,22 @@ EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
 
     ConfigurationPrimitive cp;
     cp.parse(value.expr_);
-    if (cp.type_as_string() != f->second.type_as_string())
+    if (cp.typeAsString() != f->second.typeAsString())
     {
       using namespace std::literals::string_literals;
-      parser_.err_invalid_token(
+      parser_.errInvalidToken(
           value,
-          (cp.type_as_string() == "NULL"
+          (cp.typeAsString() == "NULL"
                ? "unable to parse configuration primitive"s
                : "type mismatch"s) +
-              ", should be '" + f->second.type_as_string() + "'");
+              ", should be '" + f->second.typeAsString() + "'");
       throw language::ParserError{};
     }
-    f->second.parse(cp.value_as_string());
-    auto con = f->second.check_constraints();
+    f->second.parse(cp.valueAsString());
+    auto con = f->second.checkConstraints();
     if (con)
     {
-      parser_.err_invalid_token(
+      parser_.errInvalidToken(
           value,
               "parameter constraint not satisfied: " + *con );
       throw language::ParserError{};
@@ -333,9 +333,9 @@ EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
 
     ConfigurationPrimitive cp;
     cp.parse(frequency.expr_);
-    if (cp.type_as_string() != "long")
+    if (cp.typeAsString() != "long")
     {
-      parser_.err_invalid_token(frequency,
+      parser_.errInvalidToken(frequency,
                                 "expected frequency of trace (number) here");
       throw language::ParserError{};
     }
@@ -346,7 +346,7 @@ EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
         i != ranges::end(tags_.pre_))
     {
       traces_.pre_.push_back(
-          { i->second.full_name(), std::stoi(frequency.expr_) });
+          { i->second.fullName(), std::stoi(frequency.expr_) });
     }
     else if (i = ranges::find_if(
                  tags_.post_,
@@ -354,11 +354,11 @@ EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
              i != ranges::end(tags_.post_))
     {
       traces_.post_.push_back(
-          { i->second.full_name(), std::stoi(frequency.expr_) });
+          { i->second.fullName(), std::stoi(frequency.expr_) });
     }
     else
     {
-      parser_.err_invalid_token(
+      parser_.errInvalidToken(
           tag_name,
           "this is not a pre/post tag of " + name_,
           ranges::view::concat(
@@ -379,7 +379,7 @@ EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
         nested_, [&](auto param) { return param.first == name.expr_; });
     if (f == nested_.end())
     {
-      parser_.err_invalid_token(
+      parser_.errInvalidToken(
           name,
           "this does not override any nested environments " + block_.name_,
           nested_ |
@@ -387,19 +387,19 @@ EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
       throw language::ParserError{};
     }
 
-    auto ct = config_manager::type_of_block(nested_blk.name_.substr(1));
+    auto ct = config_manager::typeOfBlock(nested_blk.name_.substr(1));
     if (ct != "environment")
     {
-      parser_.err_invalid_token(name,
+      parser_.errInvalidToken(name,
                                 "override of " + name.expr_ +
                                     " must be of type environment",
-                                config_manager::all_environment_names());
+                                config_manager::allEnvironmentNames());
       throw language::ParserError{};
     }
 
     f->second.e = std::make_unique<EnvironmentSpec>(
         EnvironmentSpec{ parser_, nested_blk });
-    f->second.e->set_user_specified_name(name.expr_);
+    f->second.e->setUserSpecifiedName(name.expr_);
   }
 }
 
@@ -410,7 +410,7 @@ std::vector<std::string>
   auto                     alignment = std::string(depth, ' ');
 
   auto pad_signal = [&](auto sig) {
-    return alignment + sig.second.full_name();
+    return alignment + sig.second.fullName();
   };
 
   lines.push_back(alignment + "environment:" + name_);
@@ -418,7 +418,7 @@ std::vector<std::string>
   ranges::transform(
       parameters_, ranges::back_inserter(lines), [&](auto parameter) {
         return alignment + parameter.first + ":" +
-               parameter.second.value_as_string();
+               parameter.second.valueAsString();
       });
   lines.push_back(alignment + "I");
   ranges::transform(io_.inputs_, ranges::back_inserter(lines), pad_signal);
@@ -434,13 +434,13 @@ std::vector<std::string>
     lines.push_back(alignment + "r");
     ranges::transform(
         traces_.pre_, ranges::back_inserter(lines), [&](auto trace) {
-          return alignment + trace.signal_.full_name() + ";" +
+          return alignment + trace.signal_.fullName() + ";" +
                  std::to_string(trace.frequency_);
         });
     lines.push_back(alignment + "R");
     ranges::transform(
         traces_.post_, ranges::back_inserter(lines), [&](auto trace) {
-          return alignment + trace.signal_.full_name() + ";" +
+          return alignment + trace.signal_.fullName() + ";" +
                  std::to_string(trace.frequency_);
         });
     // needs to go *
@@ -523,7 +523,7 @@ EnvironmentSpec
     std::transform(f + 1, p, f + 1, [](auto l) { return l.substr(1); });
 
     EnvironmentSpec e;
-    e.set_user_specified_name(*f);
+    e.setUserSpecifiedName(*f);
     nested_[*f].e = std::make_unique<EnvironmentSpec>(
         e.parse(std::vector<std::string>(f + 1, p)));
 
@@ -533,27 +533,27 @@ EnvironmentSpec
 }
 
 std::string
-    EnvironmentSpec::pretty_print()
+    EnvironmentSpec::prettyPrint()
 {
   std::stringstream out;
   out << "environment::" << name_ << "\n{\n";
 
   out << " parameters\n";
   for (auto [parameter, value] : parameters_)
-    out << std::setw(16) << parameter << " : " << value.value_as_string()
+    out << std::setw(16) << parameter << " : " << value.valueAsString()
         << "\n";
   out << " inputs\n";
   for (auto [input, value] : io_.inputs_)
-    out << std::setw(16) << input << " : " << value.full_name() << "\n";
+    out << std::setw(16) << input << " : " << value.fullName() << "\n";
   out << " outputs\n";
   for (auto [output, value] : io_.outputs_)
-    out << std::setw(16) << output << " : " << value.full_name() << "\n";
+    out << std::setw(16) << output << " : " << value.fullName() << "\n";
   out << " pre-tags\n";
   for (auto [pre_tag, value] : tags_.pre_)
-    out << std::setw(16) << pre_tag << " : " << value.full_name() << "\n";
+    out << std::setw(16) << pre_tag << " : " << value.fullName() << "\n";
   out << " post_tag\n";
   for (auto [post_tag, value] : tags_.post_)
-    out << std::setw(16) << post_tag << " : " << value.full_name() << "\n";
+    out << std::setw(16) << post_tag << " : " << value.fullName() << "\n";
 
   out << " nested\n";
   for (auto &[name, nspec] : nested_)
@@ -565,7 +565,7 @@ std::string
     {
       out << "   pre-constraints:\n";
       for (auto [pre_tag, value] : nspec.constraints_.pre_)
-        out << std::setw(16) << pre_tag << " : " << value.full_name() << "\n";
+        out << std::setw(16) << pre_tag << " : " << value.fullName() << "\n";
     }
     if (nspec.constraints_.post_.empty())
       out << "   No post-constraints\n";
@@ -573,7 +573,7 @@ std::string
     {
       out << "   post-constraints:\n";
       for (auto [post_tag, value] : nspec.constraints_.post_)
-        out << std::setw(16) << post_tag << " : " << value.full_name() << "\n";
+        out << std::setw(16) << post_tag << " : " << value.fullName() << "\n";
     }
   }
 

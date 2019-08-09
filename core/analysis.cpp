@@ -20,7 +20,7 @@ namespace ded
 namespace experiments
 {
 std::tuple<specs::Trace, std::string, std::vector<Simulation>>
-    get_single_trace(std::vector<Simulation> simulations,
+    getSingleTrace(std::vector<Simulation> simulations,
                      std::string             trace_name)
 {
 
@@ -56,7 +56,7 @@ std::tuple<specs::Trace, std::string, std::vector<Simulation>>
       std::remove_if(std::begin(trace_paths),
                      std::end(trace_paths),
                      [&base_trace_name](auto t) {
-                       return std::get<0>(t).signal_.user_name() !=
+                       return std::get<0>(t).signal_.userName() !=
                               base_trace_name;
                      }),
       std::end(trace_paths));
@@ -66,7 +66,7 @@ std::tuple<specs::Trace, std::string, std::vector<Simulation>>
     std::cout << "error: trace name " << base_trace_name
               << " not a valid trace\nvalid traces are\n";
     for (auto t : trace_paths_back_up)
-      std::cout << std::get<1>(t) << std::get<0>(t).signal_.user_name() << "\n";
+      std::cout << std::get<1>(t) << std::get<0>(t).signal_.userName() << "\n";
     throw language::ParserError{};   // wrong exception
   }
 
@@ -75,7 +75,7 @@ std::tuple<specs::Trace, std::string, std::vector<Simulation>>
     std::cout << "error: trace name " << base_trace_name
               << " is repeated\nspecify trace as follows\n";
     for (auto [i,t]  : ranges::view::enumerate(trace_paths))
-      std::cout << std::get<1>(t) << std::get<0>(t).signal_.user_name() << "~"
+      std::cout << std::get<1>(t) << std::get<0>(t).signal_.userName() << "~"
                 << i + 1 << "\n";
     throw language::ParserError{};   // wrong exception
   }
@@ -93,7 +93,7 @@ std::tuple<specs::Trace, std::string, std::vector<Simulation>>
 }
 
 std::pair<std::vector<int>, int>
-    find_all_stored_data(
+    findAllStoredData(
         std::tuple<specs::Trace, std::string, std::vector<Simulation>> t)
 {
   auto [trace, trace_path, true_simulations] = t;
@@ -101,11 +101,11 @@ std::pair<std::vector<int>, int>
   std::vector<int> invocation_counts;
   for (const auto &sim : true_simulations)
   {
-    auto bar_code = sim.bar_code();
+    auto barCode = sim.barCode();
     for (auto rep : ranges::view::iota(0))
     {
       auto rep_path =
-          "data/" + bar_code + "/" + std::to_string(rep) + "/" + trace_path;
+          "data/" + barCode + "/" + std::to_string(rep) + "/" + trace_path;
       // std::cout << rep_path << "\n";
       if (!std::experimental::filesystem::exists(rep_path))
       {
@@ -114,7 +114,7 @@ std::pair<std::vector<int>, int>
       }
       int invocation = trace.frequency_;
       while (std::experimental::filesystem::exists(
-          rep_path + trace.signal_.user_name() + "_" +
+          rep_path + trace.signal_.userName() + "_" +
           std::to_string(invocation) + ".csv"))
         invocation += trace.frequency_;
       invocation_counts.push_back(invocation - trace.frequency_);
@@ -144,31 +144,31 @@ std::pair<std::vector<int>, int>
 }
 
 void
-    analyse_all_simulations(std::string file_name, std::string trace_name)
+    analyseAllSimulations(std::string file_name, std::string trace_name)
 {
-  auto simulations = ded::experiments::parse_all_simulations(file_name);
-  auto single      = get_single_trace(simulations, trace_name);
+  auto simulations = ded::experiments::parseAllSimulations(file_name);
+  auto single      = getSingleTrace(simulations, trace_name);
 
   auto [trace, trace_path, true_simulations] = single;
-  auto [invokes, max_rep]                    = find_all_stored_data(single);
+  auto [invokes, max_rep]                    = findAllStoredData(single);
 
   std::ofstream analysis_file("analysis.R");
   analysis_file << "#!/usr/bin/env Rscript";
   analysis_file << "\nsource(\"dedli/plot.R\")";
   analysis_file << "\nexps=list("
                 << (simulations | ranges::view::transform([](auto sim) {
-                      return "\"data/" + sim.bar_code() + "/\"";
+                      return "\"data/" + sim.barCode() + "/\"";
                     }) |
                     ranges::view::intersperse(",") | ranges::action::join)
                 << ")\n";
   analysis_file << "labels=c("
                 << (simulations | ranges::view::transform([](auto sim) {
-                      return "\"" + sim.full_label() + "\"";
+                      return "\"" + sim.fullLabel() + "\"";
                     }) |
                     ranges::view::intersperse(",") | ranges::action::join)
                 << ")\n";
   analysis_file << "data=un_reported_data(exps,\"/" + trace_path << "\",\""
-                << trace.signal_.user_name() << "\",0:" << max_rep - 1
+                << trace.signal_.userName() << "\",0:" << max_rep - 1
                 << ",seq(" << trace.frequency_ << "," << invokes.back() << ","
                 << trace.frequency_ << "))";
   analysis_file << "\nall_avg = "

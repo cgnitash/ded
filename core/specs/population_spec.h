@@ -60,7 +60,7 @@ public:
 
   template <typename T>
   void
-      bind_parameter(
+      bindParameter(
           std::string                                                 name,
           T                                                           value,
           std::vector<std::pair<std::function<bool(T)>, std::string>> cons = {})
@@ -72,14 +72,14 @@ public:
                 << " has already been declared\n";
       throw SpecError{};
     }
-    parameters_[name].set_value(value);
-	parameters_[name].set_constraints(cons);
+    parameters_[name].setValue(value);
+	parameters_[name].setConstraints(cons);
 
   }
 
   template <typename T>
   void
-      configure_parameter(std::string name, T &value)
+      configureParameter(std::string name, T &value)
   {
     if (parameters_.find(name) == parameters_.end())
     {
@@ -93,25 +93,25 @@ public:
 
 
   void
-      bind_entity(EntitySpec e)
+      bindEntity(EntitySpec e)
   {
     es_ = e;
   }
 
   void
-      configure_entity(EntitySpec &e)
+      configureEntity(EntitySpec &e)
   {
     e = es_;
   }
 
   std::string    dump(long depth)const;
   PopulationSpec parse(std::vector<std::string> pop_dump);
-  std::string    pretty_print();
+  std::string    prettyPrint();
 
   IO
-      instantiate_nested_entity_user_parameter_sizes()
+      instantiateNestedEntityUserParameterSizes()
   {
-    return es_.instantiate_user_parameter_sizes(0);
+    return es_.instantiateUserParameterSizes(0);
   }
   //  friend std::ostream &operator<<(std::ostream &out, PopulationSpec e)
 

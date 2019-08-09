@@ -25,13 +25,13 @@ public:
   {
     ded::specs::EnvironmentSpec es;
 
-	es.bind_environment("env",env_);
+	es.bindEnvironment("env",env_);
 
     return es;
   }
 
   void configure(ded::specs::EnvironmentSpec es) { 
-	  es.configure_environment("env",env_);
+	  es.configureEnvironment("env",env_);
   }
 
   ded::concepts::Population evaluate(ded::concepts::Population pop)

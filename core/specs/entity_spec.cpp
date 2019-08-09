@@ -16,25 +16,25 @@ namespace specs
 {
 
 IO
-    EntitySpec::instantiate_user_parameter_sizes(int sig_count)
+    EntitySpec::instantiateUserParameterSizes(int sig_count)
 {
   for (auto &n_sig : io_.inputs_)
     for (auto &[param, cp] : parameters_)
-      if (cp.type_as_string() == "long" &&
-          param == n_sig.second.user_parameter())
+      if (cp.typeAsString() == "long" &&
+          param == n_sig.second.userParameter())
       {
-        n_sig.second.instantiate_user_parameter(
-            std::stol(cp.value_as_string()));
-        n_sig.second.update_identifier("sig" + std::to_string(sig_count++));
+        n_sig.second.instantiateUserParameter(
+            std::stol(cp.valueAsString()));
+        n_sig.second.updateIdentifier("sig" + std::to_string(sig_count++));
       }
   for (auto &n_sig : io_.outputs_)
     for (auto &[param, cp] : parameters_)
-      if (cp.type_as_string() == "long" &&
-          param == n_sig.second.user_parameter())
+      if (cp.typeAsString() == "long" &&
+          param == n_sig.second.userParameter())
       {
-        n_sig.second.instantiate_user_parameter(
-            std::stol(cp.value_as_string()));
-        n_sig.second.update_identifier("sig" + std::to_string(sig_count++));
+        n_sig.second.instantiateUserParameter(
+            std::stol(cp.valueAsString()));
+        n_sig.second.updateIdentifier("sig" + std::to_string(sig_count++));
       }
   return io_;
 }
@@ -55,7 +55,7 @@ EntitySpec::EntitySpec(language::Parser p, language::Block blk)
         parameters_, [&](auto param) { return param.first == name.expr_; });
     if (f == parameters_.end())
     {
-      p.err_invalid_token(name,
+      p.errInvalidToken(name,
                           "this does not override any parameters of " + name_,
                           parameters_ | ranges::view::transform([](auto param) {
                             return param.first;
@@ -65,17 +65,17 @@ EntitySpec::EntitySpec(language::Parser p, language::Block blk)
 
     ConfigurationPrimitive cp;
     cp.parse(value.expr_);
-    if (cp.type_as_string() != f->second.type_as_string())
+    if (cp.typeAsString() != f->second.typeAsString())
     {
-      p.err_invalid_token(
-          value, "type mismatch, should be " + f->second.type_as_string());
+      p.errInvalidToken(
+          value, "type mismatch, should be " + f->second.typeAsString());
       throw language::ParserError{};
     }
-    f->second.parse(cp.value_as_string());
-    auto con = f->second.check_constraints();
+    f->second.parse(cp.valueAsString());
+    auto con = f->second.checkConstraints();
     if (con)
     {
-      p.err_invalid_token(
+      p.errInvalidToken(
           value,
               "parameter constraint not satisfied: " + *con );
       throw language::ParserError{};
@@ -87,10 +87,10 @@ EntitySpec::EntitySpec(language::Parser p, language::Block blk)
     auto name       = blover.first;
     auto nested_blk = blover.second;
 
-    auto ct = config_manager::type_of_block(nested_blk.name_.substr(1));
+    auto ct = config_manager::typeOfBlock(nested_blk.name_.substr(1));
     if (ct != "entity")
     {
-      p.err_invalid_token(
+      p.errInvalidToken(
           name, "override of " + name.expr_ + " must be of type entity");
       throw language::ParserError{};
     }
@@ -99,7 +99,7 @@ EntitySpec::EntitySpec(language::Parser p, language::Block blk)
         nested_, [&](auto param) { return param.first == name.expr_; });
     if (f == nested_.end())
     {
-      p.err_invalid_token(
+      p.errInvalidToken(
           name,
           "this does not override any nested entitys of " + blk.name_,
           nested_ |
@@ -119,17 +119,17 @@ std::string
   return alignment + "entity:" + name_ + alignment + "P" +
          (parameters_ | ranges::view::transform([&](auto parameter) {
             return alignment + parameter.first + ":" +
-                   parameter.second.value_as_string();
+                   parameter.second.valueAsString();
           }) |
           ranges::action::join) +
          alignment + "I" +
          (io_.inputs_ | ranges::view::transform([&](auto sig) {
-            return alignment + sig.second.full_name();
+            return alignment + sig.second.fullName();
           }) |
           ranges::action::join) +
          alignment + "O" +
          (io_.outputs_ | ranges::view::transform([&](auto sig) {
-            return alignment + sig.second.full_name();
+            return alignment + sig.second.fullName();
           }) |
           ranges::action::join) +
          alignment + "n" +
@@ -189,21 +189,21 @@ EntitySpec
 }
 
 std::string
-    EntitySpec::pretty_print()
+    EntitySpec::prettyPrint()
 {
   std::stringstream out;
   out << "entity::" << name_ << "\n{\n";
 
   out << " parameters\n";
   for (auto [parameter, value] : parameters_)
-    out << std::setw(16) << parameter << " : " << value.value_as_string()
+    out << std::setw(16) << parameter << " : " << value.valueAsString()
         << "\n";
   out << " inputs\n";
   for (auto [input, value] : io_.inputs_)
-    out << std::setw(16) << input << " : " << value.full_name() << "\n";
+    out << std::setw(16) << input << " : " << value.fullName() << "\n";
   out << " outputs\n";
   for (auto [output, value] : io_.outputs_)
-    out << std::setw(16) << output << " : " << value.full_name() << "\n";
+    out << std::setw(16) << output << " : " << value.fullName() << "\n";
   out << "}\n";
   return out.str();
 }

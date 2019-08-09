@@ -33,12 +33,12 @@ public:
   SignalSpec(std::string name, std::string id, std::string type);
 
   auto
-      full_name() const
+      fullName() const
   {
     return user_name_ + ":" + additional_identifier_ + "-" + full_type_;
   }
   auto
-      user_name() const
+      userName() const
   {
     return user_name_;
   }
@@ -53,24 +53,24 @@ public:
     return full_type_;
   }
   auto
-      user_parameter() const
+      userParameter() const
   {
     return user_parameter_;
   }
 
   void
-      update_identifier(std::string id)
+      updateIdentifier(std::string id)
   {
     additional_identifier_ = id;
   }
   void
-      instantiate_user_parameter(long size)
+      instantiateUserParameter(long size)
   {
     size_ = size;
   }
 
-  bool exactly_matches(SignalSpec);
-  bool convertible_to(SignalSpec);
+  bool exactlyMatches(SignalSpec);
+  bool convertibleTo(SignalSpec);
 };
 
 using SignalSpecSet = 

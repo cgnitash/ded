@@ -16,7 +16,7 @@ namespace config_manager
 {
 
 std::string
-    type_of_block(std::string name)
+    typeOfBlock(std::string name)
 {
   if (all_environment_specs.find(name) != all_environment_specs.end())
     return "environment";
@@ -33,17 +33,17 @@ void
   auto found = false;
   if (all_entity_specs.find(name) != all_entity_specs.end())
   {
-    out << all_entity_specs[name].pretty_print();
+    out << all_entity_specs[name].prettyPrint();
     found = true;
   }
   if (all_environment_specs.find(name) != all_environment_specs.end())
   {
-    out << all_environment_specs[name].pretty_print();
+    out << all_environment_specs[name].prettyPrint();
     found = true;
   }
   if (all_population_specs.find(name) != all_population_specs.end())
   {
-    out << all_population_specs[name].pretty_print();
+    out << all_population_specs[name].prettyPrint();
     found = true;
   }
 
@@ -54,7 +54,7 @@ void
 }
 
 void
-    list_all_configs(std::ostream &out)
+    listAllConfigs(std::ostream &out)
 {
   out << "entity:\n";
   for (auto n_spec : all_entity_specs)
@@ -72,45 +72,45 @@ void
 }
 
 void
-    save_all_configs()
+    saveAllConfigs()
 {
   std::ofstream file("configurations.cfg");
   for (auto n_es : all_entity_specs)
-    file << "\n" << n_es.second.pretty_print();
+    file << "\n" << n_es.second.prettyPrint();
   for (auto n_es : all_environment_specs)
-    file << "\n" << n_es.second.pretty_print();
+    file << "\n" << n_es.second.prettyPrint();
   for (auto n_es : all_population_specs)
-    file << "\n" << n_es.second.pretty_print();
+    file << "\n" << n_es.second.prettyPrint();
   return;
 }
 
 std::vector<std::string>
-    all_entity_names()
+    allEntityNames()
 {
   return all_entity_specs |
          ranges::view::transform([](auto spec) { return spec.first; });
 }
 
 std::vector<std::string>
-    all_environment_names()
+    allEnvironmentNames()
 {
   return all_environment_specs |
          ranges::view::transform([](auto spec) { return spec.first; });
 }
 
 std::vector<std::string>
-    all_population_names()
+    allPopulationNames()
 {
   return all_population_specs |
          ranges::view::transform([](auto spec) { return spec.first; });
 }
 
 std::vector<std::string>
-    all_component_names()
+    allComponentNames()
 {
-  auto a = all_entity_names();
-  auto b = all_environment_names();
-  auto c = all_population_names();
+  auto a = allEntityNames();
+  auto b = allEnvironmentNames();
+  auto c = allPopulationNames();
   return ranges::view::concat(a, b, c);
 }
 }   // namespace config_manager

@@ -9,7 +9,7 @@ namespace language
 {
 
 TokenType
-    parse_token_type(std::string s)
+    parseTokenType(std::string s)
 {
   if (s == "[")
     return TokenType::open_varied_argument;

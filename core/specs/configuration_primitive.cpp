@@ -37,7 +37,7 @@ void
 }
 
 std::string
-    ConfigurationPrimitive::value_as_string() const
+    ConfigurationPrimitive::valueAsString() const
 {
   return std::visit(
       utilities::TMP::overload_set{
@@ -50,7 +50,7 @@ std::string
 }
 
 std::string
-    ConfigurationPrimitive::type_as_string() const
+    ConfigurationPrimitive::typeAsString() const
 {
   return std::visit(
       utilities::TMP::overload_set{

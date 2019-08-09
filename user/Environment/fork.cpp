@@ -20,12 +20,12 @@ ded::concepts::Population
   auto vec = pop.get_as_vector();
   for (auto &org : vec)
   {
-    org.data.set_value(
+    org.data.setValue(
         info_tag_,
         (std::get<double>(
-             ranges::find(one_vec, org)->data.get_value(info_tag_)) +
+             ranges::find(one_vec, org)->data.getValue(info_tag_)) +
          std::get<double>(
-             ranges::find(two_vec, org)->data.get_value(info_tag_))) /
+             ranges::find(two_vec, org)->data.getValue(info_tag_))) /
             2.0);
   }
   pop.merge(vec);

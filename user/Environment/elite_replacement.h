@@ -18,21 +18,21 @@ public:
   {
     ded::specs::EnvironmentSpec es;
 
-    es.bind_parameter("strength",
+    es.bindParameter("strength",
                       strength_,
                       { { [](double s) { return 0.0 < s && s < 1.0; },
                           "strength must be in the range (0.0, 1.0)" } });
 
-    es.bind_pre("value", "double");
+    es.bindPreTag("value", "double");
 
     return es;
   }
 
   void configure(ded::specs::EnvironmentSpec es)
   {
-    es.configure_parameter("strength",strength_);
+    es.configureParameter("strength",strength_);
 
-    es.configure_pre("value",value_tag_);
+    es.configurePreTag("value",value_tag_);
   }
 
   ded::concepts::Population evaluate(ded::concepts::Population);

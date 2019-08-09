@@ -56,7 +56,7 @@ public:
 
   template <typename T>
   void
-      bind_parameter(
+      bindParameter(
           std::string                                                 name,
           T                                                           value,
           std::vector<std::pair<std::function<bool(T)>, std::string>> cons = {})
@@ -68,13 +68,13 @@ public:
                 << " has already been declared\n";
       throw SpecError{};
     }
-    parameters_[name].set_value(value);
-    parameters_[name].set_constraints(cons);
+    parameters_[name].setValue(value);
+    parameters_[name].setConstraints(cons);
   }
 
   template <typename T>
   void
-      configure_parameter(std::string name, T &value)
+      configureParameter(std::string name, T &value)
   {
     if (parameters_.find(name) == parameters_.end())
     {
@@ -86,13 +86,13 @@ public:
   }
 
   void
-      bind_input(std::string name, std::string value)
+      bindIinput(std::string name, std::string value)
   {
     io_.inputs_.push_back({ name, SignalSpec{ name, name, value } });
   }
 
   void
-      configure_input(std::string name, std::string &value)
+      configureInput(std::string name, std::string &value)
   {
     auto i =
         ranges::find_if(io_.inputs_, [=](auto ns) { return ns.first == name; });
@@ -100,13 +100,13 @@ public:
   }
 
   void
-      bind_output(std::string name, std::string value)
+      bindOutput(std::string name, std::string value)
   {
     io_.outputs_.push_back({ name, SignalSpec{ name, name, value } });
   }
 
   void
-      configure_output(std::string name, std::string &value)
+      configureOutput(std::string name, std::string &value)
   {
     auto i = ranges::find_if(io_.outputs_,
                              [=](auto ns) { return ns.first == name; });
@@ -114,13 +114,13 @@ public:
   }
 
   void
-      bind_entity(std::string name, EntitySpec env)
+      bindEntity(std::string name, EntitySpec env)
   {
     nested_[name].e = std::make_unique<EntitySpec>(env);
   }
 
   void
-      configure_entity(std::string name, EntitySpec &e)
+      configureEntity(std::string name, EntitySpec &e)
   {
     if (!nested_[name].e)
     {
@@ -135,9 +135,9 @@ public:
   // friend std::ostream &operator<<(std::ostream &out, EntitySpec e)
   std::string dump(long depth) const;
   EntitySpec  parse(std::vector<std::string> pop_dump);
-  std::string pretty_print();
+  std::string prettyPrint();
 
-  IO instantiate_user_parameter_sizes(int);
+  IO instantiateUserParameterSizes(int);
 
   friend class concepts::Entity;
 };

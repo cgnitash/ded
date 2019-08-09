@@ -26,12 +26,12 @@ class DataStore
 
 public:
   Signal
-      get_value(std::string n) const
+      getValue(std::string n) const
   {
     return m.at(n);
   }
   auto
-      set_value(std::string n, Signal v)
+      setValue(std::string n, Signal v)
   {
     m[n] = v;
   }

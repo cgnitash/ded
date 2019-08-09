@@ -30,23 +30,23 @@ public:
   {
     ded::specs::EnvironmentSpec es;
 
-    es.bind_parameter("num", num_);
+    es.bindParameter("num", num_);
 
-    es.bind_post("x", "double");
+    es.bindPostTag("x", "double");
 
-    es.bind_environment("env", env_);
-    es.bind_environment_post_constraints("env", { { "x", "double" } });
+    es.bindEnvironment("env", env_);
+    es.bindEnvironmentPostConstraints("env", { { "x", "double" } });
     return es;
   }
 
   void configure(ded::specs::EnvironmentSpec es)
   {
-    es.configure_parameter("num", num_);
+    es.configureParameter("num", num_);
 
-    es.configure_environment("env", env_);
+    es.configureEnvironment("env", env_);
     env = ded::make_Environment(env_);
 
-    es.configure_post("x", x_tag_);
+    es.configurePostTag("x", x_tag_);
   }
 
   ded::concepts::Population evaluate(ded::concepts::Population);

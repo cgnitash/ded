@@ -20,26 +20,26 @@ public:
   {
     ded::specs::EnvironmentSpec es;
 
-    es.bind_post("info", "double");
+    es.bindPostTag("info", "double");
 
-	es.bind_environment("one",one_);
-    es.bind_environment_post_constraints("one", { { "info", "double" } });
+	es.bindEnvironment("one",one_);
+    es.bindEnvironmentPostConstraints("one", { { "info", "double" } });
 
-	es.bind_environment("two",two_);
-    es.bind_environment_post_constraints("two", { { "info", "double" } });
+	es.bindEnvironment("two",two_);
+    es.bindEnvironmentPostConstraints("two", { { "info", "double" } });
 
     return es;
   }
 
   void configure(ded::specs::EnvironmentSpec es)
   {
-    es.configure_environment("one",one_);
+    es.configureEnvironment("one",one_);
 	one = ded::make_Environment(one_);
 
-    es.configure_environment("two",two_);
+    es.configureEnvironment("two",two_);
 	two = ded::make_Environment(two_);
 
-    es.configure_post("info", info_tag_);
+    es.configurePostTag("info", info_tag_);
   }
 
   ded::concepts::Population evaluate(ded::concepts::Population);
