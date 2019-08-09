@@ -39,11 +39,7 @@ public:
   markov_brain() { configure(publish_configuration()); }
   ded::specs::EntitySpec publish_configuration()
   {
-    ded::specs::EntitySpec es;//{"markov_brain"};
-    //con["parameters"]["inputs"]        = input_;
-    //con["parameters"]["outputs"]       = output_;
-    //con["parameters"]["hiddens"]       = hidden_;
-    //con["parameters"]["genome-params"] = genome_config_;
+    ded::specs::EntitySpec es;
 
 	es.bind_parameter("inputs",input_);
 	es.bind_parameter("outputs",output_);
@@ -51,20 +47,11 @@ public:
 
     es.bind_input("in_sense","<double,inputs>");
     es.bind_output("out_sense","<double,outputs>");
-    //es.bind_input("in_sense", in_sense_);
-    //es.bind_output("out_sense", out_sense_);
-    //con["input-tags"]["in-sense"]   = in_sense_;
-    //con["output-tags"]["out-sense"] = out_sense_;
-
-    //es.bind_entity("genome", genome_spec_);
 
     return es;
   }
   void configure(ded::specs::EntitySpec es)
   {
-  //  input_         = con["parameters"]["inputs"];
-  //  output_        = con["parameters"]["outputs"];
-  //  hidden_        = con["parameters"]["hiddens"];
   
 	es.configure_parameter("inputs",input_);
 	es.configure_parameter("outputs",output_);
@@ -73,8 +60,6 @@ public:
     es.configure_input("in_sense", in_sense_);
 
     es.configure_output("out_sense", out_sense_);
-    //in_sense_  = con["input-tags"]["in-sense"];
-    //out_sense_ = con["output-tags"]["out-sense"];
 
 	  // MUST BE ADDRESSED
   //genome_config_ = con["parameters"]["genome-params"];

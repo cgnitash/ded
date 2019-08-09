@@ -1,32 +1,35 @@
 
 
-e = $markov_brain {
+e = $markov_brain 
+{
      hiddens = 5
 	 outputs = 2
-	 inputs = 4
-	}
+	 inputs = ^fs-first-sensor_range
+}
 
-P = $linear { 
+P = $linear 
+{ 
 	size = 40
 	entity = !e # `entity` is special
 	track_lineage = true 
-	}
+}
 
 
 fs = 
-  $sequence  {
-     first 	= 		$forager { ? food_eaten 5 }
-     second = $elite_replacement { 
- 	 strength = 	0.4 
-  }
+  $sequence  
+{
+     first 	= $forager 
+			{	 
+			? food_eaten 5 
+			sensor_range =  [ 2 3 4 5 6 ]
+			}
+
+     second = $elite_replacement { strength = 0.4 }
 }
 
 
 E = $cycle  { 
-  count = 100
-  world = $sequence {
-   first = !fs 
-   second = !fs 
-  }
+  count = 1000
+  world = !fs 
 }
 
