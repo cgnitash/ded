@@ -188,12 +188,12 @@ int
       if (mode == "-rl")
       {
         run_file << "for i in "
-                 << ranges::accumulate(
+                 << rs::accumulate(
                         exps,
                         std::string{},
                         [](auto ret, auto s) { return ret + s + " "; })
                  << " ; do for r in "
-                 << ranges::accumulate(ranges::view::iota(0,
+                 << rs::accumulate(rv::iota(0,
   std::stoi(argv[2])), std::string{},
                                        [](auto s, auto i) {
                                          return s + std::to_string(i) + " ";

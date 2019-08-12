@@ -10,6 +10,7 @@
 #include "specs/population_spec.h"
 
 #include "configuration.h"
+#include "utilities/utilities.h"
 
 namespace ded
 {
@@ -35,16 +36,16 @@ struct Simulation
     std::hash<std::string> hash_fn;
     return std::to_string(
         hash_fn(population_spec.dump(0) + "_" +
-                (environment_spec.dump(0, false) | ranges::action::join)));
+                (environment_spec.dump(0, false) | ra::join)));
   }
 
   std::string
       fullLabel() const
   {
-    return (labels | ranges::view::transform([](auto label) {
+    return (labels | rv::transform([](auto label) {
               return label.first + " = " + label.second;
             }) |
-            ranges::view::intersperse(", ") | ranges::action::join);
+            rv::intersperse(", ") | ra::join);
   }
 
   std::string

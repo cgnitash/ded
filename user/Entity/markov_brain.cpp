@@ -66,8 +66,8 @@ ded::concepts::Signal
 
   if (n == out_sense_)
   {
-    return buffer_ | ranges::copy |
-           ranges::action::slice(input_, input_ + output_);
+    return buffer_ | rs::copy |
+           ra::slice(input_, input_ + output_);
   } else
   {
     std::cout << "Impl-Error: entity-markovbrain cannot handle this "
@@ -95,8 +95,8 @@ void
     auto out = g.logic_[in];
     for (auto &i : g.outs_) out_buffer[i] += out;
   }
-  buffer_ = out_buffer | ranges::move |
-            ranges::action::transform([](auto i) { return ded::utilities::Bit(i); });
+  buffer_ = out_buffer | rs::move |
+            ra::transform([](auto i) { return ded::utilities::Bit(i); });
 }
 
 void
@@ -130,16 +130,16 @@ void
       gate g;
       // translate input wires
       auto in = *(pos + 2) % 4 + 1;
-      for (auto i : ranges::view::iota(0, in))
+      for (auto i : rv::iota(0, in))
         g.ins_.push_back(*(pos + 3 + i) % addresses);
 
       // translate output wires
       auto out = *(pos + 7) % 4 + 1;
-      for (auto i : ranges::view::iota(0, out))
+      for (auto i : rv::iota(0, out))
         g.outs_.push_back(*(pos + 8 + i) % addresses);
 
       // translate logic
-      for (auto i : ranges::view::iota(0, 16))
+      for (auto i : rv::iota(0, 16))
         g.logic_.push_back(*(pos + 13 + i) % 2);
 
       gates_.push_back(g);

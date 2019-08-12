@@ -2,12 +2,12 @@
 #include <iomanip>
 #include <iostream>
 #include <map>
-#include <range/v3/all.hpp>
 #include <regex>
 #include <string>
 #include <variant>
 
 #include "../configuration.h"
+#include "../utilities/utilities.h"
 #include "entity_spec.h"
 
 namespace ded
@@ -51,13 +51,13 @@ EntitySpec::EntitySpec(language::Parser p, language::Block blk)
     auto name  = over.first;
     auto value = over.second;
 
-    auto f = ranges::find_if(
+    auto f = rs::find_if(
         parameters_, [&](auto param) { return param.first == name.expr_; });
     if (f == parameters_.end())
     {
       p.errInvalidToken(name,
                           "this does not override any parameters of " + name_,
-                          parameters_ | ranges::view::transform([](auto param) {
+                          parameters_ | rv::transform([](auto param) {
                             return param.first;
                           }));
       throw language::ParserError{};
@@ -95,7 +95,7 @@ EntitySpec::EntitySpec(language::Parser p, language::Block blk)
       throw language::ParserError{};
     }
 
-    auto f = ranges::find_if(
+    auto f = rs::find_if(
         nested_, [&](auto param) { return param.first == name.expr_; });
     if (f == nested_.end())
     {
@@ -103,7 +103,7 @@ EntitySpec::EntitySpec(language::Parser p, language::Block blk)
           name,
           "this does not override any nested entitys of " + blk.name_,
           nested_ |
-              ranges::view::transform([](auto param) { return param.first; }));
+              rv::transform([](auto param) { return param.first; }));
       throw language::ParserError{};
     }
 
@@ -117,26 +117,26 @@ std::string
   auto alignment = "\n" + std::string(depth, ' ');
 
   return alignment + "entity:" + name_ + alignment + "P" +
-         (parameters_ | ranges::view::transform([&](auto parameter) {
+         (parameters_ | rv::transform([&](auto parameter) {
             return alignment + parameter.first + ":" +
                    parameter.second.valueAsString();
           }) |
-          ranges::action::join) +
+          ra::join) +
          alignment + "I" +
-         (io_.inputs_ | ranges::view::transform([&](auto sig) {
+         (io_.inputs_ | rv::transform([&](auto sig) {
             return alignment + sig.second.fullName();
           }) |
-          ranges::action::join) +
+          ra::join) +
          alignment + "O" +
-         (io_.outputs_ | ranges::view::transform([&](auto sig) {
+         (io_.outputs_ | rv::transform([&](auto sig) {
             return alignment + sig.second.fullName();
           }) |
-          ranges::action::join) +
+          ra::join) +
          alignment + "n" +
-         (nested_ | ranges::view::transform([&](auto nested) {
+         (nested_ | rv::transform([&](auto nested) {
             return alignment + nested.first + nested.second.e->dump(depth + 1);
           }) |
-          ranges::action::join);
+          ra::join);
 }
 
 EntitySpec
@@ -145,7 +145,7 @@ EntitySpec
   name_ = *pop_dump.begin();
   name_ = name_.substr(name_.find(':') + 1);
 
-  auto f = ranges::begin(pop_dump) + 2;
+  auto f = rs::begin(pop_dump) + 2;
 
   for (; *f != "I"; f++)
   {

@@ -2,7 +2,6 @@
 #include <iomanip>
 #include <iostream>
 #include <map>
-#include <range/v3/all.hpp>
 #include <regex>
 #include <string>
 #include <variant>
@@ -26,13 +25,13 @@ PopulationSpec::PopulationSpec(language::Parser parser, language::Block block)
     auto name  = over.first;
     auto value = over.second;
 
-    auto f = ranges::find_if(
+    auto f = rs::find_if(
         parameters_, [&](auto param) { return param.first == name.expr_; });
     if (f == parameters_.end())
     {
       parser.errInvalidToken(name,
                           "this does not override any parameters of " + name_,
-                          parameters_ | ranges::view::transform([](auto param) {
+                          parameters_ | rv::transform([](auto param) {
                             return param.first;
                           }));
       throw language::ParserError{};
@@ -81,11 +80,11 @@ std::string
   auto alignment = std::string(depth, ' ');
 
   return alignment + "population:" + name_ + "\n" + alignment + "P\n" +
-         (parameters_ | ranges::view::transform([&](auto parameter) {
+         (parameters_ | rv::transform([&](auto parameter) {
             return alignment + parameter.first + ":" +
                    parameter.second.valueAsString() + "\n";
           }) |
-          ranges::action::join)+
+          ra::join)+
          alignment + "E" + es_.dump(depth + 1);
 }
 
@@ -95,7 +94,7 @@ PopulationSpec
   name_ = *pop_dump.begin();
   name_ = name_.substr(name_.find(':') + 1);
 
-  auto f = ranges::begin(pop_dump) + 2;
+  auto f = rs::begin(pop_dump) + 2;
 
   for (; *f != "E"; f++)
   {

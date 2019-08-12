@@ -2,6 +2,7 @@
 #pragma once
 
 #include "csv_reader.h"
+#include "../utilities.h"
 
 #include <algorithm>
 #include <array>
@@ -10,7 +11,6 @@
 #include <iostream>
 #include <map>
 #include <numeric>
-#include <range/v3/all.hpp>
 #include <regex>
 #include <set>
 #include <sstream>
@@ -76,7 +76,7 @@ public:
   bool
       has_column(std::string name) const
   {
-    return ranges::find(column_names_, name) != ranges::end(column_names_);
+    return rs::find(column_names_, name) != ranges::end(column_names_);
   }
 
   // return all rows in the file

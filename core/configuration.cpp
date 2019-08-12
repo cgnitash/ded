@@ -2,12 +2,12 @@
 
 #include <experimental/filesystem>
 #include <regex>
-#include <range/v3/all.hpp>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 
 #include "utilities/term_colours.h"
+#include "utilities/utilities.h"
 #include "configuration.h"
 
 namespace ded
@@ -88,21 +88,21 @@ std::vector<std::string>
     allEntityNames()
 {
   return all_entity_specs |
-         ranges::view::transform([](auto spec) { return spec.first; });
+         rv::transform([](auto spec) { return spec.first; });
 }
 
 std::vector<std::string>
     allEnvironmentNames()
 {
   return all_environment_specs |
-         ranges::view::transform([](auto spec) { return spec.first; });
+         rv::transform([](auto spec) { return spec.first; });
 }
 
 std::vector<std::string>
     allPopulationNames()
 {
   return all_population_specs |
-         ranges::view::transform([](auto spec) { return spec.first; });
+         rv::transform([](auto spec) { return spec.first; });
 }
 
 std::vector<std::string>
@@ -111,7 +111,7 @@ std::vector<std::string>
   auto a = allEntityNames();
   auto b = allEnvironmentNames();
   auto c = allPopulationNames();
-  return ranges::view::concat(a, b, c);
+  return rv::concat(a, b, c);
 }
 }   // namespace config_manager
 

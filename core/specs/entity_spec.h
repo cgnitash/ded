@@ -4,13 +4,13 @@
 #include <iomanip>
 #include <iostream>
 #include <map>
-#include <range/v3/all.hpp>
 #include <regex>
 #include <string>
 #include <variant>
 
 #include "../language/parser.h"
 #include "../utilities/term_colours.h"
+#include "../utilities/utilities.h"
 #include "configuration_primitive.h"
 #include "signal_spec.h"
 
@@ -95,7 +95,7 @@ public:
       configureInput(std::string name, std::string &value)
   {
     auto i =
-        ranges::find_if(io_.inputs_, [=](auto ns) { return ns.first == name; });
+        rs::find_if(io_.inputs_, [=](auto ns) { return ns.first == name; });
     value = i->second.identifier();
   }
 
@@ -108,7 +108,7 @@ public:
   void
       configureOutput(std::string name, std::string &value)
   {
-    auto i = ranges::find_if(io_.outputs_,
+    auto i = rs::find_if(io_.outputs_,
                              [=](auto ns) { return ns.first == name; });
     value  = i->second.identifier();
   }

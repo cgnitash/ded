@@ -3,7 +3,6 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <range/v3/all.hpp>
 #include <regex>
 #include <string>
 #include <vector>
@@ -41,7 +40,7 @@ void
   }
 
   if (auto prev =
-          ranges::find_if(variables_,
+          rs::find_if(variables_,
                           [tok = source_tokens_.tokens[begin]](auto var) {
                             return var.first.expr_ == tok.expr_;
                           });
@@ -86,11 +85,11 @@ void
             << std::string(column + 9, ' ') << utilities::TermColours::red_fg
             << "^ " << message;
 
-  if (auto f = ranges::find_if(suggestions,
+  if (auto f = rs::find_if(suggestions,
                                [word = tok.expr_](auto attempt) {
                                  return utilities::match(attempt, word);
                                });
-      f != ranges::end(suggestions))
+      f != rs::end(suggestions))
     std::cout << "\n"
               << std::string(column + 9, ' ') << "Did you mean "
               << utilities::TermColours::green_fg << *f;
@@ -177,12 +176,12 @@ void
   {
     case TokenType::word:
     case TokenType::tracked_word:
-      if (auto f = ranges::find_if(current.overrides_,
+      if (auto f = rs::find_if(current.overrides_,
                                    [&](auto over) {
                                      return over.first.expr_ ==
                                             source_tokens_.tokens[begin].expr_;
                                    });
-          f != ranges::end(current.overrides_))
+          f != rs::end(current.overrides_))
       {
         errInvalidToken(f->first, "parameters already overridden here");
         errInvalidToken(source_tokens_.tokens[begin],
@@ -196,12 +195,12 @@ void
       break;
     case TokenType::variable:
     case TokenType::component:
-      if (auto f = ranges::find_if(current.nested_,
+      if (auto f = rs::find_if(current.nested_,
                                    [&](auto over) {
                                      return over.first.expr_ ==
                                             source_tokens_.tokens[begin].expr_;
                                    });
-          f != ranges::end(current.nested_))
+          f != rs::end(current.nested_))
       {
         errInvalidToken(f->first, "nested component already overridden here");
         errInvalidToken(source_tokens_.tokens[begin],
@@ -256,7 +255,7 @@ void
 Block
     Parser::variableBlock(int begin)
 {
-  if (auto f = ranges::find_if(variables_,
+  if (auto f = rs::find_if(variables_,
                                [tok = source_tokens_.tokens[begin]](auto var) {
                                  return var.first.expr_ == tok.expr_.substr(1);
                                });
@@ -264,7 +263,7 @@ Block
   {
     errInvalidToken(source_tokens_.tokens[begin],
                       "this variable has not been defined",
-                      variables_ | ranges::view::transform([](auto var) {
+                      variables_ | rv::transform([](auto var) {
                         return var.first.expr_;
                       }));
     throw ParserError{};
@@ -280,7 +279,7 @@ Block
 {
   Block current;
   current.name_ = source_tokens_.tokens[begin].expr_;
-  if (ranges::none_of(
+  if (rs::none_of(
           config_manager::allComponentNames(),
           [&](auto comp_name) { return comp_name == current.name_.substr(1); }))
   {
@@ -311,15 +310,15 @@ std::optional<std::pair<int, int>>
     Parser::hasVariedParameter()
 {
 
-  auto open_variance_position = ranges::find(
+  auto open_variance_position = rs::find(
       source_tokens_.tokens, TokenType::open_varied_argument, &Token::type_);
-  auto close_variance_position = ranges::find(
+  auto close_variance_position = rs::find(
       source_tokens_.tokens, TokenType::close_varied_argument, &Token::type_);
-  if (open_variance_position == ranges::end(source_tokens_.tokens) &&
-      open_variance_position == ranges::end(source_tokens_.tokens))
+  if (open_variance_position == rs::end(source_tokens_.tokens) &&
+      open_variance_position == rs::end(source_tokens_.tokens))
     return std::nullopt;
 
-  if (open_variance_position < ranges::begin(source_tokens_.tokens) + 2 ||
+  if (open_variance_position < rs::begin(source_tokens_.tokens) + 2 ||
       (open_variance_position - 1)->type_ != TokenType::assignment ||
       (open_variance_position - 2)->type_ != TokenType::word)
   {
@@ -328,7 +327,7 @@ std::optional<std::pair<int, int>>
     throw ParserError{};
   }
 
-  if (close_variance_position == ranges::end(source_tokens_.tokens))
+  if (close_variance_position == rs::end(source_tokens_.tokens))
   {
     errInvalidToken(*open_variance_position,
                       "varied parameter is not closed");
@@ -342,7 +341,7 @@ std::optional<std::pair<int, int>>
     throw ParserError{};
   }
 
-  if (auto f = ranges::find(open_variance_position + 1,
+  if (auto f = rs::find(open_variance_position + 1,
                             close_variance_position,
                             TokenType::open_varied_argument,
                             &Token::type_);
@@ -366,8 +365,8 @@ std::optional<std::pair<int, int>>
   }
 
   return std::make_pair(
-      open_variance_position - ranges::begin(source_tokens_.tokens),
-      close_variance_position - ranges::begin(source_tokens_.tokens));
+      open_variance_position - rs::begin(source_tokens_.tokens),
+      close_variance_position - rs::begin(source_tokens_.tokens));
 }
 
 std::vector<Parser>
@@ -381,21 +380,21 @@ std::vector<Parser>
   }
 
   std::vector<Token> subs;
-  ranges::copy(ranges::begin(source_tokens_.tokens) + pos->first + 1,
-               ranges::begin(source_tokens_.tokens) + pos->second,
-               ranges::back_inserter(subs));
+  rs::copy(rs::begin(source_tokens_.tokens) + pos->first + 1,
+               rs::begin(source_tokens_.tokens) + pos->second,
+               rs::back_inserter(subs));
 
-  source_tokens_.tokens.erase(ranges::begin(source_tokens_.tokens) + pos->first,
-                              ranges::begin(source_tokens_.tokens) +
+  source_tokens_.tokens.erase(rs::begin(source_tokens_.tokens) + pos->first,
+                              rs::begin(source_tokens_.tokens) +
                                   pos->second + 1);
 
-  return subs | ranges::view::transform([&](auto token) {
+  return subs | rv::transform([&](auto token) {
            auto temp = source_tokens_;
-           temp.tokens.insert(ranges::begin(temp.tokens) + pos->first, token);
+           temp.tokens.insert(rs::begin(temp.tokens) + pos->first, token);
            Parser p{ *this };
            p.updateSourceTokens(temp);
            p.updateLabels(
-               { (ranges::begin(temp.tokens) + pos->first - 2)->expr_,
+               { (rs::begin(temp.tokens) + pos->first - 2)->expr_,
                  token.expr_ });
            return p;
          });
@@ -443,11 +442,11 @@ std::string
     Parser::lookUpTokenWord(Token token)
 {
   auto                     refers = token.refers_.substr(1);
-  std::vector<std::string> pats   = refers | ranges::view::split('-');
+  std::vector<std::string> pats   = refers | rv::split('-');
 
-  auto f = ranges::find_if(
+  auto f = rs::find_if(
       variables_, [&](auto var) { return var.first.expr_ == pats[0]; });
-  if (f == ranges::end(variables_))
+  if (f == rs::end(variables_))
   {
     errInvalidToken(token, "tracked path " + refers + " is not valid");
     throw ParserError{};
@@ -458,9 +457,9 @@ std::string
   {
     auto nested = pats[i];
 
-    auto nb = ranges::find_if(
+    auto nb = rs::find_if(
         b.nested_, [&](auto var) { return var.first.expr_ == nested; });
-    if (nb == ranges::end(b.nested_))
+    if (nb == rs::end(b.nested_))
     {
       errInvalidToken(token,
                         "tracked path " + refers + " is not valid: '" + nested +
@@ -472,9 +471,9 @@ std::string
 
   auto param = pats.back();
 
-  auto par = ranges::find_if(
+  auto par = rs::find_if(
       b.overrides_, [&](auto var) { return var.first.expr_ == param; });
-  if (par == ranges::end(b.overrides_))
+  if (par == rs::end(b.overrides_))
   {
     errInvalidToken(token,
                       "tracked path " + refers + " is not valid: '" + param +

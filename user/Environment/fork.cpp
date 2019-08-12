@@ -23,9 +23,9 @@ ded::concepts::Population
     org.data.setValue(
         info_tag_,
         (std::get<double>(
-             ranges::find(one_vec, org)->data.getValue(info_tag_)) +
+             rs::find(one_vec, org)->data.getValue(info_tag_)) +
          std::get<double>(
-             ranges::find(two_vec, org)->data.getValue(info_tag_))) /
+             rs::find(two_vec, org)->data.getValue(info_tag_))) /
             2.0);
   }
   pop.merge(vec);

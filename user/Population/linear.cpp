@@ -13,7 +13,7 @@ void
   if (load_spec_.empty())
   {
     pop_.clear();
-    ranges::generate_n(ranges::back_inserter(pop_), size_, [&] {
+    rs::generate_n(rs::back_inserter(pop_), size_, [&] {
       auto org = ded::make_Entity(org_);
       if (track_lineage_) fossils_.push_back({ org, 1 });
       return org;
@@ -29,10 +29,10 @@ void
     }
 	ded::utilities::csv::CSV  csv(ded::global_path + load_spec_);
     auto ids = csv.single_column("id");
-    ranges::sort(ids,
+    rs::sort(ids,
                  [](auto a, auto b) { return std::stol(a) > std::stol(b); });
     pop_.clear();
-    ranges::transform(ids, ranges::back_inserter(pop_), [&](auto id) {
+    rs::transform(ids, rs::back_inserter(pop_), [&](auto id) {
       auto org = ded::make_Entity(org_);
       org.set_encoding(org.parse_encoding(csv.look_up("id", id, "encoding")));
       if (track_lineage_) fossils_.push_back({ org, 1 });
@@ -85,7 +85,7 @@ bool
                             std::end(pop_),
                             n,
                             [](auto &org, long n) { return org.get_id() < n; });
-  return l != ranges::end(pop_) && l->get_id() == n;
+  return l != rs::end(pop_) && l->get_id() == n;
 }
 
 void
@@ -95,13 +95,13 @@ void
   if (track_lineage_)
   {
 
-    ranges::sort(v);
+    rs::sort(v);
 
     std::vector<ded::concepts::Entity> new_orgs, del_orgs;
-    ranges::set_difference(pop_, v, ranges::back_inserter(del_orgs));
+    rs::set_difference(pop_, v, rs::back_inserter(del_orgs));
     for (auto &org : del_orgs) update_tree(org.get_id(), -1);
 
-    ranges::set_difference(v, pop_, ranges::back_inserter(new_orgs));
+    rs::set_difference(v, pop_, rs::back_inserter(new_orgs));
 
     for (auto &org : new_orgs)
     {

@@ -4,11 +4,12 @@
 #include <iostream>
 #include <numeric>
 #include <random>
-#include <range/v3/all.hpp>
 #include <regex>
 #include <string>
 #include <string_view>
 #include <vector>
+
+#include "core/utilities/utilities.h"
 
 using opts = std::map<std::string, std::vector<std::string>>;
 
@@ -84,9 +85,9 @@ void
            << ": \" << spec.name();\n  throw specs::SpecError{};\n}\n\n";
   }
 
-  for (auto name : ranges::view::concat(build_options["Entity"],
-                                        build_options["Environment"],
-                                        build_options["Population"]))
+  for (auto name : rv::concat(build_options["Entity"],
+                              build_options["Environment"],
+                              build_options["Population"]))
     header << "template<>\nstd::string auto_class_name_as_string<" << name
            << ">() \n{ return \"" << name << "\"; }\n\n";
 
@@ -94,9 +95,8 @@ void
   for (auto [type, names] : build_options)
   {
     header << "  generate_" << type << "Spec({"
-           << (names |
-               ranges::view::transform([](auto s) { return "\"" + s + "\""; }) |
-               ranges::view::intersperse(",") | ranges::action::join)
+           << (names | rv::transform([](auto s) { return "\"" + s + "\""; }) |
+               rv::intersperse(",") | ra::join)
            << "});\n";
   }
   header << "}\n";
@@ -153,7 +153,7 @@ inline void
     }
 }
 )~";
-  
+
   header << "\n} // namespace ded";
 }
 
@@ -201,37 +201,33 @@ void
   makefile << "\n\nflags = " << args;
 
   makefile << "\n\nheaders = components.h "
-           << (core_files | ranges::view::transform(as_header) |
-               ranges::action::join);
+           << (core_files | rv::transform(as_header) | ra::join);
 
   makefile << "\n\ncomponents = obj_files/main.o obj_files/components.o "
-           << (core_files | ranges::view::transform(as_object) |
-               ranges::action::join)
-           << (user_files | ranges::view::transform(as_object) |
-               ranges::action::join);
+           << (core_files | rv::transform(as_object) | ra::join)
+           << (user_files | rv::transform(as_object) | ra::join);
 
   makefile << "\n\nded : $(components)"
               "\n\t$(flags) $(components) -lstdc++fs -o ded";
 
   makefile << "\n\nobj_files/main.o : main.cpp "
               "\n\t$(flags) -c main.cpp -o obj_files/main.o\n"
-           << (core_files | ranges::view::transform([&](auto file) {
+           << (core_files | rv::transform([&](auto file) {
                  return "\n" + as_object(file) + ": " + as_source(file) +
                         "\n\t$(flags) -c " + as_source(file) + " -o " +
                         as_object(file) + "\n";
                }) |
-               ranges::action::join)
+               ra::join)
            << "\nobj_files/components.o : components.cpp $(headers) "
-           << (user_files | ranges::view::transform(as_header) |
-               ranges::action::join)
+           << (user_files | rv::transform(as_header) | ra::join)
            << "\n\t$(flags) -c components.cpp -o "
            << "obj_files/components.o\n"
-           << (user_files | ranges::view::transform([&](auto file) {
+           << (user_files | rv::transform([&](auto file) {
                  return "\n" + as_object(file) + ": " + as_source(file) +
                         as_header(file) + " $(headers) \n\t$(flags) -c " +
                         as_source(file) + "-o " + as_object(file) + "\n";
                }) |
-               ranges::action::join);
+               ra::join);
 
   makefile << "\n\nclean : "
            << "\n\trm obj_files/*.o"

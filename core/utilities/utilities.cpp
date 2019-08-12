@@ -3,7 +3,6 @@
 #include <cmath>
 #include <experimental/filesystem>
 #include <fstream>
-#include <range/v3/all.hpp>
 
 #include "utilities.h"
 
@@ -34,10 +33,9 @@ std::ofstream
 int
     closeness(std::string w1, std::string w2)
 {
-  return ranges::inner_product(
-      w1, w2, 0, std::plus<int>(), [](auto c1, auto c2) {
-        return c1 != c2 ? 1 : 0;
-      });
+  return rs::inner_product(w1, w2, 0, std::plus<int>(), [](auto c1, auto c2) {
+    return c1 != c2 ? 1 : 0;
+  });
 }
 
 bool
@@ -46,8 +44,8 @@ bool
   // In : abc
   // Out : [" abc","a bc","ab c","abc "]
   auto all_spaces = [](std::string word) {
-    return ranges::view::repeat_n(word, word.size() + 1) |
-           ranges::view::transform([n = -1](auto str) mutable {
+    return rv::repeat_n(word, word.size() + 1) |
+           rv::transform([n = -1](auto str) mutable {
              n++;
              return str.substr(0, n) + " " + str.substr(n);
            });
@@ -84,10 +82,9 @@ bool
   if (distance == 2)
   {
     // at most symmetrically ( 2 deletions , or 2 insertions)
-    for (auto spaced :
-         all_spaces(min) | ranges::view::transform([all_spaces](auto r) {
-           return all_spaces(r);
-         }) | ranges::view::join)
+    for (auto spaced : all_spaces(min) | rv::transform([all_spaces](auto r) {
+                         return all_spaces(r);
+                       }) | rv::join)
       if (closeness(spaced, max) < tolerance)
         return true;
   }

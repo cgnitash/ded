@@ -3,7 +3,6 @@
 #include <iostream>
 #include <map>
 #include <memory>
-#include <range/v3/all.hpp>
 #include <regex>
 #include <string>
 
@@ -30,7 +29,7 @@ void
   for (auto &n_tag : source_tags)
   {
     auto &src     = n_tag.second;
-    auto  matches = ranges::count_if(sink_tags_copy, [sig = src](auto ns) {
+    auto  matches = rs::count_if(sink_tags_copy, [sig = src](auto ns) {
       return ns.second.exactlyMatches(sig);
     });
     if (matches > 1)
@@ -45,7 +44,7 @@ void
       throw SpecError{};
     }
 
-    auto snk = ranges::find_if(sink_tags, [sig = src](auto ns) {
+    auto snk = rs::find_if(sink_tags, [sig = src](auto ns) {
       return ns.second.exactlyMatches(sig);
     });
 
@@ -78,7 +77,7 @@ void
       src.updateIdentifier("~tag" + std::to_string(tag_count));
     }
 
-    sink_tags_copy.erase(ranges::find_if(sink_tags_copy, [sig = src](auto ns) {
+    sink_tags_copy.erase(rs::find_if(sink_tags_copy, [sig = src](auto ns) {
       return ns.second.exactlyMatches(sig);
     }));
   }
@@ -107,11 +106,11 @@ void
     auto same_user_name = [&source_tag](auto tag) {
       return tag.second.userName() == source_tag.second.userName();
     };
-    if (auto f = ranges::find_if(tags_.pre_, same_user_name);
-        f != ranges::end(tags_.pre_))
+    if (auto f = rs::find_if(tags_.pre_, same_user_name);
+        f != rs::end(tags_.pre_))
       source_tag.second.updateIdentifier(f->second.identifier());
-    else if (f = ranges::find_if(tags_.post_, same_user_name);
-             f != ranges::end(tags_.post_))
+    else if (f = rs::find_if(tags_.post_, same_user_name);
+             f != rs::end(tags_.post_))
       source_tag.second.updateIdentifier(f->second.identifier());
   }
 }
@@ -181,7 +180,7 @@ void
   for (auto &n_sig : io_.inputs_)
   {
     auto &in_sig  = n_sig.second;
-    auto  matches = ranges::count_if(ios.inputs_, [sig = in_sig](auto ns) {
+    auto  matches = rs::count_if(ios.inputs_, [sig = in_sig](auto ns) {
       return ns.second.exactlyMatches(sig);
     });
     if (matches > 1)
@@ -198,7 +197,7 @@ void
         std::cout << "\n    " << sig.second.fullName();
       throw language::ParserError{};
     }
-    auto i = ranges::find_if(ios.inputs_, [sig = in_sig](auto ns) {
+    auto i = rs::find_if(ios.inputs_, [sig = in_sig](auto ns) {
       return ns.second.exactlyMatches(sig);
     });
     in_sig.updateIdentifier(i->second.identifier());
@@ -208,7 +207,7 @@ void
   for (auto &n_sig : io_.outputs_)
   {
     auto &out_sig = n_sig.second;
-    auto  matches = ranges::count_if(ios.outputs_, [sig = out_sig](auto ns) {
+    auto  matches = rs::count_if(ios.outputs_, [sig = out_sig](auto ns) {
       return ns.second.exactlyMatches(sig);
     });
     if (matches > 1)
@@ -225,7 +224,7 @@ void
         std::cout << "\n    " << sig.second.fullName();
       throw language::ParserError{};
     }
-    auto i = ranges::find_if(ios.outputs_, [sig = out_sig](auto ns) {
+    auto i = rs::find_if(ios.outputs_, [sig = out_sig](auto ns) {
       return ns.second.exactlyMatches(sig);
     });
     out_sig.updateIdentifier(i->second.identifier());
@@ -261,7 +260,7 @@ void
 
   for (auto &sig_freq : traces_.pre_)
     sig_freq.signal_.updateIdentifier(
-        ranges::find_if(tags_.pre_,
+        rs::find_if(tags_.pre_,
                         [n = sig_freq.signal_.userName()](auto tag) {
                           return tag.first == n;
                         })
@@ -269,7 +268,7 @@ void
 
   for (auto &sig_freq : traces_.post_)
     sig_freq.signal_.updateIdentifier(
-        ranges::find_if(tags_.post_,
+        rs::find_if(tags_.post_,
                         [n = sig_freq.signal_.userName()](auto tag) {
                           return tag.first == n;
                         })
@@ -290,7 +289,7 @@ EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
     auto name  = over.first;
     auto value = over.second;
 
-    auto f = ranges::find_if(
+    auto f = rs::find_if(
         parameters_, [&](auto param) { return param.first == name.expr_; });
     if (f == parameters_.end())
     {
@@ -298,7 +297,7 @@ EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
           name,
           "this does not override any parameters of " + name_,
           parameters_ |
-              ranges::view::transform([](auto param) { return param.first; }));
+              rv::transform([](auto param) { return param.first; }));
       throw language::ParserError{};
     }
 
@@ -340,18 +339,18 @@ EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
       throw language::ParserError{};
     }
 
-    if (auto i = ranges::find_if(
+    if (auto i = rs::find_if(
             tags_.pre_,
             [name = tag_name.expr_](auto ns) { return ns.first == name; });
-        i != ranges::end(tags_.pre_))
+        i != rs::end(tags_.pre_))
     {
       traces_.pre_.push_back(
           { i->second.fullName(), std::stoi(frequency.expr_) });
     }
-    else if (i = ranges::find_if(
+    else if (i = rs::find_if(
                  tags_.post_,
                  [name = tag_name.expr_](auto ns) { return ns.first == name; });
-             i != ranges::end(tags_.post_))
+             i != rs::end(tags_.post_))
     {
       traces_.post_.push_back(
           { i->second.fullName(), std::stoi(frequency.expr_) });
@@ -361,11 +360,11 @@ EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
       parser_.errInvalidToken(
           tag_name,
           "this is not a pre/post tag of " + name_,
-          ranges::view::concat(
+          rv::concat(
               tags_.pre_ |
-                  ranges::view::transform([](auto tag) { return tag.first; }),
+                  rv::transform([](auto tag) { return tag.first; }),
               tags_.post_ |
-                  ranges::view::transform([](auto tag) { return tag.first; })));
+                  rv::transform([](auto tag) { return tag.first; })));
       throw language::ParserError{};
     }
   }
@@ -375,7 +374,7 @@ EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
     auto name       = blover.first;
     auto nested_blk = blover.second;
 
-    auto f = ranges::find_if(
+    auto f = rs::find_if(
         nested_, [&](auto param) { return param.first == name.expr_; });
     if (f == nested_.end())
     {
@@ -383,7 +382,7 @@ EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
           name,
           "this does not override any nested environments " + block_.name_,
           nested_ |
-              ranges::view::transform([](auto param) { return param.first; }));
+              rv::transform([](auto param) { return param.first; }));
       throw language::ParserError{};
     }
 
@@ -415,31 +414,31 @@ std::vector<std::string>
 
   lines.push_back(alignment + "environment:" + name_);
   lines.push_back(alignment + "P");
-  ranges::transform(
-      parameters_, ranges::back_inserter(lines), [&](auto parameter) {
+  rs::transform(
+      parameters_, rs::back_inserter(lines), [&](auto parameter) {
         return alignment + parameter.first + ":" +
                parameter.second.valueAsString();
       });
   lines.push_back(alignment + "I");
-  ranges::transform(io_.inputs_, ranges::back_inserter(lines), pad_signal);
+  rs::transform(io_.inputs_, rs::back_inserter(lines), pad_signal);
   lines.push_back(alignment + "O");
-  ranges::transform(io_.outputs_, ranges::back_inserter(lines), pad_signal);
+  rs::transform(io_.outputs_, rs::back_inserter(lines), pad_signal);
   lines.push_back(alignment + "a");
-  ranges::transform(tags_.pre_, ranges::back_inserter(lines), pad_signal);
+  rs::transform(tags_.pre_, rs::back_inserter(lines), pad_signal);
   lines.push_back(alignment + "b");
-  ranges::transform(tags_.post_, ranges::back_inserter(lines), pad_signal);
+  rs::transform(tags_.post_, rs::back_inserter(lines), pad_signal);
   if (with_traces)
   {
     // needs to go
     lines.push_back(alignment + "r");
-    ranges::transform(
-        traces_.pre_, ranges::back_inserter(lines), [&](auto trace) {
+    rs::transform(
+        traces_.pre_, rs::back_inserter(lines), [&](auto trace) {
           return alignment + trace.signal_.fullName() + ";" +
                  std::to_string(trace.frequency_);
         });
     lines.push_back(alignment + "R");
-    ranges::transform(
-        traces_.post_, ranges::back_inserter(lines), [&](auto trace) {
+    rs::transform(
+        traces_.post_, rs::back_inserter(lines), [&](auto trace) {
           return alignment + trace.signal_.fullName() + ";" +
                  std::to_string(trace.frequency_);
         });
@@ -462,7 +461,7 @@ EnvironmentSpec
   name_ = *pop_dump.begin();
   name_ = name_.substr(name_.find(':') + 1);
 
-  auto f = ranges::begin(pop_dump) + 2;
+  auto f = rs::begin(pop_dump) + 2;
 
   for (; *f != "I"; f++)
   {

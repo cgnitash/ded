@@ -5,12 +5,12 @@
 #include <iostream>
 #include <map>
 #include <memory>
-#include <range/v3/all.hpp>
 #include <regex>
 #include <string>
 
 #include "../language/parser.h"
 #include "../utilities/term_colours.h"
+#include "../utilities/utilities.h"
 #include "configuration_primitive.h"
 #include "population_spec.h"
 #include "signal_spec.h"
@@ -168,7 +168,7 @@ public:
       configurePreTag(std::string name, std::string &value)
   {
     value =
-        ranges::find_if(tags_.pre_, [=](auto ns) { return ns.first == name; })
+        rs::find_if(tags_.pre_, [=](auto ns) { return ns.first == name; })
             ->second.identifier();
   }
 
@@ -182,7 +182,7 @@ public:
       configurePostTag(std::string name, std::string &value)
   {
     value =
-        ranges::find_if(tags_.post_, [=](auto ns) { return ns.first == name; })
+        rs::find_if(tags_.post_, [=](auto ns) { return ns.first == name; })
             ->second.identifier();
   }
 
@@ -196,7 +196,7 @@ public:
       configureInput(std::string name, std::string &value)
   {
     value =
-        ranges::find_if(io_.inputs_, [=](auto ns) { return ns.first == name; })
+        rs::find_if(io_.inputs_, [=](auto ns) { return ns.first == name; })
             ->second.identifier();
   }
 
@@ -210,7 +210,7 @@ public:
       configureOutput(std::string name, std::string &value)
   {
     value =
-        ranges::find_if(io_.outputs_, [=](auto ns) { return ns.first == name; })
+        rs::find_if(io_.outputs_, [=](auto ns) { return ns.first == name; })
             ->second.identifier();
   }
 
@@ -246,7 +246,7 @@ public:
     // tags_.post_.push_back({ name, SignalSpec{ name, name, value } });
     nested_[env_name].constraints_.pre_ =
         pre_constraints |
-        ranges::view::transform(
+        rv::transform(
             [](auto tag) -> std::pair<std::string, SignalSpec> {
               auto name  = tag.first;
               auto value = tag.second;
@@ -261,7 +261,7 @@ public:
   {
     nested_[env_name].constraints_.post_ =
         post_constraints |
-        ranges::view::transform(
+        rv::transform(
             [](auto tag) -> std::pair<std::string, SignalSpec> {
               auto name  = tag.first;
               auto value = tag.second;

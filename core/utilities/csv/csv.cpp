@@ -8,7 +8,6 @@
 #include <iostream>
 #include <map>
 #include <numeric>
-#include <range/v3/all.hpp>
 #include <regex>
 #include <set>
 #include <sstream>
@@ -23,18 +22,17 @@ namespace csv
 std::vector<std::string>
     CSV::single_column(std::string column)
 {
-  auto const column_index = ranges::find(column_names_, column);
+  auto const column_index = rs::find(column_names_, column);
 
-  if (column_index == ranges::end(column_names_))
+  if (column_index == rs::end(column_names_))
   {
     std::cout << " Error : could not find column " << column
               << " to merge from file " << file_name_ << std::endl;
     std::exit(1);
   }
 
-  return rows_ | ranges::view::transform(
-                     [c = column_index - ranges::begin(column_names_)](
-                         auto row) { return row[c]; });
+  return rows_ | rv::transform([c = column_index - rs::begin(column_names_)](
+                                   auto row) { return row[c]; });
 }
 
 std::string
@@ -44,8 +42,8 @@ std::string
 {
 
   // find position of lookup column
-  auto const column_iter = ranges::find(column_names_, lookup_column);
-  if (column_iter == ranges::end(column_names_))
+  auto const column_iter = rs::find(column_names_, lookup_column);
+  if (column_iter == rs::end(column_names_))
   {
     std::cout << " Error : could not find column " << lookup_column
               << " in file " << file_name_ << std::endl;
@@ -53,8 +51,8 @@ std::string
   }
 
   // find position of return column
-  auto const return_iter = ranges::find(column_names_, return_column);
-  if (return_iter == ranges::end(column_names_))
+  auto const return_iter = rs::find(column_names_, return_column);
+  if (return_iter == rs::end(column_names_))
   {
     std::cout << " Error : could not find column " << return_column
               << " in file " << file_name_ << std::endl;
@@ -62,8 +60,8 @@ std::string
   }
 
   // find number of values in lookup column
-  auto const value_count = ranges::count_if(
-      rows_, [value, c = column_iter - ranges::begin(column_names_)](auto row) {
+  auto const value_count = rs::count_if(
+      rows_, [value, c = column_iter - rs::begin(column_names_)](auto row) {
         return row[c] == value;
       });
 
@@ -85,12 +83,12 @@ std::string
 
   // find row where lookup column has value
   auto const value_index =
-      ranges::find_if(rows_,
-                      [value, c = column_iter - ranges::begin(column_names_)](
-                          auto row) { return row[c] == value; }) -
-      ranges::begin(rows_);
+      rs::find_if(rows_,
+                  [value, c = column_iter - rs::begin(column_names_)](
+                      auto row) { return row[c] == value; }) -
+      rs::begin(rows_);
 
-  return rows_[value_index][return_iter - ranges::begin(column_names_)];
+  return rows_[value_index][return_iter - rs::begin(column_names_)];
 }
 
 CSV::CSV(std::string fn, char s, char se) : file_name_(fn), reader_(s, se)
@@ -110,8 +108,7 @@ CSV::CSV(std::string fn, char s, char se) : file_name_(fn), reader_(s, se)
   column_names_ = reader_.parse_line(raw_line);
 
   // ensure column names are unique
-  auto uniq_headers = column_names_ | ranges::copy | ranges::action::sort |
-                      ranges::action::unique;
+  auto uniq_headers = column_names_ | rs::copy | ra::sort | ra::unique;
 
   if (uniq_headers.size() != column_names_.size())
   {
@@ -154,8 +151,7 @@ void
   }
 
   // ensure lookup column has distinct values
-  auto lookup_values =
-      single_column(column) | ranges::action::sort | ranges::action::unique;
+  auto lookup_values = single_column(column) | ra::sort | ra::unique;
   if (lookup_values.size() != rows_.size())
   {
     std::cout << "Error: CSV file " << file_name_
@@ -166,8 +162,7 @@ void
 
   // ensure column in second file has matching values for all values in this
   // file and are unique
-  auto merge_values = merge_csv.single_column(column) | ranges::action::sort |
-                      ranges::action::unique;
+  auto merge_values = merge_csv.single_column(column) | ra::sort | ra::unique;
   if (merge_values.size() != merge_csv.single_column(column).size())
   {
     std::cout << "Error: CSV file " << merge_csv.file_name()
@@ -175,7 +170,7 @@ void
               << std::endl;
     std::exit(1);
   }
-  if (!ranges::includes(lookup_values, merge_values))
+  if (!rs::includes(lookup_values, merge_values))
   {
     std::cout << "Error: CSV file " << merge_csv.file_name()
               << " does not have some matching values for column " << column
@@ -185,13 +180,13 @@ void
 
   // find position of lookup column
   auto const column_index =
-      ranges::find(column_names_, column) - ranges::begin(column_names_);
+      rs::find(column_names_, column) - rs::begin(column_names_);
 
   // merge columns from second file
   for (auto const &merge_column : merge_csv.column_names())
   {
     // only add additional columns
-    if (ranges::find(column_names_, merge_column) == ranges::end(column_names_))
+    if (rs::find(column_names_, merge_column) == rs::end(column_names_))
     {
       column_names_.push_back(merge_column);
       // for each column add value to every row

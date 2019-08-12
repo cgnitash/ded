@@ -3,7 +3,6 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <range/v3/all.hpp>
 #include <regex>
 #include <vector>
 
@@ -13,6 +12,7 @@
 
 #include "analysis.h"
 #include "experiments.h"
+#include "utilities/utilities.h"
 
 namespace ded
 {
@@ -31,10 +31,10 @@ std::tuple<specs::Trace, std::string, std::vector<Simulation>>
   {
     for (auto trace : sim.traces)
     {
-      auto key = ranges::find_if(trace_paths, [trace](auto t) {
+      auto key = rs::find_if(trace_paths, [trace](auto t) {
         return std::get<1>(t) == trace.second;
       });
-      if (key == ranges::end(trace_paths))
+      if (key == rs::end(trace_paths))
         trace_paths.push_back(
             { std::get<0>(trace), std::get<1>(trace), { sim } });
       else
@@ -74,7 +74,7 @@ std::tuple<specs::Trace, std::string, std::vector<Simulation>>
   {
     std::cout << "error: trace name " << base_trace_name
               << " is repeated\nspecify trace as follows\n";
-    for (auto [i,t]  : ranges::view::enumerate(trace_paths))
+    for (auto [i,t]  : rv::enumerate(trace_paths))
       std::cout << std::get<1>(t) << std::get<0>(t).signal_.userName() << "~"
                 << i + 1 << "\n";
     throw language::ParserError{};   // wrong exception
@@ -102,7 +102,7 @@ std::pair<std::vector<int>, int>
   for (const auto &sim : true_simulations)
   {
     auto barCode = sim.barCode();
-    for (auto rep : ranges::view::iota(0))
+    for (auto rep : rv::iota(0))
     {
       auto rep_path =
           "data/" + barCode + "/" + std::to_string(rep) + "/" + trace_path;
@@ -122,14 +122,14 @@ std::pair<std::vector<int>, int>
     }
   }
 
-  auto [low_rep, high_rep] = ranges::minmax_element(rep_counts);
+  auto [low_rep, high_rep] = rs::minmax_element(rep_counts);
   if (*low_rep != *high_rep)
   {
     std::cout << "warning: misalignment of replicates\nas many as " << *high_rep
               << " replicates exist\nminimum of " << *low_rep
               << " will be used\n";
   }
-  auto [low, high] = ranges::minmax_element(invocation_counts);
+  auto [low, high] = rs::minmax_element(invocation_counts);
   if (*low != *high)
   {
     std::cout << "warning: misalignment of trace invocation counts\nas many as "
@@ -137,8 +137,8 @@ std::pair<std::vector<int>, int>
               << " will be used\n";
   }
 
-  return { ranges::view::iota(trace.frequency_, *low + 1) |
-               ranges::view::filter(
+  return { rv::iota(trace.frequency_, *low + 1) |
+               rv::filter(
                    [f = trace.frequency_](auto i) { return !(i % f); }),
            *low_rep };
 }
@@ -156,16 +156,16 @@ void
   analysis_file << "#!/usr/bin/env Rscript";
   analysis_file << "\nsource(\"dedli/plot.R\")";
   analysis_file << "\nexps=list("
-                << (simulations | ranges::view::transform([](auto sim) {
+                << (simulations | rv::transform([](auto sim) {
                       return "\"data/" + sim.barCode() + "/\"";
                     }) |
-                    ranges::view::intersperse(",") | ranges::action::join)
+                    rv::intersperse(",") | ra::join)
                 << ")\n";
   analysis_file << "labels=c("
-                << (simulations | ranges::view::transform([](auto sim) {
+                << (simulations | rv::transform([](auto sim) {
                       return "\"" + sim.fullLabel() + "\"";
                     }) |
-                    ranges::view::intersperse(",") | ranges::action::join)
+                    rv::intersperse(",") | ra::join)
                 << ")\n";
   analysis_file << "data=un_reported_data(exps,\"/" + trace_path << "\",\""
                 << trace.signal_.userName() << "\",0:" << max_rep - 1

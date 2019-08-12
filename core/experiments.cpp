@@ -1,13 +1,15 @@
 
 #include <experimental/filesystem>
 #include <regex>
-#include <range/v3/all.hpp>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+
 #include "utilities/term_colours.h"
+#include "utilities/utilities.h"
 #include "experiments.h"
 #include "configuration.h"
+
 namespace ded {
 namespace experiments
 {
@@ -38,16 +40,16 @@ std::vector<language::Token>
     lexTokens(std::vector<std::string> lines)
 {
   std::vector<language::Token> tokens;
-  for (auto [line_number, line] : ranges::view::enumerate(lines))
+  for (auto [line_number, line] : rv::enumerate(lines))
   {
-    line.erase(ranges::find(line, '#'), line.end());
+    line.erase(rs::find(line, '#'), line.end());
 
     auto i = line.cbegin();
     for (std::smatch m;
          i != line.cend() &&
          std::regex_search(i, line.cend(), m, language::Parser::valid_symbol_);
          i += m.str().length())
-      if (!ranges::all_of(m.str(), ::isspace))
+      if (!rs::all_of(m.str(), ::isspace))
       {
         auto type = language::parseTokenType(m.str());
         tokens.push_back(language::Token{
@@ -146,8 +148,8 @@ std::vector<language::Parser>
   {
     std::vector<language::Parser> next_explosion =
         exploded_parsers |
-        ranges::view::transform(&language::Parser::varyParameter) |
-        ranges::action::join;
+        rv::transform(&language::Parser::varyParameter) |
+        ra::join;
     if (next_explosion.size() == exploded_parsers.size())
       break;
     exploded_parsers = next_explosion;
@@ -170,7 +172,7 @@ std::vector<Simulation>
   for (auto & p : exploded_parsers) p.resolveTrackedWords();
 
   return exploded_parsers |
-         ranges::view::transform(parseSimulation);
+         rv::transform(parseSimulation);
 }
 
 std::pair<specs::PopulationSpec, specs::EnvironmentSpec>
@@ -250,7 +252,7 @@ void
     for (auto e : exp_names)
       experiment_script << e << " ";
     experiment_script << "; do for rep in ";
-    for (auto i : ranges::view::iota(0, replicate_count))
+    for (auto i : rv::iota(0, replicate_count))
       experiment_script << i << " ";
     experiment_script << "; do ./ded -f $exp $rep ; done ; done\n";
   }

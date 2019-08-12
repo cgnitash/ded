@@ -1,6 +1,7 @@
 
 
 #include "csv_reader.h"
+#include "../utilities.h"
 
 #include <algorithm>
 #include <cmath>
@@ -8,7 +9,6 @@
 #include <iostream>
 #include <map>
 #include <numeric>
-#include <range/v3/all.hpp>
 #include <regex>
 #include <set>
 #include <sstream>
@@ -90,7 +90,7 @@ std::vector<std::string>
   fields_.clear();
   state curr = state::precw;
   // auto  index{ 0 };
-  for (auto [i, c] : ranges::view::enumerate(s))
+  for (auto [i, c] : rv::enumerate(s))
   {
     // cast to int to index into more
     // readable transition table

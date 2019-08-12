@@ -14,7 +14,7 @@ void
     Encoding::generate(long size)
 {
   enc_.clear();
-  ranges::generate_n(ranges::back_inserter(enc_), size, [this] {
+  rs::generate_n(rs::back_inserter(enc_), size, [this] {
     return std::rand() % alphabet_;
   });
 }
@@ -28,11 +28,11 @@ void
     auto copy_from_pos = std::rand() % (enc_.size() - copy_size_);
     auto copy_to_pos   = std::rand() % enc_.size();
     auto copy_chunk =
-        enc_ | ranges::view::slice(copy_from_pos, copy_from_pos + copy_size_) |
-        ranges::copy;
+        enc_ | rv::slice(copy_from_pos, copy_from_pos + copy_size_) |
+        rs::copy;
     enc_.insert(std::begin(enc_) + copy_to_pos,
-                ranges::begin(copy_chunk),
-                ranges::end(copy_chunk));
+                rs::begin(copy_chunk),
+                rs::end(copy_chunk));
   }
 }
 
