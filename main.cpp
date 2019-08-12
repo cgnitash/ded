@@ -23,59 +23,13 @@ std::string ded::global_path = "./";
 std::map<std::string, ded::specs::EntitySpec>      ded::all_entity_specs;
 std::map<std::string, ded::specs::EnvironmentSpec> ded::all_environment_specs;
 std::map<std::string, ded::specs::PopulationSpec>  ded::all_population_specs;
-/*
-void
-    check_all_configs_correct()
-{
 
-  for (auto &[type_name, config] : ded::all_environment_specs)
-  {
-    try
-    {
-      ded::default_EnvironmentSpec(type_name);
-      ded::make_Environment(config);
-    }
-    catch (ded::specs::SpecError const &e)
-    {
-      std::cout << "Error in component Entity/" << type_name << "\n";
-      throw e;
-    }
-  }
-  for (auto &[type_name, config] : ded::all_entity_specs)
-  {
-    try
-    {
-      ded::default_EntitySpec(type_name);
-      ded::make_Entity(config);
-    }
-    catch (ded::specs::SpecError const &e)
-    {
-      std::cout << "Error in component Entity/" << type_name << "\n";
-      throw e;
-    }
-  }
-  for (auto &[type_name, config] : ded::all_population_specs)
-  {
-    try
-    {
-      ded::default_PopulationSpec(type_name);
-      ded::make_Population(config);
-    }
-    catch (ded::specs::SpecError const &e)
-    {
-      std::cout << "Error in component Entity/" << type_name << "\n";
-      throw e;
-    }
-  }
-}
-*/
 int
     main(int argc, char **argv) try
 {
 
-  //check_all_configs_correct();
-  // check all things that aren't being checked statically, in particular the
-  // publications of components
+  // check all things that aren't being checked statically, 
+  // in particular the correct publication of components
   ded::generate_all_specs();
 
   std::string mode = argv[1];
@@ -118,15 +72,17 @@ int
   }
   else if (argc == 4 && ((mode == "-rl")))
   {
-    auto simulations = ded::experiments::parseAllSimulations(argv[2]);
-    ded::experiments::prepareSimulationsLocally(simulations,
-                                                  std::stoi(argv[3]));
+    ded::experiments::prepareSimulationsLocally(
+        ded::experiments::checkSimulations(
+            ded::experiments::parseAllSimulations(argv[2])),
+        std::stoi(argv[3]));
   }
   else if (argc == 4 && ((mode == "-rh")))
   {
-    auto simulations = ded::experiments::parseAllSimulations(argv[2]);
-    ded::experiments::prepareSimulationsMsuHpcc(simulations,
-                                                 std::stoi(argv[3]));
+    ded::experiments::prepareSimulationsMsuHpcc(
+        ded::experiments::checkSimulations(
+            ded::experiments::parseAllSimulations(argv[2])),
+        std::stoi(argv[3]));
   }
   else if (argc == 4 && ((mode == "-a")))
   {
@@ -297,5 +253,5 @@ catch (const ded::specs::SpecError &)
 }
 catch (...)
 {
-  std::cout << "\nfatal: this is a core bug - please file a bug report\n";
+  std::cout << "\nFATAL: this is a core issue - please file a bug report\n";
 }

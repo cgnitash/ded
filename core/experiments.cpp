@@ -201,13 +201,48 @@ std::pair<specs::PopulationSpec, specs::EnvironmentSpec>
 }
 
 void
-    prepareSimulationsMsuHpcc(const std::vector<Simulation> &, int)
+    prepareSimulationsMsuHpcc(const std::vector<std::string> &exp_names,
+                              int                              replicate_count)
 {
+  std::ofstream experiment_script("./run.sb");
+  experiment_script << R"~(
+#!/bin/bash -login
+#SBATCH --time=03:56:00
+#SBATCH --mem=2GB
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+		
+#SBATCH --array=0-3
+cd ${SLURM_SUBMIT_DIR}
+)~";
+//./ded -f ${SLURM_ARRAY_TASK_ID} qst/data/$1
+
+    experiment_script << "\nfor exp in ";
+    for (auto e : exp_names)
+      experiment_script << e << " ";
+    experiment_script << "; do for rep in ";
+    for (auto i : rv::iota(0, replicate_count))
+      experiment_script << i << " ";
+    experiment_script << "; do ./ded -f $exp $rep ; done ; done\n";
 }
 
 void
-    prepareSimulationsLocally(const std::vector<Simulation> &simulations,
+    prepareSimulationsLocally(const std::vector<std::string> &exp_names,
                                 int                            replicate_count)
+{
+
+  std::ofstream experiment_script("./run.sh");
+    experiment_script << "\nfor exp in ";
+    for (auto e : exp_names)
+      experiment_script << e << " ";
+    experiment_script << "; do for rep in ";
+    for (auto i : rv::iota(0, replicate_count))
+      experiment_script << i << " ";
+    experiment_script << "; do ./ded -f $exp $rep ; done ; done\n";
+}
+
+std::vector<std::string>
+    checkSimulations(const std::vector<Simulation> &simulations)
 {
 
   auto data_path = "./data/";
@@ -244,18 +279,13 @@ void
       std::cout << "simulation " << prettyName << " successfully prepared\n";
     }
   }
-
-  std::ofstream experiment_script("./run.sh");
-  if (!exp_names.empty())
+  if (exp_names.empty())
   {
-    experiment_script << "\nfor exp in ";
-    for (auto e : exp_names)
-      experiment_script << e << " ";
-    experiment_script << "; do for rep in ";
-    for (auto i : rv::iota(0, replicate_count))
-      experiment_script << i << " ";
-    experiment_script << "; do ./ded -f $exp $rep ; done ; done\n";
+      std::cout << "error: no experiments to simulate\n";
+	  throw specs::SpecError{};
   }
+  return exp_names;
 }
+
 }   // namespace experiments
 }   // namespace ded

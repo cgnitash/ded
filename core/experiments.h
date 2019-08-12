@@ -67,8 +67,9 @@ std::vector<Simulation> parseAllSimulations(std::string);
 std::pair<specs::PopulationSpec, specs::EnvironmentSpec>
     loadSimulation(std::string);
 
-void prepareSimulationsLocally(const std::vector<Simulation> &, int);
-void prepareSimulationsMsuHpcc(const std::vector<Simulation> &, int);
+void prepareSimulationsLocally(const std::vector<std::string> &, int);
+void prepareSimulationsMsuHpcc(const std::vector<std::string> &, int);
+std::vector<std::string> checkSimulations(const std::vector<Simulation> &);
 
 }   // namespace experiments
 }   // namespace ded
