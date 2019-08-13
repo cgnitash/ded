@@ -76,6 +76,7 @@ int
         ded::experiments::checkSimulations(
             ded::experiments::parseAllSimulations(argv[2])),
         std::stoi(argv[3]));
+	std::cout << "execute run.sh\n";
   }
   else if (argc == 4 && ((mode == "-rh")))
   {
@@ -83,10 +84,13 @@ int
         ded::experiments::checkSimulations(
             ded::experiments::parseAllSimulations(argv[2])),
         std::stoi(argv[3]));
+	std::cout << "execute run.sh\n";
   }
   else if (argc == 4 && ((mode == "-a")))
   {
     ded::experiments::analyseAllSimulations(argv[2], argv[3]);
+	std::cout << "execute Rscript analysis.R\n";
+
   }
   else if (argc == 4 && mode == "-f")
   {

@@ -102,11 +102,18 @@ std::pair<std::vector<int>, int>
   for (const auto &sim : true_simulations)
   {
     auto barCode = sim.barCode();
+    auto exp_path = "data/" + barCode + "/";
+    if (!std::experimental::filesystem::exists(exp_path))
+    {
+      std::cout << "Error: cannot analyse this experiment: some simulations "
+                   "have not been simulated\n";
+      throw language::ParserError{};
+    }
+
     for (auto rep : rv::iota(0))
     {
       auto rep_path =
-          "data/" + barCode + "/" + std::to_string(rep) + "/" + trace_path;
-      // std::cout << rep_path << "\n";
+          exp_path + std::to_string(rep) + "/" + trace_path;
       if (!std::experimental::filesystem::exists(rep_path))
       {
         rep_counts.push_back(rep);
