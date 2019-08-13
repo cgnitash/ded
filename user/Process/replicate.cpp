@@ -11,7 +11,7 @@ ded::concepts::Population
     // evaluate the entire population
     // add scores to accumulated scores
 	auto res_pop = env.evaluate(pop);
-    rs::transform(res_pop.get_as_vector(),
+    rs::transform(res_pop.getAsVector(),
                       accumulated_scores,
                       rs::begin(accumulated_scores),
                       [this](const auto &org, auto score) {
@@ -20,7 +20,7 @@ ded::concepts::Population
                       });
   });
 
-  auto vec = pop.get_as_vector();
+  auto vec = pop.getAsVector();
 
   // assign accumulate scores to each org
   rs::transform(vec,

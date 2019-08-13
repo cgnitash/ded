@@ -79,8 +79,8 @@ Simulation
 {
 
   std::map<std::string,
-           std::variant<ded::specs::EntitySpec,
-                        ded::specs::EnvironmentSpec,
+           std::variant<ded::specs::SubstrateSpec,
+                        ded::specs::ProcessSpec,
                         ded::specs::PopulationSpec>>
       vars;
 
@@ -89,9 +89,9 @@ Simulation
   {
     auto ct = ded::config_manager::typeOfBlock(bl.name_.substr(1));
     if (ct == "environment")
-      vars[name.expr_] = ded::specs::EnvironmentSpec{ p, bl };
+      vars[name.expr_] = ded::specs::ProcessSpec{ p, bl };
     else if (ct == "entity")
-      vars[name.expr_] = ded::specs::EntitySpec{ p, bl };
+      vars[name.expr_] = ded::specs::SubstrateSpec{ p, bl };
     else if (ct == "population")
       vars[name.expr_] = ded::specs::PopulationSpec{ p, bl };
     else
@@ -107,13 +107,13 @@ Simulation
               << " does not define an environment named E\n";
     throw specs::SpecError{};
   }
-  if (!std::holds_alternative<ded::specs::EnvironmentSpec>(vars["E"]))
+  if (!std::holds_alternative<ded::specs::ProcessSpec>(vars["E"]))
   {
     std::cout << "error: E must be of type environment\n";
     throw specs::SpecError{};
   }
 
-  auto env_spec = std::get<ded::specs::EnvironmentSpec>(vars["E"]);
+  auto env_spec = std::get<ded::specs::ProcessSpec>(vars["E"]);
   env_spec.instantiateUserParameterSizes();
 
   if (vars.find("P") == vars.end())
@@ -128,9 +128,9 @@ Simulation
     throw specs::SpecError{};
   }
   auto pop_spec = std::get<ded::specs::PopulationSpec>(vars["P"]);
-  auto io       = pop_spec.instantiateNestedEntityUserParameterSizes();
+  auto io       = pop_spec.instantiateNestedSubstrateUserParameterSizes();
 
-  env_spec.bindEntityIO(io);
+  env_spec.bindSubstrateIO(io);
 
   env_spec.bindTags(0);
 
@@ -175,7 +175,7 @@ std::vector<Simulation>
          rv::transform(parseSimulation);
 }
 
-std::pair<specs::PopulationSpec, specs::EnvironmentSpec>
+std::pair<specs::PopulationSpec, specs::ProcessSpec>
     loadSimulation(std::string exp_name)
 {
 
@@ -194,7 +194,7 @@ std::pair<specs::PopulationSpec, specs::EnvironmentSpec>
   std::string              e;
   while (std::getline(env_file, e))
     es.push_back(e);
-  ded::specs::EnvironmentSpec env_spec;
+  ded::specs::ProcessSpec env_spec;
   env_spec.parse(es);
 
   return { pop_spec, env_spec };
@@ -268,7 +268,7 @@ std::vector<std::string>
       std::experimental::filesystem::create_directory(exp_data_path);
 
       std::ofstream env_spec_file(exp_data_path + "env.spec");
-      for (auto l : sim.environment_spec.dump(0, true))
+      for (auto l : sim.process_spec.dump(0, true))
         env_spec_file << l << "\n";
       std::ofstream pop_spec_file(exp_data_path + "pop.spec");
       pop_spec_file << sim.population_spec.dump(0);

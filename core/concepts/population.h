@@ -14,7 +14,7 @@
 #include "../specs/population_spec.h"
 #include "../utilities/tmp.h"
 #include "encoding.h"
-#include "entity.h"
+#include "substrate.h"
 #include "signal.h"
 
 namespace ded
@@ -22,7 +22,7 @@ namespace ded
 namespace concepts
 {
 
-// polymorphic wrapper for types that walk, talk, and quack like organisms
+// polymorphic wrapper for Population
 class Population
 {
 public:
@@ -57,39 +57,39 @@ public:
   }
 
   void
-      merge(std::vector<Entity> v)
+      merge(std::vector<Substrate> v)
   {
     self_->merge_(v);
   }
 
   void
-      prune_lineage(long i)
+      pruneLineage(long i)
   {
-    self_->prune_lineage_(i);
+    self_->pruneLineage_(i);
   }
 
   void
-      snapshot(long i)
+      snapShot(long i)
   {
-    self_->snapshot_(i);
+    self_->snapShot_(i);
   }
 
-  std::vector<Entity>
-      get_as_vector() const
+  std::vector<Substrate>
+      getAsVector() const
   {
-    return self_->get_as_vector_();
+    return self_->getAsVector_();
   }
 
   void
-      flush_unpruned()
+      flushUnpruned()
   {
-    self_->flush_unpruned();
+    self_->flushUnpruned_();
   }
 
   specs::PopulationSpec
-      publish_configuration()
+      publishConfiguration()
   {
-    return self_->publish_configuration_();
+    return self_->publishConfiguration_();
   }
 
   void
@@ -102,18 +102,26 @@ private:
   // interface/ABC for an Population
   struct PopulationInterface
   {
+  public:
+    // provided methods
     virtual ~PopulationInterface()             = default;
     virtual PopulationInterface *copy_() const = 0;
 
-    virtual specs::PopulationSpec publish_configuration_()          = 0;
+    // mandatory methods
+    virtual specs::PopulationSpec publishConfiguration_()          = 0;
     virtual void                  configure_(specs::PopulationSpec) = 0;
 
     virtual size_t              size_() const               = 0;
-    virtual std::vector<Entity> get_as_vector_() const      = 0;
-    virtual void                merge_(std::vector<Entity>) = 0;
-    virtual void                prune_lineage_(long)        = 0;
-    virtual void                snapshot_(long)             = 0;
-    virtual void                flush_unpruned()            = 0;
+    virtual std::vector<Substrate> getAsVector_() const            = 0;
+    virtual void                merge_(std::vector<Substrate>) = 0;
+    virtual void                pruneLineage_(long)        = 0;
+    virtual void                snapShot_(long)             = 0;
+    virtual void                flushUnpruned_()            = 0;
+
+    // optional methods
+	
+    // prohibited methods
+    virtual std::string classNameAsString_() const = 0;
   };
 
   template <typename UserPopulation>
@@ -136,27 +144,27 @@ private:
 
     template <typename T>
     using HasMerge = decltype(
-        std::declval<T &>().merge(std::declval<std::vector<Entity>>()));
+        std::declval<T &>().merge(std::declval<std::vector<Substrate>>()));
     static_assert(
         utilities::TMP::has_signature<UserPopulation, void, HasMerge>{},
         "UserPopulation does not satisfy 'merge' concept requirement");
     void
-        merge_(std::vector<Entity> v) override
+        merge_(std::vector<Substrate> v) override
     {
       data_.merge(v);
     }
 
     template <typename T>
-    using HasGetAsVector = decltype(std::declval<T &>().get_as_vector());
+    using HasGetAsVector = decltype(std::declval<T &>().getAsVector());
     static_assert(
         utilities::TMP::has_signature<UserPopulation,
-                                      std::vector<Entity>,
+                                      std::vector<Substrate>,
                                       HasGetAsVector>{},
         "UserPopulation does not satisfy 'get_as_vector' concept requirement");
-    std::vector<Entity>
-        get_as_vector_() const override
+    std::vector<Substrate>
+        getAsVector_() const override
     {
-      return data_.get_as_vector();
+      return data_.getAsVector();
     }
 
     template <typename T>
@@ -171,58 +179,57 @@ private:
     }
 
     template <typename T>
-    using HasFlush = decltype(std::declval<T &>().flush_unpruned());
+    using HasFlush = decltype(std::declval<T &>().flushUnpruned());
     static_assert(
         utilities::TMP::has_signature<UserPopulation, void, HasFlush>{},
         "UserPopulation does not satisfy 'flush_unpruned' concept requirement");
     void
-        flush_unpruned() override
+        flushUnpruned_() override
     {
-      data_.flush_unpruned();
+      data_.flushUnpruned();
     }
 
     template <typename T>
     using HasPruneLineage =
-        decltype(std::declval<T &>().prune_lineage(std::declval<long>()));
+        decltype(std::declval<T &>().pruneLineage(std::declval<long>()));
     static_assert(
         utilities::TMP::has_signature<UserPopulation, void, HasPruneLineage>{},
         "UserPopulation does not satisfy 'prune_lineage' concept requirement");
     void
-        prune_lineage_(long i) override
+        pruneLineage_(long i) override
     {
-      data_.prune_lineage(i);
+      data_.pruneLineage(i);
     }
 
     template <typename T>
     using HasSnapshot =
-        decltype(std::declval<T &>().snapshot(std::declval<long>()));
+        decltype(std::declval<T &>().snapShot(std::declval<long>()));
     static_assert(
         utilities::TMP::has_signature<UserPopulation, void, HasSnapshot>{},
         "UserPopulation does not satisfy 'snapshot' concept requirement");
     void
-        snapshot_(long i) override
+        snapShot_(long i) override
     {
-      data_.snapshot(i);
+      data_.snapShot(i);
     }
 
     template <typename T>
     using HasConf = decltype(
         std::declval<T &>().configure(std::declval<specs::PopulationSpec>()));
     template <typename T>
-    using HasPubConf = decltype(std::declval<T &>().publish_configuration());
+    using HasPubConf = decltype(std::declval<T &>().publishConfiguration());
     static_assert(
         utilities::TMP::has_signature<UserPopulation, void, HasConf>{} &&
             utilities::TMP::
                 has_signature<UserPopulation, specs::PopulationSpec, HasPubConf>{},
         "UserPopulation does not satisfy 'configuration' concept requirement");
     specs::PopulationSpec
-        publish_configuration_() override
+        publishConfiguration_() override
     {
-      auto ps  = data_.publish_configuration();
-      ps.name_ = auto_class_name_as_string<UserPopulation>();
+      auto ps  = data_.publishConfiguration();
+      ps.name_ = autoClassNameAsString<UserPopulation>();
       return ps;
     }
-
     void
         configure_(specs::PopulationSpec c) override
     {
@@ -230,6 +237,19 @@ private:
     }
 
     // optional methods
+
+    // prohibited methods
+    template <typename T>
+    using Nameable = decltype(std::declval<T &>().classNameAsString_());
+    static_assert(
+        std::negation<utilities::TMP::is_detected<UserPopulation, Nameable>>{},
+        "Population class cannot provide classNameAsString_()");
+    std::string
+        classNameAsString_() const override
+    {
+      return autoClassNameAsString<UserPopulation>();
+    }
+
 
     // data
     UserPopulation data_;

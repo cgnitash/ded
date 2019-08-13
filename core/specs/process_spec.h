@@ -21,7 +21,7 @@ namespace ded
 // forward declaration to provide friendship
 namespace concepts
 {
-class Environment;
+class Process;
 }
 
 namespace specs
@@ -39,12 +39,12 @@ struct TraceConfig
   std::vector<Trace> post_;
 };
 
-class EnvironmentSpec
+class ProcessSpec
 {
 
   struct NestedSpec
   {
-    std::unique_ptr<EnvironmentSpec> e;
+    std::unique_ptr<ProcessSpec> e;
     /*
             struct
      {
@@ -55,7 +55,7 @@ class EnvironmentSpec
     Tags constraints_;
     NestedSpec() = default;
     NestedSpec(const NestedSpec &ns)
-        : e(std::make_unique<EnvironmentSpec>(*ns.e)),
+        : e(std::make_unique<ProcessSpec>(*ns.e)),
           constraints_(ns.constraints_)
     {
     }
@@ -94,14 +94,14 @@ class EnvironmentSpec
   void matchNestedTagConstraints(int &tag_count);
 
 public:
-  // EnvironmentSpec() = default;
-  //~EnvironmentSpec() = default;
+  // ProcessSpec() = default;
+  //~ProcessSpec() = default;
 
-  EnvironmentSpec(std::string name = "") : name_(name)
+  ProcessSpec(std::string name = "") : name_(name)
   {
   }
-  // EnvironmentSpec(Parser);
-  EnvironmentSpec(language::Parser, language::Block);
+  // ProcessSpec(Parser);
+  ProcessSpec(language::Parser, language::Block);
 
   auto
       name() const
@@ -215,7 +215,7 @@ public:
   }
 
   void
-      bindEnvironment(std::string name, EnvironmentSpec env)
+      bindProcess(std::string name, ProcessSpec env)
   {
     if (nested_.find(name) != nested_.end())
     {
@@ -223,11 +223,11 @@ public:
                 << " has already been declared\n";
       throw SpecError{};
     }
-    nested_[name].e = std::make_unique<EnvironmentSpec>(env);
+    nested_[name].e = std::make_unique<ProcessSpec>(env);
   }
 
   void
-      configureEnvironment(std::string name, EnvironmentSpec &e)
+      configureProcess(std::string name, ProcessSpec &e)
   {
     if (nested_.find(name) == nested_.end())
     {
@@ -239,7 +239,7 @@ public:
   }
 
   void
-      bindEnvironmentPreConstraints(
+      bindProcessPreConstraints(
           std::string                                      env_name,
           std::vector<std::pair<std::string, std::string>> pre_constraints)
   {
@@ -255,7 +255,7 @@ public:
   }
 
   void
-      bindEnvironmentPostConstraints(
+      bindProcessPostConstraints(
           std::string                                      env_name,
           std::vector<std::pair<std::string, std::string>> post_constraints)
   {
@@ -295,21 +295,21 @@ public:
   }
   */
 
-  // friend std::ostream &operator<<(std::ostream &out, const EnvironmentSpec
+  // friend std::ostream &operator<<(std::ostream &out, const ProcessSpec
   // &e)
   std::vector<std::string> dump(long depth, bool) const;
-  EnvironmentSpec          parse(std::vector<std::string> pop_dump);
+  ProcessSpec          parse(std::vector<std::string> pop_dump);
 
   std::string prettyPrint();
 
   // void parser_parse();
   void                                       instantiateUserParameterSizes();
-  void                                       bindEntityIO(IO);
+  void                                       bindSubstrateIO(IO);
   void                                       bindTags(int);
   void                                       recordTraces();
   std::vector<std::pair<Trace, std::string>> queryTraces();
 
-  friend class concepts::Environment;
+  friend class concepts::Process;
 };
 
 }   // namespace specs

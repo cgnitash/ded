@@ -73,17 +73,17 @@ class forager {
   void                replace_resource_();
   void                initialize_resource_();
   void                interact(ded::concepts::Signal, location &, direction &, double &);
-  double              eval(ded::concepts::Entity &);
+  double              eval(ded::concepts::Substrate &);
   std::vector<double> signals_at(location, direction);
   std::vector<double> signals_at(const location);
   void                visualize(std::ofstream &, location, direction, double);
 
 public:
-  forager() { configure(publish_configuration()); }
+  forager() { configure(publishConfiguration()); }
 
-  ded::specs::EnvironmentSpec publish_configuration()
+  ded::specs::ProcessSpec publishConfiguration()
   {
-    ded::specs::EnvironmentSpec es;//{"forager"};
+    ded::specs::ProcessSpec es;//{"forager"};
     es.bindParameter("grid_size",grid_size_);
     es.bindParameter("updates",updates_);
     es.bindParameter("density",density_);
@@ -101,7 +101,7 @@ public:
     return es;
   }
 
-  void configure(ded::specs::EnvironmentSpec es)
+  void configure(ded::specs::ProcessSpec es)
   {
 
     es.configureParameter("grid_size",grid_size_);

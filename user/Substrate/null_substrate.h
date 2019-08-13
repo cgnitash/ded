@@ -5,19 +5,19 @@
 #include <algorithm>
 #include <vector>
 
-class null_entity
+class null_substrate
 {
 
 public:
-  void configure(ded::specs::EntitySpec)
+  void configure(ded::specs::SubstrateSpec)
   {
   }
-  null_entity()
+  null_substrate()
   {
-    configure(publish_configuration());
+    configure(publishConfiguration());
   }
-  ded::specs::EntitySpec
-      publish_configuration()
+  ded::specs::SubstrateSpec
+      publishConfiguration()
   {
     return {};
   }

@@ -6,7 +6,7 @@
 ded::concepts::Population
     max_one::evaluate(ded::concepts::Population pop)
 {
-  auto vec = pop.get_as_vector();
+  auto vec = pop.getAsVector();
   for (auto &org : vec)
   {
     org.reset();

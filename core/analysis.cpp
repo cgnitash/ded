@@ -6,8 +6,8 @@
 #include <regex>
 #include <vector>
 
-#include "specs/entity_spec.h"
-#include "specs/environment_spec.h"
+#include "specs/process_spec.h"
+#include "specs/substrate_spec.h"
 #include "specs/population_spec.h"
 
 #include "analysis.h"

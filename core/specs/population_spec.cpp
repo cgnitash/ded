@@ -7,7 +7,7 @@
 #include <variant>
 
 #include "../configuration.h"
-#include "entity_spec.h"
+#include "substrate_spec.h"
 #include "population_spec.h"
 
 namespace ded
@@ -18,7 +18,7 @@ namespace specs
 PopulationSpec::PopulationSpec(language::Parser parser, language::Block block)
 {
 
-  *this = all_population_specs[block.name_.substr(1)];
+  *this = ALL_POPULATION_SPECS[block.name_.substr(1)];
 
   for (auto over : block.overrides_)
   {
@@ -70,7 +70,7 @@ PopulationSpec::PopulationSpec(language::Parser parser, language::Block block)
       throw language::ParserError{};
     }
 
-    es_ = EntitySpec{ parser, nested_blk };
+    es_ = SubstrateSpec{ parser, nested_blk };
   }
 }
 
@@ -110,7 +110,7 @@ PopulationSpec
     l->erase(0, 1);
   }
 
-  EntitySpec es;
+  SubstrateSpec es;
   es_ = es.parse(std::vector<std::string>(f, pop_dump.end()));
 
   PopulationSpec ps = *this;

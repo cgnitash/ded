@@ -14,35 +14,35 @@ void
   {
     pop_.clear();
     rs::generate_n(rs::back_inserter(pop_), size_, [&] {
-      auto org = ded::make_Entity(org_);
+      auto org = ded::makeSubstrate(org_);
       if (track_lineage_) fossils_.push_back({ org, 1 });
       return org;
     });
   } else
   {
 
-    if (!std::experimental::filesystem::exists(ded::global_path + load_spec_))
+    if (!std::experimental::filesystem::exists(ded::GLOBAL_PATH + load_spec_))
     {
-      std::cout << "error: path \"" << ded::global_path + load_spec_
+      std::cout << "error: path \"" << ded::GLOBAL_PATH + load_spec_
                 << "\" does not exist\n";
 	  throw ded::specs::SpecError{};
     }
-	ded::utilities::csv::CSV  csv(ded::global_path + load_spec_);
+	ded::utilities::csv::CSV  csv(ded::GLOBAL_PATH + load_spec_);
     auto ids = csv.single_column("id");
     rs::sort(ids,
                  [](auto a, auto b) { return std::stol(a) > std::stol(b); });
     pop_.clear();
     rs::transform(ids, rs::back_inserter(pop_), [&](auto id) {
-      auto org = ded::make_Entity(org_);
-      org.set_encoding(org.parse_encoding(csv.look_up("id", id, "encoding")));
+      auto org = ded::makeSubstrate(org_);
+      org.setEncoding(org.parseEncoding(csv.look_up("id", id, "encoding")));
       if (track_lineage_) fossils_.push_back({ org, 1 });
       return org;
     });
   }
 }
 
-std::vector<ded::concepts::Entity>
-    linear::get_as_vector()const 
+std::vector<ded::concepts::Substrate>
+    linear::getAsVector()const 
 {
   return pop_;
 }
@@ -58,13 +58,13 @@ void
         std::begin(fossils_),
         possible_ancestry_end,
         org_id,
-        [](auto &fossil, auto id) { return fossil.first.get_id() < id; });
+        [](auto &fossil, auto id) { return fossil.first.getID() < id; });
     if (current_org == possible_ancestry_end ||
-        current_org->first.get_id() != org_id)
+        current_org->first.getID() != org_id)
       break;
     possible_ancestry_end = current_org;
     current_org->second += count;
-    org_id = current_org->first.get_ancestor();
+    org_id = current_org->first.getAncestor();
   }
 }
 
@@ -73,9 +73,9 @@ bool
 {
   auto l = std::lower_bound(
       std::begin(fossils_), std::end(fossils_), n, [](auto &org, long n) {
-        return org.first.get_id() < n;
+        return org.first.getID() < n;
       });
-  return l != std::end(fossils_) && l->first.get_id() == n;
+  return l != std::end(fossils_) && l->first.getID() == n;
 }
 
 bool
@@ -84,12 +84,12 @@ bool
   auto l = std::lower_bound(std::begin(pop_),
                             std::end(pop_),
                             n,
-                            [](auto &org, long n) { return org.get_id() < n; });
-  return l != rs::end(pop_) && l->get_id() == n;
+                            [](auto &org, long n) { return org.getID() < n; });
+  return l != rs::end(pop_) && l->getID() == n;
 }
 
 void
-    linear::merge(std::vector<ded::concepts::Entity> v)
+    linear::merge(std::vector<ded::concepts::Substrate> v)
 {
 
   if (track_lineage_)
@@ -97,16 +97,16 @@ void
 
     rs::sort(v);
 
-    std::vector<ded::concepts::Entity> new_orgs, del_orgs;
+    std::vector<ded::concepts::Substrate> new_orgs, del_orgs;
     rs::set_difference(pop_, v, rs::back_inserter(del_orgs));
-    for (auto &org : del_orgs) update_tree(org.get_id(), -1);
+    for (auto &org : del_orgs) update_tree(org.getID(), -1);
 
     rs::set_difference(v, pop_, rs::back_inserter(new_orgs));
 
     for (auto &org : new_orgs)
     {
 
-      if (!found_in_fossils(org.get_ancestor()))
+      if (!found_in_fossils(org.getAncestor()))
       {
         std::cout
             << "warning: unknown ancestor - lineage tracking turned off\n";
@@ -114,52 +114,52 @@ void
         track_lineage_ = false;
         break;
       }
-      if (org.get_id() > fossils_.back().first.get_id())
+      if (org.getID() > fossils_.back().first.getID())
         fossils_.push_back({ org, 0 });
 
-      update_tree(org.get_id(), 1);
+      update_tree(org.getID(), 1);
     }
   }
   pop_ = v;
 }
 
 void
-    linear::snapshot(long i) const
+    linear::snapShot(long i) const
 {
-  auto snapshot_file = ded::utilities::open_or_append(ded::global_path + "snapshot_" +
+  auto snapshot_file = ded::utilities::open_or_append(ded::GLOBAL_PATH + "snapshot_" +
                                                 std::to_string(i) + ".csv",
                                             "id,size,encoding\n");
   for (auto &org : pop_)
-    snapshot_file << org.get_id() << "," << org.get_encoding().size() << ","
-                  << org.get_encoding() << std::endl;
+    snapshot_file << org.getID() << "," << org.getEncoding().size() << ","
+                  << org.getEncoding() << std::endl;
 }
 
 void
-    linear::prune_lineage(long i)
+    linear::pruneLineage(long i)
 {
 
   if (!track_lineage_) return;
 
   auto lineage_organisms_file =
-      ded::utilities::open_or_append(ded::global_path + "lineage_organisms.csv",
+      ded::utilities::open_or_append(ded::GLOBAL_PATH + "lineage_organisms.csv",
                            "id,recorded_at,encoding_size,encoding\n");
 
   auto lineage_file = ded::utilities::open_or_append(
-      ded::global_path + "lineage.csv", "id,recorded_at,on_lod,ancestor_id\n");
+      ded::GLOBAL_PATH + "lineage.csv", "id,recorded_at,on_lod,ancestor_id\n");
 
   for (auto &org : fossils_)
   {
-    if (org.second == size_ && !found_in_pop(org.first.get_id()))
+    if (org.second == size_ && !found_in_pop(org.first.getID()))
     {
-      lineage_organisms_file << org.first.get_id() << "," << i << ","
-                             << org.first.get_encoding().size() << ","
-                             << org.first.get_encoding() << std::endl;
-      lineage_file << org.first.get_id() << "," << i << "," << 1 << ","
-                   << org.first.get_ancestor() << std::endl;
+      lineage_organisms_file << org.first.getID() << "," << i << ","
+                             << org.first.getEncoding().size() << ","
+                             << org.first.getEncoding() << std::endl;
+      lineage_file << org.first.getID() << "," << i << "," << 1 << ","
+                   << org.first.getAncestor() << std::endl;
     }
     if (!org.second)
-      lineage_file << org.first.get_id() << "," << i << "," << 0 << ","
-                   << org.first.get_ancestor() << std::endl;
+      lineage_file << org.first.getID() << "," << i << "," << 0 << ","
+                   << org.first.getAncestor() << std::endl;
   }
 
   fossils_.erase(std::remove_if(std::begin(fossils_),
@@ -167,7 +167,7 @@ void
                                 [this](auto &fossil) {
                                   return !fossil.second ||
                                          (fossil.second == size_ &&
-                                          !found_in_pop(fossil.first.get_id()));
+                                          !found_in_pop(fossil.first.getID()));
                                 }),
                  std::end(fossils_));
 
@@ -175,19 +175,19 @@ void
 }
 
 void
-    linear::flush_unpruned()
+    linear::flushUnpruned()
 {
   pop_.clear();
 
   // maybe losing some orgs here
   // prune_lineage(-1);
   
-  auto unrec_file = ded::utilities::open_or_append(ded::global_path + "unpruned.csv",
+  auto unrec_file = ded::utilities::open_or_append(ded::GLOBAL_PATH + "unpruned.csv",
                                          "id,recorded_at,on_lod,ancestor_id\n");
   for (auto &org : fossils_)
   {
-    unrec_file << org.first.get_id() << ",-1," << 0 << ","
-               << org.first.get_ancestor() << std::endl;
-    //if (org.second == size_) std::cout << org.first.get_id();
+    unrec_file << org.first.getID() << ",-1," << 0 << ","
+               << org.first.getAncestor() << std::endl;
+    //if (org.second == size_) std::cout << org.first.getID();
   }
 }

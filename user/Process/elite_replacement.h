@@ -12,11 +12,11 @@ class elite_replacement {
   int invoke_ = 0;
 
 public:
-  elite_replacement() { configure(publish_configuration()); }
+  elite_replacement() { configure(publishConfiguration()); }
 
-  ded::specs::EnvironmentSpec publish_configuration()
+  ded::specs::ProcessSpec publishConfiguration()
   {
-    ded::specs::EnvironmentSpec es;
+    ded::specs::ProcessSpec es;
 
     es.bindParameter("strength",
                       strength_,
@@ -28,7 +28,7 @@ public:
     return es;
   }
 
-  void configure(ded::specs::EnvironmentSpec es)
+  void configure(ded::specs::ProcessSpec es)
   {
     es.configureParameter("strength",strength_);
 

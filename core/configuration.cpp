@@ -18,32 +18,32 @@ namespace config_manager
 std::string
     typeOfBlock(std::string name)
 {
-  if (all_environment_specs.find(name) != all_environment_specs.end())
+  if (ALL_PROCESS_SPECS.find(name) != ALL_PROCESS_SPECS.end())
     return "environment";
-  if (all_entity_specs.find(name) != all_entity_specs.end())
+  if (ALL_SUBSTRATE_SPECS.find(name) != ALL_SUBSTRATE_SPECS.end())
     return "entity";
-  if (all_population_specs.find(name) != all_population_specs.end())
+  if (ALL_POPULATION_SPECS.find(name) != ALL_POPULATION_SPECS.end())
     return "population";
   return "NONE";
 }
 
 void
-    show_config(std::ostream &out, std::string name)
+    showConfig(std::ostream &out, std::string name)
 {
   auto found = false;
-  if (all_entity_specs.find(name) != all_entity_specs.end())
+  if (ALL_SUBSTRATE_SPECS.find(name) != ALL_SUBSTRATE_SPECS.end())
   {
-    out << all_entity_specs[name].prettyPrint();
+    out << ALL_SUBSTRATE_SPECS[name].prettyPrint();
     found = true;
   }
-  if (all_environment_specs.find(name) != all_environment_specs.end())
+  if (ALL_PROCESS_SPECS.find(name) != ALL_PROCESS_SPECS.end())
   {
-    out << all_environment_specs[name].prettyPrint();
+    out << ALL_PROCESS_SPECS[name].prettyPrint();
     found = true;
   }
-  if (all_population_specs.find(name) != all_population_specs.end())
+  if (ALL_POPULATION_SPECS.find(name) != ALL_POPULATION_SPECS.end())
   {
-    out << all_population_specs[name].prettyPrint();
+    out << ALL_POPULATION_SPECS[name].prettyPrint();
     found = true;
   }
 
@@ -57,15 +57,15 @@ void
     listAllConfigs(std::ostream &out)
 {
   out << "entity:\n";
-  for (auto n_spec : all_entity_specs)
+  for (auto n_spec : ALL_SUBSTRATE_SPECS)
     out << "    " << n_spec.first << "\n";
 
   out << "environment:\n";
-  for (auto n_spec : all_environment_specs)
+  for (auto n_spec : ALL_PROCESS_SPECS)
     out << "    " << n_spec.first << "\n";
 
   out << "population:\n";
-  for (auto n_spec : all_population_specs)
+  for (auto n_spec : ALL_POPULATION_SPECS)
     out << "    " << n_spec.first << "\n";
 
   return;
@@ -75,41 +75,41 @@ void
     saveAllConfigs()
 {
   std::ofstream file("configurations.cfg");
-  for (auto n_es : all_entity_specs)
+  for (auto n_es : ALL_SUBSTRATE_SPECS)
     file << "\n" << n_es.second.prettyPrint();
-  for (auto n_es : all_environment_specs)
+  for (auto n_es : ALL_PROCESS_SPECS)
     file << "\n" << n_es.second.prettyPrint();
-  for (auto n_es : all_population_specs)
+  for (auto n_es : ALL_POPULATION_SPECS)
     file << "\n" << n_es.second.prettyPrint();
   return;
 }
 
 std::vector<std::string>
-    allEntityNames()
+    allSubstrateNames()
 {
-  return all_entity_specs |
+  return ALL_SUBSTRATE_SPECS |
          rv::transform([](auto spec) { return spec.first; });
 }
 
 std::vector<std::string>
-    allEnvironmentNames()
+    allProcessNames()
 {
-  return all_environment_specs |
+  return ALL_PROCESS_SPECS |
          rv::transform([](auto spec) { return spec.first; });
 }
 
 std::vector<std::string>
     allPopulationNames()
 {
-  return all_population_specs |
+  return ALL_POPULATION_SPECS |
          rv::transform([](auto spec) { return spec.first; });
 }
 
 std::vector<std::string>
     allComponentNames()
 {
-  auto a = allEntityNames();
-  auto b = allEnvironmentNames();
+  auto a = allSubstrateNames();
+  auto b = allProcessNames();
   auto c = allPopulationNames();
   return rv::concat(a, b, c);
 }

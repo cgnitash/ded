@@ -21,11 +21,11 @@ class max_one {
   std::string org_output_ones_tag_ = "<double,length>";
 
 public:
-  max_one() { configure(publish_configuration()); }
+  max_one() { configure(publishConfiguration()); }
 
-  ded::specs::EnvironmentSpec publish_configuration()
+  ded::specs::ProcessSpec publishConfiguration()
   {
-    ded::specs::EnvironmentSpec es;
+    ded::specs::ProcessSpec es;
     es.bindParameter("length",length_);
  
     es.bindPostTag("ones","double");
@@ -33,7 +33,7 @@ public:
     es.bindOutput("ons","<double,length>");
     return es;
   }
-  void configure(ded::specs::EnvironmentSpec es)
+  void configure(ded::specs::ProcessSpec es)
   {
 
     es.configureParameter("length",length_);

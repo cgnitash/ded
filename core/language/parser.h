@@ -17,8 +17,8 @@ std::vector<std::string> allComponentNames();
 // forward declaration to provide friendship
 namespace specs
 {
-class EntitySpec;
-class EnvironmentSpec;
+class SubstrateSpec;
+class ProcessSpec;
 class PopulationSpec;
 }   // namespace specs
 
@@ -118,8 +118,8 @@ public:
 
   void resolveTrackedWords();
 
-  friend class specs::EnvironmentSpec;
-  friend class specs::EntitySpec;
+  friend class specs::ProcessSpec;
+  friend class specs::SubstrateSpec;
   friend class specs::PopulationSpec;
 };
 }   // namespace language

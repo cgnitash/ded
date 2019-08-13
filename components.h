@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include "core/concepts/entity.h"
-#include "core/concepts/environment.h"
+#include "core/concepts/substrate.h"
+#include "core/concepts/process.h"
 #include "core/concepts/population.h"
 #include "core/concepts/signal.h"
 
@@ -17,18 +17,18 @@
 namespace ded
 {
 
-concepts::Entity      make_Entity(specs::EntitySpec);
-concepts::Environment make_Environment(specs::EnvironmentSpec);
-concepts::Population  make_Population(specs::PopulationSpec);
+concepts::Substrate      makeSubstrate(specs::SubstrateSpec);
+concepts::Process makeProcess(specs::ProcessSpec);
+concepts::Population  makePopulation(specs::PopulationSpec);
 
-specs::EntitySpec      default_EntitySpec(std::string);
-specs::EnvironmentSpec default_EnvironmentSpec(std::string);
-specs::PopulationSpec  default_PopulationSpec(std::string);
+specs::SubstrateSpec      defaultSubstrateSpec(std::string);
+specs::ProcessSpec defaultProcessSpec(std::string);
+specs::PopulationSpec  defaultPopulationSpec(std::string);
 
-void generate_EntitySpec(std::initializer_list<std::string> component_list);
+void generateSubstrateSpec(std::initializer_list<std::string> component_list);
 void
-     generate_EnvironmentSpec(std::initializer_list<std::string> component_list);
-void generate_PopulationSpec(std::initializer_list<std::string> component_list);
-void generate_all_specs();
+     generateProcessSpec(std::initializer_list<std::string> component_list);
+void generatePopulationSpec(std::initializer_list<std::string> component_list);
+void generateAllSpecs();
 
 }   // namespace ded

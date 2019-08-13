@@ -17,7 +17,7 @@ class markov_brain {
   long output_ = 10;
   long hidden_ = 10;
 
-  //ded::specs::EntitySpec genome_spec_;
+  //ded::specs::SubstrateSpec genome_spec_;
   	
   std::vector<double> buffer_;
 
@@ -36,10 +36,10 @@ class markov_brain {
   void seed_gates_(size_t = 1);
 
 public:
-  markov_brain() { configure(publish_configuration()); }
-  ded::specs::EntitySpec publish_configuration()
+  markov_brain() { configure(publishConfiguration()); }
+  ded::specs::SubstrateSpec publishConfiguration()
   {
-    ded::specs::EntitySpec es;
+    ded::specs::SubstrateSpec es;
 
 	es.bindParameter("inputs",input_);
 	es.bindParameter("outputs",output_);
@@ -50,7 +50,7 @@ public:
 
     return es;
   }
-  void configure(ded::specs::EntitySpec es)
+  void configure(ded::specs::SubstrateSpec es)
   {
   
 	es.configureParameter("inputs",input_);
@@ -64,7 +64,7 @@ public:
 	  // MUST BE ADDRESSED
   //genome_config_ = con["parameters"]["genome-params"];
     //genome_.configure(genome_config_);
-    //es.configureEntity("genome", genome_spec_ );
+    //es.configureSubstrate("genome", genome_spec_ );
 
     genome_.generate(500);
     buffer_ = std::vector(input_ + output_ + hidden_, 0.);

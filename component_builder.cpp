@@ -11,20 +11,20 @@
 
 #include "core/utilities/utilities.h"
 
-using opts = std::map<std::string, std::vector<std::string>>;
+using Options = std::map<std::string, std::vector<std::string>>;
 
-opts
-    get_build_options(std::string fname)
+Options
+    getBuildOptions(std::string fname)
 {
 
-  opts          build_options;
+  Options          build_options;
   std::ifstream cfg(fname);
   if (!cfg.is_open())
   {
     std::cout << "Error: component file " << fname << " not found" << std::endl;
     std::exit(1);
   }
-  std::regex r(R"~~(^\s*(Entity|Environment|Population)\s*:\s*(\w+)\s*$)~~");
+  std::regex r(R"~~(^\s*(Substrate|Process|Population)\s*:\s*(\w+)\s*$)~~");
   std::regex comments(R"~~(#.*$)~~");
   std::regex spaces(R"~~(^\s*$)~~");
   for (std::string line; std::getline(cfg, line);)
@@ -47,7 +47,7 @@ opts
 }
 
 void
-    generate_components(std::string fname, opts build_options)
+    generateComponents(std::string fname, Options build_options)
 {
 
   std::ofstream header(fname);
@@ -63,19 +63,19 @@ void
 
   for (auto [type, names] : build_options)
   {
-    header << "specs::" << type << "Spec default_" << type
+    header << "specs::" << type << "Spec default" << type
            << "Spec(std::string name) \n{\n";
     for (auto name : names)
       header << "  if (name == \"" << name
              << "\") \n  {\n    auto e = concepts::" << type << "{" << name
-             << "()};\n    return e.publish_configuration();\n  }\n";
+             << "()};\n    return e.publishConfiguration();\n  }\n";
     header << "  std::cout << \"unknown-" << type
            << ": \" << name;\n  throw specs::SpecError{};\n}\n\n";
   }
 
   for (auto [type, names] : build_options)
   {
-    header << "concepts::" << type << " make_" << type << "(specs::" << type
+    header << "concepts::" << type << " make" << type << "(specs::" << type
            << "Spec spec) \n{\n";
     for (auto name : names)
       header << "  if (spec.name() == \"" << name
@@ -85,16 +85,16 @@ void
            << ": \" << spec.name();\n  throw specs::SpecError{};\n}\n\n";
   }
 
-  for (auto name : rv::concat(build_options["Entity"],
-                              build_options["Environment"],
+  for (auto name : rv::concat(build_options["Substrate"],
+                              build_options["Process"],
                               build_options["Population"]))
-    header << "template<>\nstd::string auto_class_name_as_string<" << name
+    header << "template<>\nstd::string autoClassNameAsString<" << name
            << ">() \n{ return \"" << name << "\"; }\n\n";
 
-  header << "void generate_all_specs() {\n";
+  header << "void generateAllSpecs() {\n";
   for (auto [type, names] : build_options)
   {
-    header << "  generate_" << type << "Spec({"
+    header << "  generate" << type << "Spec({"
            << (names | rv::transform([](auto s) { return "\"" + s + "\""; }) |
                rv::intersperse(",") | ra::join)
            << "});\n";
@@ -103,48 +103,48 @@ void
 
   header << R"~(
 void
-    generate_EntitySpec(std::initializer_list<std::string> component_list)
+    generateSubstrateSpec(std::initializer_list<std::string> component_list)
 {
   for (auto comp_name : component_list)
     try
     {
-      auto c =  ded::default_EntitySpec(comp_name);
-      ded::make_Entity(c);
-      ded::all_entity_specs[comp_name] = c;
+      auto c =  ded::defaultSubstrateSpec(comp_name);
+      ded::makeSubstrate(c);
+      ded::ALL_SUBSTRATE_SPECS[comp_name] = c;
     }
     catch (ded::specs::SpecError const &e)
     {
-      std::cout << "Error in component Entity/" << comp_name << "\n";
+      std::cout << "Error in component Substrate/" << comp_name << "\n";
       throw e;
     }
 }
 
 inline void
-    generate_EnvironmentSpec(std::initializer_list<std::string> component_list)
+    generateProcessSpec(std::initializer_list<std::string> component_list)
 {
   for (auto comp_name : component_list)
     try
     {
-      auto c =  ded::default_EnvironmentSpec(comp_name);
-      ded::make_Environment(c);
-      ded::all_environment_specs[comp_name] = c;
+      auto c =  ded::defaultProcessSpec(comp_name);
+      ded::makeProcess(c);
+      ded::ALL_PROCESS_SPECS[comp_name] = c;
     }
     catch (ded::specs::SpecError const &e)
     {
-      std::cout << "Error in component Environment/" << comp_name << "\n";
+      std::cout << "Error in component Process/" << comp_name << "\n";
       throw e;
     }
 }
 
 inline void
-    generate_PopulationSpec(std::initializer_list<std::string> component_list)
+    generatePopulationSpec(std::initializer_list<std::string> component_list)
 {
   for (auto comp_name : component_list)
     try
     {
-      auto c =  ded::default_PopulationSpec(comp_name);
-      ded::make_Population(c);
-      ded::all_population_specs[comp_name] = c;
+      auto c =  ded::defaultPopulationSpec(comp_name);
+      ded::makePopulation(c);
+      ded::ALL_POPULATION_SPECS[comp_name] = c;
     }
     catch (ded::specs::SpecError const &e)
     {
@@ -158,13 +158,13 @@ inline void
 }
 
 void
-    generate_makefile(const std::string &fname,
-                      opts               build_options,
+    generateMakefile(const std::string &fname,
+                      Options               build_options,
                       std::string        args)
 {
-  auto as_header = [](auto s) { return s + ".h "; };
-  auto as_source = [](auto s) { return s + ".cpp "; };
-  auto as_object = [](auto s) {
+  auto asHeader = [](auto s) { return s + ".h "; };
+  auto asSource = [](auto s) { return s + ".cpp "; };
+  auto asObject = [](auto s) {
     std::replace(s.begin(), s.end(), '/', '_');
     return "obj_files/" + s + ".o ";
   };
@@ -181,10 +181,10 @@ void
                                           "core/specs/configuration_primitive",
                                           "core/specs/signal_spec",
                                           "core/specs/population_spec",
-                                          "core/specs/entity_spec",
-                                          "core/specs/environment_spec",
-                                          "core/concepts/environment",
-                                          "core/concepts/entity",
+                                          "core/specs/substrate_spec",
+                                          "core/specs/process_spec",
+                                          "core/concepts/substrate",
+                                          "core/concepts/process",
                                           "core/concepts/population",
                                           "core/concepts/signal",
                                           "core/concepts/encoding" };
@@ -201,11 +201,11 @@ void
   makefile << "\n\nflags = " << args;
 
   makefile << "\n\nheaders = components.h "
-           << (core_files | rv::transform(as_header) | ra::join);
+           << (core_files | rv::transform(asHeader) | ra::join);
 
   makefile << "\n\ncomponents = obj_files/main.o obj_files/components.o "
-           << (core_files | rv::transform(as_object) | ra::join)
-           << (user_files | rv::transform(as_object) | ra::join);
+           << (core_files | rv::transform(asObject) | ra::join)
+           << (user_files | rv::transform(asObject) | ra::join);
 
   makefile << "\n\nded : $(components)"
               "\n\t$(flags) $(components) -lstdc++fs -o ded";
@@ -213,19 +213,19 @@ void
   makefile << "\n\nobj_files/main.o : main.cpp "
               "\n\t$(flags) -c main.cpp -o obj_files/main.o\n"
            << (core_files | rv::transform([&](auto file) {
-                 return "\n" + as_object(file) + ": " + as_source(file) +
-                        "\n\t$(flags) -c " + as_source(file) + " -o " +
-                        as_object(file) + "\n";
+                 return "\n" + asObject(file) + ": " + asSource(file) +
+                        "\n\t$(flags) -c " + asSource(file) + " -o " +
+                        asObject(file) + "\n";
                }) |
                ra::join)
            << "\nobj_files/components.o : components.cpp $(headers) "
-           << (user_files | rv::transform(as_header) | ra::join)
+           << (user_files | rv::transform(asHeader) | ra::join)
            << "\n\t$(flags) -c components.cpp -o "
            << "obj_files/components.o\n"
            << (user_files | rv::transform([&](auto file) {
-                 return "\n" + as_object(file) + ": " + as_source(file) +
-                        as_header(file) + " $(headers) \n\t$(flags) -c " +
-                        as_source(file) + "-o " + as_object(file) + "\n";
+                 return "\n" + asObject(file) + ": " + asSource(file) +
+                        asHeader(file) + " $(headers) \n\t$(flags) -c " +
+                        asSource(file) + "-o " + asObject(file) + "\n";
                }) |
                ra::join);
 
@@ -238,9 +238,9 @@ int
     main(int argc, char **argv)
 {
 
-  auto bo = get_build_options("components.cfg");
-  generate_components("components.cpp", bo);
-  generate_makefile(
+  auto bo = getBuildOptions("components.cfg");
+  generateComponents("components.cpp", bo);
+  generateMakefile(
       "makefile", bo, argc > 1 ? argv[1] : "g++ -Wall -std=c++17 -O3 ");
   // " -Wall -std=c++17 -O3 "
   // " -Wall -std=c++17 -O0 -ggdb3 "

@@ -6,18 +6,18 @@ ded::concepts::Population
 {
 //	std::map<int, double> scores;
   auto one_pop = one.evaluate(pop);
-  auto one_vec = one_pop.get_as_vector();
+  auto one_vec = one_pop.getAsVector();
  // for(auto const &org : one_vec)
-   // scores[org.get_id()] = std::get<double>(org.data.get_value(info_tag_));
+   // scores[org.getID()] = std::get<double>(org.data.get_value(info_tag_));
 
   auto two_pop = two.evaluate(pop);
-  auto two_vec = two_pop.get_as_vector();
+  auto two_vec = two_pop.getAsVector();
  // for(auto const &org : one_vec)
-   // scores[org.get_id()] = std::get<double>(org.data.get_value(info_tag_));
+   // scores[org.getID()] = std::get<double>(org.data.get_value(info_tag_));
 
   // one and two don't change population
   // only data changes
-  auto vec = pop.get_as_vector();
+  auto vec = pop.getAsVector();
   for (auto &org : vec)
   {
     org.data.setValue(

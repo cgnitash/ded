@@ -5,8 +5,8 @@
 #include <string>
 #include <vector>
 
-#include "specs/entity_spec.h"
-#include "specs/environment_spec.h"
+#include "specs/substrate_spec.h"
+#include "specs/process_spec.h"
 #include "specs/population_spec.h"
 
 #include "configuration.h"
@@ -26,7 +26,7 @@ namespace experiments
 struct Simulation
 {
   specs::PopulationSpec                             population_spec;
-  specs::EnvironmentSpec                            environment_spec;
+  specs::ProcessSpec                            process_spec;
   language::Labels                                  labels;
   std::vector<std::pair<specs::Trace, std::string>> traces;
 
@@ -36,7 +36,7 @@ struct Simulation
     std::hash<std::string> hash_fn;
     return std::to_string(
         hash_fn(population_spec.dump(0) + "_" +
-                (environment_spec.dump(0, false) | ra::join)));
+                (process_spec.dump(0, false) | ra::join)));
   }
 
   std::string
@@ -64,7 +64,7 @@ Simulation parseSimulation(language::Parser);
 
 std::vector<Simulation> parseAllSimulations(std::string);
 
-std::pair<specs::PopulationSpec, specs::EnvironmentSpec>
+std::pair<specs::PopulationSpec, specs::ProcessSpec>
     loadSimulation(std::string);
 
 void prepareSimulationsLocally(const std::vector<std::string> &, int);

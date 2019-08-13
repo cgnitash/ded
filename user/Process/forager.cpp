@@ -106,7 +106,7 @@ void
   if (output.size() != 2)
   {
     std::cout
-        << "Error: environment-forager must recieve an output of size 2\n";
+        << "Error: process-forager must recieve an output of size 2\n";
     exit(1);
   }
 
@@ -114,7 +114,7 @@ void
   auto out = ded::utilities::Bit(output[0]) * 2 + ded::utilities::Bit(output[1]);
 
   // std::cout << out <<  " " <<position.x_ << " " << position.y_ << std::endl;
-  // interact with the environment
+  // interact with the process
   switch (static_cast<int>(out))
   {
     case 0:   // move
@@ -139,7 +139,7 @@ void
 }
 
 double
-    forager::eval(ded::concepts::Entity &org)
+    forager::eval(ded::concepts::Substrate &org)
 {
 
   auto score = 0.0;
@@ -156,7 +156,7 @@ double
   if (visualize_)
   {
     auto vis_file_name =
-        ded::global_path + "org_" + std::to_string(org.get_id());
+        ded::GLOBAL_PATH + "org_" + std::to_string(org.getID());
     if (std::experimental::filesystem::exists(vis_file_name))
     {
       std::cout
@@ -177,7 +177,7 @@ double
                            : signals_at(position));
     // run the org once
     org.tick();
-    // read its outputs and interact with the environment
+    // read its outputs and interact with the process
     interact(org.output(org_output_action_tag_), position, facing, score);
     if (visualize_) visualize(vis_file, position, facing, score);
   });
@@ -188,7 +188,7 @@ double
 ded::concepts::Population
     forager::evaluate(ded::concepts::Population pop)
 {
-  auto vec = pop.get_as_vector();
+  auto vec = pop.getAsVector();
   for (auto &org : vec)
   {
     org.reset();

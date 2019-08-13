@@ -14,17 +14,17 @@
 #include <string_view>
 #include <vector>
 
-class null_environment {
+class null_process {
 
 public:
-  null_environment() { configure(publish_configuration()); }
+  null_process() { configure(publishConfiguration()); }
 
-  ded::specs::EnvironmentSpec publish_configuration()
+  ded::specs::ProcessSpec publishConfiguration()
   {
 	return {};
   }
 
-  void configure(ded::specs::EnvironmentSpec) {}
+  void configure(ded::specs::ProcessSpec) {}
 
   ded::concepts::Population evaluate(ded::concepts::Population pop) { return pop; }
 };

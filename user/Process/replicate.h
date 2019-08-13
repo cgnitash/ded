@@ -20,31 +20,31 @@ class replicate {
 
   std::string x_tag_ = "double";
 
-  ded::specs::EnvironmentSpec env_{ "null_environment" };
-  ded::concepts::Environment      env = ded::make_Environment(env_);
+  ded::specs::ProcessSpec env_{ "null_process" };
+  ded::concepts::Process      env = ded::makeProcess(env_);
 
 public:
-  replicate() { configure(publish_configuration()); }
+  replicate() { configure(publishConfiguration()); }
 
-  ded::specs::EnvironmentSpec publish_configuration()
+  ded::specs::ProcessSpec publishConfiguration()
   {
-    ded::specs::EnvironmentSpec es;
+    ded::specs::ProcessSpec es;
 
     es.bindParameter("num", num_);
 
     es.bindPostTag("x", "double");
 
-    es.bindEnvironment("env", env_);
-    es.bindEnvironmentPostConstraints("env", { { "x", "double" } });
+    es.bindProcess("env", env_);
+    es.bindProcessPostConstraints("env", { { "x", "double" } });
     return es;
   }
 
-  void configure(ded::specs::EnvironmentSpec es)
+  void configure(ded::specs::ProcessSpec es)
   {
     es.configureParameter("num", num_);
 
-    es.configureEnvironment("env", env_);
-    env = ded::make_Environment(env_);
+    es.configureProcess("env", env_);
+    env = ded::makeProcess(env_);
 
     es.configurePostTag("x", x_tag_);
   }

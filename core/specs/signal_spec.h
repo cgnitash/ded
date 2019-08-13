@@ -74,6 +74,7 @@ public:
 
 using SignalSpecSet = 
   std::vector<std::pair<std::string, SignalSpec>>;
+
 // struct io_signals
 struct IO
 {

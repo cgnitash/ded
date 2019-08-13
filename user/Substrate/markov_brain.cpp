@@ -47,14 +47,14 @@ void
     if (static_cast<long>(v.size()) != input_)
     {
       std::cout
-          << "Impl-Error: entity-markovbrain must get an input range of the "
+          << "Impl-Error: substrate-markovbrain must get an input range of the "
              "specified size\n";
       exit(1);
     }
     for (auto i{ 0u }; i < input_; i++) buffer_[i] = ded::utilities::Bit(v[i]);
   } else
   {
-    std::cout << "Impl-Error: entity-markovbrain cannot handle this "
+    std::cout << "Impl-Error: substrate-markovbrain cannot handle this "
                  "name-signal pair in input \n";
     exit(1);
   }
@@ -70,7 +70,7 @@ ded::concepts::Signal
            ra::slice(input_, input_ + output_);
   } else
   {
-    std::cout << "Impl-Error: entity-markovbrain cannot handle this "
+    std::cout << "Impl-Error: substrate-markovbrain cannot handle this "
                  "name-signal pair in output \n";
     exit(1);
   }

@@ -8,7 +8,7 @@
 
 #include "../configuration.h"
 #include "../utilities/utilities.h"
-#include "entity_spec.h"
+#include "substrate_spec.h"
 
 namespace ded
 {
@@ -16,7 +16,7 @@ namespace specs
 {
 
 IO
-    EntitySpec::instantiateUserParameterSizes(int sig_count)
+    SubstrateSpec::instantiateUserParameterSizes(int sig_count)
 {
   for (auto &n_sig : io_.inputs_)
     for (auto &[param, cp] : parameters_)
@@ -39,10 +39,10 @@ IO
   return io_;
 }
 
-EntitySpec::EntitySpec(language::Parser p, language::Block blk)
+SubstrateSpec::SubstrateSpec(language::Parser p, language::Block blk)
 {
 
-  auto t = all_entity_specs[blk.name_.substr(1)];
+  auto t = ALL_SUBSTRATE_SPECS[blk.name_.substr(1)];
 
   *this = t;
 
@@ -107,12 +107,12 @@ EntitySpec::EntitySpec(language::Parser p, language::Block blk)
       throw language::ParserError{};
     }
 
-    f->second.e = std::make_unique<EntitySpec>(EntitySpec{ p, nested_blk });
+    f->second.e = std::make_unique<SubstrateSpec>(SubstrateSpec{ p, nested_blk });
   }
 }
 
 std::string
-    EntitySpec::dump(long depth) const
+    SubstrateSpec::dump(long depth) const
 {
   auto alignment = "\n" + std::string(depth, ' ');
 
@@ -139,8 +139,8 @@ std::string
           ra::join);
 }
 
-EntitySpec
-    EntitySpec::parse(std::vector<std::string> pop_dump)
+SubstrateSpec
+    SubstrateSpec::parse(std::vector<std::string> pop_dump)
 {
   name_ = *pop_dump.begin();
   name_ = name_.substr(name_.find(':') + 1);
@@ -177,19 +177,19 @@ EntitySpec
 
     std::transform(f + 1, p, f + 1, [](auto l) { return l.substr(1); });
 
-    EntitySpec e;
-    nested_[*f].e = std::make_unique<EntitySpec>(
+    SubstrateSpec e;
+    nested_[*f].e = std::make_unique<SubstrateSpec>(
         e.parse(std::vector<std::string>(f + 1, pop_dump.end())));
 
     f = p;
   }
 
-  // EntitySpec ps = *this;
+  // SubstrateSpec ps = *this;
   return *this;
 }
 
 std::string
-    EntitySpec::prettyPrint()
+    SubstrateSpec::prettyPrint()
 {
   std::stringstream out;
   out << "entity::" << name_ << "\n{\n";

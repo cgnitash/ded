@@ -7,7 +7,7 @@
 #include <string>
 
 #include "../configuration.h"
-#include "environment_spec.h"
+#include "process_spec.h"
 
 namespace ded
 {
@@ -15,7 +15,7 @@ namespace specs
 {
 
 void
-    EnvironmentSpec::matchTags(SignalSpecSet &source_tags,
+    ProcessSpec::matchTags(SignalSpecSet &source_tags,
                                 SignalSpecSet &sink_tags,
                                 int &          tag_count)
 {
@@ -84,7 +84,7 @@ void
 }
 
 void
-    EnvironmentSpec::matchTagFlowEqualities(int &tag_count)
+    ProcessSpec::matchTagFlowEqualities(int &tag_count)
 {
 
   for (auto [source, sink] : tag_flow_equalities_)
@@ -99,7 +99,7 @@ void
 }
 
 void
-    EnvironmentSpec::updateNestedConstraints(SignalSpecSet &constraints)
+    ProcessSpec::updateNestedConstraints(SignalSpecSet &constraints)
 {
   for (auto &source_tag : constraints)
   {
@@ -116,7 +116,7 @@ void
 }
 
 void
-    EnvironmentSpec::updateAndMatchTags(SignalSpecSet &source_tags,
+    ProcessSpec::updateAndMatchTags(SignalSpecSet &source_tags,
                                            SignalSpecSet &sink_tags,
                                            int &          tag_count)
 {
@@ -128,7 +128,7 @@ void
 }
 
 void
-    EnvironmentSpec::matchNestedTagConstraints(int &tag_count)
+    ProcessSpec::matchNestedTagConstraints(int &tag_count)
 {
   for (auto &es : nested_)
   {
@@ -139,7 +139,7 @@ void
   }
 }
 void
-    EnvironmentSpec::bindTags(int tag_count)
+    ProcessSpec::bindTags(int tag_count)
 {
 
   matchTagFlowEqualities(tag_count);
@@ -151,7 +151,7 @@ void
 }
 
 void
-    EnvironmentSpec::instantiateUserParameterSizes()
+    ProcessSpec::instantiateUserParameterSizes()
 {
   for (auto &n_sig : io_.inputs_)
     for (auto &[param, cp] : parameters_)
@@ -172,10 +172,10 @@ void
 }
 
 void
-    EnvironmentSpec::bindEntityIO(IO ios)
+    ProcessSpec::bindSubstrateIO(IO ios)
 {
   for (auto &es : nested_)
-    es.second.e->bindEntityIO(ios);
+    es.second.e->bindSubstrateIO(ios);
 
   for (auto &n_sig : io_.inputs_)
   {
@@ -233,7 +233,7 @@ void
 }
 
 std::vector<std::pair<Trace, std::string>>
-    EnvironmentSpec::queryTraces()
+    ProcessSpec::queryTraces()
 {
 
   std::vector<std::pair<Trace, std::string>> res;
@@ -255,7 +255,7 @@ std::vector<std::pair<Trace, std::string>>
 }
 
 void
-    EnvironmentSpec::recordTraces()
+    ProcessSpec::recordTraces()
 {
 
   for (auto &sig_freq : traces_.pre_)
@@ -278,11 +278,11 @@ void
     es.second.e->recordTraces();
 }
 
-EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
+ProcessSpec::ProcessSpec(language::Parser parser_,
                                  language::Block  block_)
 {
 
-  *this = all_environment_specs.at(block_.name_.substr(1));
+  *this = ALL_PROCESS_SPECS.at(block_.name_.substr(1));
 
   for (auto over : block_.overrides_)
   {
@@ -392,18 +392,18 @@ EnvironmentSpec::EnvironmentSpec(language::Parser parser_,
       parser_.errInvalidToken(name,
                                 "override of " + name.expr_ +
                                     " must be of type environment",
-                                config_manager::allEnvironmentNames());
+                                config_manager::allProcessNames());
       throw language::ParserError{};
     }
 
-    f->second.e = std::make_unique<EnvironmentSpec>(
-        EnvironmentSpec{ parser_, nested_blk });
+    f->second.e = std::make_unique<ProcessSpec>(
+        ProcessSpec{ parser_, nested_blk });
     f->second.e->setUserSpecifiedName(name.expr_);
   }
 }
 
 std::vector<std::string>
-    EnvironmentSpec::dump(long depth, bool with_traces) const
+    ProcessSpec::dump(long depth, bool with_traces) const
 {
   std::vector<std::string> lines;
   auto                     alignment = std::string(depth, ' ');
@@ -455,8 +455,8 @@ std::vector<std::string>
   return lines;
 }
 
-EnvironmentSpec
-    EnvironmentSpec::parse(std::vector<std::string> pop_dump)
+ProcessSpec
+    ProcessSpec::parse(std::vector<std::string> pop_dump)
 {
   name_ = *pop_dump.begin();
   name_ = name_.substr(name_.find(':') + 1);
@@ -521,9 +521,9 @@ EnvironmentSpec
 
     std::transform(f + 1, p, f + 1, [](auto l) { return l.substr(1); });
 
-    EnvironmentSpec e;
+    ProcessSpec e;
     e.setUserSpecifiedName(*f);
-    nested_[*f].e = std::make_unique<EnvironmentSpec>(
+    nested_[*f].e = std::make_unique<ProcessSpec>(
         e.parse(std::vector<std::string>(f + 1, p)));
 
     f = p;
@@ -532,7 +532,7 @@ EnvironmentSpec
 }
 
 std::string
-    EnvironmentSpec::prettyPrint()
+    ProcessSpec::prettyPrint()
 {
   std::stringstream out;
   out << "environment::" << name_ << "\n{\n";

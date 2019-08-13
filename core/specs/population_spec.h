@@ -11,7 +11,7 @@
 #include "../language/parser.h"
 #include "../utilities/term_colours.h"
 #include "configuration_primitive.h"
-#include "entity_spec.h"
+#include "substrate_spec.h"
 
 namespace ded
 {
@@ -31,7 +31,7 @@ class PopulationSpec
   std::map<std::string, ConfigurationPrimitive> parameters_;
   // std::map<std::string, std::string>             inputs_;
   // std::map<std::string, std::string>             outputs_;
-  EntitySpec es_{ "null_entity" };
+  SubstrateSpec es_{ "null_entity" };
 
 public:
   // PopulationSpec() = default;
@@ -92,13 +92,13 @@ public:
 
 
   void
-      bindEntity(EntitySpec e)
+      bindSubstrate(SubstrateSpec e)
   {
     es_ = e;
   }
 
   void
-      configureEntity(EntitySpec &e)
+      configureSubstrate(SubstrateSpec &e)
   {
     e = es_;
   }
@@ -108,7 +108,7 @@ public:
   std::string    prettyPrint();
 
   IO
-      instantiateNestedEntityUserParameterSizes()
+      instantiateNestedSubstrateUserParameterSizes()
   {
     return es_.instantiateUserParameterSizes(0);
   }

@@ -6,7 +6,7 @@ ded::concepts::Population
     elite_replacement::evaluate(ded::concepts::Population populate)
 {
 
-  auto pop = populate.get_as_vector();
+  auto pop = populate.getAsVector();
   // find the strength_ fraction of highest "score"s
   const auto fraction =
       std::max(size_t{ 1 }, static_cast<size_t>(pop.size() * strength_));
@@ -35,6 +35,6 @@ ded::concepts::Population
                                           })) |
                  rv::take(pop.size()));
 
-  populate.prune_lineage(invoke_++);
+  populate.pruneLineage(invoke_++);
   return populate;
 }

@@ -20,19 +20,19 @@ namespace ded
 // forward declaration to provide friendship
 namespace concepts
 {
-class Entity;
+class Substrate;
 }
 
 namespace specs
 {
 
-class EntitySpec
+class SubstrateSpec
 {
   struct NestedSpec
   {
-    std::unique_ptr<EntitySpec> e;
+    std::unique_ptr<SubstrateSpec> e;
     NestedSpec() = default;
-    NestedSpec(const NestedSpec &ns) : e(std::make_unique<EntitySpec>(*ns.e))
+    NestedSpec(const NestedSpec &ns) : e(std::make_unique<SubstrateSpec>(*ns.e))
     {
     }
   };
@@ -43,10 +43,10 @@ class EntitySpec
   IO                                            io_;
 
 public:
-  EntitySpec(std::string name = "") : name_(name)
+  SubstrateSpec(std::string name = "") : name_(name)
   {
   }
-  EntitySpec(language::Parser, language::Block);
+  SubstrateSpec(language::Parser, language::Block);
 
   auto
       name() const
@@ -114,13 +114,13 @@ public:
   }
 
   void
-      bindEntity(std::string name, EntitySpec env)
+      bindSubstrate(std::string name, SubstrateSpec env)
   {
-    nested_[name].e = std::make_unique<EntitySpec>(env);
+    nested_[name].e = std::make_unique<SubstrateSpec>(env);
   }
 
   void
-      configureEntity(std::string name, EntitySpec &e)
+      configureSubstrate(std::string name, SubstrateSpec &e)
   {
     if (!nested_[name].e)
     {
@@ -132,14 +132,14 @@ public:
       e = *nested_[name].e;
   }
 
-  // friend std::ostream &operator<<(std::ostream &out, EntitySpec e)
+  // friend std::ostream &operator<<(std::ostream &out, SubstrateSpec e)
   std::string dump(long depth) const;
-  EntitySpec  parse(std::vector<std::string> pop_dump);
+  SubstrateSpec  parse(std::vector<std::string> pop_dump);
   std::string prettyPrint();
 
   IO instantiateUserParameterSizes(int);
 
-  friend class concepts::Entity;
+  friend class concepts::Substrate;
 };
 
 }   // namespace specs
