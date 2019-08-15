@@ -103,8 +103,8 @@ public:
     e = es_;
   }
 
-  std::string    dump(long depth)const;
-  PopulationSpec parse(std::vector<std::string> pop_dump);
+   std::vector<std::string>  serialise(long )const;
+  PopulationSpec deserialise(std::vector<std::string> );
   std::string    prettyPrint();
 
   IO

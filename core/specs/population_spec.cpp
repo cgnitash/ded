@@ -7,8 +7,8 @@
 #include <variant>
 
 #include "../configuration.h"
-#include "substrate_spec.h"
 #include "population_spec.h"
+#include "substrate_spec.h"
 
 namespace ded
 {
@@ -25,15 +25,14 @@ PopulationSpec::PopulationSpec(language::Parser parser, language::Block block)
     auto name  = over.first;
     auto value = over.second;
 
-    auto f = rs::find_if(
-        parameters_, [&](auto param) { return param.first == name.expr_; });
+    auto f = rs::find_if(parameters_,
+                         [&](auto param) { return param.first == name.expr_; });
     if (f == parameters_.end())
     {
-      parser.errInvalidToken(name,
-                          "this does not override any parameters of " + name_,
-                          parameters_ | rv::transform([](auto param) {
-                            return param.first;
-                          }));
+      parser.errInvalidToken(
+          name,
+          "this does not override any parameters of " + name_,
+          parameters_ | rv::transform([](auto param) { return param.first; }));
       throw language::ParserError{};
     }
 
@@ -49,9 +48,8 @@ PopulationSpec::PopulationSpec(language::Parser parser, language::Block block)
     auto con = f->second.checkConstraints();
     if (con)
     {
-      parser.errInvalidToken(
-          value,
-              "parameter constraint not satisfied: " + *con );
+      parser.errInvalidToken(value,
+                             "parameter constraint not satisfied: " + *con);
       throw language::ParserError{};
     }
   }
@@ -65,8 +63,8 @@ PopulationSpec::PopulationSpec(language::Parser parser, language::Block block)
     if (ct != "entity")
     {
       parser.errInvalidToken(name,
-                          "override of " + name.expr_ +
-                              " inside population:: must be of type entity");
+                             "override of " + name.expr_ +
+                                 " inside population:: must be of type entity");
       throw language::ParserError{};
     }
 
@@ -74,22 +72,25 @@ PopulationSpec::PopulationSpec(language::Parser parser, language::Block block)
   }
 }
 
-std::string
-    PopulationSpec::dump(long depth) const
+std::vector<std::string>
+    PopulationSpec::serialise(long depth) const
 {
-  auto alignment = std::string(depth, ' ');
+  std::vector<std::string> lines;
+  auto                     alignment = std::string(depth, ' ');
 
-  return alignment + "population:" + name_ + "\n" + alignment + "P\n" +
-         (parameters_ | rv::transform([&](auto parameter) {
-            return alignment + parameter.first + ":" +
-                   parameter.second.valueAsString() + "\n";
-          }) |
-          ra::join)+
-         alignment + "E" + es_.dump(depth + 1);
+  lines.push_back(alignment + "population:" + name_);
+  lines.push_back(alignment + "P");
+  rs::transform(parameters_, rs::back_inserter(lines), [&](auto parameter) {
+    return alignment + parameter.first + ":" + parameter.second.valueAsString();
+  });
+  lines.push_back(alignment + "E");
+  auto n_dump = es_.serialise(depth + 1);
+  lines.insert(lines.end(), n_dump.begin(), n_dump.end());
+  return lines;
 }
 
 PopulationSpec
-    PopulationSpec::parse(std::vector<std::string> pop_dump)
+    PopulationSpec::deserialise(std::vector<std::string> pop_dump)
 {
   name_ = *pop_dump.begin();
   name_ = name_.substr(name_.find(':') + 1);
@@ -111,7 +112,7 @@ PopulationSpec
   }
 
   SubstrateSpec es;
-  es_ = es.parse(std::vector<std::string>(f, pop_dump.end()));
+  es_ = es.deserialise(std::vector<std::string>(f, pop_dump.end()));
 
   PopulationSpec ps = *this;
   return ps;
@@ -125,8 +126,7 @@ std::string
 
   out << " parameters\n";
   for (auto [parameter, value] : parameters_)
-    out << std::setw(16) << parameter << " : " << value.valueAsString()
-        << "\n";
+    out << std::setw(16) << parameter << " : " << value.valueAsString() << "\n";
   /*
 out << TermColours::yellow_fg << "inputs----" << TermColours::reset
   << "\n";

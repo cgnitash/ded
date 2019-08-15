@@ -45,13 +45,6 @@ class ProcessSpec
   struct NestedSpec
   {
     std::unique_ptr<ProcessSpec> e;
-    /*
-            struct
-     {
-       std::vector<std::string> pre_;
-       std::vector<std::string> post_;
-     } constraints_;
-         */
     Tags constraints_;
     NestedSpec() = default;
     NestedSpec(const NestedSpec &ns)
@@ -297,8 +290,8 @@ public:
 
   // friend std::ostream &operator<<(std::ostream &out, const ProcessSpec
   // &e)
-  std::vector<std::string> dump(long depth, bool) const;
-  ProcessSpec          parse(std::vector<std::string> pop_dump);
+  std::vector<std::string> serialise(long, bool) const;
+  ProcessSpec              deserialise(std::vector<std::string>);
 
   std::string prettyPrint();
 

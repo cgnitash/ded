@@ -403,7 +403,7 @@ ProcessSpec::ProcessSpec(language::Parser parser_,
 }
 
 std::vector<std::string>
-    ProcessSpec::dump(long depth, bool with_traces) const
+    ProcessSpec::serialise(long depth, bool with_traces) const
 {
   std::vector<std::string> lines;
   auto                     alignment = std::string(depth, ' ');
@@ -445,10 +445,10 @@ std::vector<std::string>
     // needs to go *
   }
   lines.push_back(alignment + "n");
-  for (auto nested : nested_)
+  for (auto const &nested : nested_)
   {
     lines.push_back(alignment + nested.first);
-    auto n_dump = nested.second.e->dump(depth + 1, with_traces);
+    auto n_dump = nested.second.e->serialise(depth + 1, with_traces);
     lines.insert(lines.end(), n_dump.begin(), n_dump.end());
   }
 
@@ -456,7 +456,7 @@ std::vector<std::string>
 }
 
 ProcessSpec
-    ProcessSpec::parse(std::vector<std::string> pop_dump)
+    ProcessSpec::deserialise(std::vector<std::string> pop_dump)
 {
   name_ = *pop_dump.begin();
   name_ = name_.substr(name_.find(':') + 1);
@@ -524,7 +524,7 @@ ProcessSpec
     ProcessSpec e;
     e.setUserSpecifiedName(*f);
     nested_[*f].e = std::make_unique<ProcessSpec>(
-        e.parse(std::vector<std::string>(f + 1, p)));
+        e.deserialise(std::vector<std::string>(f + 1, p)));
 
     f = p;
   }

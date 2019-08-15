@@ -133,8 +133,8 @@ public:
   }
 
   // friend std::ostream &operator<<(std::ostream &out, SubstrateSpec e)
-  std::string dump(long depth) const;
-  SubstrateSpec  parse(std::vector<std::string> pop_dump);
+  std::vector<std::string> serialise(long) const;
+  SubstrateSpec  deserialise(std::vector<std::string> );
   std::string prettyPrint();
 
   IO instantiateUserParameterSizes(int);

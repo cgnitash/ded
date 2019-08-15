@@ -187,7 +187,7 @@ std::pair<specs::PopulationSpec, specs::ProcessSpec>
   while (std::getline(pop_file, l))
     ls.push_back(l);
   ded::specs::PopulationSpec pop_spec;
-  pop_spec.parse(ls);
+  pop_spec.deserialise(ls);
 
   std::ifstream            env_file(exp_path + "/env.spec");
   std::vector<std::string> es;
@@ -195,7 +195,7 @@ std::pair<specs::PopulationSpec, specs::ProcessSpec>
   while (std::getline(env_file, e))
     es.push_back(e);
   ded::specs::ProcessSpec env_spec;
-  env_spec.parse(es);
+  env_spec.deserialise(es);
 
   return { pop_spec, env_spec };
 }
@@ -268,10 +268,11 @@ std::vector<std::string>
       std::experimental::filesystem::create_directory(exp_data_path);
 
       std::ofstream env_spec_file(exp_data_path + "env.spec");
-      for (auto l : sim.process_spec.dump(0, true))
+      for (auto l : sim.process_spec.serialise(0, true))
         env_spec_file << l << "\n";
       std::ofstream pop_spec_file(exp_data_path + "pop.spec");
-      pop_spec_file << sim.population_spec.dump(0);
+      for (auto l : sim.population_spec.serialise(0))
+        pop_spec_file << l << "\n";
 
       exp_names.push_back(exp_name);
       std::cout << "simulation " << prettyName << " successfully prepared\n";

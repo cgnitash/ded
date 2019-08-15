@@ -111,36 +111,39 @@ SubstrateSpec::SubstrateSpec(language::Parser p, language::Block blk)
   }
 }
 
-std::string
-    SubstrateSpec::dump(long depth) const
+std::vector<std::string>
+    SubstrateSpec::serialise(long depth) const
 {
-  auto alignment = "\n" + std::string(depth, ' ');
+  std::vector<std::string> lines;
+  auto alignment = std::string(depth, ' ');
 
-  return alignment + "entity:" + name_ + alignment + "P" +
-         (parameters_ | rv::transform([&](auto parameter) {
-            return alignment + parameter.first + ":" +
-                   parameter.second.valueAsString();
-          }) |
-          ra::join) +
-         alignment + "I" +
-         (io_.inputs_ | rv::transform([&](auto sig) {
-            return alignment + sig.second.fullName();
-          }) |
-          ra::join) +
-         alignment + "O" +
-         (io_.outputs_ | rv::transform([&](auto sig) {
-            return alignment + sig.second.fullName();
-          }) |
-          ra::join) +
-         alignment + "n" +
-         (nested_ | rv::transform([&](auto nested) {
-            return alignment + nested.first + nested.second.e->dump(depth + 1);
-          }) |
-          ra::join);
+  auto pad_signal = [&](auto sig) {
+    return alignment + sig.second.fullName();
+  };
+
+  lines.push_back(alignment + "entity:" + name_);
+  lines.push_back(alignment + "P");
+  rs::transform(
+      parameters_, rs::back_inserter(lines), [&](auto parameter) {
+        return alignment + parameter.first + ":" +
+               parameter.second.valueAsString();
+      });
+  lines.push_back(alignment + "I");
+  rs::transform(io_.inputs_, rs::back_inserter(lines), pad_signal);
+  lines.push_back(alignment + "O");
+  rs::transform(io_.outputs_, rs::back_inserter(lines), pad_signal);
+  lines.push_back(alignment + "n");
+  for (auto const &nested : nested_)
+  {
+    lines.push_back(alignment + nested.first);
+    auto n_dump = nested.second.e->serialise(depth + 1);
+    lines.insert(lines.end(), n_dump.begin(), n_dump.end());
+  }
+  return lines;
 }
 
 SubstrateSpec
-    SubstrateSpec::parse(std::vector<std::string> pop_dump)
+    SubstrateSpec::deserialise(std::vector<std::string> pop_dump)
 {
   name_ = *pop_dump.begin();
   name_ = name_.substr(name_.find(':') + 1);
@@ -179,12 +182,11 @@ SubstrateSpec
 
     SubstrateSpec e;
     nested_[*f].e = std::make_unique<SubstrateSpec>(
-        e.parse(std::vector<std::string>(f + 1, pop_dump.end())));
+        e.deserialise(std::vector<std::string>(f + 1, pop_dump.end())));
 
     f = p;
   }
 
-  // SubstrateSpec ps = *this;
   return *this;
 }
 

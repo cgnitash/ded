@@ -34,9 +34,8 @@ struct Simulation
       barCode() const
   {
     std::hash<std::string> hash_fn;
-    return std::to_string(
-        hash_fn(population_spec.dump(0) + "_" +
-                (process_spec.dump(0, false) | ra::join)));
+    return std::to_string(hash_fn((population_spec.serialise(0) | ra::join) + "_" +
+                                  (process_spec.serialise(0, false) | ra::join)));
   }
 
   std::string
