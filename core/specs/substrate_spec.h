@@ -13,6 +13,7 @@
 #include "../utilities/utilities.h"
 #include "configuration_primitive.h"
 #include "signal_spec.h"
+#include "encoding_spec.h"
 
 namespace ded
 {
@@ -28,18 +29,20 @@ namespace specs
 
 class SubstrateSpec
 {
-  struct NestedSpec
+  struct NestedSubstrateSpec
   {
     std::unique_ptr<SubstrateSpec> e;
-    NestedSpec() = default;
-    NestedSpec(const NestedSpec &ns) : e(std::make_unique<SubstrateSpec>(*ns.e))
+    NestedSubstrateSpec() = default;
+    NestedSubstrateSpec(const NestedSubstrateSpec &ns)
+        : e(std::make_unique<SubstrateSpec>(*ns.e))
     {
     }
   };
 
   std::string                                   name_;
   std::map<std::string, ConfigurationPrimitive> parameters_;
-  std::map<std::string, NestedSpec>             nested_;
+  std::map<std::string, NestedSubstrateSpec>             nested_;
+  std::map<std::string, EncodingSpec>                    encodings_;
   IO                                            io_;
 
 public:
@@ -86,7 +89,7 @@ public:
   }
 
   void
-      bindIinput(std::string name, std::string value)
+      bindInput(std::string name, std::string value)
   {
     io_.inputs_.push_back({ name, SignalSpec{ name, name, value } });
   }
@@ -111,6 +114,18 @@ public:
     auto i = rs::find_if(io_.outputs_,
                              [=](auto ns) { return ns.first == name; });
     value  = i->second.identifier();
+  }
+
+  void
+      bindEncoding(std::string name, EncodingSpec e)
+  {
+    encodings_[name] = e;
+  }
+
+  void
+      configureEncoding(std::string name, EncodingSpec &e)
+  {
+      e = encodings_[name];
   }
 
   void

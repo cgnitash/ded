@@ -20,6 +20,7 @@ namespace specs
 class SubstrateSpec;
 class ProcessSpec;
 class PopulationSpec;
+class EncodingSpec;
 }   // namespace specs
 
 namespace language
@@ -121,6 +122,7 @@ public:
   friend class specs::ProcessSpec;
   friend class specs::SubstrateSpec;
   friend class specs::PopulationSpec;
+  friend class specs::EncodingSpec;
 };
 }   // namespace language
 }   // namespace ded

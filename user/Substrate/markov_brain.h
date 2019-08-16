@@ -11,6 +11,7 @@ class markov_brain {
   std::string out_sense_ = "<double,outputs>";
 
   ded::concepts::Encoding genome_;
+  ded::specs::EncodingSpec genome_spec_ = genome_.publishConfiguration();
   std::regex     encoding_parser_{ R"(([^:]+):)" };
 
   long input_  = 10;
@@ -33,10 +34,11 @@ class markov_brain {
 
   bool gates_are_computed_ = false;
   void compute_gates_();
-  void seed_gates_(size_t = 1);
+  //void seed_gates_(size_t = 1);
 
 public:
   markov_brain() { configure(publishConfiguration()); }
+
   ded::specs::SubstrateSpec publishConfiguration()
   {
     ded::specs::SubstrateSpec es;
@@ -45,11 +47,14 @@ public:
 	es.bindParameter("outputs",output_);
 	es.bindParameter("hiddens",hidden_);
 
-    es.bindIinput("in_sense","<double,inputs>");
+    es.bindInput("in_sense","<double,inputs>");
     es.bindOutput("out_sense","<double,outputs>");
+
+	es.bindEncoding("genome", genome_spec_);
 
     return es;
   }
+  
   void configure(ded::specs::SubstrateSpec es)
   {
   
@@ -61,14 +66,17 @@ public:
 
     es.configureOutput("out_sense", out_sense_);
 
+	es.configureEncoding("genome", genome_spec_);
+	genome_.configure(genome_spec_);
+
 	  // MUST BE ADDRESSED
   //genome_config_ = con["parameters"]["genome-params"];
     //genome_.configure(genome_config_);
     //es.configureSubstrate("genome", genome_spec_ );
-
     genome_.generate(500);
+    genome_.seed_codons(codon_, 4);
+
     buffer_ = std::vector(input_ + output_ + hidden_, 0.);
-    seed_gates_(4);
   }
 
   void           reset();

@@ -60,11 +60,11 @@ PopulationSpec::PopulationSpec(language::Parser parser, language::Block block)
     auto nested_blk = blover.second;
 
     auto ct = config_manager::typeOfBlock(nested_blk.name_.substr(1));
-    if (ct != "entity")
+    if (ct != "substrate")
     {
       parser.errInvalidToken(name,
                              "override of " + name.expr_ +
-                                 " inside population:: must be of type entity");
+                                 " inside population:: must be of type substrate");
       throw language::ParserError{};
     }
 

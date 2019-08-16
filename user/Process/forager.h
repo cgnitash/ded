@@ -94,9 +94,9 @@ public:
  
     es.bindPostTag("food_eaten","double");
 
-    //es.bindIinput("line_of_sight",org_input_los_tag_);
+    //es.bindInput("line_of_sight",org_input_los_tag_);
     //es.bindOutput("action",org_output_action_tag_);
-    es.bindIinput("line_of_sight","<double,sensor_range>");
+    es.bindInput("line_of_sight","<double,sensor_range>");
     es.bindOutput("action","<double,2>");
     return es;
   }

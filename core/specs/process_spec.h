@@ -180,7 +180,7 @@ public:
   }
 
   void
-      bindIinput(std::string name, std::string value)
+      bindInput(std::string name, std::string value)
   {
     io_.inputs_.push_back({ name, SignalSpec{ name, name, value } });
   }

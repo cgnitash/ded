@@ -23,6 +23,7 @@ std::string ded::GLOBAL_PATH = "./";
 std::map<std::string, ded::specs::SubstrateSpec>      ded::ALL_SUBSTRATE_SPECS;
 std::map<std::string, ded::specs::ProcessSpec> ded::ALL_PROCESS_SPECS;
 std::map<std::string, ded::specs::PopulationSpec>  ded::ALL_POPULATION_SPECS;
+std::map<std::string, ded::specs::EncodingSpec>  ded::ALL_ENCODING_SPECS;
 
 int
     main(int argc, char **argv) try

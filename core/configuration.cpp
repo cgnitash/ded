@@ -19,11 +19,13 @@ std::string
     typeOfBlock(std::string name)
 {
   if (ALL_PROCESS_SPECS.find(name) != ALL_PROCESS_SPECS.end())
-    return "environment";
+    return "process";
   if (ALL_SUBSTRATE_SPECS.find(name) != ALL_SUBSTRATE_SPECS.end())
-    return "entity";
+    return "substrate";
   if (ALL_POPULATION_SPECS.find(name) != ALL_POPULATION_SPECS.end())
     return "population";
+  if (ALL_ENCODING_SPECS.find(name) != ALL_ENCODING_SPECS.end())
+    return "encoding";
   return "NONE";
 }
 
@@ -46,6 +48,11 @@ void
     out << ALL_POPULATION_SPECS[name].prettyPrint();
     found = true;
   }
+  if (ALL_ENCODING_SPECS.find(name) != ALL_ENCODING_SPECS.end())
+  {
+    out << ALL_ENCODING_SPECS[name].prettyPrint();
+    found = true;
+  }
 
   if (!found)
     out << "component " << name << " not found\n";
@@ -56,16 +63,20 @@ void
 void
     listAllConfigs(std::ostream &out)
 {
-  out << "entity:\n";
+  out << "substrate:\n";
   for (auto n_spec : ALL_SUBSTRATE_SPECS)
     out << "    " << n_spec.first << "\n";
 
-  out << "environment:\n";
+  out << "process:\n";
   for (auto n_spec : ALL_PROCESS_SPECS)
     out << "    " << n_spec.first << "\n";
 
   out << "population:\n";
   for (auto n_spec : ALL_POPULATION_SPECS)
+    out << "    " << n_spec.first << "\n";
+
+  out << "encoding:\n";
+  for (auto n_spec : ALL_ENCODING_SPECS)
     out << "    " << n_spec.first << "\n";
 
   return;
@@ -80,6 +91,8 @@ void
   for (auto n_es : ALL_PROCESS_SPECS)
     file << "\n" << n_es.second.prettyPrint();
   for (auto n_es : ALL_POPULATION_SPECS)
+    file << "\n" << n_es.second.prettyPrint();
+  for (auto n_es : ALL_ENCODING_SPECS)
     file << "\n" << n_es.second.prettyPrint();
   return;
 }
@@ -106,12 +119,20 @@ std::vector<std::string>
 }
 
 std::vector<std::string>
+    allEncodingNames()
+{
+  return ALL_ENCODING_SPECS |
+         rv::transform([](auto spec) { return spec.first; });
+}
+
+std::vector<std::string>
     allComponentNames()
 {
   auto a = allSubstrateNames();
   auto b = allProcessNames();
   auto c = allPopulationNames();
-  return rv::concat(a, b, c);
+  auto d = allEncodingNames();
+  return rv::concat(a, b, c, d);
 }
 }   // namespace config_manager
 

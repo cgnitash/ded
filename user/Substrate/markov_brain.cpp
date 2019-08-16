@@ -99,6 +99,7 @@ void
             ra::transform([](auto i) { return ded::utilities::Bit(i); });
 }
 
+/*
 void
     markov_brain::seed_gates_(size_t n)
 {
@@ -109,6 +110,7 @@ void
   });
   gates_are_computed_ = false;
 }
+*/
 
 void
     markov_brain::compute_gates_()

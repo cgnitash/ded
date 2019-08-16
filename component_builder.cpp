@@ -99,7 +99,8 @@ void
                rv::intersperse(",") | ra::join)
            << "});\n";
   }
-  header << "}\n";
+  header << "  ALL_ENCODING_SPECS[\"encoding\"] = "
+            "ded::concepts::Encoding{}.publishConfiguration();\n}\n";
 
   header << R"~(
 void
@@ -183,6 +184,7 @@ void
                                           "core/specs/population_spec",
                                           "core/specs/substrate_spec",
                                           "core/specs/process_spec",
+                                          "core/specs/encoding_spec",
                                           "core/concepts/substrate",
                                           "core/concepts/process",
                                           "core/concepts/population",

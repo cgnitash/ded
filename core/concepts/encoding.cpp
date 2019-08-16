@@ -74,7 +74,7 @@ void
 void
     Encoding::all_deletions()
 {
-  if (enc_.size() < min_length_)
+  if (enc_.size() < static_cast<size_t>(max_length_))
     return;
   point_delete();
   del_chunk();

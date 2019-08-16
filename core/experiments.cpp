@@ -81,6 +81,7 @@ Simulation
   std::map<std::string,
            std::variant<ded::specs::SubstrateSpec,
                         ded::specs::ProcessSpec,
+                        ded::specs::EncodingSpec,
                         ded::specs::PopulationSpec>>
       vars;
 
@@ -88,15 +89,17 @@ Simulation
   for (auto [name, bl] : parser_variables)
   {
     auto ct = ded::config_manager::typeOfBlock(bl.name_.substr(1));
-    if (ct == "environment")
+    if (ct == "process")
       vars[name.expr_] = ded::specs::ProcessSpec{ p, bl };
-    else if (ct == "entity")
+    else if (ct == "substrate")
       vars[name.expr_] = ded::specs::SubstrateSpec{ p, bl };
     else if (ct == "population")
       vars[name.expr_] = ded::specs::PopulationSpec{ p, bl };
+    else if (ct == "encoding")
+      vars[name.expr_] = ded::specs::EncodingSpec{ p, bl };
     else
     {
-      std::cout << "oops: not a component!\n";
+      std::cout << "oops: not a component!\n" << bl.name_.substr(1);
       throw std::logic_error{ "" };
     }
   }
@@ -104,12 +107,12 @@ Simulation
   if (vars.find("E") == vars.end())
   {
     std::cout << "error: " << p.file_name()
-              << " does not define an environment named E\n";
+              << " does not define an process named E\n";
     throw specs::SpecError{};
   }
   if (!std::holds_alternative<ded::specs::ProcessSpec>(vars["E"]))
   {
-    std::cout << "error: E must be of type environment\n";
+    std::cout << "error: E must be of type process\n";
     throw specs::SpecError{};
   }
 

@@ -380,18 +380,18 @@ ProcessSpec::ProcessSpec(language::Parser parser_,
     {
       parser_.errInvalidToken(
           name,
-          "this does not override any nested environments " + block_.name_,
+          "this does not override any nested processs " + block_.name_,
           nested_ |
               rv::transform([](auto param) { return param.first; }));
       throw language::ParserError{};
     }
 
     auto ct = config_manager::typeOfBlock(nested_blk.name_.substr(1));
-    if (ct != "environment")
+    if (ct != "process")
     {
       parser_.errInvalidToken(name,
                                 "override of " + name.expr_ +
-                                    " must be of type environment",
+                                    " must be of type process",
                                 config_manager::allProcessNames());
       throw language::ParserError{};
     }
@@ -412,7 +412,7 @@ std::vector<std::string>
     return alignment + sig.second.fullName();
   };
 
-  lines.push_back(alignment + "environment:" + name_);
+  lines.push_back(alignment + "process:" + name_);
   lines.push_back(alignment + "P");
   rs::transform(
       parameters_, rs::back_inserter(lines), [&](auto parameter) {
@@ -535,7 +535,7 @@ std::string
     ProcessSpec::prettyPrint()
 {
   std::stringstream out;
-  out << "environment::" << name_ << "\n{\n";
+  out << "process::" << name_ << "\n{\n";
 
   out << " parameters\n";
   for (auto [parameter, value] : parameters_)

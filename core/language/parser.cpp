@@ -218,20 +218,6 @@ void
   }
 }
 
-/*
-void
-    Parser::attempt_tag_rewrite(Block &current, int &begin)
-{
-  if (tokens_[begin + 2].type_ != TokenType::tag_rewrite)
-  {
-    errInvalidToken(tokens_[begin + 2], "expected tag-rewrite here");
-    throw ParserError{};
-  }
-  current.tag_rewrites_.push_back({ tokens_[begin], tokens_[begin + 2] });
-  begin += 3;
-}
-*/
-
 void
     Parser::attemptTrace(Block &current, int &begin)
 {
@@ -284,7 +270,7 @@ Block
           [&](auto comp_name) { return comp_name == current.name_.substr(1); }))
   {
     errInvalidToken(source_tokens_.tokens[begin],
-                      "this variable has not been defined",
+                      "this is not an exisiting component",
                       config_manager::allComponentNames());
     throw ParserError{};
   }

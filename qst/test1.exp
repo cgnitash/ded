@@ -1,18 +1,26 @@
 
 # working
 
-e = $markov_brain {
+enc = $encoding 
+{
+	point_mutate_prob = [ 0.005 0.01 0.015  ]
+}
+
+e = $markov_brain 
+{
      hiddens =   2 
 	 outputs =  2
 	 inputs = 4
-	}
+	 genome = !enc
+}
 
-P = $linear { 
+P = $linear 
+{ 
 	size = 50 
 	entity = !e # `entity` is special
 	track_lineage = true 
 	load_from = ""
-	}
+}
 
 
 
@@ -21,7 +29,6 @@ fors = $sequence
      first 	= 	$forager 	
 				{ 
 				  ? food_eaten 5 
-			      replace = [ true false ]   
 				}
      second = $elite_replacement  {  strength = 0.4  }
 }

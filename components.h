@@ -4,6 +4,7 @@
 #include "core/concepts/substrate.h"
 #include "core/concepts/process.h"
 #include "core/concepts/population.h"
+#include "core/concepts/encoding.h"
 #include "core/concepts/signal.h"
 
 #include "core/analysis.h"
