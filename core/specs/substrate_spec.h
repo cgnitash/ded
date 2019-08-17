@@ -57,6 +57,12 @@ public:
     return name_;
   }
 
+  auto
+      getIO()
+  {
+    return io_;
+  }
+
   template <typename T>
   void
       bindParameter(
@@ -153,6 +159,14 @@ public:
   std::string prettyPrint();
 
   IO instantiateUserParameterSizes(int);
+
+  void
+      bindSubstrateIO(IO ios)
+  {
+    io_.bindTo(ios);
+  }
+
+
 
   friend class concepts::Substrate;
 };

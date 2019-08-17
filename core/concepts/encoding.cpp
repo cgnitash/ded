@@ -20,7 +20,7 @@ void
 }
 
 void
-    Encoding::copy_chunk()
+    Encoding::copyChunk()
 {
   auto copy_prob = std::rand() % 100;
   if (copy_prob < copy_prob_ * 100)
@@ -37,7 +37,7 @@ void
 }
 
 void
-    Encoding::del_chunk()
+    Encoding::delChunk()
 {
   auto del_prob = std::rand() % 100;
   auto del_pos  = std::rand() % (enc_.size() - del_size_);
@@ -47,7 +47,7 @@ void
 }
 
 void
-    Encoding::point_mutate()
+    Encoding::pointMutate()
 {
   auto point_mut = enc_.size() * point_mutate_prob_;
   for (auto i = 0; i < point_mut; i++)
@@ -55,7 +55,7 @@ void
 }
 
 void
-    Encoding::point_insert()
+    Encoding::pointInsert()
 {
   auto point_ins = enc_.size() * point_insert_prob_;
   for (auto i = 0; i < point_ins; i++)
@@ -64,7 +64,7 @@ void
 }
 
 void
-    Encoding::point_delete()
+    Encoding::pointDelete()
 {
   auto point_del = enc_.size() * point_delete_prob_;
   for (auto i = 0; i < point_del; i++)
@@ -72,12 +72,12 @@ void
 }
 
 void
-    Encoding::all_deletions()
+    Encoding::allDeletions()
 {
   if (enc_.size() < static_cast<size_t>(max_length_))
     return;
-  point_delete();
-  del_chunk();
+  pointDelete();
+  delChunk();
 }
 
 }   // namespace concepts

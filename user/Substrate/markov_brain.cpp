@@ -5,7 +5,7 @@
 #include <vector>
 
 ded::concepts::Encoding
-    markov_brain::parse_encoding(std::string s)
+    markov_brain::parseEncoding(std::string s)
 {
   ded::concepts::Encoding e;
   for (std::sregex_iterator end,
@@ -29,11 +29,11 @@ void
     markov_brain::mutate()
 {
 
-  genome_.point_delete();
-  genome_.point_insert();
-  genome_.point_mutate();
-  genome_.copy_chunk();
-  genome_.del_chunk();
+  genome_.pointDelete();
+  genome_.pointInsert();
+  genome_.pointMutate();
+  genome_.copyChunk();
+  genome_.delChunk();
   gates_are_computed_ = false;
   buffer_             = std::vector(input_ + output_ + hidden_, 0.);
 }

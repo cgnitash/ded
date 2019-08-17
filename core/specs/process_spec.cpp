@@ -177,59 +177,7 @@ void
   for (auto &es : nested_)
     es.second.e->bindSubstrateIO(ios);
 
-  for (auto &n_sig : io_.inputs_)
-  {
-    auto &in_sig  = n_sig.second;
-    auto  matches = rs::count_if(ios.inputs_, [sig = in_sig](auto ns) {
-      return ns.second.exactlyMatches(sig);
-    });
-    if (matches > 1)
-    {
-      std::cout << "error: multiple input signals match exactly\n";
-      // throw;
-    }
-    if (!matches)
-    {
-      std::cout << "error: no input signals match exactly (convertible signals "
-                   "not supported yet)\n  "
-                << n_sig.second.fullName() << "\nviable candidates";
-      for (auto sig : ios.inputs_)
-        std::cout << "\n    " << sig.second.fullName();
-      throw language::ParserError{};
-    }
-    auto i = rs::find_if(ios.inputs_, [sig = in_sig](auto ns) {
-      return ns.second.exactlyMatches(sig);
-    });
-    in_sig.updateIdentifier(i->second.identifier());
-    ios.inputs_.erase(i);
-  }
-
-  for (auto &n_sig : io_.outputs_)
-  {
-    auto &out_sig = n_sig.second;
-    auto  matches = rs::count_if(ios.outputs_, [sig = out_sig](auto ns) {
-      return ns.second.exactlyMatches(sig);
-    });
-    if (matches > 1)
-    {
-      std::cout << "error: multiple output signals match exactly\n";
-      // throw;
-    }
-    if (!matches)
-    {
-      std::cout << "error: no input signals match exactly (convertible signals "
-                   "not supported yet)\n  "
-                << n_sig.second.fullName() << "\nviable candidates";
-      for (auto sig : ios.outputs_)
-        std::cout << "\n    " << sig.second.fullName();
-      throw language::ParserError{};
-    }
-    auto i = rs::find_if(ios.outputs_, [sig = out_sig](auto ns) {
-      return ns.second.exactlyMatches(sig);
-    });
-    out_sig.updateIdentifier(i->second.identifier());
-    ios.outputs_.erase(i);
-  }
+  io_.bindTo(ios);
 }
 
 std::vector<std::pair<Trace, std::string>>

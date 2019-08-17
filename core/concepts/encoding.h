@@ -66,6 +66,18 @@ public:
   }
 
   auto
+      get()
+  {
+    return enc_;
+  }
+
+  auto
+      set(std::vector<long> v)
+  {
+    enc_ = v;
+  }
+
+  auto
       begin() const
   {
     return std::begin(enc_);
@@ -89,7 +101,7 @@ public:
     return std::end(enc_);
   }
 
-  auto &operator[](size_t i) const
+  auto &operator[](size_t i)
   {
     return enc_[i];
   }
@@ -100,7 +112,7 @@ public:
     return enc_.size();
   }
 
-  void seed_codons(std::vector<long> const &codon, size_t n) 
+  void seedCodons(std::vector<long> const &codon, size_t n) 
   {
     ded::utilities::repeat(n, [&] {
       auto pos = std::rand() % (enc_.size() - 1);
@@ -109,33 +121,33 @@ public:
   }
   void generate(long = 100);
 
-  void copy_chunk();
+  void copyChunk();
 
-  void del_chunk();
+  void delChunk();
 
-  void point_mutate();
+  void pointMutate();
 
-  void point_insert();
+  void pointInsert();
 
-  void point_delete();
+  void pointDelete();
 
-  void all_deletions();
+  void allDeletions();
 
   inline void
-      all_insertions()
+      allInsertions()
   {
     if (enc_.size() > static_cast<size_t>(max_length_))
       return;
-    point_insert();
-    copy_chunk();
+    pointInsert();
+    copyChunk();
   }
 
   inline void
       all_mutations()
   {
-    all_insertions();
-    all_deletions();
-    point_mutate();
+    allInsertions();
+    allDeletions();
+    pointMutate();
   }
 
   friend std::ostream &

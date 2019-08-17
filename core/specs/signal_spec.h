@@ -78,12 +78,15 @@ using SignalSpecSet =
 // struct io_signals
 struct IO
 {
+	public :
   SignalSpecSet inputs_;
   SignalSpecSet outputs_;
+  void bindTo(IO);
 };
 
 struct Tags
 {
+	public :
   SignalSpecSet pre_;
   SignalSpecSet post_;
 };

@@ -18,8 +18,6 @@ class markov_brain {
   long output_ = 10;
   long hidden_ = 10;
 
-  //ded::specs::SubstrateSpec genome_spec_;
-  	
   std::vector<double> buffer_;
 
   std::vector<long> codon_{ 7, 14 };
@@ -69,12 +67,8 @@ public:
 	es.configureEncoding("genome", genome_spec_);
 	genome_.configure(genome_spec_);
 
-	  // MUST BE ADDRESSED
-  //genome_config_ = con["parameters"]["genome-params"];
-    //genome_.configure(genome_config_);
-    //es.configureSubstrate("genome", genome_spec_ );
     genome_.generate(500);
-    genome_.seed_codons(codon_, 4);
+    genome_.seedCodons(codon_, 4);
 
     buffer_ = std::vector(input_ + output_ + hidden_, 0.);
   }
@@ -84,11 +78,11 @@ public:
   void           input(std::string, ded::concepts::Signal);
   ded::concepts::Signal   output(std::string);
   void           tick();
-  ded::concepts::Encoding get_encoding() const { return genome_; }
-  void           set_encoding(ded::concepts::Encoding e)
+  ded::concepts::Encoding getEncoding() const { return genome_; }
+  void           setEncoding(ded::concepts::Encoding e)
   {
     genome_ = e;
     compute_gates_();
   }
-  ded::concepts::Encoding parse_encoding(std::string);
+  ded::concepts::Encoding parseEncoding(std::string);
 };

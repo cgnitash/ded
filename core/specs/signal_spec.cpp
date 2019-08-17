@@ -1,13 +1,18 @@
 
 #include "signal_spec.h"
+#include "configuration_primitive.h"
+#include "../utilities/utilities.h"
 
 #include <string>
 #include <vector>
+#include <iostream>
 
 namespace ded
 {
 namespace specs
 {
+
+	struct SpecError;
 
 bool
     SignalSpec::exactlyMatches(SignalSpec s)
@@ -79,5 +84,61 @@ SignalSpec::SignalSpec(std::string name, std::string id, std::string type)
   }
 }
 
+void IO::bindTo(IO ios)
+{
+  for (auto &n_sig : inputs_)
+  {
+    auto &in_sig  = n_sig.second;
+    auto  matches = rs::count_if(ios.inputs_, [sig = in_sig](auto ns) {
+      return ns.second.exactlyMatches(sig);
+    });
+    if (matches > 1)
+    {
+      std::cout << "error: multiple input signals match exactly\n";
+      // throw;
+    }
+    if (!matches)
+    {
+      std::cout << "error: no input signals match exactly (convertible signals "
+                   "not supported yet)\n  "
+                << n_sig.second.fullName() << "\nviable candidates";
+      for (auto sig : ios.inputs_)
+        std::cout << "\n    " << sig.second.fullName();
+      throw SpecError{};
+    }
+    auto i = rs::find_if(ios.inputs_, [sig = in_sig](auto ns) {
+      return ns.second.exactlyMatches(sig);
+    });
+    in_sig.updateIdentifier(i->second.identifier());
+    ios.inputs_.erase(i);
+  }
+
+  for (auto &n_sig : outputs_)
+  {
+    auto &out_sig = n_sig.second;
+    auto  matches = rs::count_if(ios.outputs_, [sig = out_sig](auto ns) {
+      return ns.second.exactlyMatches(sig);
+    });
+    if (matches > 1)
+    {
+      std::cout << "error: multiple output signals match exactly\n";
+      // throw;
+    }
+    if (!matches)
+    {
+      std::cout << "error: no input signals match exactly (convertible signals "
+                   "not supported yet)\n  "
+                << n_sig.second.fullName() << "\nviable candidates";
+      for (auto sig : ios.outputs_)
+        std::cout << "\n    " << sig.second.fullName();
+      throw SpecError{};
+    }
+    auto i = rs::find_if(ios.outputs_, [sig = out_sig](auto ns) {
+      return ns.second.exactlyMatches(sig);
+    });
+    out_sig.updateIdentifier(i->second.identifier());
+    ios.outputs_.erase(i);
+  }
+}
 }   // namespace specs
 }   // namespace ded
