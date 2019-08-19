@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "token.h"
+#include "lexer.h"
 #include <regex>
 #include <string>
 #include <vector>
@@ -28,17 +28,10 @@ namespace language
 
 using Labels = std::vector<std::pair<std::string, std::string>>;
 
-struct SourceTokens
-{
-  std::string                          file_name;
-  std::vector<std::string>             lines;
-  std::vector<Token>                   tokens;
-};
-
 class Parser
 {
 
-  SourceTokens source_tokens_;
+  Lexer lexer_;
 
   std::vector<std::pair<Token, Block>> variables_;
 
@@ -46,12 +39,6 @@ class Parser
 
 
   void errInvalidToken(Token, std::string, std::vector<std::string> = {});
-  /*
-  void openFile(std::string);
-
-  void lexTokens();
-  void err_unknown_symbol(std::pair<int, int>);
-	*/
 
   void parseExpression(int);
 
@@ -70,8 +57,6 @@ class Parser
   std::string lookUpTokenWord(Token);
 
 public:
-  const static std::regex valid_symbol_;
-  //Parser() = default;
 
   auto
       labels() const
@@ -81,17 +66,18 @@ public:
   auto
       lines() const
   {
-    return source_tokens_.lines;
+    return lexer_.getLines();
   }
   auto
       file_name() const
   {
-    return source_tokens_.file_name;
+    return lexer_.getFileName();
   }
+
   auto
       source_tokens() const
   {
-    return source_tokens_;
+    return lexer_;
   }
   std::vector<std::pair<Token, Block>>
       variables() const
@@ -99,16 +85,16 @@ public:
     return variables_;
   }
 
-  void parse(SourceTokens);
+  void parseFromLexer();
 
   std::vector<Parser> varyParameter();
   std::optional<std::pair<int, int>> hasVariedParameter();
   void print(Block b);
 
   void
-      updateSourceTokens(SourceTokens s)
+      updateLexer(Lexer s)
   {
-    source_tokens_ = s;
+    lexer_ = s;
   }
 
   void

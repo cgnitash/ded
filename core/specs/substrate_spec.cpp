@@ -15,26 +15,6 @@ namespace ded
 namespace specs
 {
 
-IO
-    SubstrateSpec::instantiateUserParameterSizes(int sig_count)
-{
-  for (auto &n_sig : io_.inputs_)
-    for (auto &[param, cp] : parameters_)
-      if (cp.typeAsString() == "long" && param == n_sig.second.userParameter())
-      {
-        n_sig.second.instantiateUserParameter(std::stol(cp.valueAsString()));
-        n_sig.second.updateIdentifier("sig" + std::to_string(sig_count++));
-      }
-  for (auto &n_sig : io_.outputs_)
-    for (auto &[param, cp] : parameters_)
-      if (cp.typeAsString() == "long" && param == n_sig.second.userParameter())
-      {
-        n_sig.second.instantiateUserParameter(std::stol(cp.valueAsString()));
-        n_sig.second.updateIdentifier("sig" + std::to_string(sig_count++));
-      }
-  return io_;
-}
-
 SubstrateSpec::SubstrateSpec(language::Parser p, language::Block blk)
 {
 
@@ -237,5 +217,26 @@ std::string
   out << "}\n";
   return out.str();
 }
+
+IO
+    SubstrateSpec::instantiateUserParameterSizes(int sig_count)
+{
+  for (auto &n_sig : io_.inputs_)
+    for (auto &[param, cp] : parameters_)
+      if (cp.typeAsString() == "long" && param == n_sig.second.userParameter())
+      {
+        n_sig.second.instantiateUserParameter(std::stol(cp.valueAsString()));
+        n_sig.second.updateIdentifier("sig" + std::to_string(sig_count++));
+      }
+  for (auto &n_sig : io_.outputs_)
+    for (auto &[param, cp] : parameters_)
+      if (cp.typeAsString() == "long" && param == n_sig.second.userParameter())
+      {
+        n_sig.second.instantiateUserParameter(std::stol(cp.valueAsString()));
+        n_sig.second.updateIdentifier("sig" + std::to_string(sig_count++));
+      }
+  return io_;
+}
+
 }   // namespace specs
 }   // namespace ded

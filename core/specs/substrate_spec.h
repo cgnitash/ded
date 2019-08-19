@@ -46,6 +46,7 @@ class SubstrateSpec
   IO                                            io_;
 
 public:
+
   SubstrateSpec(std::string name = "") : name_(name)
   {
   }

@@ -178,6 +178,7 @@ void
                                           "core/utilities/term_colours",
                                           "core/utilities/utilities",
                                           "core/language/token",
+                                          "core/language/lexer",
                                           "core/language/parser",
                                           "core/specs/configuration_primitive",
                                           "core/specs/signal_spec",

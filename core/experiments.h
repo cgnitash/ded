@@ -53,9 +53,6 @@ struct Simulation
     return barCode().substr(0, 4) + "... with labels [ " + fullLabel() + " ]";
   }
 };
-std::vector<std::string> openFile(std::string);
-
-std::vector<language::Token> lexTokens(std::vector<std::string>);
 
 std::vector<language::Parser> expandAllTokens(language::Parser);
 

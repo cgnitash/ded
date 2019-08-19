@@ -14,66 +14,6 @@ namespace ded {
 namespace experiments
 {
 
-std::vector<std::string>
-    openFile(std::string file_name)
-{
-  std::vector<std::string> lines;
-  std::ifstream            file(file_name);
-  if (!file.is_open())
-  {
-    std::cout << "error: " << file_name << " not found\n";
-    throw language::ParserError{};
-  }
-
-  std::string line;
-  while (std::getline(file, line))
-  {
-    std::string::size_type f;
-    while ((f = line.find('\t')) != std::string::npos)
-      line.replace(f, 1, "    ");
-    lines.push_back(line);
-  }
-  return lines;
-}
-
-std::vector<language::Token>
-    lexTokens(std::vector<std::string> lines)
-{
-  std::vector<language::Token> tokens;
-  for (auto [line_number, line] : rv::enumerate(lines))
-  {
-    line.erase(rs::find(line, '#'), line.end());
-
-    auto i = line.cbegin();
-    for (std::smatch m;
-         i != line.cend() &&
-         std::regex_search(i, line.cend(), m, language::Parser::valid_symbol_);
-         i += m.str().length())
-      if (!rs::all_of(m.str(), ::isspace))
-      {
-        auto type = language::parseTokenType(m.str());
-        tokens.push_back(language::Token{
-            type,
-            m.str(),
-            { line_number, i - line.cbegin() },
-            type == language::TokenType::tracked_word ? m.str()
-                                                      : std::string{} });
-      }
-    if (i != line.cend())
-    {
-
-      std::cout << "parse-error:" << line_number + 1 << ":"
-                << i - line.cbegin() + 1 << "\n"
-                << lines[line_number] << "\n"
-                << std::string(i - line.cbegin(), ' ')
-                << utilities::TermColours::red_fg << "^ unknown symbol\n"
-                << utilities::TermColours::reset;
-      throw language::ParserError{};
-    }
-  }
-  return tokens;
-}
-
 Simulation
     parseSimulation(language::Parser p)
 {
@@ -149,10 +89,11 @@ std::vector<language::Parser>
 
   while (true)
   {
-    std::vector<language::Parser> next_explosion =
-        exploded_parsers |
-        rv::transform(&language::Parser::varyParameter) |
-        ra::join;
+    std::vector<language::Parser> next_explosion;
+    for (auto p : exploded_parsers)
+      for (auto ep : p.varyParameter())
+		 next_explosion.push_back(ep);
+
     if (next_explosion.size() == exploded_parsers.size())
       break;
     exploded_parsers = next_explosion;
@@ -164,15 +105,17 @@ std::vector<language::Parser>
 std::vector<Simulation>
     parseAllSimulations(std::string file_name)
 {
-  auto lines  = openFile(file_name);
-  auto tokens = lexTokens(lines);
+	language::Lexer lexer{file_name};
 
   ded::language::Parser p;
-  p.updateSourceTokens(language::SourceTokens{ file_name, lines, tokens });
+  p.updateLexer(lexer);
 
   auto exploded_parsers = expandAllTokens(p);
 
-  for (auto & p : exploded_parsers) p.resolveTrackedWords();
+  for (auto & p : exploded_parsers) {
+	  p.parseFromLexer();
+	  p.resolveTrackedWords();
+  }
 
   return exploded_parsers |
          rv::transform(parseSimulation);

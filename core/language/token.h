@@ -26,7 +26,9 @@ enum class TokenType
   component,
   variable,
   open_varied_argument,
-  close_varied_argument
+  close_varied_argument,
+  open_nested_block_vector,
+  close_nested_block_vector
 };
 
 TokenType parseTokenType(std::string);

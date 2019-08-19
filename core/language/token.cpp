@@ -15,6 +15,10 @@ TokenType
     return TokenType::open_varied_argument;
   if (s == "]")
     return TokenType::close_varied_argument;
+  if (s == "<")
+    return TokenType::open_nested_block_vector;
+  if (s == ">")
+    return TokenType::close_nested_block_vector;
   if (s == "{")
     return TokenType::open_brace;
   if (s == "}")
