@@ -48,6 +48,7 @@ struct Block
   std::vector<std::pair<Token, Token>> overrides_;
   std::vector<std::pair<Token, Token>> traces_;
   std::vector<std::pair<Token, Block>> nested_;
+  std::vector<std::pair<Token, std::vector<Block>>> nested_vector_;
 };
 
 }   // namespace language

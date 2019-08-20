@@ -52,6 +52,7 @@ class Parser
   void attemptOverride(Block &, int &);
   void attemptParameterOverride(Block &, int &);
   void attemptTrace(Block &, int &);
+  std::vector<Block> attemptVectorBlock(int);
 
   void replaceTokenWord(Block& );
   std::string lookUpTokenWord(Token);

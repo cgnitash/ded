@@ -212,7 +212,7 @@ public:
   {
     if (nested_.find(name) != nested_.end())
     {
-      std::cout << "User error: nested environment " << name
+      std::cout << "User error: nested process " << name
                 << " has already been declared\n";
       throw SpecError{};
     }
@@ -224,7 +224,7 @@ public:
   {
     if (nested_.find(name) == nested_.end())
     {
-      std::cout << "User error: nested environment " << name
+      std::cout << "User error: nested process " << name
                 << " has not been declared\n";
       throw SpecError{};
     }

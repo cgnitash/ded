@@ -42,6 +42,7 @@ class SubstrateSpec
   std::string                                   name_;
   std::map<std::string, ConfigurationPrimitive> parameters_;
   std::map<std::string, NestedSubstrateSpec>             nested_;
+  std::map<std::string, std::vector<NestedSubstrateSpec>>             nested_vector_;
   std::map<std::string, EncodingSpec>                    encodings_;
   IO                                            io_;
 
@@ -136,6 +137,41 @@ public:
   }
 
   void
+      bindNestedSubstrates(std::string name, std::vector<SubstrateSpec> envs)
+  {
+    if (nested_vector_.find(name) != nested_vector_.end())
+    {
+      std::cout << "User error: nested vector substrate " << name
+                << " has already been declared\n";
+      throw SpecError{};
+    }
+	nested_vector_[name];
+    for (auto env : envs)
+    {
+      NestedSubstrateSpec ns;
+      ns.e = std::make_unique<SubstrateSpec>(env);
+      nested_vector_[name].push_back(ns);
+    }
+  }
+
+  void
+      configureNestedSubstrates(std::string name, std::vector<SubstrateSpec> &envs)
+  {
+    if (nested_vector_.find(name) == nested_vector_.end())
+    {
+      std::cout << "User error: nested vector substrate " << name
+                << " has not been declared\n";
+      throw SpecError{};
+    }
+	envs.clear();
+        for (auto ns : nested_vector_[name])
+        {
+          auto ne = *ns.e;
+          envs.push_back(ne);
+        }
+  }
+
+  void
       bindSubstrate(std::string name, SubstrateSpec env)
   {
     nested_[name].e = std::make_unique<SubstrateSpec>(env);
@@ -153,6 +189,10 @@ public:
     else
       e = *nested_[name].e;
   }
+
+  void parseParameters(language::Parser , language::Block);
+  void parseNested(language::Parser , language::Block);
+  void parseNestedVector(language::Parser , language::Block);
 
   // friend std::ostream &operator<<(std::ostream &out, SubstrateSpec e)
   std::vector<std::string> serialise(long) const;

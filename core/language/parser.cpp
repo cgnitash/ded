@@ -17,7 +17,6 @@ namespace ded
 namespace language
 {
 
-
 void
     Parser::parseExpression(int begin)
 {
@@ -25,27 +24,23 @@ void
 
   if (begin + 2 >= static_cast<int>(tokens.size()))
   {
-    errInvalidToken(tokens[begin],
-                      "unable to parse expression syntax");
+    errInvalidToken(tokens[begin], "unable to parse expression syntax");
     throw ParserError{};
   }
 
   if (tokens[begin].type_ != TokenType::word)
   {
-    errInvalidToken(tokens[begin],
-                      "expected new variable name here");
+    errInvalidToken(tokens[begin], "expected new variable name here");
     throw ParserError{};
   }
 
-  if (auto prev =
-          rs::find_if(variables_,
-                          [tok = tokens[begin]](auto var) {
-                            return var.first.expr_ == tok.expr_;
-                          });
+  if (auto prev = rs::find_if(variables_,
+                              [tok = tokens[begin]](auto var) {
+                                return var.first.expr_ == tok.expr_;
+                              });
       prev != variables_.end())
   {
-    errInvalidToken(tokens[begin],
-                      "variable re-definition not allowed");
+    errInvalidToken(tokens[begin], "variable re-definition not allowed");
     errInvalidToken(prev->first, "variable already defined here");
     throw ParserError{};
   }
@@ -57,7 +52,7 @@ void
       tokens[begin + 2].type_ != TokenType::variable)
   {
     errInvalidToken(tokens[begin + 2],
-                      "expected existing variable name or component here");
+                    "expected existing variable name or component here");
     throw ParserError{};
   }
   auto nested_block         = expandBlock(begin + 2);
@@ -67,10 +62,10 @@ void
 
 void
     Parser::errInvalidToken(Token                    tok,
-                              std::string              message,
-                              std::vector<std::string> suggestions)
+                            std::string              message,
+                            std::vector<std::string> suggestions)
 {
-	auto lines = lexer_.getLines();
+  auto lines            = lexer_.getLines();
   auto line             = tok.location_.first;
   auto column           = tok.location_.second;
   auto line_with_colour = lines[line];
@@ -85,9 +80,9 @@ void
             << "^ " << message;
 
   if (auto f = rs::find_if(suggestions,
-                               [word = tok.expr_](auto attempt) {
-                                 return utilities::match(attempt, word);
-                               });
+                           [word = tok.expr_](auto attempt) {
+                             return utilities::match(attempt, word);
+                           });
       f != rs::end(suggestions))
     std::cout << "\n"
               << std::string(column + 9, ' ') << "Did you mean "
@@ -125,8 +120,7 @@ Block
   auto scope_is_open = [&] {
     if (begin == static_cast<int>(tokens.size()))
     {
-      errInvalidToken(tokens[current.range_.first + 1],
-                        "unmatched brace");
+      errInvalidToken(tokens[current.range_.first + 1], "unmatched brace");
       throw ParserError{};
     }
     return tokens[begin].type_ != TokenType::close_brace;
@@ -139,8 +133,7 @@ Block
         (tokens[begin + 1].type_ != TokenType::assignment &&
          tokens[begin].type_ != TokenType::trace))
     {
-      errInvalidToken(tokens[begin],
-                        "unable to parse override syntax");
+      errInvalidToken(tokens[begin], "unable to parse override syntax");
       throw ParserError{};
     }
 
@@ -164,9 +157,9 @@ void
       attemptTrace(current, begin);
       break;
     default:
-      errInvalidToken(
-          tokens[begin],
-          "unexpected symbol: expected parameter or tag-rewrite? here");
+      errInvalidToken(tokens[begin],
+                      "unexpected symbol: expected parameter or tag-rewrite? "
+                      "or vector<component> here");
       throw ParserError{};
   }
 }
@@ -180,43 +173,45 @@ void
     case TokenType::word:
     case TokenType::tracked_word:
       if (auto f = rs::find_if(current.overrides_,
-                                   [&](auto over) {
-                                     return over.first.expr_ ==
-                                            tokens[begin].expr_;
-                                   });
+                               [&](auto over) {
+                                 return over.first.expr_ == tokens[begin].expr_;
+                               });
           f != rs::end(current.overrides_))
       {
         errInvalidToken(f->first, "parameters already overridden here");
-        errInvalidToken(tokens[begin],
-                          "cannot override this parameter again");
+        errInvalidToken(tokens[begin], "cannot override this parameter again");
         throw ParserError{};
       }
 
-      current.overrides_.push_back(
-          { tokens[begin], tokens[begin + 2] });
+      current.overrides_.push_back({ tokens[begin], tokens[begin + 2] });
       begin += 3;
       break;
+    case TokenType::open_nested_block_vector:
+	  {
+      auto v = attemptVectorBlock(begin+2);
+      current.nested_vector_.push_back({ tokens[begin], v });
+      begin += v.size() + 4;
+      break;
+	  }
     case TokenType::variable:
     case TokenType::component:
       if (auto f = rs::find_if(current.nested_,
-                                   [&](auto over) {
-                                     return over.first.expr_ ==
-                                            tokens[begin].expr_;
-                                   });
+                               [&](auto over) {
+                                 return over.first.expr_ == tokens[begin].expr_;
+                               });
           f != rs::end(current.nested_))
       {
         errInvalidToken(f->first, "nested component already overridden here");
         errInvalidToken(tokens[begin],
-                          "cannot override this nested component again");
+                        "cannot override this nested component again");
         throw ParserError{};
       }
-      current.nested_.push_back(
-          { tokens[begin], expandBlock(begin + 2) });
+      current.nested_.push_back({ tokens[begin], expandBlock(begin + 2) });
       begin = current.nested_.back().second.range_.second;
       break;
     default:
       errInvalidToken(tokens[begin + 2],
-                        "expected override of parameter or nested spec here");
+                      "expected override of parameter or nested spec here");
       throw ParserError{};
   }
 }
@@ -227,19 +222,45 @@ void
   auto const tokens = lexer_.getTokens();
   if (tokens[begin + 1].type_ != TokenType::word)
   {
-    errInvalidToken(tokens[begin + 1],
-                      "expected tag name here");
+    errInvalidToken(tokens[begin + 1], "expected tag name here");
     throw ParserError{};
   }
   if (tokens[begin + 2].type_ != TokenType::word)
   {
-    errInvalidToken(tokens[begin + 2],
-                      "expected tag name here");
+    errInvalidToken(tokens[begin + 2], "expected tag name here");
     throw ParserError{};
   }
-  current.traces_.push_back(
-      { tokens[begin + 1], tokens[begin + 2] });
+  current.traces_.push_back({ tokens[begin + 1], tokens[begin + 2] });
   begin += 3;
+}
+
+std::vector<Block>
+    Parser::attemptVectorBlock(int begin)
+{
+  auto const tokens = lexer_.getTokens();
+  auto       f =
+      rs::find_if(rs::begin(tokens) + begin, rs::end(tokens), [](auto token) {
+        return token.type_ == TokenType::close_nested_block_vector;
+      });
+  if (f == rs::end(tokens))
+  {
+    errInvalidToken(tokens[begin], "dangling vector component");
+    throw ParserError{};
+  }
+  std::vector<Block> vec;
+  for (begin++; rs::begin(tokens) + begin != f; begin++)
+    if (tokens[begin].type_ != TokenType::variable &&
+        tokens[begin].type_ != TokenType::component)
+    {
+      errInvalidToken(tokens[begin], "nested vector must contain components");
+      throw ParserError{};
+    }
+    else
+      vec.push_back(tokens[begin].type_ == TokenType::variable
+                        ? variableBlock(begin)
+                        : componentBlock(begin));
+
+  return vec;
 }
 
 Block
@@ -247,16 +268,15 @@ Block
 {
   auto const tokens = lexer_.getTokens();
   if (auto f = rs::find_if(variables_,
-                               [tok = tokens[begin]](auto var) {
-                                 return var.first.expr_ == tok.expr_.substr(1);
-                               });
+                           [tok = tokens[begin]](auto var) {
+                             return var.first.expr_ == tok.expr_.substr(1);
+                           });
       f == variables_.end())
   {
-    errInvalidToken(tokens[begin],
-                      "this variable has not been defined",
-                      variables_ | rv::transform([](auto var) {
-                        return var.first.expr_;
-                      }));
+    errInvalidToken(
+        tokens[begin],
+        "this variable has not been defined",
+        variables_ | rv::transform([](auto var) { return var.first.expr_; }));
     throw ParserError{};
   }
   else
@@ -269,15 +289,15 @@ Block
     Parser::componentBlock(int begin)
 {
   auto const tokens = lexer_.getTokens();
-  Block current;
+  Block      current;
   current.name_ = tokens[begin].expr_;
-  if (rs::none_of(
-          config_manager::allComponentNames(),
-          [&](auto comp_name) { return comp_name == current.name_.substr(1); }))
+  if (rs::none_of(config_manager::allComponentNames(), [&](auto comp_name) {
+        return comp_name == current.name_.substr(1);
+      }))
   {
     errInvalidToken(tokens[begin],
-                      "this is not an exisiting component",
-                      config_manager::allComponentNames());
+                    "this is not an exisiting component",
+                    config_manager::allComponentNames());
     throw ParserError{};
   }
 
@@ -300,10 +320,10 @@ std::optional<std::pair<int, int>>
 {
   auto const tokens = lexer_.getTokens();
 
-  auto open_variance_position = rs::find(
-      tokens, TokenType::open_varied_argument, &Token::type_);
-  auto close_variance_position = rs::find(
-      tokens, TokenType::close_varied_argument, &Token::type_);
+  auto open_variance_position =
+      rs::find(tokens, TokenType::open_varied_argument, &Token::type_);
+  auto close_variance_position =
+      rs::find(tokens, TokenType::close_varied_argument, &Token::type_);
   if (open_variance_position == rs::end(tokens) &&
       open_variance_position == rs::end(tokens))
     return std::nullopt;
@@ -313,28 +333,27 @@ std::optional<std::pair<int, int>>
       (open_variance_position - 2)->type_ != TokenType::word)
   {
     errInvalidToken(*open_variance_position,
-                      "varied parameter syntax error here");
+                    "varied parameter syntax error here");
     throw ParserError{};
   }
 
   if (close_variance_position == rs::end(tokens))
   {
-    errInvalidToken(*open_variance_position,
-                      "varied parameter is not closed");
+    errInvalidToken(*open_variance_position, "varied parameter is not closed");
     throw ParserError{};
   }
 
   if (close_variance_position < open_variance_position)
   {
     errInvalidToken(*close_variance_position,
-                      "unexpected ']' no varied parameter to close here");
+                    "unexpected ']' no varied parameter to close here");
     throw ParserError{};
   }
 
   if (auto f = rs::find(open_variance_position + 1,
-                            close_variance_position,
-                            TokenType::open_varied_argument,
-                            &Token::type_);
+                        close_variance_position,
+                        TokenType::open_varied_argument,
+                        &Token::type_);
       f != close_variance_position)
   {
     errInvalidToken(*f, "varied parameters cannot be nested");
@@ -350,13 +369,12 @@ std::optional<std::pair<int, int>>
   if (open_variance_position + 2 == close_variance_position)
   {
     errInvalidToken(*(open_variance_position + 1),
-                      "varying on a single value is redundant");
+                    "varying on a single value is redundant");
     throw ParserError{};
   }
 
-  return std::make_pair(
-      open_variance_position - rs::begin(tokens),
-      close_variance_position - rs::begin(tokens));
+  return std::make_pair(open_variance_position - rs::begin(tokens),
+                        close_variance_position - rs::begin(tokens));
 }
 
 std::vector<Parser>
@@ -368,15 +386,14 @@ std::vector<Parser>
     return { *this };
   }
 
-  auto tokens = lexer_.getTokens();
+  auto               tokens = lexer_.getTokens();
   std::vector<Token> subs;
   rs::copy(rs::begin(tokens) + pos->first + 1,
-               rs::begin(tokens) + pos->second,
-               rs::back_inserter(subs));
+           rs::begin(tokens) + pos->second,
+           rs::back_inserter(subs));
 
   tokens.erase(rs::begin(tokens) + pos->first,
-                              rs::begin(tokens) +
-                                  pos->second + 1);
+               rs::begin(tokens) + pos->second + 1);
 
   return subs | rv::transform([&](auto token) {
            auto lexer       = lexer_;
@@ -385,9 +402,8 @@ std::vector<Parser>
            lexer.updateTokens(temp_tokens);
            Parser p{ *this };
            p.updateLexer(lexer);
-           p.updateLabels(
-               { (rs::begin(temp_tokens) + pos->first - 2)->expr_,
-                 token.expr_ });
+           p.updateLabels({ (rs::begin(temp_tokens) + pos->first - 2)->expr_,
+                            token.expr_ });
            return p;
          });
 }
@@ -436,8 +452,8 @@ std::string
   auto                     refers = token.refers_.substr(1);
   std::vector<std::string> pats   = refers | rv::split('-');
 
-  auto f = rs::find_if(
-      variables_, [&](auto var) { return var.first.expr_ == pats[0]; });
+  auto f = rs::find_if(variables_,
+                       [&](auto var) { return var.first.expr_ == pats[0]; });
   if (f == rs::end(variables_))
   {
     errInvalidToken(token, "tracked path " + refers + " is not valid");
@@ -449,13 +465,13 @@ std::string
   {
     auto nested = pats[i];
 
-    auto nb = rs::find_if(
-        b.nested_, [&](auto var) { return var.first.expr_ == nested; });
+    auto nb = rs::find_if(b.nested_,
+                          [&](auto var) { return var.first.expr_ == nested; });
     if (nb == rs::end(b.nested_))
     {
       errInvalidToken(token,
-                        "tracked path " + refers + " is not valid: '" + nested +
-                            "' is not a nested component");
+                      "tracked path " + refers + " is not valid: '" + nested +
+                          "' is not a nested component");
       throw ParserError{};
     }
     b = nb->second;
@@ -463,13 +479,13 @@ std::string
 
   auto param = pats.back();
 
-  auto par = rs::find_if(
-      b.overrides_, [&](auto var) { return var.first.expr_ == param; });
+  auto par = rs::find_if(b.overrides_,
+                         [&](auto var) { return var.first.expr_ == param; });
   if (par == rs::end(b.overrides_))
   {
     errInvalidToken(token,
-                      "tracked path " + refers + " is not valid: '" + param +
-                          "' is not a parameter");
+                    "tracked path " + refers + " is not valid: '" + param +
+                        "' is not a parameter");
     throw ParserError{};
   }
   return par->second.expr_;
