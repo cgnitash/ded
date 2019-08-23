@@ -50,7 +50,7 @@ struct Simulation
   std::string
       prettyName() const
   {
-    return barCode().substr(0, 4) + "... with labels [ " + fullLabel() + " ]";
+    return barCode() + " ... with labels [ " + fullLabel() + " ]";
   }
 };
 

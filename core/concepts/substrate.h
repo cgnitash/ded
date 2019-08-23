@@ -8,7 +8,6 @@
 #include "signal.h"
 
 #include <cassert>
-#include <deque>
 #include <iostream>
 #include <map>
 #include <memory>

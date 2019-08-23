@@ -361,30 +361,30 @@ std::vector<std::string>
   };
 
   lines.push_back(alignment + "process:" + name_);
-  lines.push_back(alignment + "P");
+  lines.push_back(alignment + "PARAMETERS");
   rs::transform(
       parameters_, rs::back_inserter(lines), [&](auto parameter) {
         return alignment + parameter.first + ":" +
                parameter.second.valueAsString();
       });
-  lines.push_back(alignment + "I");
+  lines.push_back(alignment + "INPUTS");
   rs::transform(io_.inputs_, rs::back_inserter(lines), pad_signal);
-  lines.push_back(alignment + "O");
+  lines.push_back(alignment + "OUTPUTS");
   rs::transform(io_.outputs_, rs::back_inserter(lines), pad_signal);
-  lines.push_back(alignment + "a");
+  lines.push_back(alignment + "PRETAGS");
   rs::transform(tags_.pre_, rs::back_inserter(lines), pad_signal);
-  lines.push_back(alignment + "b");
+  lines.push_back(alignment + "POSTTAGS");
   rs::transform(tags_.post_, rs::back_inserter(lines), pad_signal);
   if (with_traces)
   {
     // needs to go
-    lines.push_back(alignment + "r");
+    lines.push_back(alignment + "PRETRACE");
     rs::transform(
         traces_.pre_, rs::back_inserter(lines), [&](auto trace) {
           return alignment + trace.signal_.fullName() + ";" +
                  std::to_string(trace.frequency_);
         });
-    lines.push_back(alignment + "R");
+    lines.push_back(alignment + "POSTTRACE");
     rs::transform(
         traces_.post_, rs::back_inserter(lines), [&](auto trace) {
           return alignment + trace.signal_.fullName() + ";" +
@@ -392,7 +392,7 @@ std::vector<std::string>
         });
     // needs to go *
   }
-  lines.push_back(alignment + "n");
+  lines.push_back(alignment + "NESTED");
   for (auto const &nested : nested_)
   {
     lines.push_back(alignment + nested.first);
@@ -411,7 +411,7 @@ ProcessSpec
 
   auto f = rs::begin(pop_dump) + 2;
 
-  for (; *f != "I"; f++)
+  for (; *f != "INPUTS"; f++)
   {
     auto                   l = *f;
     auto                   p = l.find(':');
@@ -420,42 +420,42 @@ ProcessSpec
     parameters_[l.substr(0, p)] = c;
   }
 
-  for (++f; *f != "O"; f++)
+  for (++f; *f != "OUTPUTS"; f++)
   {
     auto l = *f;
     auto p = l.find(':');
     io_.inputs_.push_back({ l.substr(0, p), SignalSpec{ l } });
   }
 
-  for (++f; *f != "a"; f++)
+  for (++f; *f != "PRETAGS"; f++)
   {
     auto l = *f;
     auto p = l.find(':');
     io_.outputs_.push_back({ l.substr(0, p), SignalSpec{ l } });
   }
 
-  for (++f; *f != "b"; f++)
+  for (++f; *f != "POSTTAGS"; f++)
   {
     auto l = *f;
     auto p = l.find(':');
     tags_.pre_.push_back({ l.substr(0, p), SignalSpec{ l } });
   }
 
-  for (++f; *f != "r"; f++)
+  for (++f; *f != "PRETRACES"; f++)
   {
     auto l = *f;
     auto p = l.find(':');
     tags_.post_.push_back({ l.substr(0, p), SignalSpec{ l } });
   }
 
-  for (++f; *f != "R"; f++)
+  for (++f; *f != "POSTTRACES"; f++)
   {
     auto l = *f;
     auto p = l.find(';');
     traces_.pre_.push_back({ l.substr(0, p - 1), std::stoi(l.substr(p + 1)) });
   }
 
-  for (++f; *f != "n"; f++)
+  for (++f; *f != "NESTED"; f++)
   {
     auto l = *f;
     auto p = l.find(';');
