@@ -79,11 +79,11 @@ std::vector<std::string>
   auto                     alignment = std::string(depth, ' ');
 
   lines.push_back(alignment + "population:" + name_);
-  lines.push_back(alignment + "P");
+  lines.push_back(alignment + "PARAMETERS");
   rs::transform(parameters_, rs::back_inserter(lines), [&](auto parameter) {
     return alignment + parameter.first + ":" + parameter.second.valueAsString();
   });
-  lines.push_back(alignment + "E");
+  lines.push_back(alignment + "ENTITY");
   auto n_dump = es_.serialise(depth + 1);
   lines.insert(lines.end(), n_dump.begin(), n_dump.end());
   return lines;
@@ -97,7 +97,7 @@ PopulationSpec
 
   auto f = rs::begin(pop_dump) + 2;
 
-  for (; *f != "E"; f++)
+  for (; *f != "ENTITY"; f++)
   {
     auto                   l = *f;
     auto                   p = l.find(':');

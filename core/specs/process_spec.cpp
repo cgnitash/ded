@@ -378,13 +378,13 @@ std::vector<std::string>
   if (with_traces)
   {
     // needs to go
-    lines.push_back(alignment + "PRETRACE");
+    lines.push_back(alignment + "PRETRACES");
     rs::transform(
         traces_.pre_, rs::back_inserter(lines), [&](auto trace) {
           return alignment + trace.signal_.fullName() + ";" +
                  std::to_string(trace.frequency_);
         });
-    lines.push_back(alignment + "POSTTRACE");
+    lines.push_back(alignment + "POSTTRACES");
     rs::transform(
         traces_.post_, rs::back_inserter(lines), [&](auto trace) {
           return alignment + trace.signal_.fullName() + ";" +

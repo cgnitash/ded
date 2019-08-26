@@ -2,7 +2,7 @@
 library("plyr")
 library("dplyr")
 library("ggplot2")
-library("xkcd")
+#library("xkcd")
 #library("patchwork")
 
 summarize_population = function(path,i,tag) {
@@ -85,9 +85,9 @@ cluster_plots = function(all_exps,ylabel,labs,indices,cols,cap) {
                        breaks = lapply(indices, function(i) labs[i]),
                        values = cols) +
     labs(caption = cap,
-         x = "update", y = ylabel) +
-   theme_xkcd() +  
-   xkcdaxis(xrange,yrange) 
+         x = "update", y = ylabel) #+
+   #theme_xkcd() +  
+   #xkcdaxis(xrange,yrange) 
   
   for(i in indices) {
    master_plot = master_plot + single_plot(exps,labs[i])
@@ -120,13 +120,13 @@ final_fitness_plots = function(all_exps,ylabel,x_labs) {
   yrange = range(min(as.numeric(ddf$mean)),max(as.numeric(ddf$mean)))
   
   ylabel = "finav"
-  ggplot(data=ddf,aes(x=label)) + 
-    geom_line(aes(y=mean,group=1),color="red") +
-    geom_line(aes(y=sep,group=1),color="green") +
-    geom_line(aes(y=sem,group=1),color="blue") +
+  ggplot(data=ddf,aes(x=label,mean)) + 
+    geom_errorbar(aes(ymin=sep,ymax = sem, group=1),color="red") +
+    #geom_bar(aes(y=sep,group=1),color="green") +
+    #geom_bar(aes(y=sem,group=1),color="blue") +
     ylab(ylabel) +
-    theme(axis.text.x=element_text(angle=40, hjust=1)) +
-    theme_xkcd() 
+    theme(axis.text.x=element_text(angle=40, hjust=1)) #+
+    #theme_xkcd() 
 }
 
 # --------
