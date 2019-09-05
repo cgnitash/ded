@@ -7,7 +7,7 @@ e = $markov_brain {
 	 inputs = 4
 	}
 
-P = $linear { 
+Population = $linear { 
 	size = 100 
 	entity = !e # `entity` is special
 	track_lineage = true 
@@ -28,7 +28,7 @@ fors = $sequence
 }
 
 
-E = $cycle  { 
+Process = $cycle  { 
  count = 1001
   world = !fors
 }

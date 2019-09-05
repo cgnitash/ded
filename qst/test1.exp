@@ -14,7 +14,7 @@ e = $markov_brain
 	 genome = !enc
 }
 
-P = $linear 
+Population = $linear 
 { 
 	size = 50 
 	entity = !e # `entity` is special
@@ -34,7 +34,7 @@ fors = $sequence
 }
 
 
-E = $cycle  { 
+Process = $cycle  { 
  count = 101
   world = !fors
 }

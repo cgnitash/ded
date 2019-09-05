@@ -7,7 +7,7 @@ e = $markov_brain
 	 inputs = 4
  }
 
-P = $linear 
+Population = $linear 
  { 
 	size = 40
 	entity = !e # `entity` is special
@@ -47,7 +47,7 @@ day_night = $sequence
  }
 
 
-E = $cycle  
+Process = $cycle  
  { 
   count = 40
   world = !day_night

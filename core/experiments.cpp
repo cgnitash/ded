@@ -44,33 +44,33 @@ Simulation
     }
   }
 
-  if (vars.find("E") == vars.end())
+  if (vars.find("Process") == vars.end())
   {
     std::cout << "error: " << p.file_name()
-              << " does not define an process named E\n";
+              << " does not define a process named 'Process'\n";
     throw specs::SpecError{};
   }
-  if (!std::holds_alternative<ded::specs::ProcessSpec>(vars["E"]))
+  if (!std::holds_alternative<ded::specs::ProcessSpec>(vars["Process"]))
   {
-    std::cout << "error: E must be of type process\n";
+    std::cout << "error: 'Process' must be of type process\n";
     throw specs::SpecError{};
   }
 
-  auto env_spec = std::get<ded::specs::ProcessSpec>(vars["E"]);
+  auto env_spec = std::get<ded::specs::ProcessSpec>(vars["Process"]);
   env_spec.instantiateUserParameterSizes();
 
-  if (vars.find("P") == vars.end())
+  if (vars.find("Population") == vars.end())
   {
     std::cout << "error: " << p.file_name()
-              << " does not define population P\n";
+              << " does not define population 'Population'\n";
     throw specs::SpecError{};
   }
-  if (!std::holds_alternative<ded::specs::PopulationSpec>(vars["P"]))
+  if (!std::holds_alternative<ded::specs::PopulationSpec>(vars["Population"]))
   {
-    std::cout << "error: P must be of type population\n";
+    std::cout << "error: 'Population' must be of type population\n";
     throw specs::SpecError{};
   }
-  auto pop_spec = std::get<ded::specs::PopulationSpec>(vars["P"]);
+  auto pop_spec = std::get<ded::specs::PopulationSpec>(vars["Population"]);
   auto io       = pop_spec.instantiateNestedSubstrateUserParameterSizes();
 
   env_spec.bindSubstrateIO(io);

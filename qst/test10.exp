@@ -17,7 +17,7 @@ pop = $linear
 correct_pop = !pop { size = 40 }
 
 
-P =  !correct_pop 
+Population =  !correct_pop 
 
 env = 	$max_one 	
 		{ 
@@ -32,7 +32,7 @@ correct_env = $sequence
 }
 
 
-E = $cycle  { 
+Process = $cycle  { 
  count = 1001
   world = !correct_env 
 }

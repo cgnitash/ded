@@ -7,7 +7,7 @@ e = $markov_brain
 	 inputs = ^fs-first-sensor_range
 }
 
-P = $linear 
+Population = $linear 
 { 
 	size = 40
 	entity = !e # `entity` is special
@@ -28,7 +28,7 @@ fs =
 }
 
 
-E = $cycle  { 
+Process = $cycle  { 
   count = 1000
   world = !fs 
 }

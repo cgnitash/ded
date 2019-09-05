@@ -19,8 +19,8 @@ correct_pop = !pop { size = 25 }
 
 empty_pop = !pop { size = 1 }
 
-P = [ !correct_pop !empty_pop ]
-#P =  !empty_pop 
+Population = [ !correct_pop !empty_pop ]
+#Population =  !empty_pop 
 
 env = 	$forager 	
 		{ 
@@ -42,7 +42,7 @@ correct_env = $sequence
 }
 
 
-E = $cycle  { 
+Process = $cycle  { 
  count = 1001
   world = [ !correct_env !no_diff_selection ]
 }
