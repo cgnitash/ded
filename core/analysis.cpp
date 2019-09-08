@@ -156,7 +156,9 @@ void
   auto simulations = ded::experiments::parseAllSimulations(file_name);
   auto single      = getSingleTrace(simulations, trace_name);
 
-  auto [trace, trace_path, true_simulations] = single;
+  //auto [trace, trace_path, true_simulations] = single;
+  auto trace = std::get<0>(single);
+  auto trace_path = std::get<1>(single);
   auto [invokes, max_rep]                    = findAllStoredData(single);
 
   std::ofstream analysis_file("analysis.R");

@@ -16,8 +16,8 @@ namespace specs
 
 void
     ProcessSpec::matchTags(SignalSpecSet &source_tags,
-                                SignalSpecSet &sink_tags,
-                                int &          tag_count)
+                           SignalSpecSet &sink_tags,
+                           int &          tag_count)
 {
 
   if (source_tags.size() != sink_tags.size())
@@ -117,8 +117,8 @@ void
 
 void
     ProcessSpec::updateAndMatchTags(SignalSpecSet &source_tags,
-                                           SignalSpecSet &sink_tags,
-                                           int &          tag_count)
+                                    SignalSpecSet &sink_tags,
+                                    int &          tag_count)
 {
   if (!source_tags.empty())
   {
@@ -130,14 +130,21 @@ void
 void
     ProcessSpec::matchNestedTagConstraints(int &tag_count)
 {
-  for (auto &es : nested_)
+  for (auto &ename_es : nested_)
   {
-    updateAndMatchTags(
-        es.second.constraints_.pre_, es.second.e->tags_.pre_, tag_count);
-    updateAndMatchTags(
-        es.second.constraints_.post_, es.second.e->tags_.post_, tag_count);
+    auto &es = ename_es.second;
+    updateAndMatchTags(es.constraints_.pre_, es.e->tags_.pre_, tag_count);
+    updateAndMatchTags(es.constraints_.post_, es.e->tags_.post_, tag_count);
   }
+
+  for (auto &es_vec : nested_vector_)
+    for (auto &es : es_vec.second)
+    {
+      updateAndMatchTags(es.constraints_.pre_, es.e->tags_.pre_, tag_count);
+      updateAndMatchTags(es.constraints_.post_, es.e->tags_.post_, tag_count);
+    }
 }
+
 void
     ProcessSpec::bindTags(int tag_count)
 {
@@ -155,17 +162,13 @@ void
 {
   for (auto &n_sig : io_.inputs_)
     for (auto &[param, cp] : parameters_)
-      if (cp.typeAsString() == "long" &&
-          param == n_sig.second.userParameter())
-        n_sig.second.instantiateUserParameter(
-            std::stol(cp.valueAsString()));
+      if (cp.typeAsString() == "long" && param == n_sig.second.userParameter())
+        n_sig.second.instantiateUserParameter(std::stol(cp.valueAsString()));
 
   for (auto &n_sig : io_.outputs_)
     for (auto &[param, cp] : parameters_)
-      if (cp.typeAsString() == "long" &&
-          param == n_sig.second.userParameter())
-        n_sig.second.instantiateUserParameter(
-            std::stol(cp.valueAsString()));
+      if (cp.typeAsString() == "long" && param == n_sig.second.userParameter())
+        n_sig.second.instantiateUserParameter(std::stol(cp.valueAsString()));
 
   for (auto &es : nested_)
     es.second.e->instantiateUserParameterSizes();
@@ -209,43 +212,39 @@ void
   for (auto &sig_freq : traces_.pre_)
     sig_freq.signal_.updateIdentifier(
         rs::find_if(tags_.pre_,
-                        [n = sig_freq.signal_.userName()](auto tag) {
-                          return tag.first == n;
-                        })
+                    [n = sig_freq.signal_.userName()](auto tag) {
+                      return tag.first == n;
+                    })
             ->second.identifier());
 
   for (auto &sig_freq : traces_.post_)
     sig_freq.signal_.updateIdentifier(
         rs::find_if(tags_.post_,
-                        [n = sig_freq.signal_.userName()](auto tag) {
-                          return tag.first == n;
-                        })
+                    [n = sig_freq.signal_.userName()](auto tag) {
+                      return tag.first == n;
+                    })
             ->second.identifier());
 
   for (auto &es : nested_)
     es.second.e->recordTraces();
 }
 
-ProcessSpec::ProcessSpec(language::Parser parser_,
-                                 language::Block  block_)
+void
+    ProcessSpec::parseParameters(language::Parser parser, language::Block block)
 {
-
-  *this = ALL_PROCESS_SPECS.at(block_.name_.substr(1));
-
-  for (auto over : block_.overrides_)
+  for (auto over : block.overrides_)
   {
     auto name  = over.first;
     auto value = over.second;
 
-    auto f = rs::find_if(
-        parameters_, [&](auto param) { return param.first == name.expr_; });
+    auto f = rs::find_if(parameters_,
+                         [&](auto param) { return param.first == name.expr_; });
     if (f == parameters_.end())
     {
-      parser_.errInvalidToken(
+      parser.errInvalidToken(
           name,
           "this does not override any parameters of " + name_,
-          parameters_ |
-              rv::transform([](auto param) { return param.first; }));
+          parameters_ | rv::transform([](auto param) { return param.first; }));
       throw language::ParserError{};
     }
 
@@ -254,26 +253,29 @@ ProcessSpec::ProcessSpec(language::Parser parser_,
     if (cp.typeAsString() != f->second.typeAsString())
     {
       using namespace std::literals::string_literals;
-      parser_.errInvalidToken(
-          value,
-          (cp.typeAsString() == "NULL"
-               ? "unable to parse configuration primitive"s
-               : "type mismatch"s) +
-              ", should be '" + f->second.typeAsString() + "'");
+      parser.errInvalidToken(value,
+                             (cp.typeAsString() == "NULL"
+                                  ? "unable to parse configuration primitive"s
+                                  : "type mismatch"s) +
+                                 ", should be '" + f->second.typeAsString() +
+                                 "'");
       throw language::ParserError{};
     }
     f->second.parse(cp.valueAsString());
     auto con = f->second.checkConstraints();
     if (con)
     {
-      parser_.errInvalidToken(
-          value,
-              "parameter constraint not satisfied: " + *con );
+      parser.errInvalidToken(value,
+                             "parameter constraint not satisfied: " + *con);
       throw language::ParserError{};
     }
   }
+}
 
-  for (auto over : block_.traces_)
+void
+    ProcessSpec::parseTraces(language::Parser parser, language::Block block)
+{
+  for (auto over : block.traces_)
   {
     auto tag_name  = over.first;
     auto frequency = over.second;
@@ -282,8 +284,8 @@ ProcessSpec::ProcessSpec(language::Parser parser_,
     cp.parse(frequency.expr_);
     if (cp.typeAsString() != "long")
     {
-      parser_.errInvalidToken(frequency,
-                                "expected frequency of trace (number) here");
+      parser.errInvalidToken(frequency,
+                             "expected frequency of trace (number) here");
       throw language::ParserError{};
     }
 
@@ -305,49 +307,102 @@ ProcessSpec::ProcessSpec(language::Parser parser_,
     }
     else
     {
-      parser_.errInvalidToken(
+      parser.errInvalidToken(
           tag_name,
           "this is not a pre/post tag of " + name_,
           rv::concat(
-              tags_.pre_ |
-                  rv::transform([](auto tag) { return tag.first; }),
-              tags_.post_ |
-                  rv::transform([](auto tag) { return tag.first; })));
+              tags_.pre_ | rv::transform([](auto tag) { return tag.first; }),
+              tags_.post_ | rv::transform([](auto tag) { return tag.first; })));
       throw language::ParserError{};
     }
   }
+}
 
-  for (auto blover : block_.nested_)
+void
+    ProcessSpec::parseNested(language::Parser parser, language::Block block)
+{
+  for (auto blover : block.nested_)
   {
     auto name       = blover.first;
     auto nested_blk = blover.second;
 
-    auto f = rs::find_if(
-        nested_, [&](auto param) { return param.first == name.expr_; });
+    auto f = rs::find_if(nested_,
+                         [&](auto param) { return param.first == name.expr_; });
     if (f == nested_.end())
     {
-      parser_.errInvalidToken(
+      parser.errInvalidToken(
           name,
-          "this does not override any nested processs " + block_.name_,
-          nested_ |
-              rv::transform([](auto param) { return param.first; }));
+          "this does not override any nested processs " + block.name_,
+          nested_ | rv::transform([](auto param) { return param.first; }));
       throw language::ParserError{};
     }
 
     auto ct = config_manager::typeOfBlock(nested_blk.name_.substr(1));
     if (ct != "process")
     {
-      parser_.errInvalidToken(name,
-                                "override of " + name.expr_ +
-                                    " must be of type process",
-                                config_manager::allProcessNames());
+      parser.errInvalidToken(name,
+                             "override of " + name.expr_ +
+                                 " must be of type process",
+                             config_manager::allProcessNames());
       throw language::ParserError{};
     }
 
-    f->second.e = std::make_unique<ProcessSpec>(
-        ProcessSpec{ parser_, nested_blk });
+    f->second.e =
+        std::make_unique<ProcessSpec>(ProcessSpec{ parser, nested_blk });
     f->second.e->setUserSpecifiedName(name.expr_);
   }
+}
+
+void
+    ProcessSpec::parseNestedVector(language::Parser parser,
+                                   language::Block  block)
+{
+  for (auto blover : block.nested_vector_)
+  {
+    auto name = blover.first;
+
+    auto f = rs::find_if(nested_vector_,
+                         [&](auto param) { return param.first == name.expr_; });
+    if (f == nested_vector_.end())
+    {
+      parser.errInvalidToken(
+          name,
+          "this does not override any nested vector of processes " +
+              block.name_,
+          nested_vector_ |
+              rv::transform([](auto param) { return param.first; }));
+      throw language::ParserError{};
+    }
+
+    for (auto nested_blk : blover.second)
+    {
+      auto ct = config_manager::typeOfBlock(nested_blk.name_.substr(1));
+      if (ct != "process")
+      {
+        parser.errInvalidToken(name,
+                               "nested process vector of " + name.expr_ +
+                                   " must be of type process",
+                               config_manager::allProcessNames());
+        throw language::ParserError{};
+      }
+
+      NestedProcessSpec ns;
+      ns.e = std::make_unique<ProcessSpec>(ProcessSpec{ parser, nested_blk });
+      ns.e->setUserSpecifiedName(name.expr_);
+      f->second.push_back(ns);
+    }
+  }
+}
+
+ProcessSpec::ProcessSpec(language::Parser parser, language::Block block)
+{
+
+  *this = ALL_PROCESS_SPECS.at(block.name_.substr(1));
+
+  parseParameters(parser, block);
+  parseTraces(parser, block);
+  parseNested(parser, block);
+  parseNestedVector(parser, block);
 }
 
 std::vector<std::string>
@@ -356,17 +411,13 @@ std::vector<std::string>
   std::vector<std::string> lines;
   auto                     alignment = std::string(depth, ' ');
 
-  auto pad_signal = [&](auto sig) {
-    return alignment + sig.second.fullName();
-  };
+  auto pad_signal = [&](auto sig) { return alignment + sig.second.fullName(); };
 
   lines.push_back(alignment + "process:" + name_);
   lines.push_back(alignment + "PARAMETERS");
-  rs::transform(
-      parameters_, rs::back_inserter(lines), [&](auto parameter) {
-        return alignment + parameter.first + ":" +
-               parameter.second.valueAsString();
-      });
+  rs::transform(parameters_, rs::back_inserter(lines), [&](auto parameter) {
+    return alignment + parameter.first + ":" + parameter.second.valueAsString();
+  });
   lines.push_back(alignment + "INPUTS");
   rs::transform(io_.inputs_, rs::back_inserter(lines), pad_signal);
   lines.push_back(alignment + "OUTPUTS");
@@ -379,17 +430,15 @@ std::vector<std::string>
   {
     // needs to go
     lines.push_back(alignment + "PRETRACES");
-    rs::transform(
-        traces_.pre_, rs::back_inserter(lines), [&](auto trace) {
-          return alignment + trace.signal_.fullName() + ";" +
-                 std::to_string(trace.frequency_);
-        });
+    rs::transform(traces_.pre_, rs::back_inserter(lines), [&](auto trace) {
+      return alignment + trace.signal_.fullName() + ";" +
+             std::to_string(trace.frequency_);
+    });
     lines.push_back(alignment + "POSTTRACES");
-    rs::transform(
-        traces_.post_, rs::back_inserter(lines), [&](auto trace) {
-          return alignment + trace.signal_.fullName() + ";" +
-                 std::to_string(trace.frequency_);
-        });
+    rs::transform(traces_.post_, rs::back_inserter(lines), [&](auto trace) {
+      return alignment + trace.signal_.fullName() + ";" +
+             std::to_string(trace.frequency_);
+    });
     // needs to go *
   }
   lines.push_back(alignment + "NESTED");
@@ -398,6 +447,16 @@ std::vector<std::string>
     lines.push_back(alignment + nested.first);
     auto n_dump = nested.second.e->serialise(depth + 1, with_traces);
     lines.insert(lines.end(), n_dump.begin(), n_dump.end());
+  }
+  lines.push_back(alignment + "NESTEDVECTOR");
+  for (auto const &nested_vector : nested_vector_)
+  {
+    for (auto const &nested : nested_vector.second)
+    {
+      lines.push_back(alignment + nested_vector.first);
+      auto n_dump = nested.e->serialise(depth + 1, with_traces);
+      lines.insert(lines.end(), n_dump.begin(), n_dump.end());
+    }
   }
 
   return lines;
@@ -462,6 +521,21 @@ ProcessSpec
     traces_.post_.push_back({ l.substr(0, p - 1), std::stoi(l.substr(p + 1)) });
   }
 
+  for (++f; *f != "NESTEDVECTOR";)
+  {
+    auto p =
+        std::find_if(f + 1, pop_dump.end(), [](auto l) { return l[0] != ' '; });
+
+    std::transform(f + 1, p, f + 1, [](auto l) { return l.substr(1); });
+
+    ProcessSpec       e;
+    NestedProcessSpec ns;
+    ns.e = std::make_unique<ProcessSpec>(
+        e.deserialise(std::vector<std::string>(f + 1, pop_dump.end())));
+    nested_vector_[*f].push_back(ns);
+
+    f = p;
+  }
   for (++f; f != pop_dump.end();)
   {
     auto p =
@@ -487,8 +561,7 @@ std::string
 
   out << " parameters\n";
   for (auto [parameter, value] : parameters_)
-    out << std::setw(16) << parameter << " : " << value.valueAsString()
-        << "\n";
+    out << std::setw(16) << parameter << " : " << value.valueAsString() << "\n";
   out << " inputs\n";
   for (auto [input, value] : io_.inputs_)
     out << std::setw(16) << input << " : " << value.fullName() << "\n";

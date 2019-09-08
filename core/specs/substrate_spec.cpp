@@ -143,6 +143,7 @@ void
     }
   }
 }
+
 SubstrateSpec::SubstrateSpec(language::Parser parser, language::Block block)
 {
 

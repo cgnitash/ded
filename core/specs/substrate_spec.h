@@ -137,7 +137,7 @@ public:
   }
 
   void
-      bindNestedSubstrates(std::string name, std::vector<SubstrateSpec> envs)
+      bindNestedSubstrates(std::string name, std::vector<SubstrateSpec> subs)
   {
     if (nested_vector_.find(name) != nested_vector_.end())
     {
@@ -146,16 +146,17 @@ public:
       throw SpecError{};
     }
 	nested_vector_[name];
-    for (auto env : envs)
+    for (auto sub : subs)
     {
       NestedSubstrateSpec ns;
-      ns.e = std::make_unique<SubstrateSpec>(env);
+      ns.e = std::make_unique<SubstrateSpec>(sub);
       nested_vector_[name].push_back(ns);
     }
   }
 
   void
-      configureNestedSubstrates(std::string name, std::vector<SubstrateSpec> &envs)
+      configureNestedSubstrates(std::string                 name,
+                                std::vector<SubstrateSpec> &subs)
   {
     if (nested_vector_.find(name) == nested_vector_.end())
     {
@@ -163,22 +164,22 @@ public:
                 << " has not been declared\n";
       throw SpecError{};
     }
-	envs.clear();
-        for (auto ns : nested_vector_[name])
-        {
-          auto ne = *ns.e;
-          envs.push_back(ne);
-        }
+    subs.clear();
+    for (auto ns : nested_vector_[name])
+    {
+      auto ne = *ns.e;
+      subs.push_back(ne);
+    }
   }
 
   void
-      bindSubstrate(std::string name, SubstrateSpec env)
+      bindSubstrate(std::string name, SubstrateSpec sub)
   {
-    nested_[name].e = std::make_unique<SubstrateSpec>(env);
+    nested_[name].e = std::make_unique<SubstrateSpec>(sub);
   }
 
   void
-      configureSubstrate(std::string name, SubstrateSpec &e)
+      configureSubstrate(std::string name, SubstrateSpec &sub)
   {
     if (!nested_[name].e)
     {
@@ -187,7 +188,7 @@ public:
       //      std::exit(1);
     }
     else
-      e = *nested_[name].e;
+      sub = *nested_[name].e;
   }
 
   void parseParameters(language::Parser , language::Block);

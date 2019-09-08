@@ -33,6 +33,12 @@ int
   // in particular the correct publication of components
   ded::generateAllSpecs();
 
+  if (argc == 1)
+  {
+    std::cout << "ded: missing command line arguments. try -h or --help\n";
+	return 0;
+  }
+
   std::string mode = argv[1];
 
   if (argc == 2 && (mode == "-h" || mode == "--help"))
@@ -116,6 +122,8 @@ int
   {
     std::cout << "ded: unknown command line arguments. try -h or --help\n";
   }
+
+  return 0;
 }
 catch (const ded::language::ParserError &)
 {

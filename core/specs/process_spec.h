@@ -42,12 +42,12 @@ struct TraceConfig
 class ProcessSpec
 {
 
-  struct NestedSpec
+  struct NestedProcessSpec
   {
     std::unique_ptr<ProcessSpec> e;
     Tags constraints_;
-    NestedSpec() = default;
-    NestedSpec(const NestedSpec &ns)
+    NestedProcessSpec() = default;
+    NestedProcessSpec(const NestedProcessSpec &ns)
         : e(std::make_unique<ProcessSpec>(*ns.e)),
           constraints_(ns.constraints_)
     {
@@ -64,7 +64,8 @@ class ProcessSpec
 
   Tags tags_;
 
-  std::map<std::string, NestedSpec> nested_;
+  std::map<std::string, NestedProcessSpec> nested_;
+  std::map<std::string, std::vector<NestedProcessSpec>> nested_vector_;
 
   std::vector<std::pair<std::pair<std::string, std::string>,
                         std::pair<std::string, std::string>>>
@@ -72,9 +73,6 @@ class ProcessSpec
   std::vector<std::pair<std::pair<std::string, std::string>,
                         std::pair<std::string, std::string>>>
       tag_flow_inequalities_;
-
-  // Parser parser_;
-  // Block block_;
 
   void matchTags(SignalSpecSet &source_tags,
                   SignalSpecSet &sink_tags,
@@ -113,18 +111,20 @@ public:
   {
     return user_specified_name_;
   }
+
   auto
       setUserSpecifiedName(std::string name)
   {
     user_specified_name_ = name;
   }
 
-  template <typename T>
+  template <typename ValueType>
   void
       bindParameter(
-          std::string                                                 name,
-          T                                                           value,
-          std::vector<std::pair<std::function<bool(T)>, std::string>> cons = {})
+          std::string name,
+          ValueType   value,
+          std::vector<std::pair<std::function<bool(ValueType)>, std::string>>
+              cons = {})
 
   {
     if (parameters_.find(name) != parameters_.end())
@@ -138,9 +138,9 @@ public:
 
   }
 
-  template <typename T>
+  template <typename ValueType>
   void
-      configureParameter(std::string name, T &value)
+      configureParameter(std::string name,ValueType &value)
   {
     if (parameters_.find(name) == parameters_.end())
     {
@@ -208,7 +208,7 @@ public:
   }
 
   void
-      bindProcess(std::string name, ProcessSpec env)
+      bindProcess(std::string name, ProcessSpec proc)
   {
     if (nested_.find(name) != nested_.end())
     {
@@ -216,11 +216,11 @@ public:
                 << " has already been declared\n";
       throw SpecError{};
     }
-    nested_[name].e = std::make_unique<ProcessSpec>(env);
+    nested_[name].e = std::make_unique<ProcessSpec>(proc);
   }
 
   void
-      configureProcess(std::string name, ProcessSpec &e)
+      configureProcess(std::string name, ProcessSpec &proc)
   {
     if (nested_.find(name) == nested_.end())
     {
@@ -228,7 +228,42 @@ public:
                 << " has not been declared\n";
       throw SpecError{};
     }
-    e = *nested_[name].e;
+    proc = *nested_[name].e;
+  }
+
+  void
+      bindProcessVector(std::string name, std::vector<ProcessSpec> procs)
+  {
+    if (nested_vector_.find(name) != nested_vector_.end())
+    {
+      std::cout << "User error: nested process vector " << name
+                << " has already been declared\n";
+      throw SpecError{};
+    }
+	nested_vector_[name];
+    for (auto proc : procs)
+    {
+      NestedProcessSpec ns;
+      ns.e = std::make_unique<ProcessSpec>(proc);
+      nested_vector_[name].push_back(ns);
+    }
+  }
+
+  void
+      configureProcessVector(std::string name, std::vector<ProcessSpec> & procs)
+  {
+    if (nested_vector_.find(name) == nested_vector_.end())
+    {
+      std::cout << "User error: nested process vector " << name
+                << " has not been declared\n";
+      throw SpecError{};
+    }
+    procs.clear();
+    for (auto ns : nested_vector_[name])
+    {
+      auto np = *ns.e;
+      procs.push_back(np);
+    }
   }
 
   void
@@ -253,6 +288,39 @@ public:
           std::vector<std::pair<std::string, std::string>> post_constraints)
   {
     nested_[env_name].constraints_.post_ =
+        post_constraints |
+        rv::transform(
+            [](auto tag) -> std::pair<std::string, SignalSpec> {
+              auto name  = tag.first;
+              auto value = tag.second;
+              return { name, SignalSpec{ name, name, value } };
+            });
+  }
+
+  void
+      bindProcessVectorPreConstraints(
+          std::string                                      proc_name,
+          std::vector<std::pair<std::string, std::string>> pre_constraints)
+  {
+    // tags_.post_.push_back({ name, SignalSpec{ name, name, value } });
+	for (auto &nested : nested_vector_[proc_name])
+    nested.constraints_.pre_ =
+        pre_constraints |
+        rv::transform(
+            [](auto tag) -> std::pair<std::string, SignalSpec> {
+              auto name  = tag.first;
+              auto value = tag.second;
+              return { name, SignalSpec{ name, name, value } };
+            });
+  }
+
+  void
+      bindProcessVectorPostConstraints(
+          std::string                                      proc_name,
+          std::vector<std::pair<std::string, std::string>> post_constraints)
+  {
+	for (auto &nested : nested_vector_[proc_name])
+    nested.constraints_.post_ =
         post_constraints |
         rv::transform(
             [](auto tag) -> std::pair<std::string, SignalSpec> {
@@ -288,6 +356,11 @@ public:
   }
   */
 
+  void parseParameters(language::Parser , language::Block);
+  void parseTraces(language::Parser , language::Block);
+  void parseNested(language::Parser , language::Block);
+  void parseNestedVector(language::Parser , language::Block);
+
   // friend std::ostream &operator<<(std::ostream &out, const ProcessSpec
   // &e)
   std::vector<std::string> serialise(long, bool) const;
@@ -295,7 +368,6 @@ public:
 
   std::string prettyPrint();
 
-  // void parser_parse();
   void                                       instantiateUserParameterSizes();
   void                                       bindSubstrateIO(IO);
   void                                       bindTags(int);
