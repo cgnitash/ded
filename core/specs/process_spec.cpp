@@ -15,6 +15,166 @@ namespace specs
 {
 
 void
+    ProcessSpec::bindProcess(std::string name, ProcessSpec proc)
+{
+  if (nested_.find(name) != nested_.end())
+  {
+    std::cout << "User error: nested process " << name
+              << " has already been declared\n";
+    throw SpecError{};
+  }
+  nested_[name].e = std::make_unique<ProcessSpec>(proc);
+}
+
+void
+    ProcessSpec::configureProcess(std::string name, ProcessSpec &proc)
+{
+  if (nested_.find(name) == nested_.end())
+  {
+    std::cout << "User error: nested process " << name
+              << " has not been declared\n";
+    throw SpecError{};
+  }
+  proc = *nested_[name].e;
+}
+
+void
+    ProcessSpec::bindProcessVector(std::string              name,
+                                   std::vector<ProcessSpec> procs)
+{
+  if (nested_vector_.find(name) != nested_vector_.end())
+  {
+    std::cout << "User error: nested process vector " << name
+              << " has already been declared\n";
+    throw SpecError{};
+  }
+  nested_vector_[name];
+  for (auto proc : procs)
+  {
+    NestedProcessSpec ns;
+    ns.e = std::make_unique<ProcessSpec>(proc);
+    nested_vector_[name].first.push_back(ns);
+  }
+}
+
+void
+    ProcessSpec::configureProcessVector(std::string               name,
+                                        std::vector<ProcessSpec> &procs)
+{
+  if (nested_vector_.find(name) == nested_vector_.end())
+  {
+    std::cout << "User error: nested process vector " << name
+              << " has not been declared\n";
+    throw SpecError{};
+  }
+  procs.clear();
+  for (auto ns : nested_vector_[name].first)
+  {
+    auto np = *ns.e;
+    procs.push_back(np);
+  }
+}
+
+void
+    ProcessSpec::bindProcessPreConstraints(
+        std::string                                      proc_name,
+        std::vector<std::pair<std::string, std::string>> pre_constraints)
+{
+  // tags_.post_.push_back({ name, SignalSpec{ name, name, value } });
+  if (nested_.find(proc_name) == nested_.end())
+  {
+    std::cout << "User error: nested process vector " << proc_name
+              << " has not been declared; cannot bind pre-constraints\n";
+    throw SpecError{};
+  }
+  nested_[proc_name].constraints_.pre_ =
+      pre_constraints |
+      rv::transform([](auto tag) -> std::pair<std::string, SignalSpec> {
+        auto name  = tag.first;
+        auto value = tag.second;
+        return { name, SignalSpec{ name, name, value } };
+      });
+}
+
+void
+    ProcessSpec::bindProcessPostConstraints(
+        std::string                                      proc_name,
+        std::vector<std::pair<std::string, std::string>> post_constraints)
+{
+  if (nested_.find(proc_name) == nested_.end())
+  {
+    std::cout << "User error: nested process vector " << proc_name
+              << " has not been declared; cannot bind post-constraints\n";
+    throw SpecError{};
+  }
+  nested_[proc_name].constraints_.post_ =
+      post_constraints |
+      rv::transform([](auto tag) -> std::pair<std::string, SignalSpec> {
+        auto name  = tag.first;
+        auto value = tag.second;
+        return { name, SignalSpec{ name, name, value } };
+      });
+}
+
+void
+    ProcessSpec::bindProcessVectorPreConstraints(
+        std::string                                      proc_name,
+        std::vector<std::pair<std::string, std::string>> pre_constraints)
+{
+  // tags_.post_.push_back({ name, SignalSpec{ name, name, value } });
+  if (nested_vector_.find(proc_name) == nested_vector_.end())
+  {
+    std::cout << "User error: nested process vector " << proc_name
+              << " has not been declared; cannot bind vector pre-constraints\n";
+    throw SpecError{};
+  }
+  nested_vector_[proc_name].second.pre_ =
+      pre_constraints |
+      rv::transform([](auto tag) -> std::pair<std::string, SignalSpec> {
+        auto name  = tag.first;
+        auto value = tag.second;
+        return { name, SignalSpec{ name, name, value } };
+      });
+}
+
+void
+    ProcessSpec::bindProcessVectorPostConstraints(
+        std::string                                      proc_name,
+        std::vector<std::pair<std::string, std::string>> post_constraints)
+{
+  if (nested_vector_.find(proc_name) == nested_vector_.end())
+  {
+    std::cout
+        << "User error: nested process vector " << proc_name
+        << " has not been declared; cannot bind vector post-constraints\n";
+    throw SpecError{};
+  }
+  nested_vector_[proc_name].second.post_ =
+      post_constraints |
+      rv::transform([](auto tag) -> std::pair<std::string, SignalSpec> {
+        auto name  = tag.first;
+        auto value = tag.second;
+        return { name, SignalSpec{ name, name, value } };
+      });
+}
+
+void
+    ProcessSpec::bindTagEquality(std::pair<std::string, std::string> x,
+                                 std::pair<std::string, std::string> y)
+{
+  auto        is_pre_post   = [](auto s) { return s == "pre" || s == "post"; };
+  std::string error_message = "User error: cannot bind tag equality ";
+  if (nested_.find(x.first) == nested_.end() ||
+      nested_.find(y.first) == nested_.end() || !is_pre_post(x.second) ||
+      !is_pre_post(y.second))
+  {
+    std::cout << "User error: " << error_message << "\n";
+    throw SpecError{};
+  }
+
+  tag_flow_equalities_.push_back({ x, y });
+}
+void
     ProcessSpec::matchTags(SignalSpecSet &source_tags,
                            SignalSpecSet &sink_tags,
                            int &          tag_count)
@@ -138,7 +298,7 @@ void
   }
 
   for (auto &es_vec : nested_vector_)
-    for (auto &es : es_vec.second)
+    for (auto &es : es_vec.second.first)
     {
       updateAndMatchTags(es.constraints_.pre_, es.e->tags_.pre_, tag_count);
       updateAndMatchTags(es.constraints_.post_, es.e->tags_.post_, tag_count);
@@ -172,6 +332,10 @@ void
 
   for (auto &es : nested_)
     es.second.e->instantiateUserParameterSizes();
+
+  for (auto &esvec : nested_vector_)
+   for (auto &es : esvec.second.first)
+    es.e->instantiateUserParameterSizes();
 }
 
 void
@@ -179,6 +343,10 @@ void
 {
   for (auto &es : nested_)
     es.second.e->bindSubstrateIO(ios);
+
+  for (auto &esvec : nested_vector_)
+    for (auto &es : esvec.second.first)
+      es.e->bindSubstrateIO(ios);
 
   io_.bindTo(ios);
 }
@@ -227,6 +395,10 @@ void
 
   for (auto &es : nested_)
     es.second.e->recordTraces();
+
+  for (auto &esvec : nested_vector_)
+    for (auto &es : esvec.second.first)
+      es.e->recordTraces();
 }
 
 void
@@ -388,8 +560,9 @@ void
 
       NestedProcessSpec ns;
       ns.e = std::make_unique<ProcessSpec>(ProcessSpec{ parser, nested_blk });
+	  ns.constraints_ = f->second.second;
       ns.e->setUserSpecifiedName(name.expr_);
-      f->second.push_back(ns);
+      f->second.first.push_back(ns);
     }
   }
 }
@@ -451,7 +624,7 @@ std::vector<std::string>
   lines.push_back(alignment + "NESTEDVECTOR");
   for (auto const &nested_vector : nested_vector_)
   {
-    for (auto const &nested : nested_vector.second)
+    for (auto const &nested : nested_vector.second.first)
     {
       lines.push_back(alignment + nested_vector.first);
       auto n_dump = nested.e->serialise(depth + 1, with_traces);
@@ -529,13 +702,13 @@ ProcessSpec
     std::transform(f + 1, p, f + 1, [](auto l) { return l.substr(1); });
 
     ProcessSpec       e;
-    NestedProcessSpec ns;
-    ns.e = std::make_unique<ProcessSpec>(
-        e.deserialise(std::vector<std::string>(f + 1, pop_dump.end())));
-    nested_vector_[*f].push_back(ns);
+    e.setUserSpecifiedName(*f);
+    nested_[*f].e = std::make_unique<ProcessSpec>(
+        e.deserialise(std::vector<std::string>(f + 1, p)));
 
     f = p;
   }
+
   for (++f; f != pop_dump.end();)
   {
     auto p =
@@ -544,9 +717,10 @@ ProcessSpec
     std::transform(f + 1, p, f + 1, [](auto l) { return l.substr(1); });
 
     ProcessSpec e;
-    e.setUserSpecifiedName(*f);
-    nested_[*f].e = std::make_unique<ProcessSpec>(
-        e.deserialise(std::vector<std::string>(f + 1, p)));
+    NestedProcessSpec ns;
+    ns.e = std::make_unique<ProcessSpec>(
+        e.deserialise(std::vector<std::string>(f + 1, pop_dump.end())));
+    nested_vector_[*f].first.push_back(ns);
 
     f = p;
   }

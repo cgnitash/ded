@@ -45,6 +45,7 @@ int
   {
     std::cout << R"~~(
     Flags              Arguments	             Description
+    -----              ---------                 -----------
     -l, --list                                   : lists all components currently loaded
     -p, --print        <component-name>...       : print publication for each component in component-names
     -s, --save                                   : saves configuration files 
