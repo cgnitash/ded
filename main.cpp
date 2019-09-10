@@ -103,16 +103,16 @@ int
   }
   else if (argc == 4 && mode == "-f")
   {
-    auto [pop_spec, env_spec] = ded::experiments::loadSimulation(argv[2]);
+    auto [pop_spec, proc_spec] = ded::experiments::loadSimulation(argv[2]);
 
     auto pop         = ded::makePopulation(pop_spec);
-    auto env         = ded::makeProcess(env_spec);
+    auto proc         = ded::makeProcess(proc_spec);
     ded::GLOBAL_PATH = "./data/" + std::string{ argv[2] } + "/" + argv[3] + "/";
     std::experimental::filesystem::create_directory(ded::GLOBAL_PATH);
 
     std::srand(std::stoi(argv[3]));
 
-    pop = env.evaluate(pop);
+    pop = proc.evaluate(pop);
     pop.flushUnpruned();
 
     // should write success report to file

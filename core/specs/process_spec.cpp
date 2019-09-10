@@ -367,6 +367,11 @@ std::vector<std::pair<Trace, std::string>>
     for (auto ts : es.second.e->queryTraces())
       res.push_back(ts);
 
+  for (auto &esvec : nested_vector_)
+    for (auto &es : esvec.second.first)
+      for (auto ts : es.e->queryTraces())
+        res.push_back(ts);
+
   for (auto &r : res)
     r.second = user_specified_name_ + "_" + name_ + "/" + r.second;
 
@@ -546,7 +551,7 @@ void
       throw language::ParserError{};
     }
 
-    for (auto nested_blk : blover.second)
+    for (auto [i, nested_blk] :rv::enumerate( blover.second))
     {
       auto ct = config_manager::typeOfBlock(nested_blk.name_.substr(1));
       if (ct != "process")
@@ -561,7 +566,7 @@ void
       NestedProcessSpec ns;
       ns.e = std::make_unique<ProcessSpec>(ProcessSpec{ parser, nested_blk });
 	  ns.constraints_ = f->second.second;
-      ns.e->setUserSpecifiedName(name.expr_);
+      ns.e->setUserSpecifiedName(name.expr_ + "_" + std::to_string(i));
       f->second.first.push_back(ns);
     }
   }
@@ -709,7 +714,8 @@ ProcessSpec
     f = p;
   }
 
-  for (++f; f != pop_dump.end();)
+  int nv_count = 0;
+  for (++f; f != pop_dump.end(); nv_count++)
   {
     auto p =
         std::find_if(f + 1, pop_dump.end(), [](auto l) { return l[0] != ' '; });
@@ -717,6 +723,7 @@ ProcessSpec
     std::transform(f + 1, p, f + 1, [](auto l) { return l.substr(1); });
 
     ProcessSpec e;
+    e.setUserSpecifiedName(*f + "_" + std::to_string(nv_count) );
     NestedProcessSpec ns;
     ns.e = std::make_unique<ProcessSpec>(
         e.deserialise(std::vector<std::string>(f + 1, pop_dump.end())));

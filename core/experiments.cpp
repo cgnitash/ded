@@ -56,8 +56,8 @@ Simulation
     throw specs::SpecError{};
   }
 
-  auto env_spec = std::get<ded::specs::ProcessSpec>(vars["Process"]);
-  env_spec.instantiateUserParameterSizes();
+  auto proc_spec = std::get<ded::specs::ProcessSpec>(vars["Process"]);
+  proc_spec.instantiateUserParameterSizes();
 
   if (vars.find("Population") == vars.end())
   {
@@ -73,13 +73,13 @@ Simulation
   auto pop_spec = std::get<ded::specs::PopulationSpec>(vars["Population"]);
   auto io       = pop_spec.instantiateNestedSubstrateUserParameterSizes();
 
-  env_spec.bindSubstrateIO(io);
+  proc_spec.bindSubstrateIO(io);
 
-  env_spec.bindTags(0);
+  proc_spec.bindTags(0);
 
-  env_spec.recordTraces();
+  proc_spec.recordTraces();
 
-  return { pop_spec, env_spec, p.labels(), env_spec.queryTraces() };
+  return { pop_spec, proc_spec, p.labels(), proc_spec.queryTraces() };
 }
 
 std::vector<language::Parser>
