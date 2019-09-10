@@ -71,9 +71,9 @@ Simulation
     throw specs::SpecError{};
   }
   auto pop_spec = std::get<ded::specs::PopulationSpec>(vars["Population"]);
-  auto io       = pop_spec.instantiateNestedSubstrateUserParameterSizes();
 
-  proc_spec.bindSubstrateIO(io);
+  proc_spec.bindSubstrateIO(
+      pop_spec.instantiateNestedSubstrateUserParameterSizes());
 
   proc_spec.bindTags(0);
 

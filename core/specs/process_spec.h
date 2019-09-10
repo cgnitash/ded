@@ -244,15 +244,14 @@ public:
   void parseNested(language::Parser, language::Block);
   void parseNestedVector(language::Parser, language::Block);
 
-  // friend std::ostream &operator<<(std::ostream &out, const ProcessSpec
-  // &e)
   std::vector<std::string> serialise(long, bool) const;
   ProcessSpec              deserialise(std::vector<std::string>);
 
   std::string prettyPrint();
 
   void                                       instantiateUserParameterSizes();
-  void                                       bindSubstrateIO(IO);
+  void                                       bindSubstrateIO(SubstrateSpec);
+  void                                       bindSignalTo(SubstrateSpec);
   void                                       bindTags(int);
   void                                       recordTraces();
   std::vector<std::pair<Trace, std::string>> queryTraces();

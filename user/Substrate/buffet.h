@@ -89,7 +89,7 @@ public:
     genome_.generate(500);
 	for (auto &gate_spec :  gate_specs_) 
 	{
-      gate_spec.bindSubstrateIO(es.getIO());
+      gate_spec.bindSubstrateIO(es);
 	  auto gate = ded::makeSubstrate(gate_spec);
       gates_.push_back(gate);
       gate_encodings_.push_back({ static_cast<long>(gate.getEncoding().size()),

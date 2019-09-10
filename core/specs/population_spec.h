@@ -107,10 +107,11 @@ public:
   PopulationSpec deserialise(std::vector<std::string> );
   std::string    prettyPrint();
 
-  IO
+  SubstrateSpec
       instantiateNestedSubstrateUserParameterSizes()
   {
-    return es_.instantiateUserParameterSizes(0);
+	es_.instantiateUserParameterSizes(0);
+    return es_;
   }
   //  friend std::ostream &operator<<(std::ostream &out, PopulationSpec e)
 

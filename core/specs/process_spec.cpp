@@ -174,6 +174,7 @@ void
 
   tag_flow_equalities_.push_back({ x, y });
 }
+
 void
     ProcessSpec::matchTags(SignalSpecSet &source_tags,
                            SignalSpecSet &sink_tags,
@@ -339,16 +340,87 @@ void
 }
 
 void
-    ProcessSpec::bindSubstrateIO(IO ios)
+    ProcessSpec::bindSubstrateIO(SubstrateSpec sub_spec)
 {
   for (auto &es : nested_)
-    es.second.e->bindSubstrateIO(ios);
+    es.second.e->bindSubstrateIO(sub_spec);
 
   for (auto &esvec : nested_vector_)
     for (auto &es : esvec.second.first)
-      es.e->bindSubstrateIO(ios);
+      es.e->bindSubstrateIO(sub_spec);
 
-  io_.bindTo(ios);
+  bindSignalTo(sub_spec);
+}
+
+void ProcessSpec::bindSignalTo(SubstrateSpec sub_spec)
+{
+  auto ios = sub_spec.getIO();
+
+  for (auto &n_sig : io_.inputs_)
+  {
+    auto &in_sig  = n_sig.second;
+    auto  matches = rs::count_if(ios.inputs_, [sig = in_sig](auto ns) {
+      return ns.second.exactlyMatches(sig);
+    });
+    if (matches > 1)
+    {
+      std::cout << "error: multiple input signals match exactly\n";
+      throw SpecError{};
+    }
+    if (!matches)
+    {
+      std::cout
+          << "error: no input signals match exactly (Note: convertible signals "
+             "not supported yet)\n  input signals required by "
+          << utilities::TermColours::red_fg << name_
+          << utilities::TermColours::reset << "\n    "
+          << n_sig.second.diagnosticName();
+      std::cout << "\nviable candidates provided by "
+                << utilities::TermColours::red_fg << sub_spec.name()
+                << utilities::TermColours::reset;
+      for (auto sig : ios.inputs_)
+        std::cout << "\n    " << sig.second.diagnosticName();
+      throw SpecError{};
+    }
+    auto i = rs::find_if(ios.inputs_, [sig = in_sig](auto ns) {
+      return ns.second.exactlyMatches(sig);
+    });
+    in_sig.updateIdentifier(i->second.identifier());
+    ios.inputs_.erase(i);
+  }
+
+  for (auto &n_sig : io_.outputs_)
+  {
+    auto &out_sig = n_sig.second;
+    auto  matches = rs::count_if(ios.outputs_, [sig = out_sig](auto ns) {
+      return ns.second.exactlyMatches(sig);
+    });
+    if (matches > 1)
+    {
+      std::cout << "error: multiple output signals match exactly\n";
+      throw SpecError{};
+    }
+    if (!matches)
+    {
+      std::cout << "error: no output signals match exactly (Note: convertible "
+                   "signals "
+                   "not supported yet)\n  output signals required by "
+                << utilities::TermColours::red_fg << name_
+                << utilities::TermColours::reset << "\n    "
+                << n_sig.second.diagnosticName();
+      std::cout << "\nviable candidates provided by "
+                << utilities::TermColours::red_fg << sub_spec.name()
+                << utilities::TermColours::reset;
+      for (auto sig : ios.outputs_)
+        std::cout << "\n    " << sig.second.diagnosticName();
+      throw SpecError{};
+    }
+    auto i = rs::find_if(ios.outputs_, [sig = out_sig](auto ns) {
+      return ns.second.exactlyMatches(sig);
+    });
+    out_sig.updateIdentifier(i->second.identifier());
+    ios.outputs_.erase(i);
+  }
 }
 
 std::vector<std::pair<Trace, std::string>>

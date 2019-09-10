@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "../utilities/term_colours.h"
+
 namespace ded
 {
 namespace specs
@@ -36,6 +38,18 @@ public:
   {
     return user_name_ + ":" + additional_identifier_ + "-" + full_type_;
   }
+
+  auto
+      diagnosticName() const
+  {
+    return user_name_ + " : " + full_type_ +
+           (is_user_set_vector_size_
+                ? utilities::TermColours::blue_fg + "    with [" +
+                      user_parameter_ + " = " + std::to_string(size_) + "]" +
+                      utilities::TermColours::reset
+                : "");
+  }
+
   auto
       userName() const
   {
@@ -62,6 +76,7 @@ public:
   {
     additional_identifier_ = id;
   }
+
   void
       instantiateUserParameter(long size)
   {
@@ -81,7 +96,7 @@ struct IO
 	public :
   SignalSpecSet inputs_;
   SignalSpecSet outputs_;
-  void bindTo(IO);
+//  void bindTo(SubstrateSpec, std::string);
 };
 
 struct Tags
