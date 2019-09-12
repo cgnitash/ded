@@ -9,6 +9,7 @@
 #include <variant>
 
 #include "../language/parser.h"
+#include "../language/token.h"
 #include "../utilities/term_colours.h"
 #include "../utilities/utilities.h"
 #include "configuration_primitive.h"
@@ -40,6 +41,7 @@ class SubstrateSpec
   };
 
   std::string                                             name_;
+  language::Token                                         name_token_;
   std::map<std::string, ConfigurationPrimitive>           parameters_;
   std::map<std::string, NestedSubstrateSpec>              nested_;
   std::map<std::string, std::vector<NestedSubstrateSpec>> nested_vector_;
@@ -56,6 +58,12 @@ public:
       name() const
   {
     return name_;
+  }
+
+  auto
+      nameToken() const
+  {
+    return name_token_;
   }
 
   auto

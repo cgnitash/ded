@@ -335,8 +335,8 @@ void
     es.second.e->instantiateUserParameterSizes();
 
   for (auto &esvec : nested_vector_)
-   for (auto &es : esvec.second.first)
-    es.e->instantiateUserParameterSizes();
+    for (auto &es : esvec.second.first)
+      es.e->instantiateUserParameterSizes();
 }
 
 void
@@ -352,7 +352,43 @@ void
   bindSignalTo(sub_spec);
 }
 
-void ProcessSpec::bindSignalTo(SubstrateSpec sub_spec)
+void
+    ProcessSpec::errSignalBind(SubstrateSpec sub_spec,
+                               SignalSpec    sig,
+                               bool          is_input)
+{
+  auto diagnostic_message = name_token_.diagnostic_;
+  auto left_padding       = std::string(name_token_.location_.second + 10, ' ');
+  std::cout << "parse-error\n\n"
+            << diagnostic_message << "\n"
+            << left_padding << utilities::TermColours::red_fg << "^" 
+            << std::string(name_token_.expr_.length() - 1, '~') << "\n"
+            << left_padding << "no " << (is_input ? "input" : "output")
+            << " signals provided by substrate can be bound\n"
+            << utilities::TermColours::reset << left_padding
+            << sig.diagnosticName() << "\n\n";
+
+  auto substrate_name_token  = sub_spec.nameToken();
+  auto ss_diagnostic_message = substrate_name_token.diagnostic_;
+  auto ss_left_padding =
+      std::string(substrate_name_token.location_.second + 10, ' ');
+
+  std::cout << ss_diagnostic_message << "\n"
+            << ss_left_padding << utilities::TermColours::red_fg << "^"
+            << std::string(substrate_name_token.expr_.length() - 1, '~') << "\n"
+            << ss_left_padding << "viable " << (is_input ? "input" : "output")
+            << " signal candidates provided\n"
+            << utilities::TermColours::reset;
+
+  auto valid_signals =
+      is_input ? sub_spec.getIO().inputs_ : sub_spec.getIO().outputs_;
+  for (auto sig : valid_signals)
+    std::cout << ss_left_padding << sig.second.diagnosticName() << std::endl;
+  throw SpecError{};
+}
+
+void
+    ProcessSpec::bindSignalTo(SubstrateSpec sub_spec)
 {
   auto ios = sub_spec.getIO();
 
@@ -369,18 +405,7 @@ void ProcessSpec::bindSignalTo(SubstrateSpec sub_spec)
     }
     if (!matches)
     {
-      std::cout
-          << "error: no input signals match exactly (Note: convertible signals "
-             "not supported yet)\n  input signals required by "
-          << utilities::TermColours::red_fg << name_
-          << utilities::TermColours::reset << "\n    "
-          << n_sig.second.diagnosticName();
-      std::cout << "\nviable candidates provided by "
-                << utilities::TermColours::red_fg << sub_spec.name()
-                << utilities::TermColours::reset;
-      for (auto sig : ios.inputs_)
-        std::cout << "\n    " << sig.second.diagnosticName();
-      throw SpecError{};
+      errSignalBind(sub_spec, n_sig.second, true);
     }
     auto i = rs::find_if(ios.inputs_, [sig = in_sig](auto ns) {
       return ns.second.exactlyMatches(sig);
@@ -402,18 +427,7 @@ void ProcessSpec::bindSignalTo(SubstrateSpec sub_spec)
     }
     if (!matches)
     {
-      std::cout << "error: no output signals match exactly (Note: convertible "
-                   "signals "
-                   "not supported yet)\n  output signals required by "
-                << utilities::TermColours::red_fg << name_
-                << utilities::TermColours::reset << "\n    "
-                << n_sig.second.diagnosticName();
-      std::cout << "\nviable candidates provided by "
-                << utilities::TermColours::red_fg << sub_spec.name()
-                << utilities::TermColours::reset;
-      for (auto sig : ios.outputs_)
-        std::cout << "\n    " << sig.second.diagnosticName();
-      throw SpecError{};
+      errSignalBind(sub_spec, n_sig.second, false);
     }
     auto i = rs::find_if(ios.outputs_, [sig = out_sig](auto ns) {
       return ns.second.exactlyMatches(sig);
@@ -623,7 +637,7 @@ void
       throw language::ParserError{};
     }
 
-    for (auto [i, nested_blk] :rv::enumerate( blover.second))
+    for (auto [i, nested_blk] : rv::enumerate(blover.second))
     {
       auto ct = config_manager::typeOfBlock(nested_blk.name_.substr(1));
       if (ct != "process")
@@ -637,7 +651,7 @@ void
 
       NestedProcessSpec ns;
       ns.e = std::make_unique<ProcessSpec>(ProcessSpec{ parser, nested_blk });
-	  ns.constraints_ = f->second.second;
+      ns.constraints_ = f->second.second;
       ns.e->setUserSpecifiedName(name.expr_ + "_" + std::to_string(i));
       f->second.first.push_back(ns);
     }
@@ -648,6 +662,8 @@ ProcessSpec::ProcessSpec(language::Parser parser, language::Block block)
 {
 
   *this = ALL_PROCESS_SPECS.at(block.name_.substr(1));
+
+  name_token_ = block.name_token_;
 
   parseParameters(parser, block);
   parseTraces(parser, block);
@@ -778,7 +794,7 @@ ProcessSpec
 
     std::transform(f + 1, p, f + 1, [](auto l) { return l.substr(1); });
 
-    ProcessSpec       e;
+    ProcessSpec e;
     e.setUserSpecifiedName(*f);
     nested_[*f].e = std::make_unique<ProcessSpec>(
         e.deserialise(std::vector<std::string>(f + 1, p)));
@@ -795,7 +811,7 @@ ProcessSpec
     std::transform(f + 1, p, f + 1, [](auto l) { return l.substr(1); });
 
     ProcessSpec e;
-    e.setUserSpecifiedName(*f + "_" + std::to_string(nv_count) );
+    e.setUserSpecifiedName(*f + "_" + std::to_string(nv_count));
     NestedProcessSpec ns;
     ns.e = std::make_unique<ProcessSpec>(
         e.deserialise(std::vector<std::string>(f + 1, pop_dump.end())));

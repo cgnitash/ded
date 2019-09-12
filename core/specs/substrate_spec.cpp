@@ -299,10 +299,10 @@ void
 
 SubstrateSpec::SubstrateSpec(language::Parser parser, language::Block block)
 {
+  *this =  ALL_SUBSTRATE_SPECS[block.name_.substr(1)];
 
-  auto t = ALL_SUBSTRATE_SPECS[block.name_.substr(1)];
+  name_token_ = block.name_token_;
 
-  *this = t;
   parseParameters(parser, block);
   parseNested(parser, block);
   parseNestedVector(parser, block);

@@ -61,32 +61,26 @@ void
 }
 
 void
-    Parser::errInvalidToken(Token                    tok,
+    Parser::errInvalidToken(Token                    token,
                             std::string              message,
                             std::vector<std::string> suggestions)
 {
-  auto lines            = lexer_.getLines();
-  auto line             = tok.location_.first;
-  auto column           = tok.location_.second;
-  auto line_with_colour = lines[line];
-  line_with_colour.insert(column + tok.expr_.length(),
-                          utilities::TermColours::reset);
-  line_with_colour.insert(column, utilities::TermColours::red_fg);
-  std::cout << "parse-error\nLine" << std::setw(4) << line + 1 << ":"
-            << line_with_colour << utilities::TermColours::red_fg << std::endl
-            << std::string(column + 9, ' ')
-            << std::string(tok.expr_.length(), '~') << "\n"
-            << std::string(column + 9, ' ') << utilities::TermColours::red_fg
-            << "^ " << message;
+  auto left_padding = std::string(token.location_.second+ 10, ' '); 
+  std::cout << "parse-error\n\n"
+            << token.diagnostic_ << "\n"
+            << left_padding << utilities::TermColours::red_fg
+            << "^" << std::string(token.expr_.length() - 1, '~') << "\n"
+            << left_padding<<  message;
 
   if (auto f = rs::find_if(suggestions,
-                           [word = tok.expr_](auto attempt) {
+                           [word = token.expr_](auto attempt) {
                              return utilities::match(attempt, word);
                            });
       f != rs::end(suggestions))
     std::cout << "\n"
-              << std::string(column + 9, ' ') << "Did you mean "
-              << utilities::TermColours::green_fg << *f;
+              << left_padding<< "Did you mean "
+              << utilities::TermColours::green_fg << *f 
+              << utilities::TermColours::red_fg <<  "?";
 
   std::cout << utilities::TermColours::reset << std::endl;
 }
@@ -291,6 +285,16 @@ Block
   auto const tokens = lexer_.getTokens();
   Block      current;
   current.name_ = tokens[begin].expr_;
+  current.name_token_ = tokens[begin];
+  //auto lines            = lexer_.getLines();
+  //auto line             = tok.location_.first;
+  //auto column           = token.location_.second;
+  //auto diagnostic = token.diagnostic_;
+  /*
+  line_with_colour.insert(column + tok.expr_.length(),
+                          utilities::TermColours::reset);
+  line_with_colour.insert(column, utilities::TermColours::red_fg);
+	*/
   if (rs::none_of(config_manager::allComponentNames(), [&](auto comp_name) {
         return comp_name == current.name_.substr(1);
       }))

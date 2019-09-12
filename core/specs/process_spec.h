@@ -56,6 +56,7 @@ class ProcessSpec
   TraceConfig traces_;
 
   std::string                                   name_;
+  language::Token                           name_token_;
   std::string                                   user_specified_name_;
   std::map<std::string, ConfigurationPrimitive> parameters_;
 
@@ -252,6 +253,7 @@ public:
   void                                       instantiateUserParameterSizes();
   void                                       bindSubstrateIO(SubstrateSpec);
   void                                       bindSignalTo(SubstrateSpec);
+  void errSignalBind(SubstrateSpec,SignalSpec,bool);
   void                                       bindTags(int);
   void                                       recordTraces();
   std::vector<std::pair<Trace, std::string>> queryTraces();

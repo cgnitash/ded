@@ -3,6 +3,7 @@
 #include "../utilities/term_colours.h"
 #include "../utilities/utilities.h"
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 
 namespace ded
@@ -53,23 +54,38 @@ void
     for (std::smatch m; i != line.cend() &&
                         std::regex_search(i, line.cend(), m, valid_symbol_);
          i += m.str().length())
-      if (!rs::all_of(m.str(), ::isspace))
+    {
+      auto expr = m.str();
+      if (!rs::all_of(expr, ::isspace))
       {
-        auto type = language::parseTokenType(m.str());
+        auto column             = i - line.cbegin();
+        auto diagnostic_message = line;
+        diagnostic_message.insert(column + expr.length(),
+                                  utilities::TermColours::reset);
+        diagnostic_message.insert(column, utilities::TermColours::red_fg);
+        std::stringstream diagnostic;
+        diagnostic << utilities::TermColours::cyan_fg << "Line" << std::setw(4)
+                   << line_number + 1 << ": " << utilities::TermColours::reset
+                   << diagnostic_message;
+        auto type = language::parseTokenType(expr);
         tokens_.push_back(language::Token{
             type,
-            m.str(),
-            { line_number, i - line.cbegin() },
-            type == language::TokenType::tracked_word ? m.str()
-                                                      : std::string{} });
+            expr,
+            { line_number, column },
+            diagnostic.str(),
+            type == language::TokenType::tracked_word ? expr : std::string{} });
       }
+    }
+
     if (i != line.cend())
     {
 
-      std::cout << "parse-error:" << line_number + 1 << ":"
+      std::cout << "parse-error:\n\n"
+                << utilities::TermColours::cyan_fg << "Line" << std::setw(4)
+                << line_number + 1 << ": " << utilities::TermColours::reset
                 << i - line.cbegin() + 1 << "\n"
                 << lines_[line_number] << "\n"
-                << std::string(i - line.cbegin(), ' ')
+                << std::string(i - line.cbegin() + 10, ' ')
                 << utilities::TermColours::red_fg << "^ unknown symbol\n"
                 << utilities::TermColours::reset;
       throw language::ParserError{};

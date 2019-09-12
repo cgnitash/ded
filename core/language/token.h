@@ -2,9 +2,9 @@
 
 #pragma once
 
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
 
 namespace ded
 {
@@ -38,16 +38,26 @@ struct Token
   TokenType           type_;
   std::string         expr_;
   std::pair<int, int> location_;
-  std::string refers_;
+  std::string         diagnostic_;
+  std::string         refers_;
 };
+
+/*
+struct NameToken
+{
+  std::string line;
+  std::pair<int, int> pos;
+};
+*/
 
 struct Block
 {
-  std::string                          name_;
-  std::pair<int, int>                  range_;
-  std::vector<std::pair<Token, Token>> overrides_;
-  std::vector<std::pair<Token, Token>> traces_;
-  std::vector<std::pair<Token, Block>> nested_;
+  Token                                             name_token_;
+  std::string                                       name_;
+  std::pair<int, int>                               range_;
+  std::vector<std::pair<Token, Token>>              overrides_;
+  std::vector<std::pair<Token, Token>>              traces_;
+  std::vector<std::pair<Token, Block>>              nested_;
   std::vector<std::pair<Token, std::vector<Block>>> nested_vector_;
 };
 
