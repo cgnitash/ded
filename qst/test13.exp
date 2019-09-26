@@ -1,0 +1,43 @@
+
+
+e = $markov_brain 
+ {
+     hiddens = 5
+	 outputs = 2
+	 inputs = 4
+ }
+
+Population = $linear 
+ { 
+	size = 40
+	entity = !e # `entity` is special
+	track_lineage = true 
+ }
+
+one = $forager { ? food_eaten 2 }
+
+two = $forager 
+{ 
+	direction = false  
+	? food_eaten 3  
+}
+
+day_night = $sequence 
+ {
+    first 	= 	$fork_join 
+	{
+		envs = < !one !two >
+	}
+    second = $elite_replacement 
+	{ 
+		? value 5
+ 		strength = [ 0.1 0.4 ] 
+    }
+ }
+
+Process = $cycle  
+ { 
+  count = 50
+  world = !day_night
+ }
+

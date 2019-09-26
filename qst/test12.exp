@@ -1,0 +1,48 @@
+
+# working
+
+enc = $encoding 
+{
+	point_mutate_prob =  0.005 
+}
+
+logic =  $det_logic
+{
+     hiddens =   2 
+	 outputs =  2
+	 inputs = 4
+}
+	 
+e = $buffet 
+{
+     hiddens =   2 
+	 outputs =  2
+	 inputs = 4
+	 genome = !enc
+	 gates = < !logic !logic >
+}
+
+Population = $linear 
+{ 
+	size = 50 
+	entity = !e # `entity` is special
+	track_lineage = true 
+	load_from = ""
+}
+
+
+
+
+Process = $cycle  { 
+ count = 11
+  world = 
+	$sequence  
+	{
+     first 	= 	$forager 	
+				{ 
+				  ? food_eaten 2 
+				}
+     second = $elite_replacement  {  strength = 0.5  }
+	}
+}
+
