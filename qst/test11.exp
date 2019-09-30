@@ -1,14 +1,21 @@
 
 # working
 
-e = $markov_brain {
-     hiddens =  [ 2 3 ] 
+c = $cppn {
+     hiddens =  2  
+	 outputs =  1
+	 inputs = 2
+	}
+
+e = $markov_brain_regular_cppn {
+     #hiddens =  [ 2 3 ] 
 	 outputs =  2
 	 inputs = 4
+	 cppn = !c
 	}
 
 Population = $linear { 
-	size = 100 
+	size = 10 
 	entity = !e # `entity` is special
 	track_lineage = true 
 	}
@@ -19,17 +26,18 @@ fors = $sequence
 {
      first 	= 	$forager 	
 				{ 
-				  #? food_eaten 5 
+				  ? food_eaten 5 
 			      #replace = [ true false ]   
 				}
      second = $elite_replacement 
 			  {  strength = 0.1  
-				  ? value 5 }
+				  #? value 5 
+			  }
 }
 
 
 Process = $cycle  { 
- count = 1001
+ count = 101
   world = !fors
 }
 

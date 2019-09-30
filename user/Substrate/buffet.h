@@ -24,11 +24,13 @@ class buffet
   std::vector<ded::concepts::Substrate> gates_;
   std::vector<ded::specs::SubstrateSpec> gate_specs_;
 
-  struct GateEncodings {
-	  long gene_length;
-	  std::vector<long> start_codon;
-ded::specs::SubstrateSpec gate_spec;
+  struct GateEncodings
+  {
+    long                      gene_length;
+    std::vector<long>         start_codon;
+    ded::specs::SubstrateSpec gate_spec;
   };
+
   std::vector<GateEncodings> gate_encodings_;
   // std::vector<long> codon_{ 7, 14 };
   // long              gene_length_ = 28;

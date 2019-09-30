@@ -80,7 +80,6 @@ void
         std::string                                      proc_name,
         std::vector<std::pair<std::string, std::string>> pre_constraints)
 {
-  // tags_.post_.push_back({ name, SignalSpec{ name, name, value } });
   if (nested_.find(proc_name) == nested_.end())
   {
     std::cout << "User error: nested process vector " << proc_name

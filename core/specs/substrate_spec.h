@@ -33,9 +33,11 @@ class SubstrateSpec
   struct NestedSubstrateSpec
   {
     std::unique_ptr<SubstrateSpec> e;
+    IO                             constraints_;
     NestedSubstrateSpec() = default;
     NestedSubstrateSpec(const NestedSubstrateSpec &ns)
-        : e(std::make_unique<SubstrateSpec>(*ns.e))
+        : e(std::make_unique<SubstrateSpec>(*ns.e)),
+          constraints_(ns.constraints_)
     {
     }
   };
@@ -113,21 +115,35 @@ public:
   void bindNestedSubstrates(std::string name, std::vector<SubstrateSpec> subs);
   void configureNestedSubstrates(std::string                 name,
                                  std::vector<SubstrateSpec> &subs);
-  void bindSubstrate(std::string name, SubstrateSpec sub);
+  void bindSubstrate(
+      std::string                                      name,
+      SubstrateSpec                                    sub,
+      std::vector<std::pair<std::string, std::string>> input_constraints,
+      std::vector<std::pair<std::string, std::string>> output_constraints);
   void configureSubstrate(std::string name, SubstrateSpec &sub);
   void parseParameters(language::Parser, language::Block);
   void parseNested(language::Parser, language::Block);
   void parseNestedVector(language::Parser, language::Block);
 
-  // friend std::ostream &operator<<(std::ostream &out, SubstrateSpec e)
+  /*
+  void configureSubstrateInput(std::string  name,
+                               std::string  input_name,
+                               std::string &value);
+
+  void configureSubstrateOutput(std::string  name,
+                                std::string  output_name,
+                                std::string &value);
+*/
   std::vector<std::string> serialise(long) const;
   SubstrateSpec            deserialise(std::vector<std::string>);
   std::string              prettyPrint();
 
   void instantiateUserParameterSizes(int);
+  void checkNestedIO();
+  void updateNestedConstraints(SignalSpecSet &constraints);
+  void matchSignals(SignalSpecSet &source_tags, SignalSpecSet &sink_tags);
 
-  void
-      bindSubstrateIO(SubstrateSpec);
+  void bindSubstrateIO(SubstrateSpec);
 
   friend class concepts::Substrate;
 };

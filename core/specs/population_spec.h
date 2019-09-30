@@ -111,6 +111,7 @@ public:
       instantiateNestedSubstrateUserParameterSizes()
   {
 	es_.instantiateUserParameterSizes(0);
+	es_.checkNestedIO();
     return es_;
   }
   //  friend std::ostream &operator<<(std::ostream &out, PopulationSpec e)

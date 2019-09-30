@@ -91,9 +91,35 @@ void
 }
 
 void
-    SubstrateSpec::bindSubstrate(std::string name, SubstrateSpec sub)
+    SubstrateSpec::bindSubstrate(
+        std::string                                      substrate_name,
+        SubstrateSpec                                    sub,
+        std::vector<std::pair<std::string, std::string>> input_constraints,
+        std::vector<std::pair<std::string, std::string>> output_constraints)
 {
-  nested_[name].e = std::make_unique<SubstrateSpec>(sub);
+  if (nested_.find(substrate_name) != nested_.end())
+  {
+    std::cout << "User error: nested substrate " << substrate_name
+              << " has already been declared\n";
+    throw SpecError{};
+  }
+  nested_[substrate_name].e = std::make_unique<SubstrateSpec>(sub);
+
+  nested_[substrate_name].constraints_.inputs_ =
+      input_constraints |
+      rv::transform([](auto tag) -> std::pair<std::string, SignalSpec> {
+        auto name  = tag.first;
+        auto value = tag.second;
+        return { name, SignalSpec{ name, name, value } };
+      });
+
+  nested_[substrate_name].constraints_.outputs_ =
+      output_constraints |
+      rv::transform([](auto tag) -> std::pair<std::string, SignalSpec> {
+        auto name  = tag.first;
+        auto value = tag.second;
+        return { name, SignalSpec{ name, name, value } };
+      });
 }
 
 void
@@ -102,14 +128,54 @@ void
   if (!nested_[name].e)
   {
     std::cout << "Warning: <" << name_ << ":" << name
-              << "> environment spec has not been bind-ed (probably error)\n";
+              << "> substrate spec has not been bind-ed (probably error)\n";
     //      std::exit(1);
   }
   else
     sub = *nested_[name].e;
 }
 
-void SubstrateSpec::bindSubstrateIO(SubstrateSpec sub_spec)
+void
+    SubstrateSpec::matchSignals(SignalSpecSet &source_tags,
+                                SignalSpecSet &sink_tags)
+{
+
+  if (source_tags.size() != sink_tags.size())
+  {
+    std::cout << "cannot match nested substrate signals\n";
+    throw SpecError{};
+  }
+  auto sink_tags_copy = sink_tags;
+  for (auto &n_tag : source_tags)
+  {
+    auto &src     = n_tag.second;
+    auto  matches = rs::count_if(sink_tags_copy, [sig = src](auto ns) {
+      return ns.second.exactlyMatches(sig);
+    });
+    if (matches > 1)
+    {
+      std::cout << "error: multiple tags match exactly\n";
+      throw SpecError{};
+    }
+    if (!matches)
+    {
+      std::cout << "error: no tags match exactly (convertible signals "
+                   "not supported yet)\n";
+      throw SpecError{};
+    }
+
+    rs::find_if(sink_tags,
+                [sig = src](auto ns) { return ns.second.exactlyMatches(sig); })
+        ->second.updateIdentifier(src.identifier());
+
+    sink_tags_copy.erase(rs::find_if(sink_tags_copy, [sig = src](auto ns) {
+      return ns.second.exactlyMatches(sig);
+    }));
+  }
+}
+
+void
+    SubstrateSpec::bindSubstrateIO(SubstrateSpec sub_spec)
 {
   auto ios = sub_spec.getIO();
 
@@ -299,7 +365,7 @@ void
 
 SubstrateSpec::SubstrateSpec(language::Parser parser, language::Block block)
 {
-  *this =  ALL_SUBSTRATE_SPECS[block.name_.substr(1)];
+  *this = ALL_SUBSTRATE_SPECS[block.name_.substr(1)];
 
   name_token_ = block.name_token_;
 
@@ -468,6 +534,40 @@ void
         n_sig.second.updateIdentifier("~sig" + std::to_string(sig_count++));
       }
 }
+
+void
+    SubstrateSpec::checkNestedIO()
+{
+  for (auto &ename_es : nested_)
+  {
+    auto &es = ename_es.second;
+    matchSignals(es.constraints_.inputs_, es.e->io_.inputs_);
+    matchSignals(es.constraints_.outputs_, es.e->io_.outputs_);
+    es.e->checkNestedIO();
+  }
+}
+
+/*
+void
+    SubstrateSpec::configureSubstrateInput(std::string  name,
+                                           std::string  input_name,
+                                           std::string &value)
+{
+  value = rs::find_if(nested_[name].constraints_.inputs_,
+                      [=](auto ns) { return ns.first == input_name; })
+              ->second.identifier();
+}
+
+void
+    SubstrateSpec::configureSubstrateOutput(std::string  name,
+                                            std::string  output_name,
+                                            std::string &value)
+{
+  value = rs::find_if(nested_[name].constraints_.outputs_,
+                      [=](auto ns) { return ns.first == output_name; })
+              ->second.identifier();
+}
+*/
 
 }   // namespace specs
 }   // namespace ded
