@@ -1,0 +1,63 @@
+
+# working
+
+c = $cppn {
+     hiddens =  2  
+	 outputs =  1
+	 inputs = 2
+	}
+
+MB = $markov_brain {
+	 outputs =  2
+	 inputs = 4
+	}
+
+R = $markov_brain_regular_cppn {
+	 outputs =  2
+	 inputs = 4
+	 cppn = !c
+	}
+
+IR = $markov_brain_irregular_cppn {
+	 outputs =  2
+	 inputs = 4
+	 cppn = !c
+	}
+
+INR = $markov_brain_individual_regular_cppn {
+	 outputs =  2
+	 inputs = 4
+	 cppn = !c
+	}
+
+INIR = $markov_brain_individual_irregular_cppn {
+	 outputs =  2
+	 inputs = 4
+	 cppn = !c
+	}
+
+Population = $linear { 
+	size = 10 
+	entity = [ !MB !R !IR !INR !INIR ]
+	track_lineage = true 
+	}
+
+
+
+fors = $sequence  
+{
+     first 	= 	$forager 	
+				{ 
+				  ? food_eaten 5 
+				}
+     second = $elite_replacement 
+			  {  strength = 0.1  
+			  }
+}
+
+
+Process = $cycle  { 
+ count = 101
+  world = !fors
+}
+
