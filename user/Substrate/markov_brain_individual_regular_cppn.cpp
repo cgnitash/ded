@@ -1,11 +1,11 @@
 
-#include "markov_brain_regular_cppn.h"
+#include "markov_brain_individual_regular_cppn.h"
 
 #include <algorithm>
 #include <vector>
 
 ded::concepts::Encoding
-    markov_brain_regular_cppn::parseEncoding(std::string s)
+    markov_brain_individual_regular_cppn::parseEncoding(std::string s)
 {
   ded::concepts::Encoding e;
   for (std::sregex_iterator end,
@@ -23,14 +23,14 @@ ded::concepts::Encoding
 }
 
 void
-    markov_brain_regular_cppn::reset()
+    markov_brain_individual_regular_cppn::reset()
 {
   for (auto &b : buffer_)
     b = 0;
 }
 
 void
-    markov_brain_regular_cppn::mutate()
+    markov_brain_individual_regular_cppn::mutate()
 {
 
   genome_.pointDelete();
@@ -43,7 +43,8 @@ void
 }
 
 void
-    markov_brain_regular_cppn::input(std::string n, ded::concepts::Signal s)
+    markov_brain_individual_regular_cppn::input(std::string           n,
+                                                ded::concepts::Signal s)
 {
   if (n == in_sense_)
   {
@@ -54,7 +55,7 @@ void
 }
 
 ded::concepts::Signal
-    markov_brain_regular_cppn::output(std::string n)
+    markov_brain_individual_regular_cppn::output(std::string n)
 {
 
   if (n == out_sense_)
@@ -66,7 +67,7 @@ ded::concepts::Signal
 }
 
 void
-    markov_brain_regular_cppn::tick()
+    markov_brain_individual_regular_cppn::tick()
 {
 
   if (!gates_are_computed_)
@@ -91,16 +92,12 @@ void
 }
 
 void
-    markov_brain_regular_cppn::compute_gates_()
+    markov_brain_individual_regular_cppn::compute_gates_()
 {
-  auto                    cppn = ded::makeSubstrate(cppn_spec_);
-  ded::concepts::Encoding e;
-  e.set({ std::begin(genome_), std::begin(genome_) + cppn_gene_length_ });
-  cppn.setEncoding(e);
-
   gates_.clear();
   auto addresses = input_ + output_ + hidden_;
-  for (auto pos{ std::begin(genome_) }; pos < std::end(genome_) - gene_length_;
+  for (auto pos{ std::begin(genome_) };
+       pos < std::end(genome_) - gene_length_ - cppn_gene_length_;
        pos++)
   {
     // find the next codon
@@ -127,6 +124,13 @@ void
       auto y_origin = *(pos + 13) % 6 - 3.14;
       auto x_offset = *(pos + 14) % 6 - 3.14;
       auto y_offset = *(pos + 15) % 6 - 3.14;
+
+      // generate individual cppn
+      auto                    cppn = ded::makeSubstrate(cppn_spec_);
+      ded::concepts::Encoding e;
+      e.set({ pos + 16, pos + 16 + cppn_gene_length_ });
+      cppn.setEncoding(e);
+
       for (auto i : rv::iota(0, 16))
       {
         cppn.input("cppn_input",

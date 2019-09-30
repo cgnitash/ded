@@ -125,15 +125,6 @@ public:
   void parseNested(language::Parser, language::Block);
   void parseNestedVector(language::Parser, language::Block);
 
-  /*
-  void configureSubstrateInput(std::string  name,
-                               std::string  input_name,
-                               std::string &value);
-
-  void configureSubstrateOutput(std::string  name,
-                                std::string  output_name,
-                                std::string &value);
-*/
   std::vector<std::string> serialise(long) const;
   SubstrateSpec            deserialise(std::vector<std::string>);
   std::string              prettyPrint();

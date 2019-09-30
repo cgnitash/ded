@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <vector>
 
-class markov_brain_regular_cppn
+class markov_brain_irregular_cppn
 {
 
   std::string in_sense_  = "<double,inputs>";
@@ -24,7 +24,7 @@ class markov_brain_regular_cppn
   std::vector<double> buffer_;
 
   std::vector<long> codon_{ 7, 14 };
-  long              gene_length_ = 16;
+  long              gene_length_ = 34;
 
   long cppn_gene_length_{};
 
@@ -39,7 +39,7 @@ class markov_brain_regular_cppn
   void compute_gates_();
 
 public:
-  markov_brain_regular_cppn()
+  markov_brain_irregular_cppn()
   {
     configure(publishConfiguration());
   }

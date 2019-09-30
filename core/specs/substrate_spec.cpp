@@ -547,27 +547,5 @@ void
   }
 }
 
-/*
-void
-    SubstrateSpec::configureSubstrateInput(std::string  name,
-                                           std::string  input_name,
-                                           std::string &value)
-{
-  value = rs::find_if(nested_[name].constraints_.inputs_,
-                      [=](auto ns) { return ns.first == input_name; })
-              ->second.identifier();
-}
-
-void
-    SubstrateSpec::configureSubstrateOutput(std::string  name,
-                                            std::string  output_name,
-                                            std::string &value)
-{
-  value = rs::find_if(nested_[name].constraints_.outputs_,
-                      [=](auto ns) { return ns.first == output_name; })
-              ->second.identifier();
-}
-*/
-
 }   // namespace specs
 }   // namespace ded

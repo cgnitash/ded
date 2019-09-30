@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <vector>
 
-class markov_brain_regular_cppn
+class markov_brain_individual_regular_cppn
 {
 
   std::string in_sense_  = "<double,inputs>";
@@ -39,7 +39,7 @@ class markov_brain_regular_cppn
   void compute_gates_();
 
 public:
-  markov_brain_regular_cppn()
+  markov_brain_individual_regular_cppn()
   {
     configure(publishConfiguration());
   }
