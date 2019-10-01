@@ -160,7 +160,7 @@ void
 #SBATCH --array=0-)~" <<  replicate_count - 1 <<
 R"~(
 cd ${SLURM_SUBMIT_DIR}
-//./ded -f ${SLURM_ARRAY_TASK_ID} qst/data/$1
+./ded -f $1 ${SLURM_ARRAY_TASK_ID} 
 )~";
 
   std::ofstream experiment_script("./run.sh");
