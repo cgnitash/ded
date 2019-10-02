@@ -57,7 +57,8 @@ void
 
   for (auto [type, names] : build_options)
     for (auto name : names)
-      header << "#include\"user/" << type << "/" << name << ".h\"\n";
+      header << "#include\"user/" << type << "/" << name << "/" << name
+             << ".h\"\n";
 
   header << "\n#include<string_view>\n\nnamespace ded {\n\n";
 
@@ -164,7 +165,9 @@ void
                       std::string        args)
 {
   auto asHeader = [](auto s) { return s + ".h "; };
+//  auto asNestedHeader = [](auto s) { return s + "/" + s + ".h "; };
   auto asSource = [](auto s) { return s + ".cpp "; };
+//  auto asNestedSource = [](auto s) { return s + "/" + s + ".cpp "; };
   auto asObject = [](auto s) {
     std::replace(s.begin(), s.end(), '/', '_');
     return "obj_files/" + s + ".o ";
@@ -195,7 +198,7 @@ void
   std::vector<std::string> user_files;
   for (auto &[type, names] : build_options)
     for (auto &name : names)
-      user_files.push_back("user/" + type + "/" + name);
+      user_files.push_back("user/" + type + "/" + name + "/" + name);
 
   std::ofstream makefile(fname);
 
