@@ -132,7 +132,11 @@ public:
   void instantiateUserParameterSizes(int);
   void checkNestedIO();
   void updateNestedConstraints(SignalSpecSet &constraints);
-  void matchSignals(SignalSpecSet &source_tags, SignalSpecSet &sink_tags);
+  void matchNestedSignals(NestedSubstrateSpec &,
+                          SignalSpecSet &source_tags,
+                          SignalSpecSet &sink_tags,
+                          bool           is_input);
+  void errSignalBind(SubstrateSpec sub_spec, SignalSpec sig, bool is_input);
 
   void bindSubstrateIO(SubstrateSpec);
 

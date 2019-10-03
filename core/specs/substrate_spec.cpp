@@ -136,10 +136,46 @@ void
 }
 
 void
-    SubstrateSpec::matchSignals(SignalSpecSet &source_tags,
-                                SignalSpecSet &sink_tags)
+    SubstrateSpec::errSignalBind(SubstrateSpec sub_spec,
+                                 SignalSpec    sig,
+                                 bool          is_input)
 {
+  auto diagnostic_message = name_token_.diagnostic_;
+  auto left_padding       = std::string(name_token_.location_.second + 10, ' ');
+  std::cout << "parse-error\n\n"
+            << diagnostic_message << "\n"
+            << left_padding << utilities::TermColours::red_fg << "^"
+            << std::string(name_token_.expr_.length() - 1, '~') << "\n"
+            << left_padding << "no " << (is_input ? "input" : "output")
+            << " signals provided by substrate can be bound\n"
+            << utilities::TermColours::reset << left_padding
+            << sig.diagnosticName() << "\n\n";
 
+  auto substrate_name_token  = sub_spec.nameToken();
+  auto ss_diagnostic_message = substrate_name_token.diagnostic_;
+  auto ss_left_padding =
+      std::string(substrate_name_token.location_.second + 10, ' ');
+
+  std::cout << ss_diagnostic_message << "\n"
+            << ss_left_padding << utilities::TermColours::red_fg << "^"
+            << std::string(substrate_name_token.expr_.length() - 1, '~') << "\n"
+            << ss_left_padding << "viable " << (is_input ? "input" : "output")
+            << " signal candidates provided\n"
+            << utilities::TermColours::reset;
+
+  auto valid_signals =
+      is_input ? sub_spec.getIO().inputs_ : sub_spec.getIO().outputs_;
+  for (auto sig : valid_signals)
+    std::cout << ss_left_padding << sig.second.diagnosticName() << std::endl;
+  throw SpecError{};
+}
+
+void
+    SubstrateSpec::matchNestedSignals(NestedSubstrateSpec &nes,
+                                      SignalSpecSet &      source_tags,
+                                      SignalSpecSet &      sink_tags,
+                                      bool                 is_input)
+{
   if (source_tags.size() != sink_tags.size())
   {
     std::cout << "cannot match nested substrate signals\n";
@@ -159,9 +195,7 @@ void
     }
     if (!matches)
     {
-      std::cout << "error: no tags match exactly (convertible signals "
-                   "not supported yet)\n";
-      throw SpecError{};
+      errSignalBind(*nes.e, src, is_input);
     }
 
     rs::find_if(sink_tags,
@@ -171,6 +205,18 @@ void
     sink_tags_copy.erase(rs::find_if(sink_tags_copy, [sig = src](auto ns) {
       return ns.second.exactlyMatches(sig);
     }));
+  }
+}
+
+void
+    SubstrateSpec::checkNestedIO()
+{
+  for (auto &ename_es : nested_)
+  {
+    auto &es = ename_es.second;
+    matchNestedSignals(es, es.constraints_.inputs_, es.e->io_.inputs_, true);
+    matchNestedSignals(es, es.constraints_.outputs_, es.e->io_.outputs_, false);
+    es.e->checkNestedIO();
   }
 }
 
@@ -533,18 +579,6 @@ void
         n_sig.second.instantiateUserParameter(std::stol(cp.valueAsString()));
         n_sig.second.updateIdentifier("~sig" + std::to_string(sig_count++));
       }
-}
-
-void
-    SubstrateSpec::checkNestedIO()
-{
-  for (auto &ename_es : nested_)
-  {
-    auto &es = ename_es.second;
-    matchSignals(es.constraints_.inputs_, es.e->io_.inputs_);
-    matchSignals(es.constraints_.outputs_, es.e->io_.outputs_);
-    es.e->checkNestedIO();
-  }
 }
 
 }   // namespace specs
