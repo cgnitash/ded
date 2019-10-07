@@ -60,6 +60,7 @@ void
   variables_.push_back({ tokens[begin], nested_block });
 }
 
+/*
 void
     Parser::errInvalidToken(Token                    token,
                             std::string              message,
@@ -84,6 +85,7 @@ void
 
   std::cout << utilities::TermColours::reset << std::endl;
 }
+*/
 
 Block
     Parser::expandBlock(int begin)

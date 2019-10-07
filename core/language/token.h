@@ -42,13 +42,9 @@ struct Token
   std::string         refers_;
 };
 
-/*
-struct NameToken
-{
-  std::string line;
-  std::pair<int, int> pos;
-};
-*/
+void errInvalidToken(Token                    token,
+                     std::string              message,
+                     std::vector<std::string> suggestions = {});
 
 struct Block
 {

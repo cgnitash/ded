@@ -9,7 +9,7 @@ enc = $encoding
 e = $markov_brain 
 {
      hiddens =   [ 2 3 4 ] 
-	 outputs =  2
+	 outputs =  2 
 	 inputs = 4
 	 genome = !enc
 }

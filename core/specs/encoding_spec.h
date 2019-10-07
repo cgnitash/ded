@@ -29,7 +29,7 @@ public:
   EncodingSpec(std::string name = "") : name_(name)
   {
   }
-  EncodingSpec(language::Parser, language::Block);
+  EncodingSpec( language::Block);
 
   auto
       name() const

@@ -236,8 +236,8 @@ void
                ra::join);
 
   makefile << "\n\nclean : "
-           << "\n\trm obj_files/*.o"
-           << "\n\trm ded\n\n";
+           << "\n\trm -f obj_files/*.o"
+           << "\n\trm -f ded\n\n";
 }
 
 int

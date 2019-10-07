@@ -54,7 +54,7 @@ public:
   SubstrateSpec(std::string name = "") : name_(name)
   {
   }
-  SubstrateSpec(language::Parser, language::Block);
+  SubstrateSpec(language::Block);
 
   auto
       name() const
@@ -121,9 +121,9 @@ public:
       std::vector<std::pair<std::string, std::string>> input_constraints,
       std::vector<std::pair<std::string, std::string>> output_constraints);
   void configureSubstrate(std::string name, SubstrateSpec &sub);
-  void parseParameters(language::Parser, language::Block);
-  void parseNested(language::Parser, language::Block);
-  void parseNestedVector(language::Parser, language::Block);
+  void parseParameters( language::Block);
+  void parseNested( language::Block);
+  void parseNestedVector( language::Block);
 
   std::vector<std::string> serialise(long) const;
   SubstrateSpec            deserialise(std::vector<std::string>);

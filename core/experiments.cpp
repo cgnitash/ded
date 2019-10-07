@@ -30,13 +30,13 @@ Simulation
   {
     auto ct = ded::config_manager::typeOfBlock(bl.name_.substr(1));
     if (ct == "process")
-      vars[name.expr_] = ded::specs::ProcessSpec{ p, bl };
+      vars[name.expr_] = ded::specs::ProcessSpec{  bl };
     else if (ct == "substrate")
-      vars[name.expr_] = ded::specs::SubstrateSpec{ p, bl };
+      vars[name.expr_] = ded::specs::SubstrateSpec{ bl };
     else if (ct == "population")
-      vars[name.expr_] = ded::specs::PopulationSpec{ p, bl };
+      vars[name.expr_] = ded::specs::PopulationSpec{  bl };
     else if (ct == "encoding")
-      vars[name.expr_] = ded::specs::EncodingSpec{ p, bl };
+      vars[name.expr_] = ded::specs::EncodingSpec{  bl };
     else
     {
       std::cout << "oops: not a component!\n" << bl.name_.substr(1);

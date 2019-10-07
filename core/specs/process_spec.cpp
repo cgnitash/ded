@@ -360,7 +360,7 @@ void
   auto left_padding       = std::string(name_token_.location_.second + 10, ' ');
   std::cout << "parse-error\n\n"
             << diagnostic_message << "\n"
-            << left_padding << utilities::TermColours::red_fg << "^" 
+            << left_padding << utilities::TermColours::red_fg << "^"
             << std::string(name_token_.expr_.length() - 1, '~') << "\n"
             << left_padding << "no " << (is_input ? "input" : "output")
             << " signals provided by substrate can be bound\n"
@@ -492,7 +492,7 @@ void
 }
 
 void
-    ProcessSpec::parseParameters(language::Parser parser, language::Block block)
+    ProcessSpec::parseParameters(language::Block block)
 {
   for (auto over : block.overrides_)
   {
@@ -503,7 +503,7 @@ void
                          [&](auto param) { return param.first == name.expr_; });
     if (f == parameters_.end())
     {
-      parser.errInvalidToken(
+      errInvalidToken(
           name,
           "this does not override any parameters of " + name_,
           parameters_ | rv::transform([](auto param) { return param.first; }));
@@ -515,27 +515,25 @@ void
     if (cp.typeAsString() != f->second.typeAsString())
     {
       using namespace std::literals::string_literals;
-      parser.errInvalidToken(value,
-                             (cp.typeAsString() == "NULL"
-                                  ? "unable to parse configuration primitive"s
-                                  : "type mismatch"s) +
-                                 ", should be '" + f->second.typeAsString() +
-                                 "'");
+      errInvalidToken(value,
+                      (cp.typeAsString() == "NULL"
+                           ? "unable to parse configuration primitive"s
+                           : "type mismatch"s) +
+                          ", should be '" + f->second.typeAsString() + "'");
       throw language::ParserError{};
     }
     f->second.parse(cp.valueAsString());
     auto con = f->second.checkConstraints();
     if (con)
     {
-      parser.errInvalidToken(value,
-                             "parameter constraint not satisfied: " + *con);
+      errInvalidToken(value, "parameter constraint not satisfied: " + *con);
       throw language::ParserError{};
     }
   }
 }
 
 void
-    ProcessSpec::parseTraces(language::Parser parser, language::Block block)
+    ProcessSpec::parseTraces(language::Block block)
 {
   for (auto over : block.traces_)
   {
@@ -546,8 +544,7 @@ void
     cp.parse(frequency.expr_);
     if (cp.typeAsString() != "long")
     {
-      parser.errInvalidToken(frequency,
-                             "expected frequency of trace (number) here");
+      errInvalidToken(frequency, "expected frequency of trace (number) here");
       throw language::ParserError{};
     }
 
@@ -569,7 +566,7 @@ void
     }
     else
     {
-      parser.errInvalidToken(
+      errInvalidToken(
           tag_name,
           "this is not a pre/post tag of " + name_,
           rv::concat(
@@ -581,7 +578,7 @@ void
 }
 
 void
-    ProcessSpec::parseNested(language::Parser parser, language::Block block)
+    ProcessSpec::parseNested(language::Block block)
 {
   for (auto blover : block.nested_)
   {
@@ -592,7 +589,7 @@ void
                          [&](auto param) { return param.first == name.expr_; });
     if (f == nested_.end())
     {
-      parser.errInvalidToken(
+      errInvalidToken(
           name,
           "this does not override any nested processs " + block.name_,
           nested_ | rv::transform([](auto param) { return param.first; }));
@@ -602,22 +599,19 @@ void
     auto ct = config_manager::typeOfBlock(nested_blk.name_.substr(1));
     if (ct != "process")
     {
-      parser.errInvalidToken(name,
-                             "override of " + name.expr_ +
-                                 " must be of type process",
-                             config_manager::allProcessNames());
+      errInvalidToken(name,
+                      "override of " + name.expr_ + " must be of type process",
+                      config_manager::allProcessNames());
       throw language::ParserError{};
     }
 
-    f->second.e =
-        std::make_unique<ProcessSpec>(ProcessSpec{ parser, nested_blk });
+    f->second.e = std::make_unique<ProcessSpec>(ProcessSpec{ nested_blk });
     f->second.e->setUserSpecifiedName(name.expr_);
   }
 }
 
 void
-    ProcessSpec::parseNestedVector(language::Parser parser,
-                                   language::Block  block)
+    ProcessSpec::parseNestedVector(language::Block block)
 {
   for (auto blover : block.nested_vector_)
   {
@@ -627,12 +621,12 @@ void
                          [&](auto param) { return param.first == name.expr_; });
     if (f == nested_vector_.end())
     {
-      parser.errInvalidToken(
-          name,
-          "this does not override any nested vector of processes " +
-              block.name_,
-          nested_vector_ |
-              rv::transform([](auto param) { return param.first; }));
+      errInvalidToken(name,
+                      "this does not override any nested vector of processes " +
+                          block.name_,
+                      nested_vector_ | rv::transform([](auto param) {
+                        return param.first;
+                      }));
       throw language::ParserError{};
     }
 
@@ -641,15 +635,15 @@ void
       auto ct = config_manager::typeOfBlock(nested_blk.name_.substr(1));
       if (ct != "process")
       {
-        parser.errInvalidToken(name,
-                               "nested process vector of " + name.expr_ +
-                                   " must be of type process",
-                               config_manager::allProcessNames());
+        errInvalidToken(name,
+                        "nested process vector of " + name.expr_ +
+                            " must be of type process",
+                        config_manager::allProcessNames());
         throw language::ParserError{};
       }
 
       NestedProcessSpec ns;
-      ns.e = std::make_unique<ProcessSpec>(ProcessSpec{ parser, nested_blk });
+      ns.e = std::make_unique<ProcessSpec>(ProcessSpec{  nested_blk });
       ns.constraints_ = f->second.second;
       ns.e->setUserSpecifiedName(name.expr_ + "_" + std::to_string(i));
       f->second.first.push_back(ns);
@@ -657,17 +651,17 @@ void
   }
 }
 
-ProcessSpec::ProcessSpec(language::Parser parser, language::Block block)
+ProcessSpec::ProcessSpec( language::Block block)
 {
 
   *this = ALL_PROCESS_SPECS.at(block.name_.substr(1));
 
   name_token_ = block.name_token_;
 
-  parseParameters(parser, block);
-  parseTraces(parser, block);
-  parseNested(parser, block);
-  parseNestedVector(parser, block);
+  parseParameters( block);
+  parseTraces( block);
+  parseNested( block);
+  parseNestedVector( block);
 }
 
 std::vector<std::string>

@@ -38,7 +38,7 @@ class Parser
   Labels labels_;
 
 
-  void errInvalidToken(Token, std::string, std::vector<std::string> = {});
+//  void errInvalidToken(Token, std::string, std::vector<std::string> = {});
 
   void parseExpression(int);
 

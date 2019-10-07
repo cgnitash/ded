@@ -16,7 +16,7 @@ namespace specs
 {
 
 
-EncodingSpec::EncodingSpec(language::Parser p, language::Block blk)
+EncodingSpec::EncodingSpec( language::Block blk)
 {
 
   auto t = ALL_ENCODING_SPECS[blk.name_.substr(1)];
@@ -32,7 +32,7 @@ EncodingSpec::EncodingSpec(language::Parser p, language::Block blk)
         parameters_, [&](auto param) { return param.first == name.expr_; });
     if (f == parameters_.end())
     {
-      p.errInvalidToken(name,
+      errInvalidToken(name,
                           "this does not override any parameters of " + name_,
                           parameters_ | rv::transform([](auto param) {
                             return param.first;
@@ -44,7 +44,7 @@ EncodingSpec::EncodingSpec(language::Parser p, language::Block blk)
     cp.parse(value.expr_);
     if (cp.typeAsString() != f->second.typeAsString())
     {
-      p.errInvalidToken(
+      errInvalidToken(
           value, "type mismatch, should be " + f->second.typeAsString());
       throw language::ParserError{};
     }
@@ -52,7 +52,7 @@ EncodingSpec::EncodingSpec(language::Parser p, language::Block blk)
     auto con = f->second.checkConstraints();
     if (con)
     {
-      p.errInvalidToken(
+      errInvalidToken(
           value,
               "parameter constraint not satisfied: " + *con );
       throw language::ParserError{};

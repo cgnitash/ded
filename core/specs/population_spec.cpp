@@ -15,7 +15,7 @@ namespace ded
 namespace specs
 {
 
-PopulationSpec::PopulationSpec(language::Parser parser, language::Block block)
+PopulationSpec::PopulationSpec( language::Block block)
 {
 
   *this = ALL_POPULATION_SPECS[block.name_.substr(1)];
@@ -29,7 +29,7 @@ PopulationSpec::PopulationSpec(language::Parser parser, language::Block block)
                          [&](auto param) { return param.first == name.expr_; });
     if (f == parameters_.end())
     {
-      parser.errInvalidToken(
+      errInvalidToken(
           name,
           "this does not override any parameters of " + name_,
           parameters_ | rv::transform([](auto param) { return param.first; }));
@@ -40,7 +40,7 @@ PopulationSpec::PopulationSpec(language::Parser parser, language::Block block)
     cp.parse(value.expr_);
     if (cp.typeAsString() != f->second.typeAsString())
     {
-      parser.errInvalidToken(
+      errInvalidToken(
           value, "type mismatch, should be " + f->second.typeAsString());
       throw language::ParserError{};
     }
@@ -48,7 +48,7 @@ PopulationSpec::PopulationSpec(language::Parser parser, language::Block block)
     auto con = f->second.checkConstraints();
     if (con)
     {
-      parser.errInvalidToken(value,
+      errInvalidToken(value,
                              "parameter constraint not satisfied: " + *con);
       throw language::ParserError{};
     }
@@ -62,13 +62,13 @@ PopulationSpec::PopulationSpec(language::Parser parser, language::Block block)
     auto ct = config_manager::typeOfBlock(nested_blk.name_.substr(1));
     if (ct != "substrate")
     {
-      parser.errInvalidToken(name,
+      errInvalidToken(name,
                              "override of " + name.expr_ +
                                  " inside population:: must be of type substrate");
       throw language::ParserError{};
     }
 
-    es_ = SubstrateSpec{ parser, nested_blk };
+    es_ = SubstrateSpec{ nested_blk };
   }
 }
 

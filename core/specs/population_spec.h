@@ -39,7 +39,8 @@ public:
   PopulationSpec(std::string name = "") : name_(name)
   {
   }
-  PopulationSpec(language::Parser, language::Block);
+
+  PopulationSpec( language::Block);
 
   auto
       name() const

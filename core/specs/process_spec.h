@@ -86,14 +86,12 @@ class ProcessSpec
   void matchNestedTagConstraints(int &tag_count);
 
 public:
-  // ProcessSpec() = default;
-  //~ProcessSpec() = default;
 
   ProcessSpec(std::string name = "") : name_(name)
   {
   }
-  // ProcessSpec(Parser);
-  ProcessSpec(language::Parser, language::Block);
+
+  ProcessSpec( language::Block);
 
   auto
       name() const
@@ -231,19 +229,10 @@ public:
   void bindTagEquality(std::pair<std::string, std::string> x,
                        std::pair<std::string, std::string> y);
 
-  /*
-  void
-      bind_tag_inequality(std::pair<std::string, std::string> x,
-                          std::pair<std::string, std::string> y)
-  {
-    tag_flow_inequalities_.push_back({ x, y });
-  }
-  */
-
-  void parseParameters(language::Parser, language::Block);
-  void parseTraces(language::Parser, language::Block);
-  void parseNested(language::Parser, language::Block);
-  void parseNestedVector(language::Parser, language::Block);
+  void parseParameters( language::Block);
+  void parseTraces( language::Block);
+  void parseNested( language::Block);
+  void parseNestedVector( language::Block);
 
   std::vector<std::string> serialise(long, bool) const;
   ProcessSpec              deserialise(std::vector<std::string>);

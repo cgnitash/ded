@@ -83,7 +83,6 @@ void
       std::cout << "parse-error:\n\n"
                 << utilities::TermColours::cyan_fg << "Line" << std::setw(4)
                 << line_number + 1 << ": " << utilities::TermColours::reset
-                << i - line.cbegin() + 1 << "\n"
                 << lines_[line_number] << "\n"
                 << std::string(i - line.cbegin() + 10, ' ')
                 << utilities::TermColours::red_fg << "^ unknown symbol\n"

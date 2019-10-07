@@ -281,8 +281,7 @@ void
 }
 
 void
-    SubstrateSpec::parseParameters(language::Parser parser,
-                                   language::Block  block)
+    SubstrateSpec::parseParameters(language::Block block)
 {
   for (auto over : block.overrides_)
   {
@@ -293,7 +292,7 @@ void
                          [&](auto param) { return param.first == name.expr_; });
     if (f == parameters_.end())
     {
-      parser.errInvalidToken(
+      errInvalidToken(
           name,
           "this does not override any parameters of " + name_,
           parameters_ | rv::transform([](auto param) { return param.first; }));
@@ -304,7 +303,7 @@ void
     cp.parse(value.expr_);
     if (cp.typeAsString() != f->second.typeAsString())
     {
-      parser.errInvalidToken(
+      errInvalidToken(
           value, "type mismatch, should be " + f->second.typeAsString());
       throw language::ParserError{};
     }
@@ -312,7 +311,7 @@ void
     auto con = f->second.checkConstraints();
     if (con)
     {
-      parser.errInvalidToken(value,
+      errInvalidToken(value,
                              "parameter constraint not satisfied: " + *con);
       throw language::ParserError{};
     }
@@ -320,7 +319,7 @@ void
 }
 
 void
-    SubstrateSpec::parseNested(language::Parser parser, language::Block block)
+    SubstrateSpec::parseNested( language::Block block)
 {
   // Must be wrong
   for (auto blover : block.nested_)
@@ -331,7 +330,7 @@ void
     auto ct = config_manager::typeOfBlock(nested_blk.name_.substr(1));
     if (ct != "substrate" && ct != "encoding")
     {
-      parser.errInvalidToken(name,
+      errInvalidToken(name,
                              "override of " + name.expr_ +
                                  " must be of type substrate/encoding");
       throw language::ParserError{};
@@ -343,7 +342,7 @@ void
           nested_, [&](auto param) { return param.first == name.expr_; });
       if (f == nested_.end())
       {
-        parser.errInvalidToken(
+        errInvalidToken(
             name,
             "this does not override any nested substrates of " + block.name_,
             nested_ | rv::transform([](auto param) { return param.first; }));
@@ -351,7 +350,7 @@ void
       }
 
       f->second.e =
-          std::make_unique<SubstrateSpec>(SubstrateSpec{ parser, nested_blk });
+          std::make_unique<SubstrateSpec>(SubstrateSpec{  nested_blk });
     }
     if (ct == "encoding")
     {
@@ -359,20 +358,20 @@ void
           encodings_, [&](auto param) { return param.first == name.expr_; });
       if (f == encodings_.end())
       {
-        parser.errInvalidToken(
+        errInvalidToken(
             name,
             "this does not override any encodings of " + block.name_,
             encodings_ | rv::transform([](auto param) { return param.first; }));
         throw language::ParserError{};
       }
 
-      f->second = EncodingSpec{ parser, nested_blk };
+      f->second = EncodingSpec{  nested_blk };
     }
   }
 }
 
 void
-    SubstrateSpec::parseNestedVector(language::Parser parser,
+    SubstrateSpec::parseNestedVector(
                                      language::Block  block)
 {
   for (auto blover : block.nested_vector_)
@@ -382,7 +381,7 @@ void
                          [&](auto param) { return param.first == name.expr_; });
     if (f == nested_vector_.end())
     {
-      parser.errInvalidToken(
+      errInvalidToken(
           name,
           "this does not override any nested substrates of " + block.name_,
           nested_vector_ |
@@ -395,7 +394,7 @@ void
       auto ct = config_manager::typeOfBlock(nested_blk.name_.substr(1));
       if (ct != "substrate")
       {
-        parser.errInvalidToken(name,
+        errInvalidToken(name,
                                "nested vector of " + name.expr_ +
                                    " must be of type substrate");
         throw language::ParserError{};
@@ -403,21 +402,21 @@ void
 
       NestedSubstrateSpec ns;
       ns.e =
-          std::make_unique<SubstrateSpec>(SubstrateSpec{ parser, nested_blk });
+          std::make_unique<SubstrateSpec>(SubstrateSpec{  nested_blk });
       f->second.push_back(ns);
     }
   }
 }
 
-SubstrateSpec::SubstrateSpec(language::Parser parser, language::Block block)
+SubstrateSpec::SubstrateSpec( language::Block block)
 {
   *this = ALL_SUBSTRATE_SPECS[block.name_.substr(1)];
 
   name_token_ = block.name_token_;
 
-  parseParameters(parser, block);
-  parseNested(parser, block);
-  parseNestedVector(parser, block);
+  parseParameters( block);
+  parseNested( block);
+  parseNestedVector( block);
   instantiateUserParameterSizes(0);
 }
 
