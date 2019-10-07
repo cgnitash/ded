@@ -127,16 +127,6 @@ std::string
   out << " parameters\n";
   for (auto [parameter, value] : parameters_)
     out << std::setw(16) << parameter << " : " << value.valueAsString() << "\n";
-  /*
-out << TermColours::yellow_fg << "inputs----" << TermColours::reset
-  << "\n";
-for (auto [input, value] : inputs_)
-out << std::setw(26) << input << " : " << value << "\n";
-out << TermColours::yellow_fg << "outputs----" << TermColours::reset
-  << "\n";
-for (auto [output, value] : outputs_)
-out << std::setw(26) << output << " : " << value << "\n";
-    */
 
   out << "}\n";
   return out.str();

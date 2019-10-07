@@ -84,6 +84,8 @@ class ProcessSpec
   void updateNestedConstraints(SignalSpecSet &constraints);
   void matchTagFlowEqualities(int &tag_count);
   void matchNestedTagConstraints(int &tag_count);
+  std::string prettyPrintNested();
+  std::string prettyPrintNestedVector();
 
 public:
 
@@ -236,7 +238,6 @@ public:
 
   std::vector<std::string> serialise(long, bool) const;
   ProcessSpec              deserialise(std::vector<std::string>);
-
   std::string prettyPrint();
 
   void                                       instantiateUserParameterSizes();

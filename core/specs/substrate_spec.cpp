@@ -554,10 +554,10 @@ std::string
     out << std::setw(16) << parameter << " : " << value.valueAsString() << "\n";
   out << " inputs\n";
   for (auto [input, value] : io_.inputs_)
-    out << std::setw(16) << input << " : " << value.fullName() << "\n";
+    out << std::setw(16) << input << " : " << value.type() << "\n";
   out << " outputs\n";
   for (auto [output, value] : io_.outputs_)
-    out << std::setw(16) << output << " : " << value.fullName() << "\n";
+    out << std::setw(16) << output << " : " << value.type() << "\n";
   out << "}\n";
   return out.str();
 }

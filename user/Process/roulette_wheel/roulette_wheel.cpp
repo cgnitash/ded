@@ -19,7 +19,8 @@ ded::concepts::Population
       rv::partial_sum();
 
   // done with value_tag_
-  for (auto &org : pop) org.data.clear(value_tag_);
+  for (auto &org : pop)
+    org.data.clear(value_tag_);
 
   std::mt19937                           spinner;
   std::uniform_real_distribution<double> croupier(0, wheel.back());
@@ -33,5 +34,6 @@ ded::concepts::Population
       },
       pop.size()));
 
+  populate.pruneLineage(invoke_++);
   return populate;
 }

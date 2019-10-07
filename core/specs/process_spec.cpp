@@ -161,13 +161,13 @@ void
     ProcessSpec::bindTagEquality(std::pair<std::string, std::string> x,
                                  std::pair<std::string, std::string> y)
 {
-  auto        is_pre_post   = [](auto s) { return s == "pre" || s == "post"; };
-  std::string error_message = "User error: cannot bind tag equality ";
+  auto is_pre_post = [](auto s) { return s == "pre" || s == "post"; };
+
   if (nested_.find(x.first) == nested_.end() ||
       nested_.find(y.first) == nested_.end() || !is_pre_post(x.second) ||
       !is_pre_post(y.second))
   {
-    std::cout << "User error: " << error_message << "\n";
+    std::cout << "User error: cannot bind tag equality \n";
     throw SpecError{};
   }
 
@@ -582,7 +582,7 @@ void
 {
   for (auto blover : block.nested_)
   {
-    auto name       = blover.first;
+    auto name         = blover.first;
     auto nested_block = blover.second;
 
     auto f = rs::find_if(nested_,
@@ -632,8 +632,8 @@ void
 
     for (auto [i, nested_block] : rv::enumerate(blover.second))
     {
-    if (config_manager::typeOfBlock(nested_block.name_.substr(1)) !=
-        config_manager::SpecType::process)
+      if (config_manager::typeOfBlock(nested_block.name_.substr(1)) !=
+          config_manager::SpecType::process)
       {
         errInvalidToken(name,
                         "nested process vector of " + name.expr_ +
@@ -643,7 +643,7 @@ void
       }
 
       NestedProcessSpec ns;
-      ns.e = std::make_unique<ProcessSpec>(ProcessSpec{  nested_block });
+      ns.e = std::make_unique<ProcessSpec>(ProcessSpec{ nested_block });
       ns.constraints_ = f->second.second;
       ns.e->setUserSpecifiedName(name.expr_ + "_" + std::to_string(i));
       f->second.first.push_back(ns);
@@ -651,17 +651,17 @@ void
   }
 }
 
-ProcessSpec::ProcessSpec( language::Block block)
+ProcessSpec::ProcessSpec(language::Block block)
 {
 
   *this = ALL_PROCESS_SPECS.at(block.name_.substr(1));
 
   name_token_ = block.name_token_;
 
-  parseParameters( block);
-  parseTraces( block);
-  parseNested( block);
-  parseNestedVector( block);
+  parseParameters(block);
+  parseTraces(block);
+  parseNested(block);
+  parseNestedVector(block);
 }
 
 std::vector<std::string>
@@ -816,28 +816,9 @@ ProcessSpec
 }
 
 std::string
-    ProcessSpec::prettyPrint()
+    ProcessSpec::prettyPrintNested()
 {
   std::stringstream out;
-  out << "process::" << name_ << "\n{\n";
-
-  out << " parameters\n";
-  for (auto [parameter, value] : parameters_)
-    out << std::setw(16) << parameter << " : " << value.valueAsString() << "\n";
-  out << " inputs\n";
-  for (auto [input, value] : io_.inputs_)
-    out << std::setw(16) << input << " : " << value.fullName() << "\n";
-  out << " outputs\n";
-  for (auto [output, value] : io_.outputs_)
-    out << std::setw(16) << output << " : " << value.fullName() << "\n";
-  out << " pre-tags\n";
-  for (auto [pre_tag, value] : tags_.pre_)
-    out << std::setw(16) << pre_tag << " : " << value.fullName() << "\n";
-  out << " post_tag\n";
-  for (auto [post_tag, value] : tags_.post_)
-    out << std::setw(16) << post_tag << " : " << value.fullName() << "\n";
-
-  out << " nested\n";
   for (auto &[name, nspec] : nested_)
   {
     out << "  " << name << " :\n";
@@ -847,7 +828,7 @@ std::string
     {
       out << "   pre-constraints:\n";
       for (auto [pre_tag, value] : nspec.constraints_.pre_)
-        out << std::setw(16) << pre_tag << " : " << value.fullName() << "\n";
+        out << std::setw(16) << pre_tag << " : " << value.type() << "\n";
     }
     if (nspec.constraints_.post_.empty())
       out << "   No post-constraints\n";
@@ -855,7 +836,7 @@ std::string
     {
       out << "   post-constraints:\n";
       for (auto [post_tag, value] : nspec.constraints_.post_)
-        out << std::setw(16) << post_tag << " : " << value.fullName() << "\n";
+        out << std::setw(16) << post_tag << " : " << value.type() << "\n";
     }
   }
 
@@ -871,6 +852,78 @@ std::string
           << ") <!=> " << name.second.second << "(" << name.second.first
           << ")\n";
   }
+  return out.str();
+}
+
+std::string
+    ProcessSpec::prettyPrintNestedVector()
+{
+  std::stringstream out;
+  for (auto &[name, nspec_vec_tags] : nested_vector_)
+  {
+    out << "  " << name << " :\n";
+    for (auto &nspec : nspec_vec_tags.first)
+    {
+      if (nspec.constraints_.pre_.empty())
+        out << "   No pre-constraints\n";
+      else
+      {
+        out << "   pre-constraints:\n";
+        for (auto [pre_tag, value] : nspec.constraints_.pre_)
+          out << std::setw(16) << pre_tag << " : " << value.type() << "\n";
+      }
+      if (nspec.constraints_.post_.empty())
+        out << "   No post-constraints\n";
+      else
+      {
+        out << "   post-constraints:\n";
+        for (auto [post_tag, value] : nspec.constraints_.post_)
+          out << std::setw(16) << post_tag << " : " << value.type() << "\n";
+      }
+    }
+
+    auto &tags = nspec_vec_tags.second;
+
+    if (!tags.pre_.empty())
+    {
+      out << "   with pre-tag-constraints:\n";
+      for (auto name : tags.pre_)
+        out << std::setw(20) << name.first << ":" << name.second.type() << "\n";
+    }
+    if (!tags.post_.empty())
+    {
+      out << "   with post-tag-constraints:\n";
+      for (auto name : tags.post_)
+        out << std::setw(20) << name.first << ":" << name.second.type() << "\n";
+    }
+  }
+  return out.str();
+}
+
+std::string
+    ProcessSpec::prettyPrint()
+{
+  std::stringstream out;
+  out << "process::" << name_ << "\n{\n";
+
+  out << " parameters\n";
+  for (auto [parameter, value] : parameters_)
+    out << std::setw(16) << parameter << " : " << value.valueAsString() << "\n";
+  out << " inputs\n";
+  for (auto [input, value] : io_.inputs_)
+    out << std::setw(16) << input << " : " << value.type() << "\n";
+  out << " outputs\n";
+  for (auto [output, value] : io_.outputs_)
+    out << std::setw(16) << output << " : " << value.type() << "\n";
+  out << " pre-tags\n";
+  for (auto [pre_tag, value] : tags_.pre_)
+    out << std::setw(16) << pre_tag << " : " << value.type() << "\n";
+  out << " post_tag\n";
+  for (auto [post_tag, value] : tags_.post_)
+    out << std::setw(16) << post_tag << " : " << value.type() << "\n";
+
+  out << " nested\n" << prettyPrintNested();
+  out << " nested-vector\n" << prettyPrintNestedVector();
   out << "}\n";
   return out.str();
 }

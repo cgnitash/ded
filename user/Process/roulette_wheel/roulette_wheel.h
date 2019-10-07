@@ -11,6 +11,7 @@ class roulette_wheel {
 
   std::string value_tag_ = "double";
   double      strength_  = 0.1;
+  int invoke_ = 0;
 
 public:
   ded::specs::ProcessSpec publishConfiguration()

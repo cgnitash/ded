@@ -14,9 +14,9 @@ Population = $linear
 	track_lineage = true 
  }
 
-one = $forager { ? food_eaten 2 }
+day = $forager { ? food_eaten 2 }
 
-two = $forager 
+night = $forager 
 { 
 	direction = false  
 	? food_eaten 3  
@@ -26,7 +26,7 @@ day_night = $sequence
  {
     first 	= 	$fork_join 
 	{
-		envs = < !one !two >
+		envs = < !day !night >
 	}
     second = $elite_replacement 
 	{ 

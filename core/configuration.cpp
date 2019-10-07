@@ -35,13 +35,13 @@ void
   switch (typeOfBlock(name))
   {
     case SpecType::process:
-      out << ALL_ENCODING_SPECS[name].prettyPrint();
+      out << ALL_PROCESS_SPECS[name].prettyPrint();
       break;
     case SpecType::substrate:
-      out << ALL_ENCODING_SPECS[name].prettyPrint();
+      out << ALL_SUBSTRATE_SPECS[name].prettyPrint();
       break;
     case SpecType::population:
-      out << ALL_ENCODING_SPECS[name].prettyPrint();
+      out << ALL_POPULATION_SPECS[name].prettyPrint();
       break;
     case SpecType::encoding:
       out << ALL_ENCODING_SPECS[name].prettyPrint();
