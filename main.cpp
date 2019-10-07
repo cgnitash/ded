@@ -20,23 +20,27 @@ long ded::concepts::Substrate::entity_id_ = 0;
 
 std::string ded::GLOBAL_PATH = "./";
 
-std::map<std::string, ded::specs::SubstrateSpec>      ded::ALL_SUBSTRATE_SPECS;
-std::map<std::string, ded::specs::ProcessSpec> ded::ALL_PROCESS_SPECS;
-std::map<std::string, ded::specs::PopulationSpec>  ded::ALL_POPULATION_SPECS;
-std::map<std::string, ded::specs::EncodingSpec>  ded::ALL_ENCODING_SPECS;
+std::map<std::string, ded::specs::SubstrateSpec>  ded::ALL_SUBSTRATE_SPECS;
+std::map<std::string, ded::specs::ProcessSpec>    ded::ALL_PROCESS_SPECS;
+std::map<std::string, ded::specs::PopulationSpec> ded::ALL_POPULATION_SPECS;
+std::map<std::string, ded::specs::EncodingSpec>   ded::ALL_ENCODING_SPECS;
+
+struct CommandLineError
+{
+};
 
 int
     main(int argc, char **argv) try
 {
 
-  // check all things that aren't being checked statically, 
+  // check all things that aren't being checked statically,
   // in particular the correct publication of components
   ded::generateAllSpecs();
 
   if (argc == 1)
   {
     std::cout << "ded: missing command line arguments. try -h or --help\n";
-	return 0;
+    return 0;
   }
 
   std::string mode = argv[1];
@@ -81,32 +85,43 @@ int
   }
   else if (argc == 4 && (mode == "-rl" || mode == "--run-local"))
   {
+    int               replicate_count{};
+    std::stringstream ss{ argv[3] };
+    ss >> replicate_count;
+    if (ss.fail())
+      throw CommandLineError{};
+
     ded::experiments::prepareSimulationsLocally(
         ded::experiments::checkSimulations(
             ded::experiments::parseAllSimulations(argv[2])),
-        std::stoi(argv[3]));
-	std::cout << "execute run.sh\n";
+        replicate_count);
+    std::cout << "execute run.sh\n";
   }
   else if (argc == 4 && (mode == "-rh" || mode == "--run-hpc"))
   {
+    int               replicate_count{};
+    std::stringstream ss{ argv[3] };
+    ss >> replicate_count;
+    if (ss.fail())
+      throw CommandLineError{};
+
     ded::experiments::prepareSimulationsMsuHpcc(
         ded::experiments::checkSimulations(
             ded::experiments::parseAllSimulations(argv[2])),
-        std::stoi(argv[3]));
-	std::cout << "execute run.sh\n";
+        replicate_count);
+    std::cout << "execute run.sh\n";
   }
   else if (argc == 4 && (mode == "-a" || mode == "--analyse"))
   {
     ded::experiments::analyseAllSimulations(argv[2], argv[3]);
-	std::cout << "execute Rscript analysis.R\n";
-
+    std::cout << "execute Rscript analysis.R\n";
   }
   else if (argc == 4 && mode == "-f")
   {
     auto [pop_spec, proc_spec] = ded::experiments::loadSimulation(argv[2]);
 
     auto pop         = ded::makePopulation(pop_spec);
-    auto proc         = ded::makeProcess(proc_spec);
+    auto proc        = ded::makeProcess(proc_spec);
     ded::GLOBAL_PATH = "./data/" + std::string{ argv[2] } + "/" + argv[3] + "/";
     std::experimental::filesystem::create_directory(ded::GLOBAL_PATH);
 
@@ -121,10 +136,14 @@ int
   }
   else
   {
-    std::cout << "ded: unknown command line arguments. try -h or --help\n";
+    throw CommandLineError{};
   }
 
   return 0;
+}
+catch (const CommandLineError &)
+{
+  std::cout << "ded: unknown command line arguments. try -h or --help\n";
 }
 catch (const ded::language::ParserError &)
 {

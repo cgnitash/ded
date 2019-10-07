@@ -325,10 +325,11 @@ void
   for (auto blover : block.nested_)
   {
     auto name       = blover.first;
-    auto nested_blk = blover.second;
+    auto nested_block = blover.second;
 
-    auto ct = config_manager::typeOfBlock(nested_blk.name_.substr(1));
-    if (ct != "substrate" && ct != "encoding")
+    auto ct = config_manager::typeOfBlock(nested_block.name_.substr(1));
+    if (ct != config_manager::SpecType::substrate &&
+        ct != config_manager::SpecType::encoding)
     {
       errInvalidToken(name,
                              "override of " + name.expr_ +
@@ -336,7 +337,7 @@ void
       throw language::ParserError{};
     }
 
-    if (ct == "substrate")
+    if (ct == config_manager::SpecType::substrate)
     {
       auto f = rs::find_if(
           nested_, [&](auto param) { return param.first == name.expr_; });
@@ -350,9 +351,9 @@ void
       }
 
       f->second.e =
-          std::make_unique<SubstrateSpec>(SubstrateSpec{  nested_blk });
+          std::make_unique<SubstrateSpec>(SubstrateSpec{  nested_block });
     }
-    if (ct == "encoding")
+    if (ct == config_manager::SpecType::encoding)
     {
       auto f = rs::find_if(
           encodings_, [&](auto param) { return param.first == name.expr_; });
@@ -365,7 +366,7 @@ void
         throw language::ParserError{};
       }
 
-      f->second = EncodingSpec{  nested_blk };
+      f->second = EncodingSpec{  nested_block };
     }
   }
 }
@@ -388,11 +389,11 @@ void
               rv::transform([](auto param) { return param.first; }));
       throw language::ParserError{};
     }
-    for (auto nested_blk : blover.second)
+    for (auto nested_block : blover.second)
     {
 
-      auto ct = config_manager::typeOfBlock(nested_blk.name_.substr(1));
-      if (ct != "substrate")
+      if (config_manager::typeOfBlock(nested_block.name_.substr(1)) !=
+          config_manager::SpecType::substrate)
       {
         errInvalidToken(name,
                                "nested vector of " + name.expr_ +
@@ -402,7 +403,7 @@ void
 
       NestedSubstrateSpec ns;
       ns.e =
-          std::make_unique<SubstrateSpec>(SubstrateSpec{  nested_blk });
+          std::make_unique<SubstrateSpec>(SubstrateSpec{  nested_block });
       f->second.push_back(ns);
     }
   }

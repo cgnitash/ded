@@ -15,47 +15,40 @@ namespace ded
 namespace config_manager
 {
 
-std::string
+SpecType
     typeOfBlock(std::string name)
 {
-  if (ALL_PROCESS_SPECS.find(name) != ALL_PROCESS_SPECS.end())
-    return "process";
-  if (ALL_SUBSTRATE_SPECS.find(name) != ALL_SUBSTRATE_SPECS.end())
-    return "substrate";
-  if (ALL_POPULATION_SPECS.find(name) != ALL_POPULATION_SPECS.end())
-    return "population";
-  if (ALL_ENCODING_SPECS.find(name) != ALL_ENCODING_SPECS.end())
-    return "encoding";
-  return "NONE";
+  if (isSubstrateBlock(name))
+    return SpecType::substrate;
+  if (isProcessBlock(name))
+    return SpecType::process;
+  if (isPopulationBlock(name))
+    return SpecType::population;
+  if (isEncodingBlock(name))
+    return SpecType::encoding;
+  return SpecType::UNKNOWN;
 }
 
 void
     showConfig(std::ostream &out, std::string name)
 {
-  auto found = false;
-  if (ALL_SUBSTRATE_SPECS.find(name) != ALL_SUBSTRATE_SPECS.end())
+  switch (typeOfBlock(name))
   {
-    out << ALL_SUBSTRATE_SPECS[name].prettyPrint();
-    found = true;
+    case SpecType::process:
+      out << ALL_ENCODING_SPECS[name].prettyPrint();
+      break;
+    case SpecType::substrate:
+      out << ALL_ENCODING_SPECS[name].prettyPrint();
+      break;
+    case SpecType::population:
+      out << ALL_ENCODING_SPECS[name].prettyPrint();
+      break;
+    case SpecType::encoding:
+      out << ALL_ENCODING_SPECS[name].prettyPrint();
+      break;
+    case SpecType::UNKNOWN:
+      out << "component " << name << " not found\n";
   }
-  if (ALL_PROCESS_SPECS.find(name) != ALL_PROCESS_SPECS.end())
-  {
-    out << ALL_PROCESS_SPECS[name].prettyPrint();
-    found = true;
-  }
-  if (ALL_POPULATION_SPECS.find(name) != ALL_POPULATION_SPECS.end())
-  {
-    out << ALL_POPULATION_SPECS[name].prettyPrint();
-    found = true;
-  }
-  if (ALL_ENCODING_SPECS.find(name) != ALL_ENCODING_SPECS.end())
-  {
-    out << ALL_ENCODING_SPECS[name].prettyPrint();
-    found = true;
-  }
-
-  if (!found)
-    out << "component " << name << " not found\n";
 
   return;
 }
@@ -63,19 +56,19 @@ void
 void
     listAllConfigs(std::ostream &out)
 {
-  out << "substrate:\n";
+  out << "Substrate:\n";
   for (auto n_spec : ALL_SUBSTRATE_SPECS)
     out << "    " << n_spec.first << "\n";
 
-  out << "process:\n";
+  out << "Process:\n";
   for (auto n_spec : ALL_PROCESS_SPECS)
     out << "    " << n_spec.first << "\n";
 
-  out << "population:\n";
+  out << "Population:\n";
   for (auto n_spec : ALL_POPULATION_SPECS)
     out << "    " << n_spec.first << "\n";
 
-  out << "encoding:\n";
+  out << "Encoding:\n";
   for (auto n_spec : ALL_ENCODING_SPECS)
     out << "    " << n_spec.first << "\n";
 
@@ -95,6 +88,27 @@ void
   for (auto n_es : ALL_ENCODING_SPECS)
     file << "\n" << n_es.second.prettyPrint();
   return;
+}
+
+bool
+    isSubstrateBlock(std::string name)
+{
+  return ALL_SUBSTRATE_SPECS.find(name) != ALL_SUBSTRATE_SPECS.end();
+}
+
+bool        isEncodingBlock(std::string name)
+{
+  return ALL_ENCODING_SPECS.find(name) != ALL_ENCODING_SPECS.end();
+}
+
+bool        isProcessBlock(std::string name)
+{
+  return ALL_PROCESS_SPECS.find(name) != ALL_PROCESS_SPECS.end();
+}
+
+bool        isPopulationBlock(std::string name)
+{
+  return ALL_POPULATION_SPECS.find(name) != ALL_POPULATION_SPECS.end();
 }
 
 std::vector<std::string>
@@ -134,6 +148,6 @@ std::vector<std::string>
   auto d = allEncodingNames();
   return rv::concat(a, b, c, d);
 }
-}   // namespace config_manager
 
+}   // namespace config_manager
 }   // namespace ded

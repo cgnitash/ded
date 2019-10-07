@@ -568,7 +568,7 @@ void
     {
       errInvalidToken(
           tag_name,
-          "this is not a pre/post tag of " + name_,
+          "this is not a tag recognised by " + name_,
           rv::concat(
               tags_.pre_ | rv::transform([](auto tag) { return tag.first; }),
               tags_.post_ | rv::transform([](auto tag) { return tag.first; })));
@@ -583,7 +583,7 @@ void
   for (auto blover : block.nested_)
   {
     auto name       = blover.first;
-    auto nested_blk = blover.second;
+    auto nested_block = blover.second;
 
     auto f = rs::find_if(nested_,
                          [&](auto param) { return param.first == name.expr_; });
@@ -596,8 +596,8 @@ void
       throw language::ParserError{};
     }
 
-    auto ct = config_manager::typeOfBlock(nested_blk.name_.substr(1));
-    if (ct != "process")
+    if (config_manager::typeOfBlock(nested_block.name_.substr(1)) !=
+        config_manager::SpecType::process)
     {
       errInvalidToken(name,
                       "override of " + name.expr_ + " must be of type process",
@@ -605,7 +605,7 @@ void
       throw language::ParserError{};
     }
 
-    f->second.e = std::make_unique<ProcessSpec>(ProcessSpec{ nested_blk });
+    f->second.e = std::make_unique<ProcessSpec>(ProcessSpec{ nested_block });
     f->second.e->setUserSpecifiedName(name.expr_);
   }
 }
@@ -630,10 +630,10 @@ void
       throw language::ParserError{};
     }
 
-    for (auto [i, nested_blk] : rv::enumerate(blover.second))
+    for (auto [i, nested_block] : rv::enumerate(blover.second))
     {
-      auto ct = config_manager::typeOfBlock(nested_blk.name_.substr(1));
-      if (ct != "process")
+    if (config_manager::typeOfBlock(nested_block.name_.substr(1)) !=
+        config_manager::SpecType::process)
       {
         errInvalidToken(name,
                         "nested process vector of " + name.expr_ +
@@ -643,7 +643,7 @@ void
       }
 
       NestedProcessSpec ns;
-      ns.e = std::make_unique<ProcessSpec>(ProcessSpec{  nested_blk });
+      ns.e = std::make_unique<ProcessSpec>(ProcessSpec{  nested_block });
       ns.constraints_ = f->second.second;
       ns.e->setUserSpecifiedName(name.expr_ + "_" + std::to_string(i));
       f->second.first.push_back(ns);

@@ -15,7 +15,7 @@ namespace experiments
 {
 
 Simulation
-    parseSimulation(language::Parser p)
+    parseSimulation(language::Parser parser)
 {
 
   std::map<std::string,
@@ -23,63 +23,67 @@ Simulation
                         ded::specs::ProcessSpec,
                         ded::specs::EncodingSpec,
                         ded::specs::PopulationSpec>>
-      vars;
+      variables;
 
-  auto parser_variables = p.variables();
-  for (auto [name, bl] : parser_variables)
+  auto parser_variables = parser.variables();
+  for (auto [name, block] : parser_variables)
   {
-    auto ct = ded::config_manager::typeOfBlock(bl.name_.substr(1));
-    if (ct == "process")
-      vars[name.expr_] = ded::specs::ProcessSpec{  bl };
-    else if (ct == "substrate")
-      vars[name.expr_] = ded::specs::SubstrateSpec{ bl };
-    else if (ct == "population")
-      vars[name.expr_] = ded::specs::PopulationSpec{  bl };
-    else if (ct == "encoding")
-      vars[name.expr_] = ded::specs::EncodingSpec{  bl };
-    else
-    {
-      std::cout << "oops: not a component!\n" << bl.name_.substr(1);
+    switch( ded::config_manager::typeOfBlock(block.name_.substr(1)))
+	{
+    case config_manager::SpecType::process:
+      variables[name.expr_] = ded::specs::ProcessSpec{  block };
+      break;
+    case config_manager::SpecType::substrate:
+      variables[name.expr_] = ded::specs::SubstrateSpec{ block };
+      break;
+    case config_manager::SpecType::population:
+      variables[name.expr_] = ded::specs::PopulationSpec{  block };
+      break;
+    case config_manager::SpecType::encoding:
+      variables[name.expr_] = ded::specs::EncodingSpec{  block };
+      break;
+    case config_manager::SpecType::UNKNOWN:
+      std::cout << "oops: not a component!\n" << block.name_.substr(1);
       throw std::logic_error{ "" };
     }
   }
 
-  if (vars.find("Process") == vars.end())
+  if (variables.find("Process") == variables.end())
   {
-    std::cout << "error: " << p.file_name()
+    std::cout << "error: " << parser.file_name()
               << " does not define a process named 'Process'\n";
     throw specs::SpecError{};
   }
-  if (!std::holds_alternative<ded::specs::ProcessSpec>(vars["Process"]))
+  if (!std::holds_alternative<ded::specs::ProcessSpec>(variables["Process"]))
   {
     std::cout << "error: 'Process' must be of type process\n";
     throw specs::SpecError{};
   }
 
-  auto proc_spec = std::get<ded::specs::ProcessSpec>(vars["Process"]);
-  proc_spec.instantiateUserParameterSizes();
+  auto process_spec = std::get<ded::specs::ProcessSpec>(variables["Process"]);
+  process_spec.instantiateUserParameterSizes();
 
-  if (vars.find("Population") == vars.end())
+  if (variables.find("Population") == variables.end())
   {
-    std::cout << "error: " << p.file_name()
+    std::cout << "error: " << parser.file_name()
               << " does not define population 'Population'\n";
     throw specs::SpecError{};
   }
-  if (!std::holds_alternative<ded::specs::PopulationSpec>(vars["Population"]))
+  if (!std::holds_alternative<ded::specs::PopulationSpec>(variables["Population"]))
   {
     std::cout << "error: 'Population' must be of type population\n";
     throw specs::SpecError{};
   }
-  auto pop_spec = std::get<ded::specs::PopulationSpec>(vars["Population"]);
+  auto population_spec = std::get<ded::specs::PopulationSpec>(variables["Population"]);
 
-  proc_spec.bindSubstrateIO(
-      pop_spec.instantiateNestedSubstrateUserParameterSizes());
+  process_spec.bindSubstrateIO(
+      population_spec.instantiateNestedSubstrateUserParameterSizes());
 
-  proc_spec.bindTags(0);
+  process_spec.bindTags(0);
 
-  proc_spec.recordTraces();
+  process_spec.recordTraces();
 
-  return { pop_spec, proc_spec, p.labels(), proc_spec.queryTraces() };
+  return { population_spec, process_spec, parser.labels(), process_spec.queryTraces() };
 }
 
 std::vector<language::Parser>

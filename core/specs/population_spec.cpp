@@ -57,10 +57,10 @@ PopulationSpec::PopulationSpec( language::Block block)
   for (auto blover : block.nested_)
   {
     auto name       = blover.first;
-    auto nested_blk = blover.second;
+    auto nested_block = blover.second;
 
-    auto ct = config_manager::typeOfBlock(nested_blk.name_.substr(1));
-    if (ct != "substrate")
+    if (config_manager::typeOfBlock(nested_block.name_.substr(1)) !=
+        config_manager::SpecType::substrate)
     {
       errInvalidToken(name,
                              "override of " + name.expr_ +
@@ -68,7 +68,7 @@ PopulationSpec::PopulationSpec( language::Block block)
       throw language::ParserError{};
     }
 
-    es_ = SubstrateSpec{ nested_blk };
+    es_ = SubstrateSpec{ nested_block };
   }
 }
 
