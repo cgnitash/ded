@@ -95,40 +95,62 @@ private:
     }
 
     // mandatory methods
+    //
+    // dependent template to allow for static_assert error messages
+    template <typename = void>
+    struct concept_fail : std::false_type
+    {
+    };
 
     template <typename T>
     using HasEvaluate =
         decltype(std::declval<T &>().evaluate(std::declval<Population>()));
-    static_assert(
-        utilities::TMP::has_signature<UserProcess, Population, HasEvaluate>{},
-        "UserProcess does not satisfy 'evaluate' concept requirement");
     Population
         evaluate_(Population p) override
     {
-      return data_.evaluate(p);
+      if constexpr (utilities::TMP::
+                        has_signature<UserProcess, Population, HasEvaluate>{})
+        return data_.evaluate(p);
+      else
+        static_assert(concept_fail{},
+                      "\033[35mSubstrate does not satisfy "
+                      "\033[33m\"evaluate\"\033[35m concept "
+                      "requirement\033[0m");
+    }
+
+    template <typename T>
+    using HasPubConf = decltype(std::declval<T &>().publishConfiguration());
+    specs::ProcessSpec
+        publishConfiguration_() override
+    {
+      if constexpr (utilities::TMP::has_signature<UserProcess,
+                                                  specs::ProcessSpec,
+                                                  HasPubConf>{})
+      {
+        auto es  = data_.publishConfiguration();
+        es.name_ = autoClassNameAsString<UserProcess>();
+        return es;
+      }
+      else
+        static_assert(concept_fail{},
+                      "\033[35mSubstrate does not satisfy "
+                      "\033[33m\"publishable\"\033[35m concept "
+                      "requirement\033[0m");
     }
 
     template <typename T>
     using HasConf = decltype(
         std::declval<T &>().configure(std::declval<specs::ProcessSpec>()));
-    template <typename T>
-    using HasPubConf = decltype(std::declval<T &>().publishConfiguration());
-    static_assert(
-        utilities::TMP::has_signature<UserProcess, void, HasConf>{} &&
-            utilities::TMP::
-                has_signature<UserProcess, specs::ProcessSpec, HasPubConf>{},
-        "UserProcess does not satisfy 'configuration' concept requirement");
-    specs::ProcessSpec
-        publishConfiguration_() override
-    {
-      auto es  = data_.publishConfiguration();
-      es.name_ = autoClassNameAsString<UserProcess>();
-      return es;
-    }
     void
         configure_(specs::ProcessSpec c) override
     {
-      data_.configure(c);
+      if constexpr (utilities::TMP::has_signature<UserProcess, void, HasConf>{})
+        data_.configure(c);
+      else
+        static_assert(concept_fail{},
+                      "\033[35mSubstrate does not satisfy "
+                      "\033[33m\"configurable\"\033[35m concept "
+                      "requirement\033[0m");
     }
 
     // optional methods

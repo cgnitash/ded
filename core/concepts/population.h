@@ -14,8 +14,8 @@
 #include "../specs/population_spec.h"
 #include "../utilities/tmp.h"
 #include "encoding.h"
-#include "substrate.h"
 #include "signal.h"
+#include "substrate.h"
 
 namespace ded
 {
@@ -108,18 +108,18 @@ private:
     virtual PopulationInterface *copy_() const = 0;
 
     // mandatory methods
-    virtual specs::PopulationSpec publishConfiguration_()          = 0;
+    virtual specs::PopulationSpec publishConfiguration_()           = 0;
     virtual void                  configure_(specs::PopulationSpec) = 0;
 
-    virtual size_t              size_() const               = 0;
-    virtual std::vector<Substrate> getAsVector_() const            = 0;
-    virtual void                merge_(std::vector<Substrate>) = 0;
-    virtual void                pruneLineage_(long)        = 0;
-    virtual void                snapShot_(long)             = 0;
-    virtual void                flushUnpruned_()            = 0;
+    virtual size_t                 size_() const                  = 0;
+    virtual std::vector<Substrate> getAsVector_() const           = 0;
+    virtual void                   merge_(std::vector<Substrate>) = 0;
+    virtual void                   pruneLineage_(long)            = 0;
+    virtual void                   snapShot_(long)                = 0;
+    virtual void                   flushUnpruned_()               = 0;
 
     // optional methods
-	
+
     // prohibited methods
     virtual std::string classNameAsString_() const = 0;
   };
@@ -141,99 +141,140 @@ private:
 
     // mandatory methods
     //
+    // dependent template to allow for static_assert error messages
+    template <typename = void>
+    struct concept_fail : std::false_type
+    {
+    };
 
     template <typename T>
     using HasMerge = decltype(
         std::declval<T &>().merge(std::declval<std::vector<Substrate>>()));
-    static_assert(
-        utilities::TMP::has_signature<UserPopulation, void, HasMerge>{},
-        "UserPopulation does not satisfy 'merge' concept requirement");
     void
         merge_(std::vector<Substrate> v) override
     {
-      data_.merge(v);
+      if constexpr (utilities::TMP::
+                        has_signature<UserPopulation, void, HasMerge>{})
+        data_.merge(v);
+      else
+        static_assert(concept_fail{},
+                      "\033[35mSubstrate does not satisfy "
+                      "\033[33m\"merge\"\033[35m concept "
+                      "requirement\033[0m");
     }
 
     template <typename T>
     using HasGetAsVector = decltype(std::declval<T &>().getAsVector());
-    static_assert(
-        utilities::TMP::has_signature<UserPopulation,
-                                      std::vector<Substrate>,
-                                      HasGetAsVector>{},
-        "UserPopulation does not satisfy 'get_as_vector' concept requirement");
     std::vector<Substrate>
         getAsVector_() const override
     {
-      return data_.getAsVector();
+      if constexpr (utilities::TMP::has_signature<UserPopulation,
+                                                  std::vector<Substrate>,
+                                                  HasGetAsVector>{})
+        return data_.getAsVector();
+      else
+        static_assert(concept_fail{},
+                      "\033[35mSubstrate does not satisfy "
+                      "\033[33m\"get-as-vector\"\033[35m concept "
+                      "requirement\033[0m");
     }
 
     template <typename T>
     using HasSize = decltype(std::declval<T &>().size());
-    static_assert(
-        utilities::TMP::has_signature<UserPopulation, size_t, HasSize>{},
-        "UserPopulation does not satisfy 'size' concept requirement");
     size_t
         size_() const override
     {
-      return data_.size();
+      if constexpr (utilities::TMP::
+                        has_signature<UserPopulation, size_t, HasSize>{})
+        return data_.size();
+      else
+        static_assert(concept_fail{},
+                      "\033[35mSubstrate does not satisfy "
+                      "\033[33m\"sized\"\033[35m concept "
+                      "requirement\033[0m");
     }
 
     template <typename T>
     using HasFlush = decltype(std::declval<T &>().flushUnpruned());
-    static_assert(
-        utilities::TMP::has_signature<UserPopulation, void, HasFlush>{},
-        "UserPopulation does not satisfy 'flush_unpruned' concept requirement");
     void
         flushUnpruned_() override
     {
-      data_.flushUnpruned();
+      if constexpr (utilities::TMP::
+                        has_signature<UserPopulation, void, HasFlush>{})
+        data_.flushUnpruned();
+      else
+        static_assert(concept_fail{},
+                      "\033[35mSubstrate does not satisfy "
+                      "\033[33m\"flushable\"\033[35m concept "
+                      "requirement\033[0m");
     }
 
     template <typename T>
     using HasPruneLineage =
         decltype(std::declval<T &>().pruneLineage(std::declval<long>()));
-    static_assert(
-        utilities::TMP::has_signature<UserPopulation, void, HasPruneLineage>{},
-        "UserPopulation does not satisfy 'prune_lineage' concept requirement");
     void
         pruneLineage_(long i) override
     {
-      data_.pruneLineage(i);
+      if constexpr (utilities::TMP::
+                        has_signature<UserPopulation, void, HasPruneLineage>{})
+        data_.pruneLineage(i);
+      else
+        static_assert(concept_fail{},
+                      "\033[35mSubstrate does not satisfy "
+                      "\033[33m\"lineage-prune\"\033[35m concept "
+                      "requirement\033[0m");
     }
 
     template <typename T>
     using HasSnapshot =
         decltype(std::declval<T &>().snapShot(std::declval<long>()));
-    static_assert(
-        utilities::TMP::has_signature<UserPopulation, void, HasSnapshot>{},
-        "UserPopulation does not satisfy 'snapshot' concept requirement");
     void
         snapShot_(long i) override
     {
-      data_.snapShot(i);
+      if constexpr (utilities::TMP::
+                        has_signature<UserPopulation, void, HasSnapshot>{})
+        data_.snapShot(i);
+      else
+        static_assert(concept_fail{},
+                      "\033[35mSubstrate does not satisfy "
+                      "\033[33m\"snap-shot\"\033[35m concept "
+                      "requirement\033[0m");
+    }
+
+    template <typename T>
+    using HasPubConf = decltype(std::declval<T &>().publishConfiguration());
+    specs::PopulationSpec
+        publishConfiguration_() override
+    {
+      if constexpr (utilities::TMP::has_signature<UserPopulation,
+                                                  specs::PopulationSpec,
+                                                  HasPubConf>{})
+      {
+        auto ps  = data_.publishConfiguration();
+        ps.name_ = autoClassNameAsString<UserPopulation>();
+        return ps;
+      }
+      else
+        static_assert(concept_fail{},
+                      "\033[35mSubstrate does not satisfy "
+                      "\033[33m\"publishable\"\033[35m concept "
+                      "requirement\033[0m");
     }
 
     template <typename T>
     using HasConf = decltype(
         std::declval<T &>().configure(std::declval<specs::PopulationSpec>()));
-    template <typename T>
-    using HasPubConf = decltype(std::declval<T &>().publishConfiguration());
-    static_assert(
-        utilities::TMP::has_signature<UserPopulation, void, HasConf>{} &&
-            utilities::TMP::
-                has_signature<UserPopulation, specs::PopulationSpec, HasPubConf>{},
-        "UserPopulation does not satisfy 'configuration' concept requirement");
-    specs::PopulationSpec
-        publishConfiguration_() override
-    {
-      auto ps  = data_.publishConfiguration();
-      ps.name_ = autoClassNameAsString<UserPopulation>();
-      return ps;
-    }
     void
         configure_(specs::PopulationSpec c) override
     {
-      data_.configure(c);
+      if constexpr (utilities::TMP::
+                        has_signature<UserPopulation, void, HasConf>{})
+        data_.configure(c);
+      else
+        static_assert(concept_fail{},
+                      "\033[35mSubstrate does not satisfy "
+                      "\033[33m\"configurable\"\033[35m concept "
+                      "requirement\033[0m");
     }
 
     // optional methods
@@ -249,7 +290,6 @@ private:
     {
       return autoClassNameAsString<UserPopulation>();
     }
-
 
     // data
     UserPopulation data_;
