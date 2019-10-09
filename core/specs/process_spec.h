@@ -152,56 +152,28 @@ public:
   }
 
   void
-      bindPreTag(std::string name, std::string value)
-  {
-    tags_.pre_.push_back({ name, SignalSpec{ name, name, value } });
-  }
+      bindPreTag(std::string name, std::string value);
 
   void
-      configurePreTag(std::string name, std::string &value)
-  {
-    value = rs::find_if(tags_.pre_, [=](auto ns) { return ns.first == name; })
-                ->second.identifier();
-  }
+      configurePreTag(std::string name, std::string &value);
 
   void
-      bindPostTag(std::string name, std::string value)
-  {
-    tags_.post_.push_back({ name, SignalSpec{ name, name, value } });
-  }
+      bindPostTag(std::string name, std::string value);
 
   void
-      configurePostTag(std::string name, std::string &value)
-  {
-    value = rs::find_if(tags_.post_, [=](auto ns) { return ns.first == name; })
-                ->second.identifier();
-  }
+      configurePostTag(std::string name, std::string &value);
 
   void
-      bindInput(std::string name, std::string value)
-  {
-    io_.inputs_.push_back({ name, SignalSpec{ name, name, value } });
-  }
+      bindInput(std::string name, std::string value);
 
   void
-      configureInput(std::string name, std::string &value)
-  {
-    value = rs::find_if(io_.inputs_, [=](auto ns) { return ns.first == name; })
-                ->second.identifier();
-  }
+      configureInput(std::string name, std::string &value);
 
   void
-      bindOutput(std::string name, std::string value)
-  {
-    io_.outputs_.push_back({ name, SignalSpec{ name, name, value } });
-  }
+      bindOutput(std::string name, std::string value);
 
   void
-      configureOutput(std::string name, std::string &value)
-  {
-    value = rs::find_if(io_.outputs_, [=](auto ns) { return ns.first == name; })
-                ->second.identifier();
-  }
+      configureOutput(std::string name, std::string &value);
 
   void bindProcess(std::string name, ProcessSpec proc);
 

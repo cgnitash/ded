@@ -223,7 +223,7 @@ private:
     }
 
     // mandatory methods
-	// 
+    //
     // dependent template to allow for static_assert error messages
     template <typename = void>
     struct concept_fail : std::false_type
@@ -403,13 +403,14 @@ private:
     // prohibited methods
     template <typename T>
     using Nameable = decltype(std::declval<T &>().classNameAsString_());
-    static_assert(
-        std::negation<utilities::TMP::is_detected<UserSubstrate, Nameable>>{},
-        "Substrate class cannot provide classNameAsString_()");
     std::string
         classNameAsString_() const override
     {
-      return autoClassNameAsString<UserSubstrate>();
+      if constexpr (utilities::TMP::is_detected<UserSubstrate, Nameable>{})
+        static_assert(concept_fail{},
+                      "Substrate class cannot provide classNameAsString_()");
+      else
+        return autoClassNameAsString<UserSubstrate>();
     }
 
     // data

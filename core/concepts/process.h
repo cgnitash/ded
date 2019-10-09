@@ -113,7 +113,7 @@ private:
         return data_.evaluate(p);
       else
         static_assert(concept_fail{},
-                      "\033[35mSubstrate does not satisfy "
+                      "\033[35mPopulation does not satisfy "
                       "\033[33m\"evaluate\"\033[35m concept "
                       "requirement\033[0m");
     }
@@ -133,7 +133,7 @@ private:
       }
       else
         static_assert(concept_fail{},
-                      "\033[35mSubstrate does not satisfy "
+                      "\033[35mPopulation does not satisfy "
                       "\033[33m\"publishable\"\033[35m concept "
                       "requirement\033[0m");
     }
@@ -148,7 +148,7 @@ private:
         data_.configure(c);
       else
         static_assert(concept_fail{},
-                      "\033[35mSubstrate does not satisfy "
+                      "\033[35mPopulation does not satisfy "
                       "\033[33m\"configurable\"\033[35m concept "
                       "requirement\033[0m");
     }
@@ -158,13 +158,14 @@ private:
     // prohibited methods
     template <typename T>
     using Nameable = decltype(std::declval<T &>().classNameAsString_());
-    static_assert(
-        std::negation<utilities::TMP::is_detected<UserProcess, Nameable>>{},
-        "Process class cannot provide classNameAsString_()");
     std::string
         classNameAsString_() const override
     {
-      return autoClassNameAsString<UserProcess>();
+      if constexpr (utilities::TMP::is_detected<UserProcess, Nameable>{})
+        static_assert(concept_fail{},
+                      "Process class cannot provide classNameAsString_()");
+      else
+        return autoClassNameAsString<UserProcess>();
     }
 
     // data

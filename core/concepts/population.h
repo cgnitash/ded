@@ -158,7 +158,7 @@ private:
         data_.merge(v);
       else
         static_assert(concept_fail{},
-                      "\033[35mSubstrate does not satisfy "
+                      "\033[35mPopulation does not satisfy "
                       "\033[33m\"merge\"\033[35m concept "
                       "requirement\033[0m");
     }
@@ -174,7 +174,7 @@ private:
         return data_.getAsVector();
       else
         static_assert(concept_fail{},
-                      "\033[35mSubstrate does not satisfy "
+                      "\033[35mPopulation does not satisfy "
                       "\033[33m\"get-as-vector\"\033[35m concept "
                       "requirement\033[0m");
     }
@@ -189,7 +189,7 @@ private:
         return data_.size();
       else
         static_assert(concept_fail{},
-                      "\033[35mSubstrate does not satisfy "
+                      "\033[35mPopulation does not satisfy "
                       "\033[33m\"sized\"\033[35m concept "
                       "requirement\033[0m");
     }
@@ -204,7 +204,7 @@ private:
         data_.flushUnpruned();
       else
         static_assert(concept_fail{},
-                      "\033[35mSubstrate does not satisfy "
+                      "\033[35mPopulation does not satisfy "
                       "\033[33m\"flushable\"\033[35m concept "
                       "requirement\033[0m");
     }
@@ -220,7 +220,7 @@ private:
         data_.pruneLineage(i);
       else
         static_assert(concept_fail{},
-                      "\033[35mSubstrate does not satisfy "
+                      "\033[35mPopulation does not satisfy "
                       "\033[33m\"lineage-prune\"\033[35m concept "
                       "requirement\033[0m");
     }
@@ -236,7 +236,7 @@ private:
         data_.snapShot(i);
       else
         static_assert(concept_fail{},
-                      "\033[35mSubstrate does not satisfy "
+                      "\033[35mPopulation does not satisfy "
                       "\033[33m\"snap-shot\"\033[35m concept "
                       "requirement\033[0m");
     }
@@ -256,7 +256,7 @@ private:
       }
       else
         static_assert(concept_fail{},
-                      "\033[35mSubstrate does not satisfy "
+                      "\033[35mPopulation does not satisfy "
                       "\033[33m\"publishable\"\033[35m concept "
                       "requirement\033[0m");
     }
@@ -272,7 +272,7 @@ private:
         data_.configure(c);
       else
         static_assert(concept_fail{},
-                      "\033[35mSubstrate does not satisfy "
+                      "\033[35mPopulation does not satisfy "
                       "\033[33m\"configurable\"\033[35m concept "
                       "requirement\033[0m");
     }
@@ -282,13 +282,14 @@ private:
     // prohibited methods
     template <typename T>
     using Nameable = decltype(std::declval<T &>().classNameAsString_());
-    static_assert(
-        std::negation<utilities::TMP::is_detected<UserPopulation, Nameable>>{},
-        "Population class cannot provide classNameAsString_()");
     std::string
         classNameAsString_() const override
     {
-      return autoClassNameAsString<UserPopulation>();
+      if constexpr (utilities::TMP::is_detected<UserPopulation, Nameable>{})
+        static_assert(concept_fail{},
+                      "Population class cannot provide classNameAsString_()");
+      else
+        return autoClassNameAsString<UserPopulation>();
     }
 
     // data

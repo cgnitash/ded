@@ -58,7 +58,7 @@ public:
   
 	es.configureParameter("inputs",input_);
 	es.configureParameter("outputs",output_);
-	es.configureParameter("hiddens",hidden_);
+	es.configureParameter("hddens",hidden_);
 
     es.configureInput("in_sense", in_sense_);
 
