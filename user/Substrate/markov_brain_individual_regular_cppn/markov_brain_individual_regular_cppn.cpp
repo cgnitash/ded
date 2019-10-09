@@ -1,5 +1,5 @@
 
-#include "markov_brain_individual_regular_cppn.h"
+#include "markov_brain_individual_regular_cppn.hpp"
 
 #include <algorithm>
 #include <vector>

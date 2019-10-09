@@ -1,8 +1,4 @@
 
-
-#include "csv_reader.h"
-#include "../utilities.h"
-
 #include <algorithm>
 #include <cmath>
 #include <fstream>
@@ -13,6 +9,9 @@
 #include <set>
 #include <sstream>
 #include <vector>
+
+#include "csv_reader.hpp"
+#include "../utilities.hpp"
 
 namespace ded
 {

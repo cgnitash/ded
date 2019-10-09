@@ -6,8 +6,8 @@
 #include <regex>
 #include <string>
 
-#include "../configuration.h"
-#include "process_spec.h"
+#include "../configuration.hpp"
+#include "process_spec.hpp"
 
 namespace ded
 {

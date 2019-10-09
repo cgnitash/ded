@@ -1,6 +1,6 @@
 
 
-#include "roulette_wheel.h"
+#include "roulette_wheel.hpp"
 
 #include <algorithm>
 #include <iostream>

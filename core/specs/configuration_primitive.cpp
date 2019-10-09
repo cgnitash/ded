@@ -1,5 +1,5 @@
 
-#include "configuration_primitive.h"
+#include "configuration_primitive.hpp"
 
 namespace ded
 {

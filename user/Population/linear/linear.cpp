@@ -1,6 +1,6 @@
 
-#include "linear.h"
-#include "../../../core/utilities/csv/csv.h"
+#include "linear.hpp"
+#include "../../../core/utilities/csv/csv.hpp"
 
 #include <algorithm>
 #include <experimental/filesystem>

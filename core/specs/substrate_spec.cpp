@@ -6,9 +6,9 @@
 #include <string>
 #include <variant>
 
-#include "../configuration.h"
-#include "../utilities/utilities.h"
-#include "substrate_spec.h"
+#include "../configuration.hpp"
+#include "../utilities/utilities.hpp"
+#include "substrate_spec.hpp"
 
 namespace ded
 {

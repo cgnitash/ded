@@ -4,7 +4,7 @@
 #include <experimental/filesystem>
 #include <fstream>
 
-#include "utilities.h"
+#include "utilities.hpp"
 
 namespace ded
 {

@@ -1,5 +1,5 @@
 
-#include "det_logic.h"
+#include "det_logic.hpp"
 
 #include <algorithm>
 #include <vector>

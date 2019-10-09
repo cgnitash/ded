@@ -6,13 +6,13 @@
 #include <regex>
 #include <vector>
 
-#include "specs/process_spec.h"
-#include "specs/substrate_spec.h"
-#include "specs/population_spec.h"
+#include "specs/process_spec.hpp"
+#include "specs/substrate_spec.hpp"
+#include "specs/population_spec.hpp"
 
-#include "analysis.h"
-#include "experiments.h"
-#include "utilities/utilities.h"
+#include "analysis.hpp"
+#include "experiments.hpp"
+#include "utilities/utilities.hpp"
 
 namespace ded
 {

@@ -7,10 +7,10 @@
 #include <string>
 #include <vector>
 
-#include "../specs/configuration_primitive.h"
-#include "../utilities/term_colours.h"
-#include "../utilities/utilities.h"
-#include "parser.h"
+#include "../specs/configuration_primitive.hpp"
+#include "../utilities/term_colours.hpp"
+#include "../utilities/utilities.hpp"
+#include "parser.hpp"
 
 namespace ded
 {

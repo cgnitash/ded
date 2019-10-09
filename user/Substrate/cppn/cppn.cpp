@@ -1,5 +1,5 @@
 
-#include "cppn.h"
+#include "cppn.hpp"
 
 #include <algorithm>
 #include <cmath>

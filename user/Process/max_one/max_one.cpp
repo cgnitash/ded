@@ -1,5 +1,5 @@
 
-#include "max_one.h"
+#include "max_one.hpp"
 
 #include <algorithm>
 

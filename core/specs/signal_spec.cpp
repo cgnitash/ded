@@ -1,11 +1,11 @@
 
-#include "signal_spec.h"
-#include "configuration_primitive.h"
-#include "../utilities/utilities.h"
-
 #include <string>
 #include <vector>
 #include <iostream>
+
+#include "signal_spec.hpp"
+#include "configuration_primitive.hpp"
+#include "../utilities/utilities.hpp"
 
 namespace ded
 {

@@ -6,9 +6,9 @@
 #include <iomanip>
 #include <iostream>
 
-#include "utilities/term_colours.h"
-#include "utilities/utilities.h"
-#include "configuration.h"
+#include "utilities/term_colours.hpp"
+#include "utilities/utilities.hpp"
+#include "configuration.hpp"
 
 namespace ded
 {

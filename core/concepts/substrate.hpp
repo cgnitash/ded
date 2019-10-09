@@ -1,0 +1,428 @@
+
+#pragma once
+
+#include <cassert>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <string>
+#include <type_traits>
+#include <vector>
+
+#include "../configuration.hpp"
+#include "../specs/substrate_spec.hpp"
+#include "../utilities/tmp.hpp"
+#include "encoding.hpp"
+#include "signal.hpp"
+
+namespace ded
+{
+namespace concepts
+{
+
+// polymorphic wrapper for Substrates
+class Substrate
+{
+public:
+  template <typename UserSubstrate>
+  Substrate(UserSubstrate x)
+      : self_(new SubstrateObject<UserSubstrate>(std::move(x)))
+  {
+  }
+
+  Substrate(const Substrate &x) : data(x.data), self_(x.self_->copy_())
+  {
+  }
+
+  Substrate(Substrate &&) noexcept = default;
+
+  Substrate &
+      operator=(const Substrate &x)
+  {
+    Substrate tmp(x);
+    *this = std::move(tmp);
+    return *this;
+  }
+
+  Substrate &operator=(Substrate &&) noexcept = default;
+
+  // this should not be used except when beginning a specific simulation
+  // ** affects global substrate IDs
+  void
+      resetGlobalSubstrateIDs()
+  {
+    entity_id_ = 0;
+  }
+
+  // public interface of Substrates
+
+  bool
+      operator==(const Substrate &e) const
+  {
+    return getID() == e.getID();
+  }
+
+  bool
+      operator!=(const Substrate &e) const
+  {
+    return !(*this == e);
+  }
+
+  bool
+      operator<(const Substrate &e) const
+  {
+    return getID() < e.getID();
+  }
+
+  bool
+      operator>(const Substrate &e) const
+  {
+    return e < *this;
+  }
+
+  bool
+      operator<=(const Substrate &e) const
+  {
+    return !(*this > e);
+  }
+
+  bool
+      operator>=(const Substrate &e) const
+  {
+    return !(*this < e);
+  }
+
+  DataStore data;
+
+  long
+      getID() const
+  {
+    return self_->getID_();
+  }
+
+  long
+      getAncestor() const
+  {
+    return self_->getAncestor_();
+  }
+
+  Encoding
+      getEncoding() const
+  {
+    return self_->getEncoding_();
+  }
+
+  void
+      setEncoding(Encoding e)
+  {
+    self_->setEncoding_(e);
+  }
+
+  Encoding
+      parseEncoding(std::string s)
+  {
+    return self_->parseEncoding_(s);
+  }
+
+  void
+      input(std::string n, Signal s)
+  {
+    self_->input_(n, s);
+  }
+
+  Signal
+      output(std::string n)
+  {
+    return self_->output_(n);
+  }
+
+  void
+      mutate()
+  {
+    self_->mutate_();
+  }
+
+  void
+      reset()
+  {
+    self_->reset_();
+  }
+
+  specs::SubstrateSpec
+      publishConfiguration()
+  {
+    return self_->publishConfiguration_();
+  }
+
+  void
+      tick()
+  {
+    self_->tick_();
+  }
+
+  void
+      configure(specs::SubstrateSpec es)
+  {
+    self_->configure_(es);
+  }
+
+private:
+  // interface/ABC for an Substrate
+  struct SubstrateInterface
+  {
+    // provided methods
+    virtual ~SubstrateInterface()                    = default;
+    virtual SubstrateInterface *copy_() const        = 0;
+    virtual long                getID_() const       = 0;
+    virtual long                getAncestor_() const = 0;
+
+    // mandatory methods
+    virtual void                 mutate_()                        = 0;
+    virtual void                 reset_()                         = 0;
+    virtual void                 tick_()                          = 0;
+    virtual void                 input_(std::string, Signal)      = 0;
+    virtual Signal               output_(std::string)             = 0;
+    virtual void                 configure_(specs::SubstrateSpec) = 0;
+    virtual specs::SubstrateSpec publishConfiguration_()          = 0;
+
+    // optional methods
+    virtual Encoding getEncoding_() const        = 0;
+    virtual void     setEncoding_(Encoding)      = 0;
+    virtual Encoding parseEncoding_(std::string) = 0;
+
+    // prohibited methods
+    virtual std::string classNameAsString_() const = 0;
+  };
+
+  template <typename UserSubstrate>
+  struct SubstrateObject final : SubstrateInterface
+  {
+
+    // provided methods
+    SubstrateObject(UserSubstrate x)
+        : id_(++entity_id_), ancestor_(0), data_(std::move(x))
+    {
+    }
+
+    SubstrateInterface *
+        copy_() const override
+    {
+      return new SubstrateObject(*this);
+    }
+
+    long
+        getAncestor_() const override
+    {
+      return ancestor_;
+    }
+
+    long
+        getID_() const override
+    {
+      return id_;
+    }
+
+    // mandatory methods
+    //
+    // dependent template to allow for static_assert error messages
+    template <typename = void>
+    struct concept_fail : std::false_type
+    {
+    };
+
+    template <typename T>
+    using HasInput =
+        decltype(std::declval<T &>().input(std::declval<std::string>(),
+                                           std::declval<Signal>()));
+    void
+        input_(std::string n, Signal s) override
+    {
+      if constexpr (utilities::TMP::
+                        has_signature<UserSubstrate, void, HasInput>{})
+        data_.input(n, s);
+      else
+        static_assert(concept_fail{},
+                      "\033[35mSubstrate does not satisfy "
+                      "\033[33m\"input\"\033[35m concept "
+                      "requirement\033[0m");
+    }
+
+    template <typename T>
+    using HasOutput =
+        decltype(std::declval<T &>().output(std::declval<std::string>()));
+    Signal
+        output_(std::string n) override
+    {
+      if constexpr (utilities::TMP::
+                        has_signature<UserSubstrate, Signal, HasOutput>{})
+        return data_.output(n);
+      else
+        static_assert(concept_fail{},
+                      "\033[35mSubstrate does not satisfy "
+                      "\033[33m\"output\"\033[35m concept "
+                      "requirement\033[0m");
+    }
+
+    template <typename T>
+    using HasTick = decltype(std::declval<T &>().tick());
+    void
+        tick_() override
+    {
+      if constexpr (utilities::TMP::
+                        has_signature<UserSubstrate, void, HasTick>{})
+        data_.tick();
+      else
+        static_assert(concept_fail{},
+                      "\033[35mSubstrate does not satisfy "
+                      "\033[33m\"tick\"\033[35m concept "
+                      "requirement\033[0m");
+    }
+
+    template <typename T>
+    using HasReset = decltype(std::declval<T &>().reset());
+    void
+        reset_() override
+    {
+      if constexpr (utilities::TMP::
+                        has_signature<UserSubstrate, void, HasReset>{})
+        data_.reset();
+      else
+        static_assert(concept_fail{},
+                      "\033[35mSubstrate does not satisfy "
+                      "\033[33m\"reset\"\033[35m concept "
+                      "requirement\033[0m");
+    }
+
+    template <typename T>
+    using HasMutate = decltype(std::declval<T &>().mutate());
+    void
+        mutate_() override
+    {
+      if constexpr (utilities::TMP::
+                        has_signature<UserSubstrate, void, HasMutate>{})
+      {
+        ancestor_ = id_;
+        id_       = ++entity_id_;
+        data_.mutate();
+      }
+      else
+        static_assert(concept_fail{},
+                      "\033[35mSubstrate does not satisfy "
+                      "\033[33m\"mutate\"\033[35m concept "
+                      "requirement\033[0m");
+    }
+
+    template <typename T>
+    using HasPubConf = decltype(std::declval<T &>().publishConfiguration());
+    specs::SubstrateSpec
+        publishConfiguration_() override
+    {
+      if constexpr (utilities::TMP::has_signature<UserSubstrate,
+                                                  specs::SubstrateSpec,
+                                                  HasPubConf>{})
+      {
+        auto es  = data_.publishConfiguration();
+        es.name_ = autoClassNameAsString<UserSubstrate>();
+        return es;
+      }
+      else
+        static_assert(concept_fail{},
+                      "\033[35mSubstrate does not satisfy "
+                      "\033[33m\"configurable\"\033[35m concept "
+                      "requirement\033[0m");
+    }
+
+    template <typename T>
+    using HasConf = decltype(
+        std::declval<T &>().configure(std::declval<specs::SubstrateSpec>()));
+    void
+        configure_(specs::SubstrateSpec c) override
+    {
+      if constexpr (utilities::TMP::
+                        has_signature<UserSubstrate, void, HasConf>{})
+      {
+        data_.configure(c);
+      }
+      else
+        static_assert(concept_fail{},
+                      "\033[35mSubstrate does not satisfy "
+                      "\033[33m\"publishable\"\033[35m concept "
+                      "requirement\033[0m");
+    }
+
+    // optional methods
+    template <typename T>
+    using EncodingGettable = decltype(std::declval<T &>().getEncoding());
+
+    Encoding
+        getEncoding_() const override
+    {
+      if constexpr (utilities::TMP::is_detected<UserSubstrate,
+                                                EncodingGettable>{})
+      {
+        return data_.getEncoding();
+      }
+      else
+      {
+        return Encoding{};
+      }
+    }
+
+    template <typename T>
+    using EncodingSettable =
+        decltype(std::declval<T &>().setEncoding(std::declval<Encoding>()));
+
+    void
+        setEncoding_(Encoding e) override
+    {
+      if constexpr (utilities::TMP::is_detected<UserSubstrate,
+                                                EncodingSettable>{})
+      {
+        data_.setEncoding(e);
+      }
+    }
+
+    template <typename T>
+    using EncodingParsable = decltype(
+        std::declval<T &>().parseEncoding(std::declval<std::string>()));
+
+    Encoding
+        parseEncoding_(std::string s) override
+    {
+      if constexpr (utilities::TMP::is_detected<UserSubstrate,
+                                                EncodingParsable>{})
+      {
+        return data_.parseEncoding(s);
+      }
+      else
+      {
+        return Encoding{};
+      }
+    }
+
+    // prohibited methods
+    template <typename T>
+    using Nameable = decltype(std::declval<T &>().classNameAsString_());
+    std::string
+        classNameAsString_() const override
+    {
+      if constexpr (utilities::TMP::is_detected<UserSubstrate, Nameable>{})
+        static_assert(concept_fail{},
+                      "Substrate class cannot provide classNameAsString_()");
+      else
+        return autoClassNameAsString<UserSubstrate>();
+    }
+
+    // data
+    long id_;
+    long ancestor_;
+
+    UserSubstrate data_;
+  };
+
+  static long                         entity_id_;
+  std::unique_ptr<SubstrateInterface> self_;
+};
+
+}   // namespace concepts
+}   // namespace ded

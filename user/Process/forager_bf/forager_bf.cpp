@@ -1,5 +1,5 @@
 
-#include "forager_bf.h"
+#include "forager_bf.hpp"
 
 #include <algorithm>
 #include <experimental/filesystem>

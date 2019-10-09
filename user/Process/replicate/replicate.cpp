@@ -1,5 +1,5 @@
 
-#include "replicate.h"
+#include "replicate.hpp"
 #include <vector>
 
 ded::concepts::Population

@@ -1,5 +1,5 @@
 
-#include "markov_brain_bf.h"
+#include "markov_brain_bf.hpp"
 
 #include <algorithm>
 #include <vector>

@@ -1,4 +1,4 @@
-#include "term_colours.h"
+#include "term_colours.hpp"
 
 namespace ded
 {

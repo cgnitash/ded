@@ -1,5 +1,5 @@
 
-#include "buffet.h"
+#include "buffet.hpp"
 
 #include <algorithm>
 #include <vector>

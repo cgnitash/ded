@@ -1,10 +1,11 @@
 
-#include "lexer.h"
-#include "../utilities/term_colours.h"
-#include "../utilities/utilities.h"
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+
+#include "lexer.hpp"
+#include "../utilities/term_colours.hpp"
+#include "../utilities/utilities.hpp"
 
 namespace ded
 {

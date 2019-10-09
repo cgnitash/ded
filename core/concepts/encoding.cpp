@@ -1,10 +1,11 @@
 
 
-#include "encoding.h"
 #include <algorithm>
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+
+#include "encoding.hpp"
 
 namespace ded
 {
