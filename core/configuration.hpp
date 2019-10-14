@@ -21,7 +21,7 @@ extern std::map<std::string, specs::PopulationSpec> ALL_POPULATION_SPECS;
 extern std::map<std::string, specs::EncodingSpec>   ALL_ENCODING_SPECS;
 
 // component_builder will provide full specializations
-template <typename T>
+template <typename>
 std::string autoClassNameAsString() = delete;
 
 namespace config_manager

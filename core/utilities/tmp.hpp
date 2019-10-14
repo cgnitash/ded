@@ -31,6 +31,12 @@ struct has_signature
 {
 };
 
+// dependent template to allow for static_assert error messages
+template <typename = void>
+struct concept_fail : std::false_type
+{
+};
+
 // From https://www.youtube.com/watch?v=9PFMllbyaLM
 // template class that contains an overload set of operator()
 template <typename... lambdas>

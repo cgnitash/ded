@@ -30,7 +30,7 @@ fors = $sequence
 				{ 
 				  ? food_eaten 5 
 				}
-     second = $elite_replacement  {  strength = 0.4  }
+     second = $elite_replacement  {  strength = 0.4 }
 }
 
 

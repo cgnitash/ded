@@ -139,13 +139,15 @@ private:
       return new PopulationObject(*this);
     }
 
+	// provided global method
+    std::string
+        classNameAsString_() const override
+    {
+        return autoClassNameAsString<UserPopulation>();
+    }
+
     // mandatory methods
     //
-    // dependent template to allow for static_assert error messages
-    template <typename = void>
-    struct concept_fail : std::false_type
-    {
-    };
 
     template <typename T>
     using HasMerge = decltype(
@@ -157,7 +159,7 @@ private:
                         has_signature<UserPopulation, void, HasMerge>{})
         data_.merge(v);
       else
-        static_assert(concept_fail{},
+        static_assert(ded::utilities::TMP::concept_fail<UserPopulation>{},
                       "\033[35mPopulation does not satisfy "
                       "\033[33m\"merge\"\033[35m concept "
                       "requirement\033[0m");
@@ -173,7 +175,7 @@ private:
                                                   HasGetAsVector>{})
         return data_.getAsVector();
       else
-        static_assert(concept_fail{},
+        static_assert(ded::utilities::TMP::concept_fail<UserPopulation>{},
                       "\033[35mPopulation does not satisfy "
                       "\033[33m\"get-as-vector\"\033[35m concept "
                       "requirement\033[0m");
@@ -188,7 +190,7 @@ private:
                         has_signature<UserPopulation, size_t, HasSize>{})
         return data_.size();
       else
-        static_assert(concept_fail{},
+        static_assert(ded::utilities::TMP::concept_fail<UserPopulation>{},
                       "\033[35mPopulation does not satisfy "
                       "\033[33m\"sized\"\033[35m concept "
                       "requirement\033[0m");
@@ -203,7 +205,7 @@ private:
                         has_signature<UserPopulation, void, HasFlush>{})
         data_.flushUnpruned();
       else
-        static_assert(concept_fail{},
+        static_assert(ded::utilities::TMP::concept_fail<UserPopulation>{},
                       "\033[35mPopulation does not satisfy "
                       "\033[33m\"flushable\"\033[35m concept "
                       "requirement\033[0m");
@@ -219,7 +221,7 @@ private:
                         has_signature<UserPopulation, void, HasPruneLineage>{})
         data_.pruneLineage(i);
       else
-        static_assert(concept_fail{},
+        static_assert(ded::utilities::TMP::concept_fail<UserPopulation>{},
                       "\033[35mPopulation does not satisfy "
                       "\033[33m\"lineage-prune\"\033[35m concept "
                       "requirement\033[0m");
@@ -235,7 +237,7 @@ private:
                         has_signature<UserPopulation, void, HasSnapshot>{})
         data_.snapShot(i);
       else
-        static_assert(concept_fail{},
+        static_assert(ded::utilities::TMP::concept_fail<UserPopulation>{},
                       "\033[35mPopulation does not satisfy "
                       "\033[33m\"snap-shot\"\033[35m concept "
                       "requirement\033[0m");
@@ -255,7 +257,7 @@ private:
         return ps;
       }
       else
-        static_assert(concept_fail{},
+        static_assert(ded::utilities::TMP::concept_fail<UserPopulation>{},
                       "\033[35mPopulation does not satisfy "
                       "\033[33m\"publishable\"\033[35m concept "
                       "requirement\033[0m");
@@ -271,7 +273,7 @@ private:
                         has_signature<UserPopulation, void, HasConf>{})
         data_.configure(c);
       else
-        static_assert(concept_fail{},
+        static_assert(ded::utilities::TMP::concept_fail<UserPopulation>{},
                       "\033[35mPopulation does not satisfy "
                       "\033[33m\"configurable\"\033[35m concept "
                       "requirement\033[0m");
@@ -280,17 +282,6 @@ private:
     // optional methods
 
     // prohibited methods
-    template <typename T>
-    using Nameable = decltype(std::declval<T &>().classNameAsString_());
-    std::string
-        classNameAsString_() const override
-    {
-      if constexpr (utilities::TMP::is_detected<UserPopulation, Nameable>{})
-        static_assert(concept_fail{},
-                      "Population class cannot provide classNameAsString_()");
-      else
-        return autoClassNameAsString<UserPopulation>();
-    }
 
     // data
     UserPopulation data_;

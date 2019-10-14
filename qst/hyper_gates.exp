@@ -12,28 +12,36 @@ MB = $markov_brain {
 	 inputs = 4
 	}
 
-R = $markov_brain_regular_cppn {
+R = $markov_brain_indirect {
 	 outputs =  2
 	 inputs = 4
-	 cppn = !c
+	 individual = false
+	 irregular = false
+	 indirect = !c
 	}
 
-IR = $markov_brain_irregular_cppn {
+IR = $markov_brain_indirect {
 	 outputs =  2
 	 inputs = 4
-	 cppn = !c
+	 individual = false
+	 irregular = true
+	 indirect = !c
 	}
 
-INR = $markov_brain_individual_regular_cppn {
+INR = $markov_brain_indirect {
 	 outputs =  2
 	 inputs = 4
-	 cppn = !c
+	 individual = true
+	 irregular = false
+	 indirect = !c
 	}
 
-INIR = $markov_brain_individual_irregular_cppn {
+INIR = $markov_brain_indirect {
 	 outputs =  2
 	 inputs = 4
-	 cppn = !c
+	 individual = true
+	 irregular = true
+	 indirect = !c
 	}
 
 Population = $linear { 

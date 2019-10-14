@@ -94,14 +94,16 @@ private:
       return new ProcessOject(*this);
     }
 
+	// provided global method
+    std::string
+        classNameAsString_() const override
+    {
+        return autoClassNameAsString<UserProcess>();
+    }
+
     // mandatory methods
     //
-    // dependent template to allow for static_assert error messages
-    template <typename = void>
-    struct concept_fail : std::false_type
-    {
-    };
-
+	
     template <typename T>
     using HasEvaluate =
         decltype(std::declval<T &>().evaluate(std::declval<Population>()));
@@ -112,8 +114,8 @@ private:
                         has_signature<UserProcess, Population, HasEvaluate>{})
         return data_.evaluate(p);
       else
-        static_assert(concept_fail{},
-                      "\033[35mPopulation does not satisfy "
+        static_assert(ded::utilities::TMP::concept_fail<UserProcess>{},
+                      "\033[35mProcess does not satisfy "
                       "\033[33m\"evaluate\"\033[35m concept "
                       "requirement\033[0m");
     }
@@ -132,8 +134,8 @@ private:
         return es;
       }
       else
-        static_assert(concept_fail{},
-                      "\033[35mPopulation does not satisfy "
+        static_assert(ded::utilities::TMP::concept_fail<UserProcess>{},
+                      "\033[35mProcess does not satisfy "
                       "\033[33m\"publishable\"\033[35m concept "
                       "requirement\033[0m");
     }
@@ -147,8 +149,8 @@ private:
       if constexpr (utilities::TMP::has_signature<UserProcess, void, HasConf>{})
         data_.configure(c);
       else
-        static_assert(concept_fail{},
-                      "\033[35mPopulation does not satisfy "
+        static_assert(ded::utilities::TMP::concept_fail<UserProcess>{},
+                      "\033[35mProcess does not satisfy "
                       "\033[33m\"configurable\"\033[35m concept "
                       "requirement\033[0m");
     }
@@ -156,17 +158,6 @@ private:
     // optional methods
 
     // prohibited methods
-    template <typename T>
-    using Nameable = decltype(std::declval<T &>().classNameAsString_());
-    std::string
-        classNameAsString_() const override
-    {
-      if constexpr (utilities::TMP::is_detected<UserProcess, Nameable>{})
-        static_assert(concept_fail{},
-                      "Process class cannot provide classNameAsString_()");
-      else
-        return autoClassNameAsString<UserProcess>();
-    }
 
     // data
     UserProcess data_;

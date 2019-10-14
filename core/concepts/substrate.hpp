@@ -222,13 +222,15 @@ private:
       return id_;
     }
 
+	// provided global method
+    std::string
+        classNameAsString_() const override
+    {
+        return autoClassNameAsString<UserSubstrate>();
+    }
+
     // mandatory methods
     //
-    // dependent template to allow for static_assert error messages
-    template <typename = void>
-    struct concept_fail : std::false_type
-    {
-    };
 
     template <typename T>
     using HasInput =
@@ -241,7 +243,7 @@ private:
                         has_signature<UserSubstrate, void, HasInput>{})
         data_.input(n, s);
       else
-        static_assert(concept_fail{},
+        static_assert(ded::utilities::TMP::concept_fail<UserSubstrate>{},
                       "\033[35mSubstrate does not satisfy "
                       "\033[33m\"input\"\033[35m concept "
                       "requirement\033[0m");
@@ -257,7 +259,7 @@ private:
                         has_signature<UserSubstrate, Signal, HasOutput>{})
         return data_.output(n);
       else
-        static_assert(concept_fail{},
+        static_assert(ded::utilities::TMP::concept_fail<UserSubstrate>{},
                       "\033[35mSubstrate does not satisfy "
                       "\033[33m\"output\"\033[35m concept "
                       "requirement\033[0m");
@@ -272,7 +274,7 @@ private:
                         has_signature<UserSubstrate, void, HasTick>{})
         data_.tick();
       else
-        static_assert(concept_fail{},
+        static_assert(ded::utilities::TMP::concept_fail<UserSubstrate>{},
                       "\033[35mSubstrate does not satisfy "
                       "\033[33m\"tick\"\033[35m concept "
                       "requirement\033[0m");
@@ -287,7 +289,7 @@ private:
                         has_signature<UserSubstrate, void, HasReset>{})
         data_.reset();
       else
-        static_assert(concept_fail{},
+        static_assert(ded::utilities::TMP::concept_fail<UserSubstrate>{},
                       "\033[35mSubstrate does not satisfy "
                       "\033[33m\"reset\"\033[35m concept "
                       "requirement\033[0m");
@@ -306,7 +308,7 @@ private:
         data_.mutate();
       }
       else
-        static_assert(concept_fail{},
+        static_assert(ded::utilities::TMP::concept_fail<UserSubstrate>{},
                       "\033[35mSubstrate does not satisfy "
                       "\033[33m\"mutate\"\033[35m concept "
                       "requirement\033[0m");
@@ -326,7 +328,7 @@ private:
         return es;
       }
       else
-        static_assert(concept_fail{},
+        static_assert(ded::utilities::TMP::concept_fail<UserSubstrate>{},
                       "\033[35mSubstrate does not satisfy "
                       "\033[33m\"configurable\"\033[35m concept "
                       "requirement\033[0m");
@@ -344,7 +346,7 @@ private:
         data_.configure(c);
       }
       else
-        static_assert(concept_fail{},
+        static_assert(ded::utilities::TMP::concept_fail<UserSubstrate>{},
                       "\033[35mSubstrate does not satisfy "
                       "\033[33m\"publishable\"\033[35m concept "
                       "requirement\033[0m");
@@ -401,17 +403,6 @@ private:
     }
 
     // prohibited methods
-    template <typename T>
-    using Nameable = decltype(std::declval<T &>().classNameAsString_());
-    std::string
-        classNameAsString_() const override
-    {
-      if constexpr (utilities::TMP::is_detected<UserSubstrate, Nameable>{})
-        static_assert(concept_fail{},
-                      "Substrate class cannot provide classNameAsString_()");
-      else
-        return autoClassNameAsString<UserSubstrate>();
-    }
 
     // data
     long id_;

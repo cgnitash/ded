@@ -78,7 +78,11 @@ public:
   void           input(std::string, ded::concepts::Signal);
   ded::concepts::Signal   output(std::string);
   void           tick();
-  ded::concepts::Encoding getEncoding() const { return genome_; }
+  ded::concepts::Encoding
+      getEncoding() const
+  {
+    return genome_;
+  }
   void           setEncoding(ded::concepts::Encoding e)
   {
     genome_ = e;
