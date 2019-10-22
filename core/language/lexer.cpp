@@ -44,7 +44,7 @@ void
 {
   // order of options matter
   const std::regex valid_symbol_{
-    R"~~(^(\s+|\[|\]|<|>|\{|\}|\=|\?|\$\w+|\!\w+|\^[-\w]+|"[^"]*"|[\w\.]+))~~"
+    R"~~(^(\s+|\[|\]|<|>|\{|\}|\=|\?|:|\$\w+|\!\w+|\^[-\w]+|"[^"]*"|[\w\.]+))~~"
   };
 
   for (auto [line_number, line] : rv::enumerate(lines_))

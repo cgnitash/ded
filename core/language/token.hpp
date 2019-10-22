@@ -28,7 +28,8 @@ enum class TokenType
   open_varied_argument,
   close_varied_argument,
   open_nested_block_vector,
-  close_nested_block_vector
+  close_nested_block_vector,
+  signal_bind
 };
 
 TokenType parseTokenType(std::string);
@@ -52,6 +53,7 @@ struct Block
   std::string                                       name_;
   std::pair<int, int>                               range_;
   std::vector<std::pair<Token, Token>>              overrides_;
+  std::vector<std::pair<Token, Token>>              signal_binds_;
   std::vector<std::pair<Token, Token>>              traces_;
   std::vector<std::pair<Token, Block>>              nested_;
   std::vector<std::pair<Token, std::vector<Block>>> nested_vector_;

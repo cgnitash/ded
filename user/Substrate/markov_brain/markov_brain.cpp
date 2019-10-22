@@ -14,16 +14,19 @@ ded::concepts::Encoding
        i++)
   {
     auto site = (*i)[1].str();
-    if (!site.empty()) { e.push_back(std::stol(site)); }
+    if (!site.empty())
+    {
+      e.push_back(std::stol(site));
+    }
   }
   return e;
 }
 
-
 void
     markov_brain::reset()
 {
-  for (auto &b : buffer_) b = 0;
+  for (auto &b : buffer_)
+    b = 0;
 }
 void
     markov_brain::mutate()
@@ -51,8 +54,10 @@ void
              "specified size\n";
       exit(1);
     }
-    for (auto i{ 0u }; i < input_; i++) buffer_[i] = ded::utilities::Bit(v[i]);
-  } else
+    for (auto i{ 0u }; i < input_; i++)
+      buffer_[i] = ded::utilities::Bit(v[i]);
+  }
+  else
   {
     std::cout << "Impl-Error: substrate-markovbrain cannot handle this "
                  "name-signal pair in input \n";
@@ -66,9 +71,9 @@ ded::concepts::Signal
 
   if (n == out_sense_)
   {
-    return buffer_ | rs::copy |
-           ra::slice(input_, input_ + output_);
-  } else
+    return buffer_ | rs::copy | ra::slice(input_, input_ + output_);
+  }
+  else
   {
     std::cout << "Impl-Error: substrate-markovbrain cannot handle this "
                  "name-signal pair in output \n";
@@ -91,9 +96,11 @@ void
   for (auto &g : gates_)
   {
     auto in = 0;
-    for (auto &i : g.ins_) in = in * 2 + buffer_[i];
+    for (auto &i : g.ins_)
+      in = in * 2 + buffer_[i];
     auto out = g.logic_[in];
-    for (auto &i : g.outs_) out_buffer[i] += out;
+    for (auto &i : g.outs_)
+      out_buffer[i] += out;
   }
   buffer_ = out_buffer | rs::move |
             ra::transform([](auto i) { return ded::utilities::Bit(i); });
@@ -104,7 +111,7 @@ void
     markov_brain::seed_gates_(size_t n)
 {
 
-	ded::utilities::repeat(n, [&] {
+        ded::utilities::repeat(n, [&] {
     auto pos = std::rand() % (genome_.size() - 1);
     std::copy(std::begin(codon_), std::end(codon_), std::begin(genome_) + pos);
   });

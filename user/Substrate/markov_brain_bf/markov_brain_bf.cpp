@@ -138,7 +138,7 @@ void
 {
 
   gates_.clear();
-  auto addresses = input_ + output_ + hidden_;
+  auto addresses = 2 * input_ + output_ + hidden_;
   for (auto pos{ std::begin(genome_) }; pos < std::end(genome_) - gene_length_;
        pos++)
   {

@@ -38,9 +38,6 @@ class Parser
 
   Labels labels_;
 
-
-//  void errInvalidToken(Token, std::string, std::vector<std::string> = {});
-
   void parseExpression(int);
 
   Block expandBlock(int);
@@ -52,6 +49,7 @@ class Parser
 
   void attemptOverride(Block &, int &);
   void attemptParameterOverride(Block &, int &);
+  void attemptSignalBindOverride(Block &, int &);
   void attemptTrace(Block &, int &);
   std::vector<Block> attemptVectorBlock(int);
 

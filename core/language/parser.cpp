@@ -60,33 +60,6 @@ void
   variables_.push_back({ tokens[begin], nested_block });
 }
 
-/*
-void
-    Parser::errInvalidToken(Token                    token,
-                            std::string              message,
-                            std::vector<std::string> suggestions)
-{
-  auto left_padding = std::string(token.location_.second+ 10, ' '); 
-  std::cout << "parse-error\n\n"
-            << token.diagnostic_ << "\n"
-            << left_padding << utilities::TermColours::red_fg
-            << "^" << std::string(token.expr_.length() - 1, '~') << "\n"
-            << left_padding<<  message;
-
-  if (auto f = rs::find_if(suggestions,
-                           [word = token.expr_](auto attempt) {
-                             return utilities::match(attempt, word);
-                           });
-      f != rs::end(suggestions))
-    std::cout << "\n"
-              << left_padding<< "Did you mean "
-              << utilities::TermColours::green_fg << *f 
-              << utilities::TermColours::red_fg <<  "?";
-
-  std::cout << utilities::TermColours::reset << std::endl;
-}
-*/
-
 Block
     Parser::expandBlock(int begin)
 {
@@ -127,6 +100,7 @@ Block
 
     if (begin + 3 >= static_cast<int>(tokens.size()) ||
         (tokens[begin + 1].type_ != TokenType::assignment &&
+        tokens[begin + 1].type_ != TokenType::signal_bind &&
          tokens[begin].type_ != TokenType::trace))
     {
       errInvalidToken(tokens[begin], "unable to parse override syntax");
@@ -144,13 +118,16 @@ void
     Parser::attemptOverride(Block &current, int &begin)
 {
   auto const tokens = lexer_.getTokens();
-  switch (tokens[begin].type_)
+  switch (tokens[begin + 1].type_)
   {
     case TokenType::word:
+      attemptTrace(current, begin);
+      break;
+    case TokenType::assignment:
       attemptParameterOverride(current, begin);
       break;
-    case TokenType::trace:
-      attemptTrace(current, begin);
+    case TokenType::signal_bind:
+      attemptSignalBindOverride(current, begin);
       break;
     default:
       errInvalidToken(tokens[begin],
@@ -158,6 +135,24 @@ void
                       "or vector<component> here");
       throw ParserError{};
   }
+}
+
+void
+    Parser::attemptSignalBindOverride(Block &current, int &begin)
+{
+  auto const tokens = lexer_.getTokens();
+  if (tokens[begin].type_ != TokenType::word)
+  {
+    errInvalidToken(tokens[begin], "expected signal name here");
+    throw ParserError{};
+  }
+  if (tokens[begin + 2].type_ != TokenType::word)
+  {
+    errInvalidToken(tokens[begin + 2], "expected signal name here");
+    throw ParserError{};
+  }
+  current.signal_binds_.push_back({ tokens[begin], tokens[begin + 2] });
+  begin += 3;
 }
 
 void

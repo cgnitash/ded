@@ -22,7 +22,7 @@ private:
   std::string user_parameter_;
   long        size_ = 0;
   bool is_any_type_ = false, is_vector_ = false, is_any_vector_size_ = false,
-       is_user_set_vector_size_ = false;
+       is_user_set_vector_size_ = false, is_explicitly_bound_ = false;
 
 public:
   SignalSpec() = default;
@@ -85,6 +85,8 @@ public:
 
   bool exactlyMatches(SignalSpec);
   bool convertibleTo(SignalSpec);
+  bool isExplicitlyBound() { return is_explicitly_bound_; }
+  void setExplicitlyBound() { is_explicitly_bound_ = true; }
 };
 
 using SignalSpecSet = 

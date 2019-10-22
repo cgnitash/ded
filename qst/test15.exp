@@ -1,4 +1,5 @@
 
+
 # working
 
 enc = $encoding 
@@ -6,11 +7,10 @@ enc = $encoding
 	point_mutate_prob =  0.005 
 }
 
-e = $markov_brain 
+e = $markov_brain_bf 
 {
-     #hiddens =   [ 2 3 4 ] 
-     hiddens =    2
-	 outputs =  2 
+     hiddens =    2 
+	 outputs =  2
 	 inputs = 4
 	 genome = !enc
 }
@@ -27,11 +27,13 @@ Population = $linear
 
 fors = $sequence  
 {
-     first 	= 	$forager 	
+     first 	= 	$forager
 				{ 
 				  ? food_eaten 5 
+	 			  line_of_sight : front_in_sense 
+	 			  #back_line_of_sight : back_in_sense 
 				}
-     second = $elite_replacement  {  strength = 0.4 }
+     second = $elite_replacement  {  strength = 0.4  }
 }
 
 

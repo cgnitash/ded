@@ -409,12 +409,12 @@ void
 {
   auto diagnostic_message = name_token_.diagnostic_;
   auto left_padding       = std::string(name_token_.location_.second + 10, ' ');
-  std::cout << "parse-error\n\n"
+  std::cout << "parse-error\n"
             << diagnostic_message << "\n"
             << left_padding << utilities::TermColours::red_fg << "^"
             << std::string(name_token_.expr_.length() - 1, '~') << "\n"
-            << left_padding << "no " << (is_input ? "input" : "output")
-            << " signals provided by substrate can be bound\n"
+            << left_padding << (is_input ? "input" : "output")
+            << " signals provided by substrate cannot be bound\n"
             << utilities::TermColours::reset << left_padding
             << sig.diagnosticName() << "\n\n";
 
@@ -437,6 +437,47 @@ void
   throw SpecError{};
 }
 
+bool ProcessSpec::attemptExplicitBind(SignalSpec &  proc_sig,
+                                      SubstrateSpec sub_spec,
+                                      bool          is_input){
+
+//	for (auto [t,y] : signal_binds_)
+//	std::cout << t.expr_ << " " << y.expr_ << std::endl;
+//	std::cout << proc_sig.userName() << std::endl;
+  auto ios = sub_spec.getIO();
+  auto sub_sigs = is_input ? ios.inputs_ : ios.outputs_;
+
+	auto sig_bind = rs::find_if(signal_binds_, [&proc_sig](auto token_pair)
+			{ return token_pair.first.expr_ == proc_sig.userName(); });
+	if (sig_bind == rs::end( signal_binds_))
+		return false;
+
+    auto sub_sig = rs::find_if(sub_sigs, [sig_bind](auto ns) {
+      return ns.first == sig_bind->second.expr_;
+    });
+
+	if (sub_sig == rs::end(sub_sigs))
+    {
+      errInvalidToken(sig_bind->second,
+                            "not a signal provided by " + sub_spec.name());
+      throw language::ParserError{};
+    }
+
+	if (!sub_sig->second.exactlyMatches(proc_sig))
+    {
+      errInvalidToken(sig_bind->first,
+                            "signal required by " + name_);
+      errInvalidToken(sig_bind->second,
+                            "cannot be bound by " + sub_spec.name());
+      throw language::ParserError{};
+    }
+
+    proc_sig.updateIdentifier(sub_sig->second.identifier());
+	//proc_sig.setExplicitlyBound();
+	return true;
+		
+}
+
 void
     ProcessSpec::bindSignalTo(SubstrateSpec sub_spec)
 {
@@ -445,15 +486,19 @@ void
   for (auto &n_sig : io_.inputs_)
   {
     auto &in_sig  = n_sig.second;
+    if (attemptExplicitBind(in_sig, sub_spec, true))
+      continue;
     auto  matches = rs::count_if(ios.inputs_, [sig = in_sig](auto ns) {
       return ns.second.exactlyMatches(sig);
     });
+	/*
     if (matches > 1)
     {
       std::cout << "error: multiple input signals match exactly\n";
       throw SpecError{};
     }
-    if (!matches)
+	*/
+    if (matches != 1)
     {
       errSignalBind(sub_spec, n_sig.second, true);
     }
@@ -461,7 +506,7 @@ void
       return ns.second.exactlyMatches(sig);
     });
     in_sig.updateIdentifier(i->second.identifier());
-    ios.inputs_.erase(i);
+    //ios.inputs_.erase(i);
   }
 
   for (auto &n_sig : io_.outputs_)
@@ -483,7 +528,7 @@ void
       return ns.second.exactlyMatches(sig);
     });
     out_sig.updateIdentifier(i->second.identifier());
-    ios.outputs_.erase(i);
+    //ios.outputs_.erase(i);
   }
 }
 
@@ -702,6 +747,20 @@ void
   }
 }
 
+  void ProcessSpec::parseSignalBinds( language::Block block){
+  signal_binds_ = block.signal_binds_;
+  for (auto sb : signal_binds_)
+	if (rs::find_if(io_.inputs_, [sb](auto sig)
+				{ return sb.first.expr_ == sig.first; }) == rs::end(io_.inputs_)
+			&&
+	rs::find_if(io_.outputs_, [sb](auto sig)
+				{ return sb.first.expr_ == sig.first; }) == rs::end(io_.outputs_))
+  {
+    errInvalidToken(sb.first, "this is not an io signal of " + name_);
+    throw language::ParserError{};
+  }
+  }
+
 ProcessSpec::ProcessSpec(language::Block block)
 {
 
@@ -710,6 +769,7 @@ ProcessSpec::ProcessSpec(language::Block block)
   name_token_ = block.name_token_;
 
   parseParameters(block);
+  parseSignalBinds(block);
   parseTraces(block);
   parseNested(block);
   parseNestedVector(block);

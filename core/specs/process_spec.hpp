@@ -64,6 +64,8 @@ class ProcessSpec
 
   Tags tags_;
 
+  std::vector<std::pair<language::Token, language::Token>> signal_binds_;
+
   std::map<std::string, NestedProcessSpec>              nested_;
   std::map<std::string, std::pair<std::vector<NestedProcessSpec>, Tags>>
       nested_vector_;
@@ -75,12 +77,19 @@ class ProcessSpec
                         std::pair<std::string, std::string>>>
       tag_flow_inequalities_;
 
+  void parseParameters( language::Block);
+  void parseSignalBinds( language::Block);
+  void parseTraces( language::Block);
+  void parseNested( language::Block);
+  void parseNestedVector( language::Block);
+
   void matchTags(SignalSpecSet &source_tags,
                  SignalSpecSet &sink_tags,
                  int &          tag_count);
   void updateAndMatchTags(SignalSpecSet &source_tags,
                           SignalSpecSet &sink_tags,
                           int &          tag_count);
+  bool attemptExplicitBind(SignalSpec &sig, SubstrateSpec sub_spec, bool is_input); 
   void updateNestedConstraints(SignalSpecSet &constraints);
   void matchTagFlowEqualities(int &tag_count);
   void matchNestedTagConstraints(int &tag_count);
@@ -202,11 +211,6 @@ public:
 
   void bindTagEquality(std::pair<std::string, std::string> x,
                        std::pair<std::string, std::string> y);
-
-  void parseParameters( language::Block);
-  void parseTraces( language::Block);
-  void parseNested( language::Block);
-  void parseNestedVector( language::Block);
 
   std::vector<std::string> serialise(long, bool) const;
   ProcessSpec              deserialise(std::vector<std::string>);
