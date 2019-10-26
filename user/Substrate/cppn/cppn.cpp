@@ -88,7 +88,7 @@ void
   if (ins_.empty()) ins_ = std::vector<double>(input_, 0.0);
   if (hiddens_.empty()) hiddens_ = std::vector<double>(hidden_, 0.0);
 
-  std::vector<double> results = rv::concat(ins_,hiddens_);
+  auto results = rv::concat(ins_, hiddens_) | rs::to<std::vector<double>>;
 
   // for each node in order
   for (auto &node : nodes_)

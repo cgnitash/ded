@@ -3,7 +3,7 @@
 e = $markov_brain 
 {
      hiddens = 5
-	 outputs = 3
+	 outputs = 2
 	 inputs = ^fs-first-sensor_range
 }
 
