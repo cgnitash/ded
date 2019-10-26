@@ -89,7 +89,17 @@ class ProcessSpec
   void updateAndMatchTags(SignalSpecSet &source_tags,
                           SignalSpecSet &sink_tags,
                           int &          tag_count);
-  bool attemptExplicitBind(SignalSpec &sig, SubstrateSpec sub_spec, bool is_input); 
+  bool attemptExplicitBind(SignalSpec &    sig,
+                           SignalSpecSet   sub_sigs,
+                           language::Token sub_spec_name,
+                           bool            is_input);
+  void errSignalBind(SignalSpec      proc_sig,
+                     language::Token sub_spec_name,
+                     SignalSpecSet   sub_sigs,
+                     bool);
+  void bindSignalsTo(SignalSpecSet sigs,
+                     language::Token   sub_spec_name,
+                     bool          is_input);
   void updateNestedConstraints(SignalSpecSet &constraints);
   void matchTagFlowEqualities(int &tag_count);
   void matchNestedTagConstraints(int &tag_count);
@@ -218,8 +228,6 @@ public:
 
   void                                       instantiateUserParameterSizes();
   void                                       bindSubstrateIO(SubstrateSpec);
-  void                                       bindSignalTo(SubstrateSpec);
-  void errSignalBind(SubstrateSpec,SignalSpec,bool);
   void                                       bindTags(int);
   void                                       recordTraces();
   std::vector<std::pair<Trace, std::string>> queryTraces();

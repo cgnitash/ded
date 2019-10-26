@@ -14,57 +14,57 @@ namespace ded
 namespace specs
 {
 
-  void
-     ProcessSpec:: bindPreTag(std::string name, std::string value)
-  {
-    tags_.pre_.push_back({ name, SignalSpec{ name, name, value } });
-  }
+void
+    ProcessSpec::bindPreTag(std::string name, std::string value)
+{
+  tags_.pre_.push_back({ name, SignalSpec{ name, name, value } });
+}
 
-  void
-     ProcessSpec:: configurePreTag(std::string name, std::string &value)
-  {
-    value = rs::find_if(tags_.pre_, [=](auto ns) { return ns.first == name; })
-                ->second.identifier();
-  }
+void
+    ProcessSpec::configurePreTag(std::string name, std::string &value)
+{
+  value = rs::find_if(tags_.pre_, [=](auto ns) { return ns.first == name; })
+              ->second.identifier();
+}
 
-  void
-    ProcessSpec::  bindPostTag(std::string name, std::string value)
-  {
-    tags_.post_.push_back({ name, SignalSpec{ name, name, value } });
-  }
+void
+    ProcessSpec::bindPostTag(std::string name, std::string value)
+{
+  tags_.post_.push_back({ name, SignalSpec{ name, name, value } });
+}
 
-  void
-     ProcessSpec:: configurePostTag(std::string name, std::string &value)
-  {
-    value = rs::find_if(tags_.post_, [=](auto ns) { return ns.first == name; })
-                ->second.identifier();
-  }
+void
+    ProcessSpec::configurePostTag(std::string name, std::string &value)
+{
+  value = rs::find_if(tags_.post_, [=](auto ns) { return ns.first == name; })
+              ->second.identifier();
+}
 
-  void
-  ProcessSpec::    bindInput(std::string name, std::string value)
-  {
-    io_.inputs_.push_back({ name, SignalSpec{ name, name, value } });
-  }
+void
+    ProcessSpec::bindInput(std::string name, std::string value)
+{
+  io_.inputs_.push_back({ name, SignalSpec{ name, name, value } });
+}
 
-  void
-  ProcessSpec::    configureInput(std::string name, std::string &value)
-  {
-    value = rs::find_if(io_.inputs_, [=](auto ns) { return ns.first == name; })
-                ->second.identifier();
-  }
+void
+    ProcessSpec::configureInput(std::string name, std::string &value)
+{
+  value = rs::find_if(io_.inputs_, [=](auto ns) { return ns.first == name; })
+              ->second.identifier();
+}
 
-  void
- ProcessSpec::     bindOutput(std::string name, std::string value)
-  {
-    io_.outputs_.push_back({ name, SignalSpec{ name, name, value } });
-  }
+void
+    ProcessSpec::bindOutput(std::string name, std::string value)
+{
+  io_.outputs_.push_back({ name, SignalSpec{ name, name, value } });
+}
 
-  void
-     ProcessSpec:: configureOutput(std::string name, std::string &value)
-  {
-    value = rs::find_if(io_.outputs_, [=](auto ns) { return ns.first == name; })
-                ->second.identifier();
-  }
+void
+    ProcessSpec::configureOutput(std::string name, std::string &value)
+{
+  value = rs::find_if(io_.outputs_, [=](auto ns) { return ns.first == name; })
+              ->second.identifier();
+}
 void
     ProcessSpec::bindProcess(std::string name, ProcessSpec proc)
 {
@@ -399,13 +399,16 @@ void
     for (auto &es : esvec.second.first)
       es.e->bindSubstrateIO(sub_spec);
 
-  bindSignalTo(sub_spec);
+  auto ios = sub_spec.getIO();
+  bindSignalsTo(ios.inputs_, sub_spec.nameToken(), true);
+  bindSignalsTo(ios.outputs_, sub_spec.nameToken(), false);
 }
 
 void
-    ProcessSpec::errSignalBind(SubstrateSpec sub_spec,
-                               SignalSpec    sig,
-                               bool          is_input)
+    ProcessSpec::errSignalBind(SignalSpec      proc_sig,
+                               language::Token sub_spec_name,
+                               SignalSpecSet   sub_sigs,
+                               bool            is_input)
 {
   auto diagnostic_message = name_token_.diagnostic_;
   auto left_padding       = std::string(name_token_.location_.second + 10, ' ');
@@ -416,9 +419,9 @@ void
             << left_padding << (is_input ? "input" : "output")
             << " signals provided by substrate cannot be bound\n"
             << utilities::TermColours::reset << left_padding
-            << sig.diagnosticName() << "\n\n";
+            << proc_sig.diagnosticName() << "\n\n";
 
-  auto substrate_name_token  = sub_spec.nameToken();
+  auto substrate_name_token  = sub_spec_name;
   auto ss_diagnostic_message = substrate_name_token.diagnostic_;
   auto ss_left_padding =
       std::string(substrate_name_token.location_.second + 10, ' ');
@@ -430,105 +433,69 @@ void
             << " signal candidates provided\n"
             << utilities::TermColours::reset;
 
-  auto valid_signals =
-      is_input ? sub_spec.getIO().inputs_ : sub_spec.getIO().outputs_;
-  for (auto sig : valid_signals)
+  for (auto sig : sub_sigs)
     std::cout << ss_left_padding << sig.second.diagnosticName() << std::endl;
   throw SpecError{};
 }
 
-bool ProcessSpec::attemptExplicitBind(SignalSpec &  proc_sig,
-                                      SubstrateSpec sub_spec,
-                                      bool          is_input){
+bool
+    ProcessSpec::attemptExplicitBind(SignalSpec &    proc_sig,
+                                     SignalSpecSet   sub_sigs,
+                                     language::Token sub_spec_name,
+                                     bool /*is_input*/)
+{
 
-//	for (auto [t,y] : signal_binds_)
-//	std::cout << t.expr_ << " " << y.expr_ << std::endl;
-//	std::cout << proc_sig.userName() << std::endl;
-  auto ios = sub_spec.getIO();
-  auto sub_sigs = is_input ? ios.inputs_ : ios.outputs_;
+  auto sig_bind = rs::find_if(signal_binds_, [&proc_sig](auto token_pair) {
+    return token_pair.first.expr_ == proc_sig.userName();
+  });
+  if (sig_bind == rs::end(signal_binds_))
+    return false;
 
-	auto sig_bind = rs::find_if(signal_binds_, [&proc_sig](auto token_pair)
-			{ return token_pair.first.expr_ == proc_sig.userName(); });
-	if (sig_bind == rs::end( signal_binds_))
-		return false;
+  auto sub_sig = rs::find_if(sub_sigs, [sig_bind](auto ns) {
+    return ns.first == sig_bind->second.expr_;
+  });
 
-    auto sub_sig = rs::find_if(sub_sigs, [sig_bind](auto ns) {
-      return ns.first == sig_bind->second.expr_;
-    });
+  if (sub_sig == rs::end(sub_sigs))
+  {
+    errInvalidToken(sig_bind->second,
+                    "not a signal provided by " + sub_spec_name.expr_);
+    throw language::ParserError{};
+  }
 
-	if (sub_sig == rs::end(sub_sigs))
-    {
-      errInvalidToken(sig_bind->second,
-                            "not a signal provided by " + sub_spec.name());
-      throw language::ParserError{};
-    }
+  if (!sub_sig->second.exactlyMatches(proc_sig))
+  {
+    errInvalidToken(sig_bind->first, "signal required by " + name_);
+    errInvalidToken(sig_bind->second,
+                    "cannot be bound by " + sub_spec_name.expr_);
+    throw language::ParserError{};
+  }
 
-	if (!sub_sig->second.exactlyMatches(proc_sig))
-    {
-      errInvalidToken(sig_bind->first,
-                            "signal required by " + name_);
-      errInvalidToken(sig_bind->second,
-                            "cannot be bound by " + sub_spec.name());
-      throw language::ParserError{};
-    }
-
-    proc_sig.updateIdentifier(sub_sig->second.identifier());
-	//proc_sig.setExplicitlyBound();
-	return true;
-		
+  proc_sig.updateIdentifier(sub_sig->second.identifier());
+  return true;
 }
 
 void
-    ProcessSpec::bindSignalTo(SubstrateSpec sub_spec)
+    ProcessSpec::bindSignalsTo(SignalSpecSet   sub_sigs,
+                               language::Token sub_spec_name,
+                               bool            is_input)
 {
-  auto ios = sub_spec.getIO();
-
-  for (auto &n_sig : io_.inputs_)
+  auto proc_sigs = is_input ? io_.inputs_ : io_.outputs_;
+  for (auto &proc_name_sig : proc_sigs)
   {
-    auto &in_sig  = n_sig.second;
-    if (attemptExplicitBind(in_sig, sub_spec, true))
+    auto &proc_sig = proc_name_sig.second;
+    if (attemptExplicitBind(proc_sig, sub_sigs, sub_spec_name, is_input))
       continue;
-    auto  matches = rs::count_if(ios.inputs_, [sig = in_sig](auto ns) {
-      return ns.second.exactlyMatches(sig);
+    auto matches = rs::count_if(sub_sigs, [proc_sig](auto ns) {
+      return ns.second.exactlyMatches(proc_sig);
     });
-	/*
-    if (matches > 1)
-    {
-      std::cout << "error: multiple input signals match exactly\n";
-      throw SpecError{};
-    }
-	*/
     if (matches != 1)
     {
-      errSignalBind(sub_spec, n_sig.second, true);
+      errSignalBind(proc_sig, sub_spec_name, sub_sigs, is_input);
     }
-    auto i = rs::find_if(ios.inputs_, [sig = in_sig](auto ns) {
-      return ns.second.exactlyMatches(sig);
+    auto i = rs::find_if(sub_sigs, [proc_sig](auto ns) {
+      return ns.second.exactlyMatches(proc_sig);
     });
-    in_sig.updateIdentifier(i->second.identifier());
-    //ios.inputs_.erase(i);
-  }
-
-  for (auto &n_sig : io_.outputs_)
-  {
-    auto &out_sig = n_sig.second;
-    auto  matches = rs::count_if(ios.outputs_, [sig = out_sig](auto ns) {
-      return ns.second.exactlyMatches(sig);
-    });
-    if (matches > 1)
-    {
-      std::cout << "error: multiple output signals match exactly\n";
-      throw SpecError{};
-    }
-    if (!matches)
-    {
-      errSignalBind(sub_spec, n_sig.second, false);
-    }
-    auto i = rs::find_if(ios.outputs_, [sig = out_sig](auto ns) {
-      return ns.second.exactlyMatches(sig);
-    });
-    out_sig.updateIdentifier(i->second.identifier());
-    //ios.outputs_.erase(i);
+    proc_sig.updateIdentifier(i->second.identifier());
   }
 }
 
@@ -747,19 +714,27 @@ void
   }
 }
 
-  void ProcessSpec::parseSignalBinds( language::Block block){
+void
+    ProcessSpec::parseSignalBinds(language::Block block)
+{
   signal_binds_ = block.signal_binds_;
-  for (auto sb : signal_binds_)
-	if (rs::find_if(io_.inputs_, [sb](auto sig)
-				{ return sb.first.expr_ == sig.first; }) == rs::end(io_.inputs_)
-			&&
-	rs::find_if(io_.outputs_, [sb](auto sig)
-				{ return sb.first.expr_ == sig.first; }) == rs::end(io_.outputs_))
+
+  for (auto signal_bind : signal_binds_)
   {
-    errInvalidToken(sb.first, "this is not an io signal of " + name_);
-    throw language::ParserError{};
+    auto doesnt_contain_signal = [](auto sigs, auto sig_bind) {
+      return rs::find_if(sigs, [&](auto sig) {
+               return sig_bind.first.expr_ == sig.first;
+             }) == rs::end(sigs);
+    };
+    if (doesnt_contain_signal(io_.inputs_, signal_bind) &&
+        doesnt_contain_signal(io_.outputs_, signal_bind))
+    {
+      errInvalidToken(signal_bind.first,
+                      "this is not an io signal of " + name_);
+      throw language::ParserError{};
+    }
   }
-  }
+}
 
 ProcessSpec::ProcessSpec(language::Block block)
 {
