@@ -1,3 +1,4 @@
+# All files in ded are formatted using this custom clang-format specification
 ---
 Language:        Cpp
 # BasedOnStyle:  LLVM
