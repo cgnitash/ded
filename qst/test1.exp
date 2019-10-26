@@ -30,6 +30,7 @@ fors = $sequence
      first 	= 	$forager 	
 				{ 
 				  ? food_eaten 5 
+				line_of_sight : in_sense
 				}
      second = $elite_replacement  {  strength = 0.4 }
 }

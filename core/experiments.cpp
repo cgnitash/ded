@@ -126,7 +126,7 @@ std::vector<Simulation>
   }
 
   return exploded_parsers |
-         rv::transform(parseSimulation);
+         rv::transform(parseSimulation) | rs::to<std::vector<Simulation>>;
 }
 
 std::pair<specs::PopulationSpec, specs::ProcessSpec>

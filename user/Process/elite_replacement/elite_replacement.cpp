@@ -27,13 +27,12 @@ ded::concepts::Population
   auto best_orgs = rv::take(pop, fraction);
 
   // make roughly equal mutated copies of each best org
-  populate.merge(rv::concat(best_orgs,
-                                      best_orgs | rv::cycle |
-                                          rv::transform([](auto org) {
-                                            org.mutate();
-                                            return org;
-                                          })) |
-                 rv::take(pop.size()));
+  populate.merge(
+      rv::concat(best_orgs, best_orgs | rv::cycle | rv::transform([](auto org) {
+                              org.mutate();
+                              return org;
+                            })) |
+      rv::take(pop.size()) | rs::to<std::vector<ded::concepts::Substrate>>);
 
   populate.pruneLineage(invoke_++);
   return populate;

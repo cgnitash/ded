@@ -264,10 +264,11 @@ Block
                            });
       f == variables_.end())
   {
-    errInvalidToken(
-        tokens[begin],
-        "this variable has not been defined",
-        variables_ | rv::transform([](auto var) { return var.first.expr_; }));
+    errInvalidToken(tokens[begin],
+                    "this variable has not been defined",
+                    variables_ | rv::transform([](auto var) {
+                      return var.first.expr_;
+                    }) | rs::to<std::vector<std::string>>);
     throw ParserError{};
   }
   else
@@ -399,7 +400,8 @@ std::vector<Parser>
            p.updateLabels({ (rs::begin(temp_tokens) + pos->first - 2)->expr_,
                             token.expr_ });
            return p;
-         });
+         }) |
+         rs::to<std::vector<Parser>>;
 }
 
 // debug only
@@ -443,8 +445,8 @@ void
 std::string
     Parser::lookUpTokenWord(Token token)
 {
-  auto                     refers = token.refers_.substr(1);
-  std::vector<std::string> pats   = refers | rv::split('-');
+  auto refers = token.refers_.substr(1);
+  auto pats = refers | rv::split('-') | rs::to<std::vector<std::string>>;
 
   auto f = rs::find_if(variables_,
                        [&](auto var) { return var.first.expr_ == pats[0]; });

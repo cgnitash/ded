@@ -105,6 +105,7 @@ void
   }
   nested_[substrate_name].e = std::make_unique<SubstrateSpec>(sub);
 
+  /*
   nested_[substrate_name].constraints_.inputs_ =
       input_constraints |
       rv::transform([](auto tag) -> std::pair<std::string, SignalSpec> {
@@ -120,6 +121,21 @@ void
         auto value = tag.second;
         return { name, SignalSpec{ name, name, value } };
       });
+  */ 
+  rs::transform(input_constraints,
+                rs::back_inserter(nested_[substrate_name].constraints_.inputs_),
+                [](auto tag) -> std::pair<std::string, SignalSpec> {
+                  auto name  = tag.first;
+                  auto value = tag.second;
+                  return { name, SignalSpec{ name, name, value } };
+                });
+  rs::transform(output_constraints,
+                rs::back_inserter(nested_[substrate_name].constraints_.outputs_),
+                [](auto tag) -> std::pair<std::string, SignalSpec> {
+                  auto name  = tag.first;
+                  auto value = tag.second;
+                  return { name, SignalSpec{ name, name, value } };
+                });
 }
 
 void
@@ -295,7 +311,8 @@ void
       errInvalidToken(
           name,
           "this does not override any parameters of " + name_,
-          parameters_ | rv::transform([](auto param) { return param.first; }));
+          parameters_ | rv::keys | rs::to<std::vector<std::string>>);
+          //parameters_ | rv::transform([](auto param) { return param.first; }));
       throw language::ParserError{};
     }
 
@@ -346,7 +363,8 @@ void
         errInvalidToken(
             name,
             "this does not override any nested substrates of " + block.name_,
-            nested_ | rv::transform([](auto param) { return param.first; }));
+          nested_ | rv::keys | rs::to<std::vector<std::string>>);
+            //nested_ | rv::transform([](auto param) { return param.first; }));
         throw language::ParserError{};
       }
 
@@ -362,7 +380,8 @@ void
         errInvalidToken(
             name,
             "this does not override any encodings of " + block.name_,
-            encodings_ | rv::transform([](auto param) { return param.first; }));
+          encodings_ | rv::keys | rs::to<std::vector<std::string>>);
+            //encodings_ | rv::transform([](auto param) { return param.first; }));
         throw language::ParserError{};
       }
 
@@ -385,8 +404,9 @@ void
       errInvalidToken(
           name,
           "this does not override any nested substrates of " + block.name_,
-          nested_vector_ |
-              rv::transform([](auto param) { return param.first; }));
+          nested_vector_ | rv::keys | rs::to<std::vector<std::string>>);
+         // nested_vector_ |
+           //   rv::transform([](auto param) { return param.first; }));
       throw language::ParserError{};
     }
     for (auto nested_block : blover.second)

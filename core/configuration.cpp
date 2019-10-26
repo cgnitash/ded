@@ -115,28 +115,32 @@ std::vector<std::string>
     allSubstrateNames()
 {
   return ALL_SUBSTRATE_SPECS |
-         rv::transform([](auto spec) { return spec.first; });
+         //       rv::transform([](auto spec) { return spec.first; });
+         rv::keys | rs::to<std::vector<std::string>>;
 }
 
 std::vector<std::string>
     allProcessNames()
 {
   return ALL_PROCESS_SPECS |
-         rv::transform([](auto spec) { return spec.first; });
+         rv::keys | rs::to<std::vector<std::string>>;
+         //rv::transform([](auto spec) { return spec.first; });
 }
 
 std::vector<std::string>
     allPopulationNames()
 {
   return ALL_POPULATION_SPECS |
-         rv::transform([](auto spec) { return spec.first; });
+         rv::keys | rs::to<std::vector<std::string>>;
+         //rv::transform([](auto spec) { return spec.first; });
 }
 
 std::vector<std::string>
     allEncodingNames()
 {
   return ALL_ENCODING_SPECS |
-         rv::transform([](auto spec) { return spec.first; });
+         rv::keys | rs::to<std::vector<std::string>>;
+         //rv::transform([](auto spec) { return spec.first; });
 }
 
 std::vector<std::string>
@@ -146,7 +150,7 @@ std::vector<std::string>
   auto b = allProcessNames();
   auto c = allPopulationNames();
   auto d = allEncodingNames();
-  return rv::concat(a, b, c, d);
+  return rv::concat(a, b, c, d) | rs::to<std::vector<std::string>>;
 }
 
 }   // namespace config_manager

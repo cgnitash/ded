@@ -31,8 +31,11 @@ std::vector<std::string>
     std::exit(1);
   }
 
-  return rows_ | rv::transform([c = column_index - rs::begin(column_names_)](
-                                   auto row) { return row[c]; });
+  return rows_ |
+         rv::transform([c = column_index - rs::begin(column_names_)](auto row) {
+           return row[c];
+         }) |
+         rs::to<std::vector<std::string>>;
 }
 
 std::string
