@@ -17,8 +17,17 @@ namespace specs
 
 PopulationSpec::PopulationSpec( language::Block block)
 {
+  auto block_name = block.name_.substr(1);
+  if (rs::none_of(config_manager::allPopulationNames(),
+                  [&](auto comp_name) { return comp_name == block_name; }))
+  {
+    errInvalidToken(block.name_token_,
+                    "this is not an exisiting Population-component",
+                    config_manager::allPopulationNames());
+    throw SpecError{};
+  }
 
-  *this = ALL_POPULATION_SPECS[block.name_.substr(1)];
+  *this = ALL_POPULATION_SPECS.at(block_name);
 
   for (auto over : block.overrides_)
   {

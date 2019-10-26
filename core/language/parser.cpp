@@ -283,15 +283,7 @@ Block
   Block      current;
   current.name_ = tokens[begin].expr_;
   current.name_token_ = tokens[begin];
-  //auto lines            = lexer_.getLines();
-  //auto line             = tok.location_.first;
-  //auto column           = token.location_.second;
-  //auto diagnostic = token.diagnostic_;
   /*
-  line_with_colour.insert(column + tok.expr_.length(),
-                          utilities::TermColours::reset);
-  line_with_colour.insert(column, utilities::TermColours::red_fg);
-	*/
   if (rs::none_of(config_manager::allComponentNames(), [&](auto comp_name) {
         return comp_name == current.name_.substr(1);
       }))
@@ -301,6 +293,7 @@ Block
                     config_manager::allComponentNames());
     throw ParserError{};
   }
+  */
 
   return current;
 }

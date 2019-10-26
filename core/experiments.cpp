@@ -43,8 +43,12 @@ Simulation
       variables[name.expr_] = ded::specs::EncodingSpec{  block };
       break;
     case config_manager::SpecType::UNKNOWN:
-      std::cout << "oops: not a component!\n" << block.name_.substr(1);
-      throw std::logic_error{ "" };
+    errInvalidToken(block.name_token_,
+                    "this is not an exisiting component",
+                    config_manager::allComponentNames());
+    throw language::ParserError{};
+     // std::cout << "oops: not a component!\n" << block.name_.substr(1);
+     // throw std::logic_error{ "" };
     }
   }
 

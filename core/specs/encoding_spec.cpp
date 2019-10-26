@@ -16,14 +16,22 @@ namespace specs
 {
 
 
-EncodingSpec::EncodingSpec( language::Block blk)
+EncodingSpec::EncodingSpec( language::Block block)
 {
 
-  auto t = ALL_ENCODING_SPECS[blk.name_.substr(1)];
+  auto block_name = block.name_.substr(1);
+  if (rs::none_of(config_manager::allEncodingNames(),
+                  [&](auto comp_name) { return comp_name == block_name; }))
+  {
+    errInvalidToken(block.name_token_,
+                    "this is not an exisiting Encoding-component",
+                    config_manager::allEncodingNames());
+    throw SpecError{};
+  }
 
-  *this = t;
+  *this = ALL_ENCODING_SPECS.at(block_name);
 
-  for (auto over : blk.overrides_)
+  for (auto over : block.overrides_)
   {
     auto name  = over.first;
     auto value = over.second;

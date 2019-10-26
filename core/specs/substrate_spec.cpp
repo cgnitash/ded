@@ -411,7 +411,17 @@ void
 
 SubstrateSpec::SubstrateSpec( language::Block block)
 {
-  *this = ALL_SUBSTRATE_SPECS[block.name_.substr(1)];
+  auto block_name = block.name_.substr(1);
+  if (rs::none_of(config_manager::allSubstrateNames(),
+                  [&](auto comp_name) { return comp_name == block_name; }))
+  {
+    errInvalidToken(block.name_token_,
+                    "this is not an exisiting Substrate-component",
+                    config_manager::allSubstrateNames());
+    throw SpecError{};
+  }
+
+  *this = ALL_SUBSTRATE_SPECS.at(block_name);
 
   name_token_ = block.name_token_;
 

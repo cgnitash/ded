@@ -659,6 +659,7 @@ void
       throw language::ParserError{};
     }
 
+	/*
     if (config_manager::typeOfBlock(nested_block.name_.substr(1)) !=
         config_manager::SpecType::process)
     {
@@ -667,6 +668,7 @@ void
                       config_manager::allProcessNames());
       throw language::ParserError{};
     }
+	*/
 
     f->second.e = std::make_unique<ProcessSpec>(ProcessSpec{ nested_block });
     f->second.e->setUserSpecifiedName(name.expr_);
@@ -738,8 +740,17 @@ void
 
 ProcessSpec::ProcessSpec(language::Block block)
 {
+  auto block_name = block.name_.substr(1);
+  if (rs::none_of(config_manager::allProcessNames(),
+                  [&](auto comp_name) { return comp_name == block_name; }))
+  {
+    errInvalidToken(block.name_token_,
+                    "this is not an exisiting Process-component",
+                    config_manager::allProcessNames());
+    throw SpecError{};
+  }
 
-  *this = ALL_PROCESS_SPECS.at(block.name_.substr(1));
+  *this = ALL_PROCESS_SPECS.at(block_name);
 
   name_token_ = block.name_token_;
 

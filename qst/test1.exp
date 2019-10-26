@@ -6,7 +6,7 @@ enc = $encoding
 	point_mutate_prob =  0.005 
 }
 
-e = $markov_brain 
+e = $markov_brain
 {
      #hiddens =   [ 2 3 4 ] 
      hiddens =    2
