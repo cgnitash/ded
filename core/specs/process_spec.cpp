@@ -453,7 +453,6 @@ bool
     throw language::ParserError{};
   }
 
-  std::cout << sub_sig->second.identifier() << " # " << proc_sig.identifier();
   proc_sig.updateIdentifier(sub_sig->second.identifier());
   return true;
 }
