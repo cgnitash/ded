@@ -105,37 +105,19 @@ void
   }
   nested_[substrate_name].e = std::make_unique<SubstrateSpec>(sub);
 
-  /*
-  nested_[substrate_name].constraints_.inputs_ =
-      input_constraints |
-      rv::transform([](auto tag) -> std::pair<std::string, SignalSpec> {
-        auto name  = tag.first;
-        auto value = tag.second;
-        return { name, SignalSpec{ name, name, value } };
-      });
+  auto to_signal = [](auto tag) -> std::pair<std::string, SignalSpec> {
+    auto name  = tag.first;
+    auto value = tag.second;
+    return { name, SignalSpec{ name, name, value } };
+  };
 
-  nested_[substrate_name].constraints_.outputs_ =
-      output_constraints |
-      rv::transform([](auto tag) -> std::pair<std::string, SignalSpec> {
-        auto name  = tag.first;
-        auto value = tag.second;
-        return { name, SignalSpec{ name, name, value } };
-      });
-  */ 
-  rs::transform(input_constraints,
-                rs::back_inserter(nested_[substrate_name].constraints_.inputs_),
-                [](auto tag) -> std::pair<std::string, SignalSpec> {
-                  auto name  = tag.first;
-                  auto value = tag.second;
-                  return { name, SignalSpec{ name, name, value } };
-                });
-  rs::transform(output_constraints,
-                rs::back_inserter(nested_[substrate_name].constraints_.outputs_),
-                [](auto tag) -> std::pair<std::string, SignalSpec> {
-                  auto name  = tag.first;
-                  auto value = tag.second;
-                  return { name, SignalSpec{ name, name, value } };
-                });
+  auto &constraints  = nested_[substrate_name].constraints_;
+
+  rs::transform(
+      input_constraints, rs::back_inserter(constraints.inputs_), to_signal);
+
+  rs::transform(
+      output_constraints, rs::back_inserter(constraints.outputs_), to_signal);
 }
 
 void
@@ -308,11 +290,10 @@ void
                          [&](auto param) { return param.first == name.expr_; });
     if (f == parameters_.end())
     {
-      errInvalidToken(
-          name,
-          "this does not override any parameters of " + name_,
-          parameters_ | rv::keys | rs::to<std::vector<std::string>>);
-          //parameters_ | rv::transform([](auto param) { return param.first; }));
+      errInvalidToken(name,
+                      "this does not override any parameters of " + name_,
+                      parameters_ | rv::keys |
+                          rs::to<std::vector<std::string>>);
       throw language::ParserError{};
     }
 
@@ -360,11 +341,10 @@ void
           nested_, [&](auto param) { return param.first == name.expr_; });
       if (f == nested_.end())
       {
-        errInvalidToken(
-            name,
-            "this does not override any nested substrates of " + block.name_,
-          nested_ | rv::keys | rs::to<std::vector<std::string>>);
-            //nested_ | rv::transform([](auto param) { return param.first; }));
+        errInvalidToken(name,
+                        "this does not override any nested substrates of " +
+                            block.name_,
+                        nested_ | rv::keys | rs::to<std::vector<std::string>>);
         throw language::ParserError{};
       }
 
@@ -380,8 +360,7 @@ void
         errInvalidToken(
             name,
             "this does not override any encodings of " + block.name_,
-          encodings_ | rv::keys | rs::to<std::vector<std::string>>);
-            //encodings_ | rv::transform([](auto param) { return param.first; }));
+            encodings_ | rv::keys | rs::to<std::vector<std::string>>);
         throw language::ParserError{};
       }
 
@@ -405,8 +384,6 @@ void
           name,
           "this does not override any nested substrates of " + block.name_,
           nested_vector_ | rv::keys | rs::to<std::vector<std::string>>);
-         // nested_vector_ |
-           //   rv::transform([](auto param) { return param.first; }));
       throw language::ParserError{};
     }
     for (auto nested_block : blover.second)

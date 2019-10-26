@@ -114,33 +114,25 @@ bool        isPopulationBlock(std::string name)
 std::vector<std::string>
     allSubstrateNames()
 {
-  return ALL_SUBSTRATE_SPECS |
-         //       rv::transform([](auto spec) { return spec.first; });
-         rv::keys | rs::to<std::vector<std::string>>;
+  return ALL_SUBSTRATE_SPECS | rv::keys | rs::to<std::vector<std::string>>;
 }
 
 std::vector<std::string>
     allProcessNames()
 {
-  return ALL_PROCESS_SPECS |
-         rv::keys | rs::to<std::vector<std::string>>;
-         //rv::transform([](auto spec) { return spec.first; });
+  return ALL_PROCESS_SPECS | rv::keys | rs::to<std::vector<std::string>>;
 }
 
 std::vector<std::string>
     allPopulationNames()
 {
-  return ALL_POPULATION_SPECS |
-         rv::keys | rs::to<std::vector<std::string>>;
-         //rv::transform([](auto spec) { return spec.first; });
+  return ALL_POPULATION_SPECS | rv::keys | rs::to<std::vector<std::string>>;
 }
 
 std::vector<std::string>
     allEncodingNames()
 {
-  return ALL_ENCODING_SPECS |
-         rv::keys | rs::to<std::vector<std::string>>;
-         //rv::transform([](auto spec) { return spec.first; });
+  return ALL_ENCODING_SPECS | rv::keys | rs::to<std::vector<std::string>>;
 }
 
 std::vector<std::string>

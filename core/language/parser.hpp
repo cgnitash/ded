@@ -10,22 +10,6 @@
 namespace ded
 {
 
-	/*
-// forward declaration to provide friendship
-namespace config_manager
-{
-std::vector<std::string> allComponentNames();
-}
-// forward declaration to provide friendship
-namespace specs
-{
-class SubstrateSpec;
-class ProcessSpec;
-class PopulationSpec;
-class EncodingSpec;
-}   // namespace specs
-	*/
-
 namespace language
 {
 
@@ -107,12 +91,6 @@ public:
 
   void resolveTrackedWords();
 
-  /*
-  friend class specs::ProcessSpec;
-  friend class specs::SubstrateSpec;
-  friend class specs::PopulationSpec;
-  friend class specs::EncodingSpec;
-  */
 };
 }   // namespace language
 }   // namespace ded

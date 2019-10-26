@@ -284,17 +284,6 @@ Block
   Block      current;
   current.name_ = tokens[begin].expr_;
   current.name_token_ = tokens[begin];
-  /*
-  if (rs::none_of(config_manager::allComponentNames(), [&](auto comp_name) {
-        return comp_name == current.name_.substr(1);
-      }))
-  {
-    errInvalidToken(tokens[begin],
-                    "this is not an exisiting component",
-                    config_manager::allComponentNames());
-    throw ParserError{};
-  }
-  */
 
   return current;
 }

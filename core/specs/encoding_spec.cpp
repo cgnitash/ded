@@ -41,11 +41,9 @@ EncodingSpec::EncodingSpec( language::Block block)
     if (f == parameters_.end())
     {
       errInvalidToken(name,
-                          "this does not override any parameters of " + name_,
-          parameters_ | rv::keys | rs::to<std::vector<std::string>>);
-          //                parameters_ | rv::transform([](auto param) {
-            //                return param.first;
-              //            }));
+                      "this does not override any parameters of " + name_,
+                      parameters_ | rv::keys |
+                          rs::to<std::vector<std::string>>);
       throw language::ParserError{};
     }
 

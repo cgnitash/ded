@@ -137,15 +137,6 @@ void
               << " has not been declared; cannot bind pre-constraints\n";
     throw SpecError{};
   }
-  /*
-  nested_[proc_name].constraints_.pre_ =
-      pre_constraints |
-      rv::transform([](auto tag) -> std::pair<std::string, SignalSpec> {
-        auto name  = tag.first;
-        auto value = tag.second;
-        return { name, SignalSpec{ name, name, value } };
-      });
-	  */
   rs::transform(pre_constraints,
                 rs::back_inserter(nested_[proc_name].constraints_.pre_),
                 [](auto tag) -> std::pair<std::string, SignalSpec> {
@@ -166,15 +157,6 @@ void
               << " has not been declared; cannot bind post-constraints\n";
     throw SpecError{};
   }
-  /*
-  nested_[proc_name].constraints_.post_ =
-      post_constraints |
-      rv::transform([](auto tag) -> std::pair<std::string, SignalSpec> {
-        auto name  = tag.first;
-        auto value = tag.second;
-        return { name, SignalSpec{ name, name, value } };
-      });
-	  */
   rs::transform(post_constraints,
                 rs::back_inserter(nested_[proc_name].constraints_.post_),
                 [](auto tag) -> std::pair<std::string, SignalSpec> {
@@ -189,22 +171,12 @@ void
         std::string                                      proc_name,
         std::vector<std::pair<std::string, std::string>> pre_constraints)
 {
-  // tags_.post_.push_back({ name, SignalSpec{ name, name, value } });
   if (nested_vector_.find(proc_name) == nested_vector_.end())
   {
     std::cout << "User error: nested process vector " << proc_name
               << " has not been declared; cannot bind vector pre-constraints\n";
     throw SpecError{};
   }
-  /*
-  nested_vector_[proc_name].second.pre_ =
-      pre_constraints |
-      rv::transform([](auto tag) -> std::pair<std::string, SignalSpec> {
-        auto name  = tag.first;
-        auto value = tag.second;
-        return { name, SignalSpec{ name, name, value } };
-      });
-  */
   rs::transform(pre_constraints,
                 rs::back_inserter(nested_vector_[proc_name].second.pre_),
                 [](auto tag) -> std::pair<std::string, SignalSpec> {
@@ -226,15 +198,6 @@ void
         << " has not been declared; cannot bind vector post-constraints\n";
     throw SpecError{};
   }
-  /*
-  nested_vector_[proc_name].second.post_ =
-      post_constraints |
-      rv::transform([](auto tag) -> std::pair<std::string, SignalSpec> {
-        auto name  = tag.first;
-        auto value = tag.second;
-        return { name, SignalSpec{ name, name, value } };
-      });
-  */
   rs::transform(post_constraints,
                 rs::back_inserter(nested_vector_[proc_name].second.post_),
                 [](auto tag) -> std::pair<std::string, SignalSpec> {
@@ -607,7 +570,6 @@ void
           name,
           "this does not override any parameters of " + name_,
           parameters_ | rv::keys | rs::to<std::vector<std::string>>);
-          //parameters_ | rv::transform([](auto param) { return param.first; }));
       throw language::ParserError{};
     }
 
@@ -670,11 +632,8 @@ void
       errInvalidToken(
           tag_name,
           "this is not a tag recognised by " + name_,
-          rv::concat(
-              //tags_.pre_ |  rv::transform([](auto tag) { return tag.first; }),
-          tags_.pre_ | rv::keys,// | rs::to<std::vector<std::string>>,
-              //tags_.post_ | rv::transform([](auto tag) { return tag.first; })));
-          tags_.post_ | rv::keys) | rs::to<std::vector<std::string>>);
+          rv::concat(tags_.pre_ | rv::keys, tags_.post_ | rv::keys) |
+              rs::to<std::vector<std::string>>);
 
       throw language::ParserError{};
     }
@@ -693,24 +652,12 @@ void
                          [&](auto param) { return param.first == name.expr_; });
     if (f == nested_.end())
     {
-      errInvalidToken(
-          name,
-          "this does not override any nested processs " + block.name_,
-          nested_ | rv::keys | rs::to<std::vector<std::string>>);
-		  //rv::transform([](auto param) { return param.first; }));
-      throw language::ParserError{};
-    }
-
-	/*
-    if (config_manager::typeOfBlock(nested_block.name_.substr(1)) !=
-        config_manager::SpecType::process)
-    {
       errInvalidToken(name,
-                      "override of " + name.expr_ + " must be of type process",
-                      config_manager::allProcessNames());
+                      "this does not override any nested processs " +
+                          block.name_,
+                      nested_ | rv::keys | rs::to<std::vector<std::string>>);
       throw language::ParserError{};
     }
-	*/
 
     f->second.e = std::make_unique<ProcessSpec>(ProcessSpec{ nested_block });
     f->second.e->setUserSpecifiedName(name.expr_);
@@ -731,10 +678,8 @@ void
       errInvalidToken(name,
                       "this does not override any nested vector of processes " +
                           block.name_,
-          nested_vector_ | rv::keys | rs::to<std::vector<std::string>>);
-                  //    nested_vector_ | rv::transform([](auto param) {
-                  //      return param.first;
-                  //    }));
+                      nested_vector_ | rv::keys |
+                          rs::to<std::vector<std::string>>);
       throw language::ParserError{};
     }
 
