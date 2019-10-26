@@ -516,7 +516,7 @@ void
                                language::Token sub_spec_name,
                                bool            is_input)
 {
-  auto proc_sigs = is_input ? io_.inputs_ : io_.outputs_;
+  auto &proc_sigs = is_input ? io_.inputs_ : io_.outputs_;
   for (auto &proc_name_sig : proc_sigs)
   {
     auto &proc_sig = proc_name_sig.second;
