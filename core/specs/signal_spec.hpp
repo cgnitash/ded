@@ -89,6 +89,9 @@ public:
   void setExplicitlyBound() { is_explicitly_bound_ = true; }
 };
 
+std::pair<std::string, SignalSpec>
+    toSignal(std::pair<std::string, std::string> user_spec);
+
 using SignalSpecSet = 
   std::vector<std::pair<std::string, SignalSpec>>;
 

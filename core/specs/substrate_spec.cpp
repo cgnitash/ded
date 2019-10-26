@@ -105,19 +105,13 @@ void
   }
   nested_[substrate_name].e = std::make_unique<SubstrateSpec>(sub);
 
-  auto to_signal = [](auto tag) -> std::pair<std::string, SignalSpec> {
-    auto name  = tag.first;
-    auto value = tag.second;
-    return { name, SignalSpec{ name, name, value } };
-  };
-
   auto &constraints  = nested_[substrate_name].constraints_;
 
   rs::transform(
-      input_constraints, rs::back_inserter(constraints.inputs_), to_signal);
+      input_constraints, rs::back_inserter(constraints.inputs_), toSignal);
 
   rs::transform(
-      output_constraints, rs::back_inserter(constraints.outputs_), to_signal);
+      output_constraints, rs::back_inserter(constraints.outputs_), toSignal);
 }
 
 void
@@ -409,8 +403,7 @@ void
 SubstrateSpec::SubstrateSpec( language::Block block)
 {
   auto block_name = block.name_.substr(1);
-  if (rs::none_of(config_manager::allSubstrateNames(),
-                  [&](auto comp_name) { return comp_name == block_name; }))
+  if (!rs::contains(config_manager::allSubstrateNames(), block_name))
   {
     errInvalidToken(block.name_token_,
                     "this is not an exisiting Substrate-component",

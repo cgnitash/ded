@@ -139,11 +139,7 @@ void
   }
   rs::transform(pre_constraints,
                 rs::back_inserter(nested_[proc_name].constraints_.pre_),
-                [](auto tag) -> std::pair<std::string, SignalSpec> {
-                  auto name  = tag.first;
-                  auto value = tag.second;
-                  return { name, SignalSpec{ name, name, value } };
-                });
+				toSignal);
 }
 
 void
@@ -159,11 +155,7 @@ void
   }
   rs::transform(post_constraints,
                 rs::back_inserter(nested_[proc_name].constraints_.post_),
-                [](auto tag) -> std::pair<std::string, SignalSpec> {
-                  auto name  = tag.first;
-                  auto value = tag.second;
-                  return { name, SignalSpec{ name, name, value } };
-                });
+				toSignal);
 }
 
 void
@@ -179,11 +171,7 @@ void
   }
   rs::transform(pre_constraints,
                 rs::back_inserter(nested_vector_[proc_name].second.pre_),
-                [](auto tag) -> std::pair<std::string, SignalSpec> {
-                  auto name  = tag.first;
-                  auto value = tag.second;
-                  return { name, SignalSpec{ name, name, value } };
-                });
+				toSignal);
 }
 
 void
@@ -200,11 +188,7 @@ void
   }
   rs::transform(post_constraints,
                 rs::back_inserter(nested_vector_[proc_name].second.post_),
-                [](auto tag) -> std::pair<std::string, SignalSpec> {
-                  auto name  = tag.first;
-                  auto value = tag.second;
-                  return { name, SignalSpec{ name, name, value } };
-                });
+				toSignal);
 }
 
 void
@@ -729,8 +713,7 @@ void
 ProcessSpec::ProcessSpec(language::Block block)
 {
   auto block_name = block.name_.substr(1);
-  if (rs::none_of(config_manager::allProcessNames(),
-                  [&](auto comp_name) { return comp_name == block_name; }))
+  if (!rs::contains(config_manager::allProcessNames(), block_name))
   {
     errInvalidToken(block.name_token_,
                     "this is not an exisiting Process-component",

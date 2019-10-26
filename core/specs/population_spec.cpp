@@ -18,8 +18,7 @@ namespace specs
 PopulationSpec::PopulationSpec( language::Block block)
 {
   auto block_name = block.name_.substr(1);
-  if (rs::none_of(config_manager::allPopulationNames(),
-                  [&](auto comp_name) { return comp_name == block_name; }))
+  if (!rs::contains(config_manager::allPopulationNames(), block_name))
   {
     errInvalidToken(block.name_token_,
                     "this is not an exisiting Population-component",

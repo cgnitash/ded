@@ -20,8 +20,7 @@ EncodingSpec::EncodingSpec( language::Block block)
 {
 
   auto block_name = block.name_.substr(1);
-  if (rs::none_of(config_manager::allEncodingNames(),
-                  [&](auto comp_name) { return comp_name == block_name; }))
+  if (!rs::contains(config_manager::allEncodingNames(), block_name))
   {
     errInvalidToken(block.name_token_,
                     "this is not an exisiting Encoding-component",

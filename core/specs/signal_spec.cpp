@@ -84,5 +84,13 @@ SignalSpec::SignalSpec(std::string name, std::string id, std::string type)
   }
 }
 
+std::pair<std::string, SignalSpec>
+    toSignal(std::pair<std::string, std::string> user_spec)
+{
+  auto name  = user_spec.first;
+  auto value = user_spec.second;
+  return { name, SignalSpec{ name, name, value } };
+}
+
 }   // namespace specs
 }   // namespace ded
