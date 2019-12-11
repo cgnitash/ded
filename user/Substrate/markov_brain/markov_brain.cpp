@@ -46,7 +46,7 @@ void
 {
   if (n == in_sense_)
   {
-    auto v = std::get<std::vector<double>>(s);
+    auto v = std::any_cast<std::vector<double>>(s);
     if (static_cast<long>(v.size()) != input_)
     {
       std::cout

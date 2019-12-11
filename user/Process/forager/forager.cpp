@@ -102,7 +102,7 @@ void
                       double &     score)
 {
 
-  auto output = std::get<std::vector<double>>(s);
+  auto output = std::any_cast<std::vector<double>>(s);
   if (output.size() != 2)
   {
     std::cout

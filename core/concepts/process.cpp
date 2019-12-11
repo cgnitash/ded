@@ -57,7 +57,7 @@ void
       pop_stats_file << "id," << s_spec.userName() << "\n";
       for (const auto &org : pop.getAsVector())
         pop_stats_file << org.getID() << ","
-                       << std::get<double>(
+                       << std::any_cast<double>(
                               org.data.getValue(s_spec.identifier()))
                        << std::endl;
     }

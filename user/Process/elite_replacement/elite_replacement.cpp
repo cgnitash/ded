@@ -16,8 +16,8 @@ ded::concepts::Population
       rs::begin(pop) +  fraction,
       rs::end(pop),
       [this](const auto &org1, const auto &org2) {
-        return std::get<double>(org1.data.getValue(value_tag_)) >
-               std::get<double>(org2.data.getValue(value_tag_));
+        return std::any_cast<double>(org1.data.getValue(value_tag_)) >
+               std::any_cast<double>(org2.data.getValue(value_tag_));
       });
 
   // done with value_tag_

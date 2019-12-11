@@ -4,7 +4,7 @@
 
 #include <map>
 #include <string>
-#include <variant>
+#include <any>
 #include <vector>
 
 namespace ded
@@ -12,12 +12,15 @@ namespace ded
 namespace concepts
 {
 
-using Signal = std::variant<long,
+using Signal = std::any;
+/*
+	std::variant<long,
                             double,
                             bool,
                             std::vector<long>,
                             std::vector<double>,
                             std::vector<bool>>;
+*/
 
 class DataStore
 {
