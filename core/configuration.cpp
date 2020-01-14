@@ -1,14 +1,14 @@
 
 
 #include <experimental/filesystem>
-#include <regex>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <regex>
 
+#include "configuration.hpp"
 #include "utilities/term_colours.hpp"
 #include "utilities/utilities.hpp"
-#include "configuration.hpp"
 
 namespace ded
 {
@@ -25,6 +25,8 @@ SpecType
   if (isPopulationBlock(name))
     return SpecType::population;
   if (isEncodingBlock(name))
+    return SpecType::encoding;
+  if (isConverterBlock(name))
     return SpecType::encoding;
   return SpecType::UNKNOWN;
 }
@@ -45,6 +47,9 @@ void
       break;
     case SpecType::encoding:
       out << ALL_ENCODING_SPECS[name].prettyPrint();
+      break;
+    case SpecType::converter:
+      out << ALL_CONVERTER_SPECS[name].prettyPrint();
       break;
     case SpecType::UNKNOWN:
       out << "component " << name << " not found\n";
@@ -72,6 +77,10 @@ void
   for (auto n_spec : ALL_ENCODING_SPECS)
     out << "    " << n_spec.first << "\n";
 
+  out << "Converter:\n";
+  for (auto n_spec : ALL_CONVERTER_SPECS)
+    out << "    " << n_spec.first << "\n";
+
   return;
 }
 
@@ -87,6 +96,8 @@ void
     file << "\n" << n_es.second.prettyPrint();
   for (auto n_es : ALL_ENCODING_SPECS)
     file << "\n" << n_es.second.prettyPrint();
+  for (auto n_es : ALL_CONVERTER_SPECS)
+    file << "\n" << n_es.second.prettyPrint();
   return;
 }
 
@@ -96,19 +107,28 @@ bool
   return ALL_SUBSTRATE_SPECS.find(name) != ALL_SUBSTRATE_SPECS.end();
 }
 
-bool        isEncodingBlock(std::string name)
+bool
+    isEncodingBlock(std::string name)
 {
   return ALL_ENCODING_SPECS.find(name) != ALL_ENCODING_SPECS.end();
 }
 
-bool        isProcessBlock(std::string name)
+bool
+    isProcessBlock(std::string name)
 {
   return ALL_PROCESS_SPECS.find(name) != ALL_PROCESS_SPECS.end();
 }
 
-bool        isPopulationBlock(std::string name)
+bool
+    isPopulationBlock(std::string name)
 {
   return ALL_POPULATION_SPECS.find(name) != ALL_POPULATION_SPECS.end();
+}
+
+bool
+    isConverterBlock(std::string name)
+{
+  return ALL_CONVERTER_SPECS.find(name) != ALL_CONVERTER_SPECS.end();
 }
 
 std::vector<std::string>
@@ -136,13 +156,20 @@ std::vector<std::string>
 }
 
 std::vector<std::string>
+    allConverterNames()
+{
+  return ALL_CONVERTER_SPECS | rv::keys | rs::to<std::vector<std::string>>;
+}
+
+std::vector<std::string>
     allComponentNames()
 {
   auto a = allSubstrateNames();
   auto b = allProcessNames();
   auto c = allPopulationNames();
   auto d = allEncodingNames();
-  return rv::concat(a, b, c, d) | rs::to<std::vector<std::string>>;
+  auto e = allConverterNames();
+  return rv::concat(a, b, c, d, e) | rs::to<std::vector<std::string>>;
 }
 
 }   // namespace config_manager

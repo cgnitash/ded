@@ -24,6 +24,7 @@ std::map<std::string, ded::specs::SubstrateSpec>  ded::ALL_SUBSTRATE_SPECS;
 std::map<std::string, ded::specs::ProcessSpec>    ded::ALL_PROCESS_SPECS;
 std::map<std::string, ded::specs::PopulationSpec> ded::ALL_POPULATION_SPECS;
 std::map<std::string, ded::specs::EncodingSpec>   ded::ALL_ENCODING_SPECS;
+std::map<std::string, ded::specs::ConverterSpec>   ded::ALL_CONVERTER_SPECS;
 
 struct CommandLineError
 {

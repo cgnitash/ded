@@ -24,7 +24,7 @@ Options
     std::cout << "Error: component file " << fname << " not found" << std::endl;
     std::exit(1);
   }
-  std::regex r(R"~~(^\s*(Substrate|Process|Population)\s*:\s*(\w+)\s*$)~~");
+  std::regex r(R"~~(^\s*(Substrate|Process|Population|Converter)\s*:\s*(\w+)\s*$)~~");
   std::regex comments(R"~~(#.*$)~~");
   std::regex spaces(R"~~(^\s*$)~~");
   for (std::string line; std::getline(cfg, line);)
@@ -88,6 +88,7 @@ void
 
   for (auto name : rv::concat(build_options["Substrate"],
                               build_options["Process"],
+                              build_options["Converter"],
                               build_options["Population"]))
     header << "template<>\nstd::string autoClassNameAsString<" << name
            << ">() \n{ return \"" << name << "\"; }\n\n";
@@ -104,7 +105,7 @@ void
             "ded::concepts::Encoding{}.publishConfiguration();\n}\n";
 
   header << R"~(
-void
+inline void
     generateSubstrateSpec(std::initializer_list<std::string> component_list)
 {
   for (auto comp_name : component_list)
@@ -154,6 +155,23 @@ inline void
       throw e;
     }
 }
+
+inline void
+    generateConverterSpec(std::initializer_list<std::string> component_list)
+{
+  for (auto comp_name : component_list)
+    try
+    {
+      auto c =  ded::defaultConverterSpec(comp_name);
+      ded::makeConverter(c);
+      ded::ALL_CONVERTER_SPECS[comp_name] = c;
+    }
+    catch (ded::specs::SpecError const &e)
+    {
+      std::cout << "Error in component Converter/" << comp_name << "\n";
+      throw e;
+    }
+}
 )~";
 
   header << "\n} // namespace ded";
@@ -186,10 +204,12 @@ void
                                           "core/specs/population_spec",
                                           "core/specs/substrate_spec",
                                           "core/specs/process_spec",
+                                          "core/specs/converter_spec",
                                           "core/specs/encoding_spec",
                                           "core/concepts/substrate",
                                           "core/concepts/process",
                                           "core/concepts/population",
+                                          "core/concepts/converter",
                                           "core/concepts/signal",
                                           "core/concepts/encoding" };
 

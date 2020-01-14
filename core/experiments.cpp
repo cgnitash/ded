@@ -22,6 +22,7 @@ Simulation
            std::variant<ded::specs::SubstrateSpec,
                         ded::specs::ProcessSpec,
                         ded::specs::EncodingSpec,
+                        ded::specs::ConverterSpec,
                         ded::specs::PopulationSpec>>
       variables;
 
@@ -38,6 +39,9 @@ Simulation
       break;
     case config_manager::SpecType::population:
       variables[name.expr_] = ded::specs::PopulationSpec{  block };
+      break;
+    case config_manager::SpecType::converter:
+      variables[name.expr_] = ded::specs::ConverterSpec{  block };
       break;
     case config_manager::SpecType::encoding:
       variables[name.expr_] = ded::specs::EncodingSpec{  block };
