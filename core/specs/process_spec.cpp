@@ -425,7 +425,7 @@ bool
     ProcessSpec::attemptExplicitBind(SignalSpec &    proc_sig,
                                      SignalSpecSet   sub_sigs,
                                      language::Token sub_spec_name,
-                                     bool /*is_input*/)
+                                     bool is_input)
 {
 
   auto sig_bind = rs::find_if(signal_binds_, [&proc_sig](auto token_pair) {
@@ -440,9 +440,12 @@ bool
 
   if (sub_sig == rs::end(sub_sigs))
   {
-    errInvalidToken(sig_bind->second,
-                    "not a signal provided by " + sub_spec_name.expr_);
-    throw language::ParserError{};
+      std::string io_type = is_input ? "input" : "output";
+      errInvalidToken(sig_bind->second,
+                      "this is not an " + io_type + " signal provided by " +
+                          sub_spec_name.expr_,
+                      sub_sigs | rv::keys | rs::to<std::vector<std::string>>);
+      throw language::ParserError{};
   }
 
   if (!sub_sig->second.exactlyMatches(proc_sig))
@@ -466,7 +469,17 @@ void
   for (auto &proc_name_sig : proc_sigs)
   {
     auto &proc_sig = proc_name_sig.second;
-    if (attemptExplicitBind(proc_sig, sub_sigs, sub_spec_name, is_input))
+    if (!attemptExplicitBind(proc_sig, sub_sigs, sub_spec_name, is_input))
+    {
+      std::string io_type = is_input ? "input" : "output";
+      errInvalidToken(name_token_,
+                      io_type + " signal " + proc_name_sig.first +
+                          " is not bound to an " + io_type + " signal of " +
+                          sub_spec_name.expr_);
+      throw language::ParserError{};
+    }
+
+		/*
       continue;
     auto matches = rs::count_if(sub_sigs, [proc_sig](auto ns) {
       return ns.second.exactlyMatches(proc_sig);
@@ -479,7 +492,8 @@ void
       return ns.second.exactlyMatches(proc_sig);
     });
     proc_sig.updateIdentifier(i->second.identifier());
-  }
+  	*/
+	}
 }
 
 std::vector<std::pair<Trace, std::string>>

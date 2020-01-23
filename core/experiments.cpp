@@ -51,8 +51,6 @@ Simulation
                     "this is not an exisiting component",
                     config_manager::allComponentNames());
     throw language::ParserError{};
-     // std::cout << "oops: not a component!\n" << block.name_.substr(1);
-     // throw std::logic_error{ "" };
     }
   }
 

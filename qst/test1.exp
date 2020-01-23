@@ -10,7 +10,7 @@ e = $markov_brain
 {
      #hiddens =   [ 2 3 4 ] 
      hiddens =    2
-	 outputs =  2 
+	 outputs =  3 
 	 inputs = 4
 	 genome = !enc
 }
@@ -31,6 +31,7 @@ fors = $sequence
 				{ 
 				  ? food_eaten 5 
 				line_of_sight : in_sense
+				action : out_sense
 				}
      second = $elite_replacement  {  strength = 0.4 }
 }
