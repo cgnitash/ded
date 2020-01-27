@@ -450,9 +450,7 @@ bool
 
   if (!sub_sig->second.exactlyMatches(proc_sig))
   {
-    errInvalidToken(sig_bind->first, "signal required by " + name_);
-    errInvalidToken(sig_bind->second,
-                    "cannot be bound by " + sub_spec_name.expr_);
+	errSignalBind(proc_sig, sub_spec_name, sub_sigs, is_input); 
     throw language::ParserError{};
   }
 
