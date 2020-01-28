@@ -133,7 +133,7 @@ void
                                  bool          is_input)
 {
   auto diagnostic_message = name_token_.diagnostic_;
-  auto left_padding       = std::string(name_token_.location_.second + 10, ' ');
+  auto left_padding       = std::string(name_token_.location_.end_ + 10, ' ');
   std::cout << "parse-error\n\n"
             << diagnostic_message << "\n"
             << left_padding << utilities::TermColours::red_fg << "^"
@@ -146,7 +146,7 @@ void
   auto substrate_name_token  = sub_spec.nameToken();
   auto ss_diagnostic_message = substrate_name_token.diagnostic_;
   auto ss_left_padding =
-      std::string(substrate_name_token.location_.second + 10, ' ');
+      std::string(substrate_name_token.location_.end_ + 10, ' ');
 
   std::cout << ss_diagnostic_message << "\n"
             << ss_left_padding << utilities::TermColours::red_fg << "^"
@@ -277,8 +277,8 @@ void
 {
   for (auto over : block.overrides_)
   {
-    auto name  = over.first;
-    auto value = over.second;
+    auto name  = over.lhs_;
+    auto value = over.rhs_;
 
     auto f = rs::find_if(parameters_,
                          [&](auto param) { return param.first == name.expr_; });

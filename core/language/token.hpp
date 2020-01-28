@@ -36,25 +36,36 @@ TokenType parseTokenType(std::string);
 
 struct Token
 {
-  TokenType           type_;
-  std::string         expr_;
-  std::pair<int, int> location_;
-  std::string         diagnostic_;
-  std::string         refers_;
+  TokenType   type_;
+  std::string expr_;
+  struct TokenLocation
+  {
+    int begin_{}, end_{};
+  } location_;
+  std::string diagnostic_;
+  std::string refers_;
 };
 
 void errInvalidToken(Token                    token,
                      std::string              message,
                      std::vector<std::string> suggestions = {});
 
+struct TokenAssignment
+{
+  Token lhs_{}, rhs_{};
+};
+
 struct Block
 {
-  Token                                             name_token_;
-  std::string                                       name_;
-  std::pair<int, int>                               range_;
-  std::vector<std::pair<Token, Token>>              overrides_;
-  std::vector<std::pair<Token, Token>>              signal_binds_;
-  std::vector<std::pair<Token, Token>>              traces_;
+  Token       name_token_;
+  std::string name_;
+  struct BlockRange
+  {
+    int begin_{}, end_{};
+  } range_;
+  std::vector<TokenAssignment>                      overrides_;
+  std::vector<TokenAssignment>                      signal_binds_;
+  std::vector<TokenAssignment>                      traces_;
   std::vector<std::pair<Token, Block>>              nested_;
   std::vector<std::pair<Token, std::vector<Block>>> nested_vector_;
 };

@@ -36,12 +36,12 @@ void
 
   if (auto prev = rs::find_if(variables_,
                               [tok = tokens[begin]](auto var) {
-                                return var.first.expr_ == tok.expr_;
+                                return var.user_name_.expr_ == tok.expr_;
                               });
       prev != variables_.end())
   {
     errInvalidToken(tokens[begin], "variable re-definition not allowed");
-    errInvalidToken(prev->first, "variable already defined here");
+    errInvalidToken(prev->user_name_, "variable already defined here");
     throw ParserError{};
   }
 
@@ -55,8 +55,8 @@ void
                     "expected existing variable name or component here");
     throw ParserError{};
   }
-  auto nested_block         = expandBlock(begin + 2);
-  nested_block.range_.first = begin + 2;
+  auto nested_block          = expandBlock(begin + 2);
+  nested_block.range_.begin_ = begin + 2;
   variables_.push_back({ tokens[begin], nested_block });
 }
 
@@ -69,12 +69,12 @@ Block
                      ? variableBlock(begin)
                      : componentBlock(begin);
 
-  current.range_.first = begin;
+  current.range_.begin_ = begin;
 
   if (begin + 1 == static_cast<int>(tokens.size()) ||
       tokens[begin + 1].type_ != TokenType::open_brace)
   {
-    current.range_.second = begin + 1;
+    current.range_.end_ = begin + 1;
     return current;
   }
 
@@ -89,7 +89,7 @@ Block
   auto scope_is_open = [&] {
     if (begin == static_cast<int>(tokens.size()))
     {
-      errInvalidToken(tokens[current.range_.first + 1], "unmatched brace");
+      errInvalidToken(tokens[current.range_.begin_ + 1], "unmatched brace");
       throw ParserError{};
     }
     return tokens[begin].type_ != TokenType::close_brace;
@@ -100,7 +100,7 @@ Block
 
     if (begin + 3 >= static_cast<int>(tokens.size()) ||
         (tokens[begin + 1].type_ != TokenType::assignment &&
-        tokens[begin + 1].type_ != TokenType::signal_bind &&
+         tokens[begin + 1].type_ != TokenType::signal_bind &&
          tokens[begin].type_ != TokenType::trace))
     {
       errInvalidToken(tokens[begin], "unable to parse override syntax");
@@ -110,7 +110,7 @@ Block
     attemptOverride(current, begin);
   }
 
-  current.range_.second = begin + 1;
+  current.range_.end_ = begin + 1;
   return current;
 }
 
@@ -165,11 +165,11 @@ void
     case TokenType::tracked_word:
       if (auto f = rs::find_if(current.overrides_,
                                [&](auto over) {
-                                 return over.first.expr_ == tokens[begin].expr_;
+                                 return over.lhs_.expr_ == tokens[begin].expr_;
                                });
           f != rs::end(current.overrides_))
       {
-        errInvalidToken(f->first, "parameters already overridden here");
+        errInvalidToken(f->lhs_, "parameters already overridden here");
         errInvalidToken(tokens[begin], "cannot override this parameter again");
         throw ParserError{};
       }
@@ -178,12 +178,12 @@ void
       begin += 3;
       break;
     case TokenType::open_nested_block_vector:
-	  {
-      auto v = attemptVectorBlock(begin+2);
+    {
+      auto v = attemptVectorBlock(begin + 2);
       current.nested_vector_.push_back({ tokens[begin], v });
       begin += v.size() + 4;
       break;
-	  }
+    }
     case TokenType::variable:
     case TokenType::component:
       if (auto f = rs::find_if(current.nested_,
@@ -198,7 +198,7 @@ void
         throw ParserError{};
       }
       current.nested_.push_back({ tokens[begin], expandBlock(begin + 2) });
-      begin = current.nested_.back().second.range_.second;
+      begin = current.nested_.back().second.range_.end_;
       break;
     default:
       errInvalidToken(tokens[begin + 2],
@@ -258,22 +258,23 @@ Block
     Parser::variableBlock(int begin)
 {
   auto const tokens = lexer_.getTokens();
-  if (auto f = rs::find_if(variables_,
-                           [tok = tokens[begin]](auto var) {
-                             return var.first.expr_ == tok.expr_.substr(1);
-                           });
-      f == variables_.end())
+  if (auto find_block = rs::find_if(variables_,
+                                    [tok = tokens[begin]](auto var) {
+                                      return var.user_name_.expr_ ==
+                                             tok.expr_.substr(1);
+                                    });
+      find_block == variables_.end())
   {
     errInvalidToken(tokens[begin],
                     "this variable has not been defined",
                     variables_ | rv::transform([](auto var) {
-                      return var.first.expr_;
+                      return var.user_name_.expr_;
                     }) | rs::to<std::vector<std::string>>);
     throw ParserError{};
   }
   else
   {
-    return f->second;
+    return find_block->user_specified_block_;
   }
 }
 
@@ -282,7 +283,7 @@ Block
 {
   auto const tokens = lexer_.getTokens();
   Block      current;
-  current.name_ = tokens[begin].expr_;
+  current.name_       = tokens[begin].expr_;
   current.name_token_ = tokens[begin];
 
   return current;
@@ -293,7 +294,7 @@ void
 {
   auto const tokens = lexer_.getTokens();
   for (auto start = 0u; start != tokens.size();
-       start      = variables_.back().second.range_.second)
+       start      = variables_.back().user_specified_block_.range_.end_)
     parseExpression(start);
 
   return;
@@ -397,7 +398,7 @@ std::vector<Parser>
 void
     Parser::print(Block b)
 {
-  std::cout << b.name_ << " [" << b.range_.first << "," << b.range_.second
+  std::cout << b.name_ << " [" << b.range_.begin_ << "," << b.range_.end_
             << "]\n";
   for (auto [name, value] : b.overrides_)
     std::cout << name.expr_ << ":" << value.expr_ << "\n";
@@ -413,7 +414,7 @@ void
 
   for (auto &var : variables_)
   {
-    replaceTokenWord(var.second);
+    replaceTokenWord(var.user_specified_block_);
   }
 }
 
@@ -422,8 +423,8 @@ void
 {
   for (auto &over : block.overrides_)
   {
-    if (!over.second.refers_.empty())
-      over.second.expr_ = lookUpTokenWord(over.second);
+    if (!over.rhs_.refers_.empty())
+      over.rhs_.expr_ = lookUpTokenWord(over.rhs_);
   }
   {
     for (auto &nested : block.nested_)
@@ -435,45 +436,45 @@ std::string
     Parser::lookUpTokenWord(Token token)
 {
   auto refers = token.refers_.substr(1);
-  auto pats = refers | rv::split('-') | rs::to<std::vector<std::string>>;
+  auto pats   = refers | rv::split('-') | rs::to<std::vector<std::string>>;
 
-  auto f = rs::find_if(variables_,
-                       [&](auto var) { return var.first.expr_ == pats[0]; });
-  if (f == rs::end(variables_))
+  auto find_block = rs::find_if(
+      variables_, [&](auto var) { return var.user_name_.expr_ == pats[0]; });
+  if (find_block == rs::end(variables_))
   {
     errInvalidToken(token, "tracked path " + refers + " is not valid");
     throw ParserError{};
   }
 
-  auto b = f->second;
+  auto block = find_block->user_specified_block_;
   for (auto i = 1u; i < pats.size() - 1; i++)
   {
     auto nested = pats[i];
 
-    auto nb = rs::find_if(b.nested_,
+    auto nb = rs::find_if(block.nested_,
                           [&](auto var) { return var.first.expr_ == nested; });
-    if (nb == rs::end(b.nested_))
+    if (nb == rs::end(block.nested_))
     {
       errInvalidToken(token,
                       "tracked path " + refers + " is not valid: '" + nested +
                           "' is not a nested component");
       throw ParserError{};
     }
-    b = nb->second;
+    block = nb->second;
   }
 
-  auto param = pats.back();
+  auto parameter = pats.back();
 
-  auto par = rs::find_if(b.overrides_,
-                         [&](auto var) { return var.first.expr_ == param; });
-  if (par == rs::end(b.overrides_))
+  auto par = rs::find_if(block.overrides_,
+                         [&](auto var) { return var.lhs_.expr_ == parameter; });
+  if (par == rs::end(block.overrides_))
   {
     errInvalidToken(token,
-                    "tracked path " + refers + " is not valid: '" + param +
+                    "tracked path " + refers + " is not valid: '" + parameter +
                         "' is not a parameter");
     throw ParserError{};
   }
-  return par->second.expr_;
+  return par->rhs_.expr_;
 }
 }   // namespace language
 }   // namespace ded

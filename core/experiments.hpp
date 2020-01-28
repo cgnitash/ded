@@ -41,7 +41,7 @@ struct Simulation
       fullLabel() const
   {
     return (labels | rv::transform([](auto label) {
-              return label.first + " = " + label.second;
+              return label.name_ + " = " + label.value_;
             }) |
             rv::intersperse(", ") | ra::join);
   }

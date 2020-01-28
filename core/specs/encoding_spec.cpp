@@ -32,8 +32,8 @@ EncodingSpec::EncodingSpec( language::Block block)
 
   for (auto over : block.overrides_)
   {
-    auto name  = over.first;
-    auto value = over.second;
+    auto name  = over.lhs_;
+    auto value = over.rhs_;
 
     auto f = rs::find_if(
         parameters_, [&](auto param) { return param.first == name.expr_; });

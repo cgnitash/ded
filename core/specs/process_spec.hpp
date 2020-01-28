@@ -64,7 +64,7 @@ class ProcessSpec
 
   Tags tags_;
 
-  std::vector<std::pair<language::Token, language::Token>> signal_binds_;
+  std::vector<language::TokenAssignment> signal_binds_;
 
   std::map<std::string, NestedProcessSpec>              nested_;
   std::map<std::string, std::pair<std::vector<NestedProcessSpec>, Tags>>

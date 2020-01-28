@@ -10,7 +10,7 @@ e = $markov_brain
 {
      #hiddens =   [ 2 3 4 ] 
      hiddens =    2
-	 outputs =  3 
+	 outputs =  2 
 	 inputs = 4
 	 genome = !enc
 }

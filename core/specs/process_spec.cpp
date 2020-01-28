@@ -394,7 +394,7 @@ void
                                bool            is_input)
 {
   auto diagnostic_message = name_token_.diagnostic_;
-  auto left_padding       = std::string(name_token_.location_.second + 10, ' ');
+  auto left_padding       = std::string(name_token_.location_.end_ + 10, ' ');
   std::cout << "parse-error\n"
             << diagnostic_message << "\n"
             << left_padding << utilities::TermColours::red_fg << "^"
@@ -407,7 +407,7 @@ void
   auto substrate_name_token  = sub_spec_name;
   auto ss_diagnostic_message = substrate_name_token.diagnostic_;
   auto ss_left_padding =
-      std::string(substrate_name_token.location_.second + 10, ' ');
+      std::string(substrate_name_token.location_.end_ + 10, ' ');
 
   std::cout << ss_diagnostic_message << "\n"
             << ss_left_padding << utilities::TermColours::red_fg << "^"
@@ -429,19 +429,19 @@ bool
 {
 
   auto sig_bind = rs::find_if(signal_binds_, [&proc_sig](auto token_pair) {
-    return token_pair.first.expr_ == proc_sig.userName();
+    return token_pair.lhs_.expr_ == proc_sig.userName();
   });
   if (sig_bind == rs::end(signal_binds_))
     return false;
 
   auto sub_sig = rs::find_if(sub_sigs, [sig_bind](auto ns) {
-    return ns.first == sig_bind->second.expr_;
+    return ns.first == sig_bind->rhs_.expr_;
   });
 
   if (sub_sig == rs::end(sub_sigs))
   {
       std::string io_type = is_input ? "input" : "output";
-      errInvalidToken(sig_bind->second,
+      errInvalidToken(sig_bind->rhs_,
                       "this is not an " + io_type + " signal provided by " +
                           sub_spec_name.expr_,
                       sub_sigs | rv::keys | rs::to<std::vector<std::string>>);
@@ -554,8 +554,8 @@ void
 {
   for (auto over : block.overrides_)
   {
-    auto name  = over.first;
-    auto value = over.second;
+    auto name  = over.lhs_;
+    auto value = over.rhs_;
 
     auto f = rs::find_if(parameters_,
                          [&](auto param) { return param.first == name.expr_; });
@@ -595,8 +595,8 @@ void
 {
   for (auto over : block.traces_)
   {
-    auto tag_name  = over.first;
-    auto frequency = over.second;
+    auto tag_name  = over.lhs_;
+    auto frequency = over.rhs_;
 
     ConfigurationPrimitive cp;
     cp.parse(frequency.expr_);
@@ -708,13 +708,13 @@ void
   {
     auto doesnt_contain_signal = [](auto sigs, auto sig_bind) {
       return rs::find_if(sigs, [&](auto sig) {
-               return sig_bind.first.expr_ == sig.first;
+               return sig_bind.lhs_.expr_ == sig.first;
              }) == rs::end(sigs);
     };
     if (doesnt_contain_signal(io_.inputs_, signal_bind) &&
         doesnt_contain_signal(io_.outputs_, signal_bind))
     {
-      errInvalidToken(signal_bind.first,
+      errInvalidToken(signal_bind.lhs_,
                       "this is not an io signal of " + name_);
       throw language::ParserError{};
     }

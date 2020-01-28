@@ -46,21 +46,21 @@ void errInvalidToken(Token                    token,
                      std::string              message,
                      std::vector<std::string> suggestions)
 {
-  auto left_padding = std::string(token.location_.second+ 10, ' '); 
+  auto left_padding = std::string(token.location_.end_ + 10, ' ');
   std::cout << "parse-error\n\n"
             << token.diagnostic_ << "\n"
             << left_padding << utilities::TermColours::red_fg
             << "^" << std::string(token.expr_.length() - 1, '~') << "\n"
             << left_padding<<  message;
 
-  if (auto f = rs::find_if(suggestions,
+  if (auto suggestion = rs::find_if(suggestions,
                            [word = token.expr_](auto attempt) {
                              return utilities::match(attempt, word);
                            });
-      f != rs::end(suggestions))
+     suggestion != rs::end(suggestions))
     std::cout << "\n"
               << left_padding<< "Did you mean "
-              << utilities::TermColours::green_fg << *f 
+              << utilities::TermColours::green_fg << *suggestion 
               << utilities::TermColours::red_fg <<  "?";
 
   std::cout << utilities::TermColours::reset << std::endl;

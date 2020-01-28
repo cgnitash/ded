@@ -13,14 +13,23 @@ namespace ded
 namespace language
 {
 
-using Labels = std::vector<std::pair<std::string, std::string>>;
+struct Label
+{
+  std::string name_{}, value_{};
+};
+using Labels = std::vector<Label>;
 
 class Parser
 {
 
   Lexer lexer_;
 
-  std::vector<std::pair<Token, Block>> variables_;
+  struct UserVariable
+  {
+	  Token user_name_{};
+	  Block user_specified_block_{};
+  };
+  std::vector<UserVariable> variables_;
 
   Labels labels_;
 
@@ -65,7 +74,7 @@ public:
   {
     return lexer_;
   }
-  std::vector<std::pair<Token, Block>>
+  std::vector<UserVariable>
       variables() const
   {
     return variables_;
@@ -86,7 +95,7 @@ public:
   void
       updateLabels(std::pair<std::string, std::string> label)
   {
-    labels_.push_back(label);
+    labels_.push_back({label.first, label.second});
   }
 
   void resolveTrackedWords();
