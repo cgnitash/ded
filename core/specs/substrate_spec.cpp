@@ -133,7 +133,7 @@ void
                                  bool          is_input)
 {
   auto diagnostic_message = name_token_.diagnostic_;
-  auto left_padding       = std::string(name_token_.location_.end_ + 10, ' ');
+  auto left_padding       = std::string(name_token_.location_.column_ + 10, ' ');
   std::cout << "parse-error\n\n"
             << diagnostic_message << "\n"
             << left_padding << utilities::TermColours::red_fg << "^"
@@ -146,7 +146,7 @@ void
   auto substrate_name_token  = sub_spec.nameToken();
   auto ss_diagnostic_message = substrate_name_token.diagnostic_;
   auto ss_left_padding =
-      std::string(substrate_name_token.location_.end_ + 10, ' ');
+      std::string(substrate_name_token.location_.column_ + 10, ' ');
 
   std::cout << ss_diagnostic_message << "\n"
             << ss_left_padding << utilities::TermColours::red_fg << "^"
@@ -316,8 +316,8 @@ void
   // Must be wrong
   for (auto blover : block.nested_)
   {
-    auto name       = blover.first;
-    auto nested_block = blover.second;
+    auto name       = blover.name_;
+    auto nested_block = blover.blocks_[0];
 
     auto ct = config_manager::typeOfBlock(nested_block.name_.substr(1));
     if (ct != config_manager::SpecType::substrate &&
@@ -369,7 +369,7 @@ void
 {
   for (auto blover : block.nested_vector_)
   {
-    auto name = blover.first;
+    auto name = blover.name_;
     auto f    = rs::find_if(nested_vector_,
                          [&](auto param) { return param.first == name.expr_; });
     if (f == nested_vector_.end())
@@ -380,7 +380,7 @@ void
           nested_vector_ | rv::keys | rs::to<std::vector<std::string>>);
       throw language::ParserError{};
     }
-    for (auto nested_block : blover.second)
+    for (auto nested_block : blover.blocks_)
     {
 
       if (config_manager::typeOfBlock(nested_block.name_.substr(1)) !=

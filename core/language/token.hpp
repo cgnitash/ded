@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <memory>
 #include <optional>
 #include <string>
 #include <vector>
@@ -36,14 +37,14 @@ TokenType parseTokenType(std::string);
 
 struct Token
 {
-  TokenType   type_;
-  std::string expr_;
+  TokenType   type_{};
+  std::string expr_{};
   struct TokenLocation
   {
-    int begin_{}, end_{};
-  } location_;
-  std::string diagnostic_;
-  std::string refers_;
+    int line_{}, column_{};
+  } location_{};
+  std::string diagnostic_{};
+  std::string refers_{};
 };
 
 void errInvalidToken(Token                    token,
@@ -57,17 +58,22 @@ struct TokenAssignment
 
 struct Block
 {
-  Token       name_token_;
-  std::string name_;
+  Token       name_token_{};
+  std::string name_{};
   struct BlockRange
   {
     int begin_{}, end_{};
-  } range_;
-  std::vector<TokenAssignment>                      overrides_;
-  std::vector<TokenAssignment>                      signal_binds_;
-  std::vector<TokenAssignment>                      traces_;
-  std::vector<std::pair<Token, Block>>              nested_;
-  std::vector<std::pair<Token, std::vector<Block>>> nested_vector_;
+  } range_{};
+  std::vector<TokenAssignment> overrides_{};
+  std::vector<TokenAssignment> signal_binds_{};
+  std::vector<TokenAssignment> traces_{};
+  struct TokenBlocks
+  {
+    Token                    name_{};
+    std::vector<Block> blocks_{};
+  };
+  std::vector<TokenBlocks>  nested_{};
+  std::vector<TokenBlocks> nested_vector_{};
 };
 
 }   // namespace language

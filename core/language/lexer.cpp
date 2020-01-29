@@ -72,7 +72,7 @@ void
         tokens_.push_back(language::Token{
             type,
             expr,
-            { line_number, column },
+            { static_cast<int>(line_number), static_cast<int>(column) },
             diagnostic.str(),
             type == language::TokenType::tracked_word ? expr : std::string{} });
       }

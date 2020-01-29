@@ -188,17 +188,17 @@ void
     case TokenType::component:
       if (auto f = rs::find_if(current.nested_,
                                [&](auto over) {
-                                 return over.first.expr_ == tokens[begin].expr_;
+                                 return over.name_.expr_ == tokens[begin].expr_;
                                });
           f != rs::end(current.nested_))
       {
-        errInvalidToken(f->first, "nested component already overridden here");
+        errInvalidToken(f->name_, "nested component already overridden here");
         errInvalidToken(tokens[begin],
                         "cannot override this nested component again");
         throw ParserError{};
       }
-      current.nested_.push_back({ tokens[begin], expandBlock(begin + 2) });
-      begin = current.nested_.back().second.range_.end_;
+      current.nested_.push_back({ tokens[begin], {expandBlock(begin + 2)} });
+      begin = current.nested_.back().blocks_[0].range_.end_;
       break;
     default:
       errInvalidToken(tokens[begin + 2],
@@ -300,7 +300,7 @@ void
   return;
 }
 
-std::optional<std::pair<int, int>>
+std::optional<Parser::VariedParameterPosition>
     Parser::hasVariedParameter()
 {
   auto const tokens = lexer_.getTokens();
@@ -358,8 +358,10 @@ std::optional<std::pair<int, int>>
     throw ParserError{};
   }
 
-  return std::make_pair(open_variance_position - rs::begin(tokens),
-                        close_variance_position - rs::begin(tokens));
+  return VariedParameterPosition{
+    static_cast<int>(open_variance_position - rs::begin(tokens)),
+    static_cast<int>(close_variance_position - rs::begin(tokens))
+  };
 }
 
 std::vector<Parser>
@@ -373,22 +375,23 @@ std::vector<Parser>
 
   auto               tokens = lexer_.getTokens();
   std::vector<Token> subs;
-  rs::copy(rs::begin(tokens) + pos->first + 1,
-           rs::begin(tokens) + pos->second,
+  rs::copy(rs::begin(tokens) + pos->open_ + 1,
+           rs::begin(tokens) + pos->close_,
            rs::back_inserter(subs));
 
-  tokens.erase(rs::begin(tokens) + pos->first,
-               rs::begin(tokens) + pos->second + 1);
+  tokens.erase(rs::begin(tokens) + pos->open_,
+               rs::begin(tokens) + pos->close_ + 1);
 
   return subs | rv::transform([&](auto token) {
            auto lexer       = lexer_;
            auto temp_tokens = tokens;
-           temp_tokens.insert(rs::begin(temp_tokens) + pos->first, token);
+           temp_tokens.insert(rs::begin(temp_tokens) + pos->open_, token);
            lexer.updateTokens(temp_tokens);
            Parser p{ *this };
            p.updateLexer(lexer);
-           p.updateLabels({ (rs::begin(temp_tokens) + pos->first - 2)->expr_,
-                            token.expr_ });
+           p.labels_.push_back(
+               { (rs::begin(temp_tokens) + pos->open_ - 2)->expr_,
+                 token.expr_ });
            return p;
          }) |
          rs::to<std::vector<Parser>>;
@@ -405,7 +408,7 @@ void
   for (auto [name, value] : b.nested_)
   {
     std::cout << name.expr_ << "->\n";
-    print(value);
+    print(value[0]);
   }
 }
 void
@@ -428,7 +431,7 @@ void
   }
   {
     for (auto &nested : block.nested_)
-      replaceTokenWord(nested.second);
+      replaceTokenWord(nested.blocks_[0]);
   }
 }
 
@@ -452,7 +455,7 @@ std::string
     auto nested = pats[i];
 
     auto nb = rs::find_if(block.nested_,
-                          [&](auto var) { return var.first.expr_ == nested; });
+                          [&](auto var) { return var.name_.expr_ == nested; });
     if (nb == rs::end(block.nested_))
     {
       errInvalidToken(token,
@@ -460,7 +463,7 @@ std::string
                           "' is not a nested component");
       throw ParserError{};
     }
-    block = nb->second;
+    block = nb->blocks_[0];
   }
 
   auto parameter = pats.back();

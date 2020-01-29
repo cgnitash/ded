@@ -64,8 +64,8 @@ PopulationSpec::PopulationSpec( language::Block block)
 
   for (auto blover : block.nested_)
   {
-    auto name       = blover.first;
-    auto nested_block = blover.second;
+    auto name       = blover.name_;
+    auto nested_block = blover.blocks_[0];
 
     if (config_manager::typeOfBlock(nested_block.name_.substr(1)) !=
         config_manager::SpecType::substrate)

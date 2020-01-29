@@ -46,7 +46,7 @@ void errInvalidToken(Token                    token,
                      std::string              message,
                      std::vector<std::string> suggestions)
 {
-  auto left_padding = std::string(token.location_.end_ + 10, ' ');
+  auto left_padding = std::string(token.location_.column_ + 10, ' ');
   std::cout << "parse-error\n\n"
             << token.diagnostic_ << "\n"
             << left_padding << utilities::TermColours::red_fg

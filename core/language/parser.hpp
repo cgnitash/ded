@@ -22,16 +22,16 @@ using Labels = std::vector<Label>;
 class Parser
 {
 
-  Lexer lexer_;
+  Lexer lexer_{};
 
   struct UserVariable
   {
 	  Token user_name_{};
 	  Block user_specified_block_{};
   };
-  std::vector<UserVariable> variables_;
+  std::vector<UserVariable> variables_{};
 
-  Labels labels_;
+  Labels labels_{};
 
   void parseExpression(int);
 
@@ -83,7 +83,12 @@ public:
   void parseFromLexer();
 
   std::vector<Parser> varyParameter();
-  std::optional<std::pair<int, int>> hasVariedParameter();
+
+  struct VariedParameterPosition
+  {
+	  int open_{}, close_{};
+  };
+  std::optional<VariedParameterPosition> hasVariedParameter();
   void print(Block b);
 
   void
@@ -92,12 +97,13 @@ public:
     lexer_ = s;
   }
 
+  /*
   void
-      updateLabels(std::pair<std::string, std::string> label)
+      updateLabels(Label label)
   {
-    labels_.push_back({label.first, label.second});
+    labels_.push_back(label);
   }
-
+*/
   void resolveTrackedWords();
 
 };
