@@ -272,6 +272,7 @@ void
   }
 }
 
+/*
 void
     SubstrateSpec::parseParameters(language::Block block)
 {
@@ -309,6 +310,7 @@ void
     }
   }
 }
+*/
 
 void
     SubstrateSpec::parseNested( language::Block block)
@@ -415,7 +417,8 @@ SubstrateSpec::SubstrateSpec( language::Block block)
 
   name_token_ = block.name_token_;
 
-  parseParameters( block);
+  //parseParameters( block);
+  parameters_.loadFromSpec(block.overrides_, name_);
   parseNested( block);
   parseNestedVector( block);
   instantiateUserParameterSizes(0);
@@ -431,7 +434,7 @@ std::vector<std::string>
 
   lines.push_back(alignment + "substrate:" + name_);
   lines.push_back(alignment + "PARAMETERS");
-  rs::transform(parameters_, rs::back_inserter(lines), [&](auto parameter) {
+  rs::transform(parameters_.parameters_, rs::back_inserter(lines), [&](auto parameter) {
     return alignment + parameter.first + ":" + parameter.second.valueAsString();
   });
   lines.push_back(alignment + "INPUTS");
@@ -479,7 +482,7 @@ SubstrateSpec
     auto                   p = l.find(':');
     ConfigurationPrimitive c;
     c.parse(l.substr(p + 1));
-    parameters_[l.substr(0, p)] = c;
+    parameters_.parameters_[l.substr(0, p)] = c;
   }
 
   for (++f; *f != "OUTPUTS"; f++)
@@ -550,7 +553,7 @@ std::string
   out << "substrate::" << name_ << "\n{\n";
 
   out << " parameters\n";
-  for (auto [parameter, value] : parameters_)
+  for (auto [parameter, value] : parameters_.parameters_)
     out << std::setw(16) << parameter << " : " << value.valueAsString() << "\n";
   out << " inputs\n";
   for (auto [input, value] : io_.inputs_)
@@ -566,14 +569,14 @@ void
     SubstrateSpec::instantiateUserParameterSizes(int sig_count)
 {
   for (auto &n_sig : io_.inputs_)
-    for (auto &[param, cp] : parameters_)
+    for (auto &[param, cp] : parameters_.parameters_)
       if (cp.typeAsString() == "long" && param == n_sig.second.userParameter())
       {
         n_sig.second.instantiateUserParameter(std::stol(cp.valueAsString()));
         n_sig.second.updateIdentifier("~sig" + std::to_string(sig_count++));
       }
   for (auto &n_sig : io_.outputs_)
-    for (auto &[param, cp] : parameters_)
+    for (auto &[param, cp] : parameters_.parameters_)
       if (cp.typeAsString() == "long" && param == n_sig.second.userParameter())
       {
         n_sig.second.instantiateUserParameter(std::stol(cp.valueAsString()));

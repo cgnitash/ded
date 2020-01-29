@@ -28,6 +28,8 @@ ConverterSpec::ConverterSpec( language::Block block)
 
   *this = ALL_CONVERTER_SPECS.at(block_name);
 
+  parameters_.loadFromSpec(block.overrides_, name_);
+  /*
   for (auto over : block.overrides_)
   {
     auto name  = over.lhs_;
@@ -61,7 +63,7 @@ ConverterSpec::ConverterSpec( language::Block block)
       throw language::ParserError{};
     }
   }
-
+	*/
   /*
   for (auto blover : block.nested_)
   {
@@ -90,7 +92,7 @@ std::vector<std::string>
 
   lines.push_back(alignment + "converter:" + name_);
   lines.push_back(alignment + "PARAMETERS");
-  rs::transform(parameters_, rs::back_inserter(lines), [&](auto parameter) {
+  rs::transform(parameters_.parameters_, rs::back_inserter(lines), [&](auto parameter) {
     return alignment + parameter.first + ":" + parameter.second.valueAsString();
   });
   /*
@@ -115,7 +117,7 @@ ConverterSpec
     auto                   p = l.find(':');
     ConfigurationPrimitive c;
     c.parse(l.substr(p + 1));
-    parameters_[l.substr(0, p)] = c;
+    parameters_.parameters_[l.substr(0, p)] = c;
   }
 
   /*
@@ -139,7 +141,7 @@ std::string
   out << "converter::" << name_ << "\n{\n";
 
   out << " parameters\n";
-  for (auto [parameter, value] : parameters_)
+  for (auto [parameter, value] : parameters_.parameters_)
     out << std::setw(16) << parameter << " : " << value.valueAsString() << "\n";
 
   out << "}\n";

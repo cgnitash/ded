@@ -58,7 +58,8 @@ class ProcessSpec
   std::string                                   name_;
   language::Token                           name_token_;
   std::string                                   user_specified_name_;
-  std::map<std::string, ConfigurationPrimitive> parameters_;
+//  std::map<std::string, ConfigurationPrimitive> parameters_;
+  Parameters                                              parameters_;
 
   IO io_;
 
@@ -77,7 +78,7 @@ class ProcessSpec
                         std::pair<std::string, std::string>>>
       tag_flow_inequalities_;
 
-  void parseParameters( language::Block);
+  //void parseParameters( language::Block);
   void parseSignalBinds( language::Block);
   void parseTraces( language::Block);
   void parseNested( language::Block);
@@ -138,15 +139,14 @@ public:
     user_specified_name_ = name;
   }
 
-  template <typename ValueType>
+  template <typename ArgumentType>
   void
-      bindParameter(
-          std::string name,
-          ValueType   value,
-          std::vector<std::pair<std::function<bool(ValueType)>, std::string>>
-              cons = {})
-
+      bindParameter(std::string                           name,
+                    ArgumentType                          value,
+                    std::vector<Constraint<ArgumentType>> cons = {})
   {
+	parameters_.bind(name, value, cons);
+	  /*
     if (parameters_.find(name) != parameters_.end())
     {
       std::cout << "User error: parameter " << name
@@ -155,12 +155,15 @@ public:
     }
     parameters_[name].setValue(value);
     parameters_[name].setConstraints(cons);
+  */
   }
 
   template <typename ValueType>
   void
       configureParameter(std::string name, ValueType &value)
   {
+    parameters_.configure(name, value); 
+	  /*
     if (parameters_.find(name) == parameters_.end())
     {
       std::cout << "User error: parameter " << name
@@ -168,6 +171,7 @@ public:
       throw SpecError{};
     }
     parameters_[name].get_value(value);
+  */
   }
 
   void

@@ -28,6 +28,8 @@ PopulationSpec::PopulationSpec( language::Block block)
 
   *this = ALL_POPULATION_SPECS.at(block_name);
 
+  parameters_.loadFromSpec(block.overrides_, name_);
+  /*
   for (auto over : block.overrides_)
   {
     auto name  = over.lhs_;
@@ -61,7 +63,7 @@ PopulationSpec::PopulationSpec( language::Block block)
       throw language::ParserError{};
     }
   }
-
+	*/
   for (auto blover : block.nested_)
   {
     auto name       = blover.name_;
@@ -88,9 +90,11 @@ std::vector<std::string>
 
   lines.push_back(alignment + "population:" + name_);
   lines.push_back(alignment + "PARAMETERS");
-  rs::transform(parameters_, rs::back_inserter(lines), [&](auto parameter) {
-    return alignment + parameter.first + ":" + parameter.second.valueAsString();
-  });
+  rs::transform(
+      parameters_.parameters_, rs::back_inserter(lines), [&](auto parameter) {
+        return alignment + parameter.first + ":" +
+               parameter.second.valueAsString();
+      });
   lines.push_back(alignment + "ENTITY");
   auto n_dump = es_.serialise(depth + 1);
   lines.insert(lines.end(), n_dump.begin(), n_dump.end());
@@ -111,7 +115,7 @@ PopulationSpec
     auto                   p = l.find(':');
     ConfigurationPrimitive c;
     c.parse(l.substr(p + 1));
-    parameters_[l.substr(0, p)] = c;
+    parameters_.parameters_[l.substr(0, p)] = c;
   }
 
   for (auto l = (++f) + 1; l != pop_dump.end(); l++)
@@ -133,7 +137,7 @@ std::string
   out << "population::" << name_ << "\n{\n";
 
   out << " parameters\n";
-  for (auto [parameter, value] : parameters_)
+  for (auto [parameter, value] : parameters_.parameters_)
     out << std::setw(16) << parameter << " : " << value.valueAsString() << "\n";
 
   out << "}\n";

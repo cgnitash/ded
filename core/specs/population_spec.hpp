@@ -28,13 +28,11 @@ namespace specs
 class PopulationSpec
 {
   std::string                                   name_;
-  std::map<std::string, ConfigurationPrimitive> parameters_;
-  // std::map<std::string, std::string>             inputs_;
-  // std::map<std::string, std::string>             outputs_;
+//  std::map<std::string, ConfigurationPrimitive> parameters_;
+  Parameters                                              parameters_;
   SubstrateSpec es_{ "null_entity" };
 
 public:
-  // PopulationSpec() = default;
 
   PopulationSpec(std::string name = "") : name_(name)
   {
@@ -54,18 +52,14 @@ public:
     return parameters_;
   }
 
-  // auto inputs() const { return inputs_; }
-
-  // auto outputs() const { return outputs_; }
-
-  template <typename T>
+  template <typename ArgumentType>
   void
-      bindParameter(
-          std::string                                                 name,
-          T                                                           value,
-          std::vector<std::pair<std::function<bool(T)>, std::string>> cons = {})
-
+      bindParameter(std::string                           name,
+                    ArgumentType                          value,
+                    std::vector<Constraint<ArgumentType>> cons = {})
   {
+	parameters_.bind(name, value, cons);
+	  /*
     if (parameters_.find(name) != parameters_.end())
     {
       std::cout << "User error: parameter " << name
@@ -74,13 +68,15 @@ public:
     }
     parameters_[name].setValue(value);
 	parameters_[name].setConstraints(cons);
-
+	*/
   }
 
   template <typename T>
   void
       configureParameter(std::string name, T &value)
   {
+    parameters_.configure(name, value); 
+	  /*
     if (parameters_.find(name) == parameters_.end())
     {
       std::cout << "User error: parameter " << name
@@ -88,6 +84,7 @@ public:
       throw SpecError{};
     }
     parameters_[name].get_value(value);
+  */
   }
 
 

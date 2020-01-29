@@ -28,16 +28,11 @@ namespace specs
 class ConverterSpec
 {
   std::string                                   name_;
-  //std::string                                   from_signal_;
-  //std::string                                   to_signal_;
-  std::map<std::string, ConfigurationPrimitive> parameters_;
+//  std::map<std::string, ConfigurationPrimitive> parameters_;
+  Parameters                                              parameters_;
   std::pair<SignalSpec,SignalSpec> args_; 
-  // std::map<std::string, std::string>             inputs_;
-  // std::map<std::string, std::string>             outputs_;
-  //SubstrateSpec es_{ "null_entity" };
 
 public:
-  // ConverterSpec() = default;
 
   ConverterSpec(std::string name = "") : name_(name)
   {
@@ -57,18 +52,15 @@ public:
     return parameters_;
   }
 
-  // auto inputs() const { return inputs_; }
 
-  // auto outputs() const { return outputs_; }
-
-  template <typename T>
+  template <typename ArgumentType>
   void
-      bindParameter(
-          std::string                                                 name,
-          T                                                           value,
-          std::vector<std::pair<std::function<bool(T)>, std::string>> cons = {})
-
+      bindParameter(std::string                           name,
+                    ArgumentType                          value,
+                    std::vector<Constraint<ArgumentType>> cons = {})
   {
+	parameters_.bind(name, value, cons);
+	  /*
     if (parameters_.find(name) != parameters_.end())
     {
       std::cout << "User error: parameter " << name
@@ -77,13 +69,15 @@ public:
     }
     parameters_[name].setValue(value);
 	parameters_[name].setConstraints(cons);
-
+*/
   }
 
   template <typename T>
   void
       configureParameter(std::string name, T &value)
   {
+    parameters_.configure(name, value); 
+	  /*
     if (parameters_.find(name) == parameters_.end())
     {
       std::cout << "User error: parameter " << name
@@ -91,6 +85,7 @@ public:
       throw SpecError{};
     }
     parameters_[name].get_value(value);
+ */
   }
 
   void bindFrom(std::string from)
@@ -102,33 +97,11 @@ public:
   {
 	args_.second = SignalSpec{"","",to};
   }
-  /*
-  void
-      bindSubstrate(SubstrateSpec e)
-  {
-    es_ = e;
-  }
-
-  void
-      configureSubstrate(SubstrateSpec &e)
-  {
-    e = es_;
-  }
-	*/
 
    std::vector<std::string>  serialise(long )const;
   ConverterSpec deserialise(std::vector<std::string> );
   std::string    prettyPrint();
 
-  /*
-  SubstrateSpec
-      instantiateNestedSubstrateUserParameterSizes()
-  {
-	es_.instantiateUserParameterSizes(0);
-	es_.checkNestedIO();
-    return es_;
-  }
-  */
   //  friend std::ostream &operator<<(std::ostream &out, ConverterSpec e)
 
   friend class concepts::Converter;

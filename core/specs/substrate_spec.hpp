@@ -44,7 +44,8 @@ class SubstrateSpec
 
   std::string                                             name_;
   language::Token                                         name_token_;
-  std::map<std::string, ConfigurationPrimitive>           parameters_;
+  //std::map<std::string, ConfigurationPrimitive>           parameters_;
+  Parameters                                              parameters_;
   std::map<std::string, NestedSubstrateSpec>              nested_;
   std::map<std::string, std::vector<NestedSubstrateSpec>> nested_vector_;
   std::map<std::string, EncodingSpec>                     encodings_;
@@ -74,14 +75,14 @@ public:
     return io_;
   }
 
-  template <typename T>
+  template <typename ArgumentType>
   void
-      bindParameter(
-          std::string                                                 name,
-          T                                                           value,
-          std::vector<std::pair<std::function<bool(T)>, std::string>> cons = {})
-
+      bindParameter(std::string                           name,
+                    ArgumentType                          value,
+                    std::vector<Constraint<ArgumentType>> cons = {})
   {
+	parameters_.bind(name, value, cons);
+	  /*
     if (parameters_.find(name) != parameters_.end())
     {
       std::cout << "User error: parameter " << name
@@ -90,19 +91,23 @@ public:
     }
     parameters_[name].setValue(value);
     parameters_[name].setConstraints(cons);
-  }
+  */
+	}
 
   template <typename T>
   void
       configureParameter(std::string name, T &value)
   {
-    if (parameters_.find(name) == parameters_.end())
-    {
-      std::cout << "User error: parameter " << name
-                << " has not been declared\n";
-      throw SpecError{};
-    }
-    parameters_[name].get_value(value);
+    parameters_.configure(name, value); 
+	/*
+  if (parameters_.find(name) == parameters_.end())
+  {
+    std::cout << "User error: parameter " << name
+              << " has not been declared\n";
+    throw SpecError{};
+  }
+  parameters_[name].get_value(value);
+*/
   }
 
   void bindInput(std::string name, std::string value);
@@ -121,7 +126,7 @@ public:
       std::vector<std::pair<std::string, std::string>> input_constraints,
       std::vector<std::pair<std::string, std::string>> output_constraints);
   void configureSubstrate(std::string name, SubstrateSpec &sub);
-  void parseParameters( language::Block);
+  //void parseParameters( language::Block);
   void parseNested( language::Block);
   void parseNestedVector( language::Block);
 
