@@ -58,7 +58,6 @@ class ProcessSpec
   std::string                                   name_;
   language::Token                           name_token_;
   std::string                                   user_specified_name_;
-//  std::map<std::string, ConfigurationPrimitive> parameters_;
   Parameters                                              parameters_;
 
   IO io_;
@@ -146,16 +145,6 @@ public:
                     std::vector<Constraint<ArgumentType>> cons = {})
   {
 	parameters_.bind(name, value, cons);
-	  /*
-    if (parameters_.find(name) != parameters_.end())
-    {
-      std::cout << "User error: parameter " << name
-                << " has already been declared\n";
-      throw SpecError{};
-    }
-    parameters_[name].setValue(value);
-    parameters_[name].setConstraints(cons);
-  */
   }
 
   template <typename ValueType>
@@ -163,15 +152,6 @@ public:
       configureParameter(std::string name, ValueType &value)
   {
     parameters_.configure(name, value); 
-	  /*
-    if (parameters_.find(name) == parameters_.end())
-    {
-      std::cout << "User error: parameter " << name
-                << " has not been declared\n";
-      throw SpecError{};
-    }
-    parameters_[name].get_value(value);
-  */
   }
 
   void
@@ -209,19 +189,19 @@ public:
 
   void bindProcessPreConstraints(
       std::string                                      proc_name,
-      std::vector<std::pair<std::string, std::string>> pre_constraints);
+      std::vector<SignalConstraint> pre_constraints);
 
   void bindProcessPostConstraints(
       std::string                                      proc_name,
-      std::vector<std::pair<std::string, std::string>> post_constraints);
+      std::vector<SignalConstraint> post_constraints);
 
   void bindProcessVectorPreConstraints(
       std::string                                      proc_name,
-      std::vector<std::pair<std::string, std::string>> pre_constraints);
+      std::vector<SignalConstraint> pre_constraints);
 
   void bindProcessVectorPostConstraints(
       std::string                                      proc_name,
-      std::vector<std::pair<std::string, std::string>> post_constraints);
+      std::vector<SignalConstraint> post_constraints);
 
   void bindTagEquality(std::pair<std::string, std::string> x,
                        std::pair<std::string, std::string> y);

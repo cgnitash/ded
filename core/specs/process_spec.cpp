@@ -23,8 +23,8 @@ void
 void
     ProcessSpec::configurePreTag(std::string name, std::string &value)
 {
-  value = rs::find_if(tags_.pre_, [=](auto ns) { return ns.first == name; })
-              ->second.identifier();
+  value = rs::find_if(tags_.pre_, [=](auto ns) { return ns.name_ == name; })
+              ->signal_spec_.identifier();
 }
 
 void
@@ -36,8 +36,8 @@ void
 void
     ProcessSpec::configurePostTag(std::string name, std::string &value)
 {
-  value = rs::find_if(tags_.post_, [=](auto ns) { return ns.first == name; })
-              ->second.identifier();
+  value = rs::find_if(tags_.post_, [=](auto ns) { return ns.name_	 == name; })
+              ->signal_spec_.identifier();
 }
 
 void
@@ -49,8 +49,8 @@ void
 void
     ProcessSpec::configureInput(std::string name, std::string &value)
 {
-  value = rs::find_if(io_.inputs_, [=](auto ns) { return ns.first == name; })
-              ->second.identifier();
+  value = rs::find_if(io_.inputs_, [=](auto ns) { return ns.name_ == name; })
+              ->signal_spec_.identifier();
 }
 
 void
@@ -62,8 +62,8 @@ void
 void
     ProcessSpec::configureOutput(std::string name, std::string &value)
 {
-  value = rs::find_if(io_.outputs_, [=](auto ns) { return ns.first == name; })
-              ->second.identifier();
+  value = rs::find_if(io_.outputs_, [=](auto ns) { return ns.name_ == name; })
+              ->signal_spec_.identifier();
 }
 void
     ProcessSpec::bindProcess(std::string name, ProcessSpec proc)
@@ -129,7 +129,7 @@ void
 void
     ProcessSpec::bindProcessPreConstraints(
         std::string                                      proc_name,
-        std::vector<std::pair<std::string, std::string>> pre_constraints)
+        std::vector<SignalConstraint> pre_constraints)
 {
   if (nested_.find(proc_name) == nested_.end())
   {
@@ -145,7 +145,7 @@ void
 void
     ProcessSpec::bindProcessPostConstraints(
         std::string                                      proc_name,
-        std::vector<std::pair<std::string, std::string>> post_constraints)
+        std::vector<SignalConstraint> post_constraints)
 {
   if (nested_.find(proc_name) == nested_.end())
   {
@@ -161,7 +161,7 @@ void
 void
     ProcessSpec::bindProcessVectorPreConstraints(
         std::string                                      proc_name,
-        std::vector<std::pair<std::string, std::string>> pre_constraints)
+        std::vector<SignalConstraint> pre_constraints)
 {
   if (nested_vector_.find(proc_name) == nested_vector_.end())
   {
@@ -177,7 +177,7 @@ void
 void
     ProcessSpec::bindProcessVectorPostConstraints(
         std::string                                      proc_name,
-        std::vector<std::pair<std::string, std::string>> post_constraints)
+        std::vector<SignalConstraint> post_constraints)
 {
   if (nested_vector_.find(proc_name) == nested_vector_.end())
   {
@@ -222,9 +222,9 @@ void
   auto sink_tags_copy = sink_tags;
   for (auto &n_tag : source_tags)
   {
-    auto &src     = n_tag.second;
+    auto &src     = n_tag.signal_spec_;
     auto  matches = rs::count_if(sink_tags_copy, [sig = src](auto ns) {
-      return ns.second.exactlyMatches(sig);
+      return ns.signal_spec_.exactlyMatches(sig);
     });
     if (matches > 1)
     {
@@ -239,14 +239,14 @@ void
     }
 
     auto snk = rs::find_if(sink_tags, [sig = src](auto ns) {
-      return ns.second.exactlyMatches(sig);
+      return ns.signal_spec_.exactlyMatches(sig);
     });
 
-    if (snk->second.identifier()[0] == '~')
+    if (snk->signal_spec_.identifier()[0] == '~')
     {
       if (src.identifier()[0] != '~')
-        src.updateIdentifier(snk->second.identifier());
-      if (snk->second.identifier() != src.identifier())
+        src.updateIdentifier(snk->signal_spec_.identifier());
+      if (snk->signal_spec_.identifier() != src.identifier())
       {
         std::cout
             << "error: tags were previously bound, and are in conflict now\n";
@@ -255,9 +255,9 @@ void
     }
     else if (src.identifier()[0] == '~')
     {
-      if (snk->second.identifier()[0] != '~')
-        snk->second.updateIdentifier(src.identifier());
-      if (snk->second.identifier() != src.identifier())
+      if (snk->signal_spec_.identifier()[0] != '~')
+        snk->signal_spec_.updateIdentifier(src.identifier());
+      if (snk->signal_spec_.identifier() != src.identifier())
       {
         std::cout << "error: tags were previously bound, and are in "
                      "conflict now\n";
@@ -267,12 +267,12 @@ void
     else
     {
       tag_count++;
-      snk->second.updateIdentifier("~tag" + std::to_string(tag_count));
+      snk->signal_spec_.updateIdentifier("~tag" + std::to_string(tag_count));
       src.updateIdentifier("~tag" + std::to_string(tag_count));
     }
 
     sink_tags_copy.erase(rs::find_if(sink_tags_copy, [sig = src](auto ns) {
-      return ns.second.exactlyMatches(sig);
+      return ns.signal_spec_.exactlyMatches(sig);
     }));
   }
 }
@@ -298,14 +298,14 @@ void
   for (auto &source_tag : constraints)
   {
     auto same_user_name = [&source_tag](auto tag) {
-      return tag.second.userName() == source_tag.second.userName();
+      return tag.signal_spec_.userName() == source_tag.signal_spec_.userName();
     };
     if (auto f = rs::find_if(tags_.pre_, same_user_name);
         f != rs::end(tags_.pre_))
-      source_tag.second.updateIdentifier(f->second.identifier());
+      source_tag.signal_spec_.updateIdentifier(f->signal_spec_.identifier());
     else if (f = rs::find_if(tags_.post_, same_user_name);
              f != rs::end(tags_.post_))
-      source_tag.second.updateIdentifier(f->second.identifier());
+      source_tag.signal_spec_.updateIdentifier(f->signal_spec_.identifier());
   }
 }
 
@@ -356,13 +356,13 @@ void
 {
   for (auto &n_sig : io_.inputs_)
     for (auto &[param, cp] : parameters_.parameters_)
-      if (cp.typeAsString() == "long" && param == n_sig.second.userParameter())
-        n_sig.second.instantiateUserParameter(std::stol(cp.valueAsString()));
+      if (cp.typeAsString() == "long" && param == n_sig.signal_spec_.userParameter())
+        n_sig.signal_spec_.instantiateUserParameter(std::stol(cp.valueAsString()));
 
   for (auto &n_sig : io_.outputs_)
     for (auto &[param, cp] : parameters_.parameters_)
-      if (cp.typeAsString() == "long" && param == n_sig.second.userParameter())
-        n_sig.second.instantiateUserParameter(std::stol(cp.valueAsString()));
+      if (cp.typeAsString() == "long" && param == n_sig.signal_spec_.userParameter())
+        n_sig.signal_spec_.instantiateUserParameter(std::stol(cp.valueAsString()));
 
   for (auto &es : nested_)
     es.second.e->instantiateUserParameterSizes();
@@ -417,7 +417,7 @@ void
             << utilities::TermColours::reset;
 
   for (auto sig : sub_sigs)
-    std::cout << ss_left_padding << sig.second.diagnosticName() << std::endl;
+    std::cout << ss_left_padding << sig.signal_spec_.diagnosticName() << std::endl;
   throw SpecError{};
 }
 
@@ -435,7 +435,7 @@ bool
     return false;
 
   auto sub_sig = rs::find_if(sub_sigs, [sig_bind](auto ns) {
-    return ns.first == sig_bind->rhs_.expr_;
+    return ns.name_ == sig_bind->rhs_.expr_;
   });
 
   if (sub_sig == rs::end(sub_sigs))
@@ -444,17 +444,18 @@ bool
       errInvalidToken(sig_bind->rhs_,
                       "this is not an " + io_type + " signal provided by " +
                           sub_spec_name.expr_,
-                      sub_sigs | rv::keys | rs::to<std::vector<std::string>>);
+                      sub_sigs | rv::transform(&NamedSignal::name_) |
+                          rs::to<std::vector<std::string>>);
       throw language::ParserError{};
   }
 
-  if (!sub_sig->second.exactlyMatches(proc_sig))
+  if (!sub_sig->signal_spec_.exactlyMatches(proc_sig))
   {
 	errSignalBind(proc_sig, sub_spec_name, sub_sigs, is_input); 
     throw language::ParserError{};
   }
 
-  proc_sig.updateIdentifier(sub_sig->second.identifier());
+  proc_sig.updateIdentifier(sub_sig->signal_spec_.identifier());
   return true;
 }
 
@@ -466,12 +467,12 @@ void
   auto &proc_sigs = is_input ? io_.inputs_ : io_.outputs_;
   for (auto &proc_name_sig : proc_sigs)
   {
-    auto &proc_sig = proc_name_sig.second;
+    auto &proc_sig = proc_name_sig.signal_spec_;
     if (!attemptExplicitBind(proc_sig, sub_sigs, sub_spec_name, is_input))
     {
       std::string io_type = is_input ? "input" : "output";
       errInvalidToken(name_token_,
-                      io_type + " signal " + proc_name_sig.first +
+                      io_type + " signal " + proc_name_sig.name_ +
                           " is not bound to an " + io_type + " signal of " +
                           sub_spec_name.expr_);
       throw language::ParserError{};
@@ -529,17 +530,17 @@ void
     sig_freq.signal_.updateIdentifier(
         rs::find_if(tags_.pre_,
                     [n = sig_freq.signal_.userName()](auto tag) {
-                      return tag.first == n;
+                      return tag.name_ == n;
                     })
-            ->second.identifier());
+            ->signal_spec_.identifier());
 
   for (auto &sig_freq : traces_.post_)
     sig_freq.signal_.updateIdentifier(
         rs::find_if(tags_.post_,
                     [n = sig_freq.signal_.userName()](auto tag) {
-                      return tag.first == n;
+                      return tag.name_ == n;
                     })
-            ->second.identifier());
+            ->signal_spec_.identifier());
 
   for (auto &es : nested_)
     es.second.e->recordTraces();
@@ -548,49 +549,6 @@ void
     for (auto &es : esvec.second.first)
       es.e->recordTraces();
 }
-
-/*
-void
-    ProcessSpec::parseParameters(language::Block block)
-{
-  for (auto over : block.overrides_)
-  {
-    auto name  = over.lhs_;
-    auto value = over.rhs_;
-
-    auto f = rs::find_if(parameters_,
-                         [&](auto param) { return param.first == name.expr_; });
-    if (f == parameters_.end())
-    {
-      errInvalidToken(
-          name,
-          "this does not override any parameters of " + name_,
-          parameters_ | rv::keys | rs::to<std::vector<std::string>>);
-      throw language::ParserError{};
-    }
-
-    ConfigurationPrimitive cp;
-    cp.parse(value.expr_);
-    if (cp.typeAsString() != f->second.typeAsString())
-    {
-      using namespace std::literals::string_literals;
-      errInvalidToken(value,
-                      (cp.typeAsString() == "NULL"
-                           ? "unable to parse configuration primitive"s
-                           : "type mismatch"s) +
-                          ", should be '" + f->second.typeAsString() + "'");
-      throw language::ParserError{};
-    }
-    f->second.parse(cp.valueAsString());
-    auto con = f->second.checkConstraints();
-    if (con)
-    {
-      errInvalidToken(value, "parameter constraint not satisfied: " + *con);
-      throw language::ParserError{};
-    }
-  }
-}
-*/
 
 void
     ProcessSpec::parseTraces(language::Block block)
@@ -610,26 +568,27 @@ void
 
     if (auto i = rs::find_if(
             tags_.pre_,
-            [name = tag_name.expr_](auto ns) { return ns.first == name; });
+            [name = tag_name.expr_](auto ns) { return ns.name_ == name; });
         i != rs::end(tags_.pre_))
     {
       traces_.pre_.push_back(
-          { i->second.fullName(), std::stoi(frequency.expr_) });
+          { i->signal_spec_.fullName(), std::stoi(frequency.expr_) });
     }
     else if (i = rs::find_if(
                  tags_.post_,
-                 [name = tag_name.expr_](auto ns) { return ns.first == name; });
+                 [name = tag_name.expr_](auto ns) { return ns.name_ == name; });
              i != rs::end(tags_.post_))
     {
       traces_.post_.push_back(
-          { i->second.fullName(), std::stoi(frequency.expr_) });
+          { i->signal_spec_.fullName(), std::stoi(frequency.expr_) });
     }
     else
     {
       errInvalidToken(
           tag_name,
           "this is not a tag recognised by " + name_,
-          rv::concat(tags_.pre_ | rv::keys, tags_.post_ | rv::keys) |
+          rv::concat(tags_.pre_ | rv::transform(&NamedSignal::name_),
+                     tags_.post_ | rv::transform(&NamedSignal::name_)) |
               rs::to<std::vector<std::string>>);
 
       throw language::ParserError{};
@@ -710,7 +669,7 @@ void
   {
     auto doesnt_contain_signal = [](auto sigs, auto sig_bind) {
       return rs::find_if(sigs, [&](auto sig) {
-               return sig_bind.lhs_.expr_ == sig.first;
+               return sig_bind.lhs_.expr_ == sig.name_;
              }) == rs::end(sigs);
     };
     if (doesnt_contain_signal(io_.inputs_, signal_bind) &&
@@ -752,7 +711,7 @@ std::vector<std::string>
   std::vector<std::string> lines;
   auto                     alignment = std::string(depth, ' ');
 
-  auto pad_signal = [&](auto sig) { return alignment + sig.second.fullName(); };
+  auto pad_signal = [&](auto sig) { return alignment + sig.signal_spec_.fullName(); };
 
   lines.push_back(alignment + "process:" + name_);
   lines.push_back(alignment + "PARAMETERS");
@@ -970,13 +929,13 @@ std::string
     {
       out << "   with pre-tag-constraints:\n";
       for (auto name : tags.pre_)
-        out << std::setw(20) << name.first << ":" << name.second.type() << "\n";
+        out << std::setw(20) << name.name_ << ":" << name.signal_spec_.type() << "\n";
     }
     if (!tags.post_.empty())
     {
       out << "   with post-tag-constraints:\n";
       for (auto name : tags.post_)
-        out << std::setw(20) << name.first << ":" << name.second.type() << "\n";
+        out << std::setw(20) << name.name_ << ":" << name.signal_spec_.type() << "\n";
     }
   }
   return out.str();

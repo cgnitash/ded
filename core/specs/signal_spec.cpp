@@ -53,7 +53,7 @@ SignalSpec::SignalSpec(std::string name, std::string idt)
 }
 
 SignalSpec::SignalSpec(std::string name, std::string id, std::string type)
-    : user_name_(name), additional_identifier_(id), full_type_(type)
+    : user_name_(name), internal_identifier_(id), full_type_(type)
 {
   // assume format is correct
   if (full_type_.empty())
@@ -84,12 +84,12 @@ SignalSpec::SignalSpec(std::string name, std::string id, std::string type)
   }
 }
 
-std::pair<std::string, SignalSpec>
-    toSignal(std::pair<std::string, std::string> user_spec)
+NamedSignal
+    toSignal(SignalConstraint user_constraint)
 {
-  auto name  = user_spec.first;
-  auto value = user_spec.second;
-  return { name, SignalSpec{ name, name, value } };
+  auto name  = user_constraint.name_;
+  auto type =  user_constraint.type_;
+  return { name, SignalSpec{ name, name, type } };
 }
 
 }   // namespace specs

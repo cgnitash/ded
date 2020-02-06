@@ -14,15 +14,18 @@ namespace specs
 class SignalSpec
 {
 private:
-  std::string user_name_;
-  std::string additional_identifier_;
-  std::string full_type_;
+  std::string user_name_{};
+  std::string internal_identifier_{};
+  std::string full_type_{};
 
-  std::string vector_type_;
-  std::string user_parameter_;
+  std::string vector_type_{};
+  std::string user_parameter_{};
   long        size_ = 0;
-  bool is_any_type_ = false, is_vector_ = false, is_any_vector_size_ = false,
-       is_user_set_vector_size_ = false, is_explicitly_bound_ = false;
+  bool        is_any_type_             = false;
+  bool        is_vector_               = false;
+  bool        is_any_vector_size_      = false;
+  bool        is_user_set_vector_size_ = false;
+  bool        is_explicitly_bound_     = false;
 
 public:
   SignalSpec() = default;
@@ -31,12 +34,13 @@ public:
 
   SignalSpec(std::string name, std::string idt);
 
+  // should be the only constructor
   SignalSpec(std::string name, std::string id, std::string type);
 
   auto
       fullName() const
   {
-    return user_name_ + ":" + additional_identifier_ + "-" + full_type_;
+    return user_name_ + ":" + internal_identifier_ + "-" + full_type_;
   }
 
   auto
@@ -55,16 +59,19 @@ public:
   {
     return user_name_;
   }
+
   auto
       identifier() const
   {
-    return additional_identifier_;
+    return internal_identifier_;
   }
+
   auto
       type() const
   {
     return full_type_;
   }
+
   auto
       userParameter() const
   {
@@ -74,7 +81,7 @@ public:
   void
       updateIdentifier(std::string id)
   {
-    additional_identifier_ = id;
+    internal_identifier_ = id;
   }
 
   void
@@ -89,11 +96,23 @@ public:
   void setExplicitlyBound() { is_explicitly_bound_ = true; }
 };
 
-std::pair<std::string, SignalSpec>
-    toSignal(std::pair<std::string, std::string> user_spec);
+struct NamedSignal
+{
+	std::string name_{};
+	SignalSpec signal_spec_{};
+};
+
+struct SignalConstraint
+{
+	std::string name_;
+    std::string type_;
+};
+
+NamedSignal
+    toSignal(SignalConstraint user_constraint);
 
 using SignalSpecSet = 
-  std::vector<std::pair<std::string, SignalSpec>>;
+  std::vector<NamedSignal>;
 
 // struct io_signals
 struct IO
@@ -109,6 +128,22 @@ struct Tags
 	public :
   SignalSpecSet pre_;
   SignalSpecSet post_;
+};
+
+enum class TagType
+{ pre, post
+};
+
+struct NamedTag
+{
+	std::string name_;
+	TagType type_;
+};
+
+struct TagFlow
+{
+	NamedTag from_;
+	NamedTag to_;
 };
 }   // namespace specs
 }   // namespace ded

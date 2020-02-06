@@ -44,7 +44,6 @@ class SubstrateSpec
 
   std::string                                             name_;
   language::Token                                         name_token_;
-  //std::map<std::string, ConfigurationPrimitive>           parameters_;
   Parameters                                              parameters_;
   std::map<std::string, NestedSubstrateSpec>              nested_;
   std::map<std::string, std::vector<NestedSubstrateSpec>> nested_vector_;
@@ -82,16 +81,6 @@ public:
                     std::vector<Constraint<ArgumentType>> cons = {})
   {
 	parameters_.bind(name, value, cons);
-	  /*
-    if (parameters_.find(name) != parameters_.end())
-    {
-      std::cout << "User error: parameter " << name
-                << " has already been declared\n";
-      throw SpecError{};
-    }
-    parameters_[name].setValue(value);
-    parameters_[name].setConstraints(cons);
-  */
 	}
 
   template <typename T>
@@ -99,15 +88,6 @@ public:
       configureParameter(std::string name, T &value)
   {
     parameters_.configure(name, value); 
-	/*
-  if (parameters_.find(name) == parameters_.end())
-  {
-    std::cout << "User error: parameter " << name
-              << " has not been declared\n";
-    throw SpecError{};
-  }
-  parameters_[name].get_value(value);
-*/
   }
 
   void bindInput(std::string name, std::string value);
@@ -123,8 +103,8 @@ public:
   void bindSubstrate(
       std::string                                      name,
       SubstrateSpec                                    sub,
-      std::vector<std::pair<std::string, std::string>> input_constraints,
-      std::vector<std::pair<std::string, std::string>> output_constraints);
+      std::vector<SignalConstraint> input_constraints,
+      std::vector<SignalConstraint> output_constraints);
   void configureSubstrate(std::string name, SubstrateSpec &sub);
   //void parseParameters( language::Block);
   void parseNested( language::Block);

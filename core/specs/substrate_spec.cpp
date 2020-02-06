@@ -24,8 +24,8 @@ void
 void
     SubstrateSpec::configureInput(std::string name, std::string &value)
 {
-  auto i = rs::find_if(io_.inputs_, [=](auto ns) { return ns.first == name; });
-  value  = i->second.identifier();
+  auto i = rs::find_if(io_.inputs_, [=](auto ns) { return ns.name_ == name; });
+  value  = i->signal_spec_.identifier();
 }
 
 void
@@ -37,8 +37,8 @@ void
 void
     SubstrateSpec::configureOutput(std::string name, std::string &value)
 {
-  auto i = rs::find_if(io_.outputs_, [=](auto ns) { return ns.first == name; });
-  value  = i->second.identifier();
+  auto i = rs::find_if(io_.outputs_, [=](auto ns) { return ns.name_ == name; });
+  value  = i->signal_spec_.identifier();
 }
 
 void
@@ -94,8 +94,8 @@ void
     SubstrateSpec::bindSubstrate(
         std::string                                      substrate_name,
         SubstrateSpec                                    sub,
-        std::vector<std::pair<std::string, std::string>> input_constraints,
-        std::vector<std::pair<std::string, std::string>> output_constraints)
+        std::vector<SignalConstraint> input_constraints,
+        std::vector<SignalConstraint> output_constraints)
 {
   if (nested_.find(substrate_name) != nested_.end())
   {
@@ -158,7 +158,7 @@ void
   auto valid_signals =
       is_input ? sub_spec.getIO().inputs_ : sub_spec.getIO().outputs_;
   for (auto sig : valid_signals)
-    std::cout << ss_left_padding << sig.second.diagnosticName() << std::endl;
+    std::cout << ss_left_padding << sig.signal_spec_.diagnosticName() << std::endl;
   throw SpecError{};
 }
 
@@ -176,9 +176,9 @@ void
   auto sink_tags_copy = sink_tags;
   for (auto &n_tag : source_tags)
   {
-    auto &src     = n_tag.second;
+    auto &src     = n_tag.signal_spec_;
     auto  matches = rs::count_if(sink_tags_copy, [sig = src](auto ns) {
-      return ns.second.exactlyMatches(sig);
+      return ns.signal_spec_.exactlyMatches(sig);
     });
     if (matches > 1)
     {
@@ -191,11 +191,11 @@ void
     }
 
     rs::find_if(sink_tags,
-                [sig = src](auto ns) { return ns.second.exactlyMatches(sig); })
-        ->second.updateIdentifier(src.identifier());
+                [sig = src](auto ns) { return ns.signal_spec_.exactlyMatches(sig); })
+        ->signal_spec_.updateIdentifier(src.identifier());
 
     sink_tags_copy.erase(rs::find_if(sink_tags_copy, [sig = src](auto ns) {
-      return ns.second.exactlyMatches(sig);
+      return ns.signal_spec_.exactlyMatches(sig);
     }));
   }
 }
@@ -219,9 +219,9 @@ void
 
   for (auto &n_sig : io_.inputs_)
   {
-    auto &in_sig  = n_sig.second;
+    auto &in_sig  = n_sig.signal_spec_;
     auto  matches = rs::count_if(ios.inputs_, [sig = in_sig](auto ns) {
-      return ns.second.exactlyMatches(sig);
+      return ns.signal_spec_.exactlyMatches(sig);
     });
     if (matches > 1)
     {
@@ -232,23 +232,23 @@ void
     {
       std::cout << "error: no input signals match exactly (convertible signals "
                    "not supported yet)\n  "
-                << n_sig.second.fullName() << "\nviable candidates";
+                << n_sig.signal_spec_.fullName() << "\nviable candidates";
       for (auto sig : ios.inputs_)
-        std::cout << "\n    " << sig.second.fullName();
+        std::cout << "\n    " << sig.signal_spec_.fullName();
       throw SpecError{};
     }
     auto i = rs::find_if(ios.inputs_, [sig = in_sig](auto ns) {
-      return ns.second.exactlyMatches(sig);
+      return ns.signal_spec_.exactlyMatches(sig);
     });
-    in_sig.updateIdentifier(i->second.identifier());
+    in_sig.updateIdentifier(i->signal_spec_.identifier());
     ios.inputs_.erase(i);
   }
 
   for (auto &n_sig : io_.outputs_)
   {
-    auto &out_sig = n_sig.second;
+    auto &out_sig = n_sig.signal_spec_;
     auto  matches = rs::count_if(ios.outputs_, [sig = out_sig](auto ns) {
-      return ns.second.exactlyMatches(sig);
+      return ns.signal_spec_.exactlyMatches(sig);
     });
     if (matches > 1)
     {
@@ -259,58 +259,18 @@ void
     {
       std::cout << "error: no input signals match exactly (convertible signals "
                    "not supported yet)\n  "
-                << n_sig.second.fullName() << "\nviable candidates";
+                << n_sig.signal_spec_.fullName() << "\nviable candidates";
       for (auto sig : ios.outputs_)
-        std::cout << "\n    " << sig.second.fullName();
+        std::cout << "\n    " << sig.signal_spec_.fullName();
       throw SpecError{};
     }
     auto i = rs::find_if(ios.outputs_, [sig = out_sig](auto ns) {
-      return ns.second.exactlyMatches(sig);
+      return ns.signal_spec_.exactlyMatches(sig);
     });
-    out_sig.updateIdentifier(i->second.identifier());
+    out_sig.updateIdentifier(i->signal_spec_.identifier());
     ios.outputs_.erase(i);
   }
 }
-
-/*
-void
-    SubstrateSpec::parseParameters(language::Block block)
-{
-  for (auto over : block.overrides_)
-  {
-    auto name  = over.lhs_;
-    auto value = over.rhs_;
-
-    auto f = rs::find_if(parameters_,
-                         [&](auto param) { return param.first == name.expr_; });
-    if (f == parameters_.end())
-    {
-      errInvalidToken(name,
-                      "this does not override any parameters of " + name_,
-                      parameters_ | rv::keys |
-                          rs::to<std::vector<std::string>>);
-      throw language::ParserError{};
-    }
-
-    ConfigurationPrimitive cp;
-    cp.parse(value.expr_);
-    if (cp.typeAsString() != f->second.typeAsString())
-    {
-      errInvalidToken(
-          value, "type mismatch, should be " + f->second.typeAsString());
-      throw language::ParserError{};
-    }
-    f->second.parse(cp.valueAsString());
-    auto con = f->second.checkConstraints();
-    if (con)
-    {
-      errInvalidToken(value,
-                             "parameter constraint not satisfied: " + *con);
-      throw language::ParserError{};
-    }
-  }
-}
-*/
 
 void
     SubstrateSpec::parseNested( language::Block block)
@@ -430,7 +390,7 @@ std::vector<std::string>
   std::vector<std::string> lines;
   auto                     alignment = std::string(depth, ' ');
 
-  auto pad_signal = [&](auto sig) { return alignment + sig.second.fullName(); };
+  auto pad_signal = [&](auto sig) { return alignment + sig.signal_spec_.fullName(); };
 
   lines.push_back(alignment + "substrate:" + name_);
   lines.push_back(alignment + "PARAMETERS");
@@ -570,17 +530,17 @@ void
 {
   for (auto &n_sig : io_.inputs_)
     for (auto &[param, cp] : parameters_.parameters_)
-      if (cp.typeAsString() == "long" && param == n_sig.second.userParameter())
+      if (cp.typeAsString() == "long" && param == n_sig.signal_spec_.userParameter())
       {
-        n_sig.second.instantiateUserParameter(std::stol(cp.valueAsString()));
-        n_sig.second.updateIdentifier("~sig" + std::to_string(sig_count++));
+        n_sig.signal_spec_.instantiateUserParameter(std::stol(cp.valueAsString()));
+        n_sig.signal_spec_.updateIdentifier("~sig" + std::to_string(sig_count++));
       }
   for (auto &n_sig : io_.outputs_)
     for (auto &[param, cp] : parameters_.parameters_)
-      if (cp.typeAsString() == "long" && param == n_sig.second.userParameter())
+      if (cp.typeAsString() == "long" && param == n_sig.signal_spec_.userParameter())
       {
-        n_sig.second.instantiateUserParameter(std::stol(cp.valueAsString()));
-        n_sig.second.updateIdentifier("~sig" + std::to_string(sig_count++));
+        n_sig.signal_spec_.instantiateUserParameter(std::stol(cp.valueAsString()));
+        n_sig.signal_spec_.updateIdentifier("~sig" + std::to_string(sig_count++));
       }
 }
 
