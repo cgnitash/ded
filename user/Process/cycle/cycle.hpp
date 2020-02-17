@@ -25,7 +25,8 @@ public:
 
     es.bindProcess("world", world_);
 
-    es.bindTagEquality({ "world", "pre" }, { "world", "post" });
+    es.bindTagEquality({ "world", ded::specs::TagType::pre },
+                       { "world", ded::specs::TagType::post });
 
     return es;
   }

@@ -31,42 +31,6 @@ EncodingSpec::EncodingSpec( language::Block block)
   *this = ALL_ENCODING_SPECS.at(block_name);
 
   parameters_.loadFromSpec(block.overrides_, name_);
-  /*
-  for (auto over : block.overrides_)
-  {
-    auto name  = over.lhs_;
-    auto value = over.rhs_;
-
-    auto f = rs::find_if(
-        parameters_, [&](auto param) { return param.first == name.expr_; });
-    if (f == parameters_.end())
-    {
-      errInvalidToken(name,
-                      "this does not override any parameters of " + name_,
-                      parameters_ | rv::keys |
-                          rs::to<std::vector<std::string>>);
-      throw language::ParserError{};
-    }
-
-    ConfigurationPrimitive cp;
-    cp.parse(value.expr_);
-    if (cp.typeAsString() != f->second.typeAsString())
-    {
-      errInvalidToken(
-          value, "type mismatch, should be " + f->second.typeAsString());
-      throw language::ParserError{};
-    }
-    f->second.parse(cp.valueAsString());
-    auto con = f->second.checkConstraints();
-    if (con)
-    {
-      errInvalidToken(
-          value,
-              "parameter constraint not satisfied: " + *con );
-      throw language::ParserError{};
-    }
-  }
-	*/
 }
 
 std::vector<std::string>

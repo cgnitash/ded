@@ -92,5 +92,15 @@ NamedSignal
   return { name, SignalSpec{ name, name, type } };
 }
 
+std::ostream &
+    operator<<(std::ostream &out, TagType const &t)
+{
+  if (t == TagType::pre)
+	out << "pre";
+  else
+	out << "post";
+  return out;
+}
+
 }   // namespace specs
 }   // namespace ded

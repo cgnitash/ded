@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include "../utilities/term_colours.hpp"
 
@@ -133,6 +134,8 @@ struct Tags
 enum class TagType
 { pre, post
 };
+
+std::ostream &operator<<(std::ostream &out, TagType const &t);
 
 struct NamedTag
 {

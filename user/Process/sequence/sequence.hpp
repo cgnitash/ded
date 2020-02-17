@@ -21,9 +21,10 @@ public:
 
 	es.bindProcess("second",second_);
 
-	es.bindTagEquality({"first", "post"}, {"second", "pre"});
+        es.bindTagEquality({ "first", ded::specs::TagType::post },
+                           { "second", ded::specs::TagType::pre });
 
-    return es;
+        return es;
   }
 
   void configure(ded::specs::ProcessSpec es)

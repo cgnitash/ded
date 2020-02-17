@@ -70,14 +70,11 @@ class ProcessSpec
   std::map<std::string, std::pair<std::vector<NestedProcessSpec>, Tags>>
       nested_vector_;
 
-  std::vector<std::pair<std::pair<std::string, std::string>,
-                        std::pair<std::string, std::string>>>
+  std::vector<TagFlow>
       tag_flow_equalities_;
-  std::vector<std::pair<std::pair<std::string, std::string>,
-                        std::pair<std::string, std::string>>>
+  std::vector<TagFlow>
       tag_flow_inequalities_;
 
-  //void parseParameters( language::Block);
   void parseSignalBinds( language::Block);
   void parseTraces( language::Block);
   void parseNested( language::Block);
@@ -203,8 +200,7 @@ public:
       std::string                                      proc_name,
       std::vector<SignalConstraint> post_constraints);
 
-  void bindTagEquality(std::pair<std::string, std::string> x,
-                       std::pair<std::string, std::string> y);
+  void bindTagEquality(NamedTag x, NamedTag y);
 
   std::vector<std::string> serialise(long, bool) const;
   ProcessSpec              deserialise(std::vector<std::string>);

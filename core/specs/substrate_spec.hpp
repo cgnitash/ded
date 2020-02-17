@@ -106,7 +106,6 @@ public:
       std::vector<SignalConstraint> input_constraints,
       std::vector<SignalConstraint> output_constraints);
   void configureSubstrate(std::string name, SubstrateSpec &sub);
-  //void parseParameters( language::Block);
   void parseNested( language::Block);
   void parseNestedVector( language::Block);
 

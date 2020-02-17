@@ -192,14 +192,11 @@ void
 }
 
 void
-    ProcessSpec::bindTagEquality(std::pair<std::string, std::string> x,
-                                 std::pair<std::string, std::string> y)
+    ProcessSpec::bindTagEquality(NamedTag x,
+                                 NamedTag y)
 {
-  auto is_pre_post = [](auto s) { return s == "pre" || s == "post"; };
-
-  if (nested_.find(x.first) == nested_.end() ||
-      nested_.find(y.first) == nested_.end() || !is_pre_post(x.second) ||
-      !is_pre_post(y.second))
+  if (nested_.find(x.name_) == nested_.end() ||
+      nested_.find(y.name_) == nested_.end())
   {
     std::cout << "User error: cannot bind tag equality \n";
     throw SpecError{};
@@ -283,11 +280,12 @@ void
 
   for (auto [source, sink] : tag_flow_equalities_)
   {
-    auto &source_tags = source.second == "pre"
-                            ? nested_[source.first].e->tags_.pre_
-                            : nested_[source.first].e->tags_.post_;
-    auto &sink_tags = sink.second == "pre" ? nested_[sink.first].e->tags_.pre_
-                                           : nested_[sink.first].e->tags_.post_;
+    auto &source_tags = source.type_ == TagType::pre
+                            ? nested_[source.name_].e->tags_.pre_
+                            : nested_[source.name_].e->tags_.post_;
+    auto &sink_tags = sink.type_ == TagType::pre
+                          ? nested_[sink.name_].e->tags_.pre_
+                          : nested_[sink.name_].e->tags_.post_;
     matchTags(source_tags, sink_tags, tag_count);
   }
 }
@@ -884,13 +882,13 @@ std::string
   if (!tag_flow_equalities_.empty() || !tag_flow_inequalities_.empty())
   {
     out << "   with tag-flow-constraints:\n";
-    for (auto name : tag_flow_equalities_)
-      out << std::setw(20) << name.first.second << "(" << name.first.first
-          << ") <=> " << name.second.second << "(" << name.second.first
+    for (auto tag_flow : tag_flow_equalities_)
+      out << std::setw(20) << tag_flow.from_.type_ << "(" << tag_flow.from_.name_
+          << ") <=> " << tag_flow.to_.type_ << "(" << tag_flow.to_.name_
           << ")\n";
-    for (auto name : tag_flow_inequalities_)
-      out << std::setw(20) << name.first.second << "(" << name.first.first
-          << ") <!=> " << name.second.second << "(" << name.second.first
+    for (auto tag_flow : tag_flow_inequalities_)
+      out << std::setw(20) << tag_flow.from_.type_ << "(" << tag_flow.from_.name_
+          << ") <!=> " << tag_flow.to_.type_ << "(" << tag_flow.to_.name_
           << ")\n";
   }
   return out.str();
