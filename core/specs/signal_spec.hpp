@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <regex>
 
 #include "../utilities/term_colours.hpp"
 
@@ -11,6 +12,10 @@ namespace ded
 {
 namespace specs
 {
+
+  inline static const std::regex valid_signal_type_{
+    R"~~((\w+)?|<(\w+)?,(\w+|\d+|_)?>)~~"
+  };
 
 class SignalSpec
 {
@@ -26,7 +31,9 @@ private:
   bool        is_vector_               = false;
   bool        is_any_vector_size_      = false;
   bool        is_user_set_vector_size_ = false;
+  bool        is_placeholder_vector_size_ = false;
   bool        is_explicitly_bound_     = false;
+
 
 public:
   SignalSpec() = default;
@@ -91,10 +98,21 @@ public:
     size_ = size;
   }
 
+  bool
+      isExplicitlyBound()
+  {
+    return is_explicitly_bound_;
+  }
+
+  void
+      setExplicitlyBound()
+  {
+    is_explicitly_bound_ = true;
+  }
+
+  void updatePlaceholders(SignalSpec);
   bool exactlyMatches(SignalSpec);
   bool convertibleTo(SignalSpec);
-  bool isExplicitlyBound() { return is_explicitly_bound_; }
-  void setExplicitlyBound() { is_explicitly_bound_ = true; }
 };
 
 struct NamedSignal

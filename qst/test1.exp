@@ -8,8 +8,8 @@ enc = $encoding
 
 e = $markov_brain
 {
-     hiddens =   [ 2 3 4 ] 
-     #hiddens =    2
+     #hiddens =   [ 2 3 4 ] 
+     hiddens =    2
 	 outputs =  2 
 	 inputs = 4
 	 genome = !enc
@@ -30,8 +30,9 @@ fors = $sequence
      first 	= 	$forager 	
 				{ 
 				  ? food_eaten 5 
-				line_of_sight : in_sense
-				action : out_sense
+				_OUT : " out_sense > vd_vb > vb_vd > action "
+				_IN : " line_of_sight > vd_vb > vb_vd > in_sense "
+				#action : out_sense
 				}
      second = $elite_replacement  {  strength = 0.4 }
 }

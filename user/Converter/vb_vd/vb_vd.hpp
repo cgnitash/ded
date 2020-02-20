@@ -7,11 +7,11 @@
 #include "../../../components.hpp"
 #include "../../../core/utilities/utilities.hpp"
 
-class vd_vb
+class vb_vd
 {
 
 public:
-  vd_vb()
+  vb_vd()
   {
     configure(publishConfiguration());
   }
@@ -21,8 +21,8 @@ public:
   {
     ded::specs::ConverterSpec es;
 
-    es.bindFrom("<double,_>");
-    es.bindTo( "<bool,_>");
+    es.bindTo("<double,_>");
+    es.bindFrom( "<bool,_>");
 
 
     return es;
@@ -37,7 +37,7 @@ public:
   ded::concepts::Signal
       convert(ded::concepts::Signal s)
   {
-    auto v = std::any_cast<std::vector<double>>(s);
-    return v | rv::transform(ded::utilities::Bit) | rs::to<std::vector<bool>>;
+    auto v = std::any_cast<std::vector<bool>>(s);
+    return v |  rs::to<std::vector<double>>;
   }
 };

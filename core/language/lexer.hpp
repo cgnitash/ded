@@ -7,9 +7,15 @@
 
 #include "token.hpp"
 
-namespace ded 
+namespace ded
 {
-	namespace language {
+namespace language
+{
+// order of options matter
+inline static const std::regex valid_symbol_{
+  R"~~(^(\s+|\[|\]|<|>|\{|\}|\=|\?|:|\$\w+|\!\w+|\^[-\w]+|"[^"]*"|[\w\.]+))~~"
+};
+
 class Lexer
 {
 	private:
@@ -39,4 +45,5 @@ class Lexer
   }
 };
 
-}}
+}   // namespace language
+}   // namespace ded

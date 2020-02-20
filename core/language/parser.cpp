@@ -141,17 +141,20 @@ void
     Parser::attemptSignalBindOverride(Block &current, int &begin)
 {
   auto const tokens = lexer_.getTokens();
-  if (tokens[begin].type_ != TokenType::word)
+  if (tokens[begin + 2].type_ != TokenType::word)
+  {
+    errInvalidToken(tokens[begin + 2], "expected signal conversion sequence here");
+    throw ParserError{};
+  }
+  if (tokens[begin].expr_ == "_OUT")
+    current.output_signal_binds_.push_back(tokens[begin + 2]);
+  else if (tokens[begin].expr_ == "_IN")
+    current.input_signal_binds_.push_back(tokens[begin + 2]);
+  else
   {
     errInvalidToken(tokens[begin], "expected signal name here");
     throw ParserError{};
   }
-  if (tokens[begin + 2].type_ != TokenType::word)
-  {
-    errInvalidToken(tokens[begin + 2], "expected signal name here");
-    throw ParserError{};
-  }
-  current.signal_binds_.push_back({ tokens[begin], tokens[begin + 2] });
   begin += 3;
 }
 

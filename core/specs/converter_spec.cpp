@@ -109,8 +109,29 @@ std::string
   for (auto [parameter, value] : parameters_.parameters_)
     out << std::setw(16) << parameter << " : " << value.valueAsString() << "\n";
 
+  out << std::setw(16) << "input" << " : " << args_.first.type() << "\n";
+  out << std::setw(16) << "output" << " : " << args_.second.type() << "\n";
   out << "}\n";
   return out.str();
 }
+
+/*
+ConverterSink parseConversionSequence(language::Token token){
+
+	auto expression = token.expr_.substr(1, token.expr_.size() - 2);
+
+	auto lst = expression | rv::split('>') | rs::to<std::vector<std::string>>;
+
+    auto sink = lst.back();
+	
+    lst.pop_back();
+
+	for (auto &convert : lst)
+		;	
+
+
+}
+*/
+
 }   // namespace specs
 }   // namespace ded

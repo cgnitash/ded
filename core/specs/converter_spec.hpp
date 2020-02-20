@@ -52,6 +52,11 @@ public:
     return parameters_;
   }
 
+  auto
+      args() const
+  {
+    return args_;
+  }
 
   template <typename ArgumentType>
   void
@@ -60,16 +65,6 @@ public:
                     std::vector<Constraint<ArgumentType>> cons = {})
   {
 	parameters_.bind(name, value, cons);
-	  /*
-    if (parameters_.find(name) != parameters_.end())
-    {
-      std::cout << "User error: parameter " << name
-                << " has already been declared\n";
-      throw SpecError{};
-    }
-    parameters_[name].setValue(value);
-	parameters_[name].setConstraints(cons);
-*/
   }
 
   template <typename T>
@@ -77,15 +72,6 @@ public:
       configureParameter(std::string name, T &value)
   {
     parameters_.configure(name, value); 
-	  /*
-    if (parameters_.find(name) == parameters_.end())
-    {
-      std::cout << "User error: parameter " << name
-                << " has not been declared\n";
-      throw SpecError{};
-    }
-    parameters_[name].get_value(value);
- */
   }
 
   void bindFrom(std::string from)
@@ -107,5 +93,14 @@ public:
   friend class concepts::Converter;
 };
 
+/*
+struct ConverterSink
+{
+std::vector<ConverterSpec> sequence_;
+std::string sink_;
+};
+
+ConverterSink parseConversionSequence(language::Token);
+*/
 }   // namespace specs
 }   // namespace ded

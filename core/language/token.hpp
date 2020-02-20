@@ -65,7 +65,9 @@ struct Block
     int begin_{}, end_{};
   } range_{};
   std::vector<TokenAssignment> overrides_{};
-  std::vector<TokenAssignment> signal_binds_{};
+  //std::vector<TokenAssignment> signal_binds_{};
+  std::vector<Token> input_signal_binds_{};
+  std::vector<Token> output_signal_binds_{};
   std::vector<TokenAssignment> traces_{};
   struct TokenBlocks
   {

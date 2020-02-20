@@ -381,10 +381,169 @@ void
       es.e->bindSubstrateIO(sub_spec);
 
   auto ios = sub_spec.getIO();
-  bindSignalsTo(ios.inputs_, sub_spec.nameToken(), true);
-  bindSignalsTo(ios.outputs_, sub_spec.nameToken(), false);
+  for (auto &oc : input_conversion_sequence_)
+    bindInputSignal(oc, ios.inputs_, sub_spec.nameToken());
+  for (auto &oc : output_conversion_sequence_)
+    bindOutputSignal(oc, ios.outputs_, sub_spec.nameToken());
 }
 
+void
+    ProcessSpec::bindInputSignal(language::Token signal_conversion_sequence,
+                                 SignalSpecSet   sigs,
+                                 language::Token sub_spec_name)
+{
+
+  auto sequence = signal_conversion_sequence.expr_;
+  sequence.erase(rs::remove(sequence, ' '), rs::end(sequence));
+  auto expression = sequence.substr(1, sequence.size() - 2);
+
+  auto lst = expression | rv::split('>') | rs::to<std::vector<std::string>>;
+
+  for (auto v : lst)
+    std::cout << v << "\n";
+
+  if (lst.size() < 2)
+  {
+    errInvalidToken(signal_conversion_sequence,
+                    "unrecognized conversion sequence");
+    throw language::ParserError{};
+  }
+
+  auto source = rs::find_if(io_.inputs_,
+                            [&](auto sig) { return sig.name_ == lst.front(); });
+  if (source == rs::end(io_.inputs_))
+  {
+    errInvalidToken(signal_conversion_sequence,
+                    "source " + lst.front() +
+                        " is not an input signal provided by " + name_);
+    throw language::ParserError{};
+  }
+
+  auto sink =
+      rs::find_if(sigs, [&](auto sig) { return sig.name_ == lst.back(); });
+  if (sink == rs::end(sigs))
+  {
+    errInvalidToken(signal_conversion_sequence,
+                    "sink " + lst.back() +
+                        " is not an input signal provided by " +
+                        sub_spec_name.expr_);
+    throw language::ParserError{};
+  }
+
+  auto sig = source->signal_spec_;
+
+  for (auto i = 1u; i < lst.size() - 1; i++)
+  {
+    if (!config_manager::isConverterBlock(lst[i]))
+    {
+      errInvalidToken(signal_conversion_sequence,
+                      lst[i] + " is not a converter component");
+      throw language::ParserError{};
+    }
+    auto [in, out] = ALL_CONVERTER_SPECS[lst[i]].args();
+
+    if (!sig.convertibleTo(in))
+    {
+      errInvalidToken(signal_conversion_sequence,
+                      lst[i - 1] + " result cannot be converted to input of " +
+                          lst[i]);
+      throw language::ParserError{};
+    }
+
+    in.updatePlaceholders(sig);
+    out.updatePlaceholders(in);
+    sig = out;
+  }
+
+  if (!sig.convertibleTo(sink->signal_spec_))
+  {
+    errInvalidToken(signal_conversion_sequence,
+                    lst[lst.size() - 2] + " result cannot be converted to " +
+                        sink->name_);
+    throw language::ParserError{};
+  }
+}
+
+void ProcessSpec::bindOutputSignal(
+    language::Token signal_conversion_sequence,
+    SignalSpecSet sigs,
+    language::Token sub_spec_name)
+{
+
+  auto sequence = signal_conversion_sequence.expr_;
+  sequence.erase(rs::remove(sequence, ' '), rs::end(sequence));
+  auto expression = sequence.substr(1, sequence.size() - 2);
+
+  auto lst = expression | rv::split('>') | rs::to<std::vector<std::string>>;
+
+  for (auto v : lst)
+    std::cout << v << "\n";
+
+  if (lst.size() < 2)
+  {
+    errInvalidToken(signal_conversion_sequence,
+                    "unrecognized conversion sequence");
+    throw language::ParserError{};
+  }
+
+  auto source =
+      //rs::find_if(sigs, [&](auto sig) { return sig.name_ == lst.front(); });
+      rs::find(sigs, lst.front(), &NamedSignal::name_);
+ // [&](auto sig) { return sig.name_ == lst.front(); });
+  if (source == rs::end(sigs))
+  {
+    errInvalidToken(signal_conversion_sequence,
+                    "sink " + lst.front() +
+                        " is not an output signal provided by " +
+                        sub_spec_name.expr_);
+    throw language::ParserError{};
+  }
+
+  auto sink = rs::find_if(io_.outputs_,
+                            [&](auto sig) { return sig.name_ == lst.back(); });
+  if (sink == rs::end(io_.outputs_))
+  {
+    errInvalidToken(signal_conversion_sequence,
+                    "source " + lst.back() +
+                        " is not an output signal provided by " + name_);
+    throw language::ParserError{};
+  }
+
+  auto sig = source->signal_spec_;
+
+  for (auto i = 1u; i < lst.size() - 1; i++)
+  {
+    if (!config_manager::isConverterBlock(lst[i]))
+    {
+      errInvalidToken(signal_conversion_sequence,
+                      lst[i] + " is not a converter component");
+      throw language::ParserError{};
+    }
+    auto [in, out] = ALL_CONVERTER_SPECS[lst[i]].args();
+
+    if (!sig.convertibleTo(in))
+    {
+      errInvalidToken(signal_conversion_sequence,
+                      lst[i - 1] + " result cannot be converted to input of " +
+                          lst[i]);
+      throw language::ParserError{};
+    }
+
+    in.updatePlaceholders(sig);
+    out.updatePlaceholders(in);
+    sig = out;
+  }
+
+  if (!sig.convertibleTo(sink->signal_spec_))
+  {
+    errInvalidToken(signal_conversion_sequence,
+                    lst[lst.size() - 2] + " result cannot be converted to " +
+                        sink->name_);
+    throw language::ParserError{};
+  }
+}
+
+/*
 void
     ProcessSpec::errSignalBind(SignalSpec      proc_sig,
                                language::Token sub_spec_name,
@@ -432,6 +591,8 @@ bool
   if (sig_bind == rs::end(signal_binds_))
     return false;
 
+  auto conversion_sequence = specs::parseConversionSequence( sig_bind->rhs_.expr_);
+
   auto sub_sig = rs::find_if(sub_sigs, [sig_bind](auto ns) {
     return ns.name_ == sig_bind->rhs_.expr_;
   });
@@ -476,7 +637,7 @@ void
       throw language::ParserError{};
     }
 
-		/*
+	// BELOW SHOULD BE REMOVED
       continue;
     auto matches = rs::count_if(sub_sigs, [proc_sig](auto ns) {
       return ns.second.exactlyMatches(proc_sig);
@@ -489,10 +650,9 @@ void
       return ns.second.exactlyMatches(proc_sig);
     });
     proc_sig.updateIdentifier(i->second.identifier());
-  	*/
 	}
 }
-
+*/
 std::vector<std::pair<Trace, std::string>>
     ProcessSpec::queryTraces()
 {
@@ -661,6 +821,9 @@ void
 void
     ProcessSpec::parseSignalBinds(language::Block block)
 {
+	input_conversion_sequence_ = block.input_signal_binds_;
+	output_conversion_sequence_ = block.output_signal_binds_;
+	/*
   signal_binds_ = block.signal_binds_;
 
   for (auto signal_bind : signal_binds_)
@@ -678,6 +841,7 @@ void
       throw language::ParserError{};
     }
   }
+   */
 }
 
 ProcessSpec::ProcessSpec(language::Block block)

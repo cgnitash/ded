@@ -61,10 +61,12 @@ class ProcessSpec
   Parameters                                              parameters_;
 
   IO io_;
+  std::vector<language::Token> input_conversion_sequence_;
+  std::vector<language::Token> output_conversion_sequence_;
 
   Tags tags_;
 
-  std::vector<language::TokenAssignment> signal_binds_;
+  //std::vector<language::TokenAssignment> signal_binds_;
 
   std::map<std::string, NestedProcessSpec>              nested_;
   std::map<std::string, std::pair<std::vector<NestedProcessSpec>, Tags>>
@@ -86,6 +88,7 @@ class ProcessSpec
   void updateAndMatchTags(SignalSpecSet &source_tags,
                           SignalSpecSet &sink_tags,
                           int &          tag_count);
+  /*
   bool attemptExplicitBind(SignalSpec &    sig,
                            SignalSpecSet   sub_sigs,
                            language::Token sub_spec_name,
@@ -97,7 +100,16 @@ class ProcessSpec
   void bindSignalsTo(SignalSpecSet sigs,
                      language::Token   sub_spec_name,
                      bool          is_input);
-  void updateNestedConstraints(SignalSpecSet &constraints);
+  */
+
+  void bindOutputSignal(language::Token signal_conversion_sequence,
+                        SignalSpecSet   sigs,
+                        language::Token sub_spec_name);
+  void bindInputSignal(language::Token signal_conversion_sequence,
+                       SignalSpecSet   sigs,
+                       language::Token sub_spec_name);
+
+  void        updateNestedConstraints(SignalSpecSet &constraints);
   void matchTagFlowEqualities(int &tag_count);
   void matchNestedTagConstraints(int &tag_count);
   std::string prettyPrintNested();

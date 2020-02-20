@@ -27,7 +27,7 @@ SpecType
   if (isEncodingBlock(name))
     return SpecType::encoding;
   if (isConverterBlock(name))
-    return SpecType::encoding;
+    return SpecType::converter;
   return SpecType::UNKNOWN;
 }
 
