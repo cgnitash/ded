@@ -21,8 +21,10 @@ class forager {
 
   std::string food_eaten_tag_ = "double";
 
-  std::string org_input_los_tag_     = "<double,sensor_range>";
-  std::string org_output_action_tag_ = "<double,2>";
+  //std::string org_input_los_tag_     = "<double,sensor_range>";
+  //std::string org_output_action_tag_ = "<double,2>";
+  ded::specs::SignalConversionSequence input_los;
+  ded::specs::SignalConversionSequence output_action;
 
   long grid_size_    = 10;
   long sensor_range_ = 4;
@@ -112,12 +114,13 @@ public:
     es.configureParameter("sensor_range",sensor_range_);
     es.configureParameter("direction",directional_);
 
-    resources_ = std::vector(grid_size_, std::vector(grid_size_, 0));
 
     es.configurePostTag("food_eaten",food_eaten_tag_);
 
-    es.configureInput("line_of_sight",org_input_los_tag_);
-    es.configureOutput("action",org_output_action_tag_);
+    es.configureInput("line_of_sight",input_los);
+    es.configureOutput("action",output_action);
+
+    resources_ = std::vector(grid_size_, std::vector(grid_size_, 0));
   }
 
   ded::concepts::Population evaluate(ded::concepts::Population);

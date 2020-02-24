@@ -21,12 +21,14 @@ void
   io_.inputs_.push_back({ name, SignalSpec{ name, name, value } });
 }
 
+/*
 void
     SubstrateSpec::configureInput(std::string name, std::string &value)
 {
   auto i = rs::find_if(io_.inputs_, [=](auto ns) { return ns.name_ == name; });
   value  = i->signal_spec_.identifier();
 }
+*/
 
 void
     SubstrateSpec::bindOutput(std::string name, std::string value)
@@ -34,12 +36,14 @@ void
   io_.outputs_.push_back({ name, SignalSpec{ name, name, value } });
 }
 
+/*
 void
     SubstrateSpec::configureOutput(std::string name, std::string &value)
 {
   auto i = rs::find_if(io_.outputs_, [=](auto ns) { return ns.name_ == name; });
   value  = i->signal_spec_.identifier();
 }
+*/
 
 void
     SubstrateSpec::bindEncoding(std::string name, EncodingSpec e)

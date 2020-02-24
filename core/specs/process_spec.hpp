@@ -60,9 +60,13 @@ class ProcessSpec
   std::string                                   user_specified_name_;
   Parameters                                              parameters_;
 
+  // might not be required
   IO io_;
+  // since replaced by
   std::vector<language::Token> input_conversion_sequence_;
   std::vector<language::Token> output_conversion_sequence_;
+  SignalConversionSequence input_conversions_;
+  SignalConversionSequence output_conversions_;
 
   Tags tags_;
 
@@ -179,13 +183,13 @@ public:
       bindInput(std::string name, std::string value);
 
   void
-      configureInput(std::string name, std::string &value);
+      configureInput(std::string name, SignalConversionSequence &input);
 
   void
       bindOutput(std::string name, std::string value);
 
   void
-      configureOutput(std::string name, std::string &value);
+      configureOutput(std::string name, SignalConversionSequence &output);
 
   void bindProcess(std::string name, ProcessSpec proc);
 

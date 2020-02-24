@@ -44,7 +44,7 @@ void
 void
     markov_brain::input(std::string n, ded::concepts::Signal s)
 {
-  if (n == in_sense_)
+  if (n == "in_sense")
   {
     auto v = std::any_cast<std::vector<double>>(s);
     if (static_cast<long>(v.size()) != input_)
@@ -69,7 +69,7 @@ ded::concepts::Signal
     markov_brain::output(std::string n)
 {
 
-  if (n == out_sense_)
+  if (n ==  "out_sense")
   {
     return buffer_ | rs::copy | ra::slice(input_, input_ + output_);
   }

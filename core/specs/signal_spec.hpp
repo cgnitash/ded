@@ -13,9 +13,11 @@ namespace ded
 namespace specs
 {
 
-  inline static const std::regex valid_signal_type_{
-    R"~~((\w+)?|<(\w+)?,(\w+|\d+|_)?>)~~"
-  };
+using SignalConversionSequence = std::vector<std::vector<std::string>>;
+
+inline static const std::regex valid_signal_type_{
+  R"~~((\w+)?|<(\w+)?,(\w+|\d+|_)?>)~~"
+};
 
 class SignalSpec
 {

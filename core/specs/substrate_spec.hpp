@@ -92,9 +92,9 @@ public:
 
   void bindInput(std::string name, std::string value);
 
-  void configureInput(std::string name, std::string &value);
+  //void configureInput(std::string name, std::string &value);
   void bindOutput(std::string name, std::string value);
-  void configureOutput(std::string name, std::string &value);
+  //void configureOutput(std::string name, std::string &value);
   void bindEncoding(std::string name, EncodingSpec e);
   void configureEncoding(std::string name, EncodingSpec &e);
   void bindNestedSubstrates(std::string name, std::vector<SubstrateSpec> subs);

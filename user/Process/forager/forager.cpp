@@ -172,13 +172,13 @@ double
 
   ded::utilities::repeat(updates_, [&] {
     // feed input to org; inputs are 0s and 1s only
-    org.input(org_input_los_tag_,
+    org.input(input_los,
               directional_ ? signals_at(position, facing)
-                           : signals_at(position));
+                           : signals_at(position) );
     // run the org once
     org.tick();
     // read its outputs and interact with the process
-    interact(org.output(org_output_action_tag_), position, facing, score);
+    interact(org.output(output_action), position, facing, score);
     if (visualize_) visualize(vis_file, position, facing, score);
   });
 

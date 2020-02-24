@@ -20,6 +20,8 @@ namespace ded
 namespace concepts
 {
 
+//concepts::Converter  makeConverter(specs::ConverterSpec);
+
 // polymorphic wrapper for Substrates
 class Substrate
 {
@@ -125,16 +127,10 @@ public:
   }
 
   void
-      input(std::string n, Signal s)
-  {
-    self_->input_(n, s);
-  }
+      input( specs::SignalConversionSequence sequence, Signal s );
 
   Signal
-      output(std::string n)
-  {
-    return self_->output_(n);
-  }
+      output( specs::SignalConversionSequence sequence);
 
   void
       mutate()

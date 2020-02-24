@@ -8,8 +8,8 @@
 class markov_brain
 {
 
-  std::string in_sense_  = "<double,inputs>";
-  std::string out_sense_ = "<double,outputs>";
+  //std::string in_sense_  = "<double,inputs>";
+  //std::string out_sense_ = "<double,outputs>";
 
   ded::concepts::Encoding  genome_;
   ded::specs::EncodingSpec genome_spec_ = genome_.publishConfiguration();
@@ -66,9 +66,9 @@ public:
     es.configureParameter("outputs", output_);
     es.configureParameter("hiddens", hidden_);
 
-    es.configureInput("in_sense", in_sense_);
+   // es.configureInput("in_sense", in_sense_);
 
-    es.configureOutput("out_sense", out_sense_);
+    //es.configureOutput("out_sense", out_sense_);
 
     es.configureEncoding("genome", genome_spec_);
     genome_.configure(genome_spec_);

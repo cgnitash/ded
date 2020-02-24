@@ -47,10 +47,11 @@ void
 }
 
 void
-    ProcessSpec::configureInput(std::string name, std::string &value)
+    ProcessSpec::configureInput(std::string name, SignalConversionSequence &input)
 {
-  value = rs::find_if(io_.inputs_, [=](auto ns) { return ns.name_ == name; })
-              ->signal_spec_.identifier();
+	for (auto &sequence : input_conversions_)
+		if (sequence.front() == name)
+			input.push_back(sequence);
 }
 
 void
@@ -60,10 +61,11 @@ void
 }
 
 void
-    ProcessSpec::configureOutput(std::string name, std::string &value)
+    ProcessSpec::configureOutput(std::string name, SignalConversionSequence &output)
 {
-  value = rs::find_if(io_.outputs_, [=](auto ns) { return ns.name_ == name; })
-              ->signal_spec_.identifier();
+	for (auto &sequence : output_conversions_)
+		if (sequence.back() == name)
+			output.push_back(sequence);
 }
 void
     ProcessSpec::bindProcess(std::string name, ProcessSpec proc)
@@ -399,9 +401,6 @@ void
 
   auto lst = expression | rv::split('>') | rs::to<std::vector<std::string>>;
 
-  for (auto v : lst)
-    std::cout << v << "\n";
-
   if (lst.size() < 2)
   {
     errInvalidToken(signal_conversion_sequence,
@@ -462,6 +461,8 @@ void
                         sink->name_);
     throw language::ParserError{};
   }
+
+  input_conversions_.push_back(lst);
 }
 
 void ProcessSpec::bindOutputSignal(
@@ -475,9 +476,6 @@ void ProcessSpec::bindOutputSignal(
   auto expression = sequence.substr(1, sequence.size() - 2);
 
   auto lst = expression | rv::split('>') | rs::to<std::vector<std::string>>;
-
-  for (auto v : lst)
-    std::cout << v << "\n";
 
   if (lst.size() < 2)
   {
@@ -541,6 +539,8 @@ void ProcessSpec::bindOutputSignal(
                         sink->name_);
     throw language::ParserError{};
   }
+
+  output_conversions_.push_back(lst);
 }
 
 /*
@@ -881,9 +881,21 @@ std::vector<std::string>
     return alignment + parameter.first + ":" + parameter.second.valueAsString();
   });
   lines.push_back(alignment + "INPUTS");
-  rs::transform(io_.inputs_, rs::back_inserter(lines), pad_signal);
+  //rs::transform(io_.inputs_, rs::back_inserter(lines), pad_signal);
+  for (auto sequence : input_conversions_)
+  { 
+	  lines.push_back(alignment + sequence[0]);
+	  for (auto i = 1u; i < sequence.size(); i++)
+	 	 lines.push_back(alignment + " " + sequence[i]);
+  }
   lines.push_back(alignment + "OUTPUTS");
-  rs::transform(io_.outputs_, rs::back_inserter(lines), pad_signal);
+  //rs::transform(io_.outputs_, rs::back_inserter(lines), pad_signal);
+  for (auto sequence : output_conversions_)
+  { 
+	  lines.push_back(alignment + sequence[0]);
+	  for (auto i = 1u; i < sequence.size(); i++)
+	 	 lines.push_back(alignment + " " + sequence[i]);
+  }
   lines.push_back(alignment + "PRETAGS");
   rs::transform(tags_.pre_, rs::back_inserter(lines), pad_signal);
   lines.push_back(alignment + "POSTTAGS");
@@ -941,19 +953,75 @@ ProcessSpec
     parameters_.parameters_[l.substr(0, p)] = c;
   }
 
-  for (++f; *f != "OUTPUTS"; f++)
+  for (++f; *f != "OUTPUTS";)
   {
-    auto l = *f;
-    auto p = l.find(':');
-    io_.inputs_.push_back({ l.substr(0, p), SignalSpec{ l } });
+    auto p =
+        std::find_if(f + 1, pop_dump.end(), [](auto l) { return l[0] != ' '; });
+
+	std::vector<std::string> sequence;
+	sequence.push_back(*f);
+
+    std::transform(f + 1, p, std::back_inserter(sequence), [](auto l) { return l.substr(1); });
+
+	input_conversions_.push_back(sequence);
+	/*
+    ProcessSpec e;
+    e.setUserSpecifiedName(*f);
+    nested_[*f].e = std::make_unique<ProcessSpec>(
+        e.deserialise(std::vector<std::string>(f + 1, p)));
+	*/
+
+    f = p;
+    //auto l = *f;
+    //auto p = l.find(':');
+    //io_.inputs_.push_back({ l.substr(0, p), SignalSpec{ l } });
   }
 
-  for (++f; *f != "PRETAGS"; f++)
-  {
-    auto l = *f;
-    auto p = l.find(':');
-    io_.outputs_.push_back({ l.substr(0, p), SignalSpec{ l } });
+  //TEST
+  /*
+  std::cout <<  "testing input_conversions_ \n";
+  for (auto sequence : input_conversions_)
+  { 
+	  std::cout <<  sequence[0] << "\n";
+	  for (auto i = 1u; i < sequence.size(); i++)
+            std::cout << " " << sequence[i] << "\n";
   }
+  */
+
+  for (++f; *f != "PRETAGS";)
+  {
+    auto p =
+        std::find_if(f + 1, pop_dump.end(), [](auto l) { return l[0] != ' '; });
+
+	std::vector<std::string> sequence;
+	sequence.push_back(*f);
+
+    std::transform(f + 1, p, std::back_inserter(sequence), [](auto l) { return l.substr(1); });
+
+	output_conversions_.push_back(sequence);
+	/*
+    ProcessSpec e;
+    e.setUserSpecifiedName(*f);
+    nested_[*f].e = std::make_unique<ProcessSpec>(
+        e.deserialise(std::vector<std::string>(f + 1, p)));
+	*/
+
+    f = p;
+    //auto l = *f;
+    //auto p = l.find(':');
+    //io_.outputs_.push_back({ l.substr(0, p), SignalSpec{ l } });
+  }
+
+  //TEST
+  /*
+  std::cout <<  "testing output_conversions_ \n";
+  for (auto sequence : output_conversions_)
+  { 
+	  std::cout <<  sequence[0] << "\n";
+	  for (auto i = 1u; i < sequence.size(); i++)
+            std::cout << " " << sequence[i] << "\n";
+  }
+  */
 
   for (++f; *f != "POSTTAGS"; f++)
   {
@@ -1041,6 +1109,7 @@ std::string
       for (auto [post_tag, value] : nspec.constraints_.post_)
         out << std::setw(16) << post_tag << " : " << value.type() << "\n";
     }
+    out << nspec.e->prettyPrint();
   }
 
   if (!tag_flow_equalities_.empty() || !tag_flow_inequalities_.empty())
@@ -1099,6 +1168,8 @@ std::string
       for (auto name : tags.post_)
         out << std::setw(20) << name.name_ << ":" << name.signal_spec_.type() << "\n";
     }
+    for (auto &nspec : nspec_vec_tags.first)
+      out << nspec.e->prettyPrint();
   }
   return out.str();
 }
@@ -1118,6 +1189,14 @@ std::string
   out << " outputs\n";
   for (auto [output, value] : io_.outputs_)
     out << std::setw(16) << output << " : " << value.type() << "\n";
+  out << " input_conversions\n";
+  for (auto seq : input_conversions_)
+  	for (auto s : seq)
+    	out << std::setw(16) << s << "\n";
+  out << " output_conversions_\n";
+  for (auto seq : output_conversions_)
+  	for (auto s : seq)
+    	out << std::setw(16) << s << "\n";
   out << " pre-tags\n";
   for (auto [pre_tag, value] : tags_.pre_)
     out << std::setw(16) << pre_tag << " : " << value.type() << "\n";
@@ -1126,7 +1205,7 @@ std::string
     out << std::setw(16) << post_tag << " : " << value.type() << "\n";
 
   out << " nested\n" << prettyPrintNested();
-  out << " nested-vector\n" << prettyPrintNestedVector();
+  //out << " nested-vector\n" << prettyPrintNestedVector();
   out << "}\n";
   return out.str();
 }

@@ -22,6 +22,15 @@ using Signal = std::any;
                             std::vector<bool>>;
 */
 
+/*
+struct NamedS
+{
+	std::string name_;
+	Signal signal_;
+};
+*/
+
+
 class DataStore
 {
 

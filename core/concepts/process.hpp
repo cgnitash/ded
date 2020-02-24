@@ -57,6 +57,10 @@ public:
 
   void configure(specs::ProcessSpec);
 
+	// signal conversion function
+//	std::vector<NamedS> sSI(std::string source, Signal s);
+//	std::vector<NamedS> sSO(std::string source, Signal s);
+
 private:
   // interface/ABC for an Process
   struct ProcessInterface
@@ -101,8 +105,8 @@ private:
         return autoClassNameAsString<UserProcess>();
     }
 
-    // mandatory methods
     //
+    // mandatory methods
 	
     template <typename T>
     using HasEvaluate =

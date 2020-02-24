@@ -62,5 +62,6 @@ void
                        << std::endl;
     }
 }
+
 }   // namespace concepts
 }   // namespace ded
