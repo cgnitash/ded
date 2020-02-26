@@ -47,11 +47,20 @@ void
 }
 
 void
-    ProcessSpec::configureInput(std::string name, SignalConversionSequence &input)
+    ProcessSpec::configureInput(std::string name, ConversionSequence &input)
 {
-	for (auto &sequence : input_conversions_)
-		if (sequence.front() == name)
-			input.push_back(sequence);
+  for (auto &sequence : input_conversions_)
+    if (sequence.front() == name)
+    {
+      ConversionSequence_ cs;
+      cs.source_ = name;
+      cs.sink_   = sequence.back();
+      for (auto i = 1u; i < sequence.size() - 1; i++)
+      {
+        cs.sequence_.push_back(ALL_CONVERTER_SPECS[sequence[i]].signature());
+      }
+      input.push_back(cs);
+    }
 }
 
 void
@@ -61,12 +70,22 @@ void
 }
 
 void
-    ProcessSpec::configureOutput(std::string name, SignalConversionSequence &output)
+    ProcessSpec::configureOutput(std::string name, ConversionSequence &output)
 {
 	for (auto &sequence : output_conversions_)
 		if (sequence.back() == name)
-			output.push_back(sequence);
+    {
+      ConversionSequence_ cs;
+      cs.source_ = name;
+      cs.sink_   = sequence.front();
+      for (auto i = 1u; i < sequence.size() - 1; i++)
+      {
+        cs.sequence_.push_back(ALL_CONVERTER_SPECS[sequence[i]].signature());
+      }
+      output.push_back(cs);
+    }
 }
+
 void
     ProcessSpec::bindProcess(std::string name, ProcessSpec proc)
 {

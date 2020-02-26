@@ -14,6 +14,7 @@
 #include "configuration_primitive.hpp"
 #include "population_spec.hpp"
 #include "signal_spec.hpp"
+#include "converter_spec.hpp"
 
 namespace ded
 {
@@ -182,14 +183,18 @@ public:
   void
       bindInput(std::string name, std::string value);
 
+  //void
+    //  configureInput(std::string name, SignalConversionSequence &input);
   void
-      configureInput(std::string name, SignalConversionSequence &input);
+      configureInput(std::string name, ConversionSequence &input);
 
   void
       bindOutput(std::string name, std::string value);
 
+  //void
+    //  configureOutput(std::string name, SignalConversionSequence &output);
   void
-      configureOutput(std::string name, SignalConversionSequence &output);
+      configureOutput(std::string name, ConversionSequence &output);
 
   void bindProcess(std::string name, ProcessSpec proc);
 

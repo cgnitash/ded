@@ -11,13 +11,6 @@
 
 #include "../configuration.hpp"
 #include "signal.hpp"
-/*
-#include "../specs/process_spec.hpp"
-#include "../utilities/tmp.hpp"
-#include "encoding.hpp"
-#include "population.hpp"
-#include "substrate.hpp"
-*/
 
 namespace ded
 {
@@ -49,20 +42,6 @@ public:
 
   Converter &operator=(Converter &&) noexcept = default;
 
-/*
-  std::string
-      toSignal() const
-  {
-    return self_->toSignal_();
-  }
-
-  std::string
-      fromSignal() const
-  {
-    return self_->fromSignal_();
-  }
-*/
-
   specs::ConverterSpec
       publishConfiguration()
   {
@@ -75,7 +54,11 @@ public:
     self_->configure_(es);
   }
 
-	Signal convert(Signal s) { return self_->convert_(s); }
+  Signal
+      convert(Signal s)
+  {
+    return self_->convert_(s);
+  }
 
 private:
   // interface/ABC for an Converter
@@ -186,6 +169,12 @@ private:
       {
         auto es  = data_.publishConfiguration();
         es.name_ = autoClassNameAsString<UserConverter>();
+
+		using std::placeholders::_1;
+		 std::function<concepts::Signal(concepts::Signal)>   f_convert = 
+			 std::bind( &UserConverter::convert, data_, _1 );
+		es.conversion_ = f_convert; //data_.convert;
+
         return es;
       }
       else

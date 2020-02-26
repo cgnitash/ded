@@ -127,10 +127,10 @@ public:
   }
 
   void
-      input( specs::SignalConversionSequence sequence, Signal s );
+      input( specs::ConversionSequence sequence, Signal s );
 
   Signal
-      output( specs::SignalConversionSequence sequence);
+      output( specs::ConversionSequence sequence);
 
   void
       mutate()

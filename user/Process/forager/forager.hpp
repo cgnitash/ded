@@ -23,8 +23,8 @@ class forager {
 
   //std::string org_input_los_tag_     = "<double,sensor_range>";
   //std::string org_output_action_tag_ = "<double,2>";
-  ded::specs::SignalConversionSequence input_los;
-  ded::specs::SignalConversionSequence output_action;
+  ded::specs::ConversionSequence input_los;
+  ded::specs::ConversionSequence output_action;
 
   long grid_size_    = 10;
   long sensor_range_ = 4;

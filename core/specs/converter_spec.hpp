@@ -12,6 +12,7 @@
 #include "../utilities/term_colours.hpp"
 #include "configuration_primitive.hpp"
 #include "signal_spec.hpp"
+#include "../concepts/signal.hpp"
 
 namespace ded
 {
@@ -25,13 +26,14 @@ class Converter;
 namespace specs
 {
 
+using ConversionSignature = std::function<concepts::Signal(concepts::Signal)>;
+
 class ConverterSpec
 {
   std::string                                   name_;
-//  std::map<std::string, ConfigurationPrimitive> parameters_;
   Parameters                                              parameters_;
-  std::pair<SignalSpec,SignalSpec> args_; 
-
+  std::pair<SignalSpec,SignalSpec> args_;
+	ConversionSignature conversion_;
 public:
 
   ConverterSpec(std::string name = "") : name_(name)
@@ -39,6 +41,11 @@ public:
   }
 
   ConverterSpec( language::Block);
+
+  ConversionSignature signature()
+  {
+	  return conversion_;
+  }
 
   auto
       name() const
@@ -93,14 +100,16 @@ public:
   friend class concepts::Converter;
 };
 
-/*
-struct ConverterSink
+//private 
+struct ConversionSequence_
 {
-std::vector<ConverterSpec> sequence_;
-std::string sink_;
+  std::string                                                    source_;
+  std::string                                                    sink_;
+  std::vector<ConversionSignature>                               sequence_;
 };
 
-ConverterSink parseConversionSequence(language::Token);
-*/
+using ConversionSequence = std::vector<ConversionSequence_>;
+
+
 }   // namespace specs
 }   // namespace ded
