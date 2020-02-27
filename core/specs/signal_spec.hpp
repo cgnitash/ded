@@ -13,8 +13,6 @@ namespace ded
 namespace specs
 {
 
-using SignalConversionSequence = std::vector<std::vector<std::string>>;
-
 inline static const std::regex valid_signal_type_{
   R"~~((\w+)?|<(\w+)?,(\w+|\d+|_)?>)~~"
 };
@@ -141,7 +139,6 @@ struct IO
 	public :
   SignalSpecSet inputs_;
   SignalSpecSet outputs_;
-//  void bindTo(SubstrateSpec, std::string);
 };
 
 struct Tags

@@ -66,8 +66,8 @@ class ProcessSpec
   // since replaced by
   std::vector<language::Token> input_conversion_sequence_;
   std::vector<language::Token> output_conversion_sequence_;
-  SignalConversionSequence input_conversions_;
-  SignalConversionSequence output_conversions_;
+  ConversionSequence input_conversions_;
+  ConversionSequence output_conversions_;
 
   Tags tags_;
 
@@ -183,16 +183,12 @@ public:
   void
       bindInput(std::string name, std::string value);
 
-  //void
-    //  configureInput(std::string name, SignalConversionSequence &input);
   void
       configureInput(std::string name, ConversionSequence &input);
 
   void
       bindOutput(std::string name, std::string value);
 
-  //void
-    //  configureOutput(std::string name, SignalConversionSequence &output);
   void
       configureOutput(std::string name, ConversionSequence &output);
 

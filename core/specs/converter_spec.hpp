@@ -33,7 +33,8 @@ class ConverterSpec
   std::string                                   name_;
   Parameters                                              parameters_;
   std::pair<SignalSpec,SignalSpec> args_;
-	ConversionSignature conversion_;
+  ConversionSignature                                     conversion_;
+
 public:
 
   ConverterSpec(std::string name = "") : name_(name)
@@ -106,6 +107,7 @@ struct ConversionSequence_
   std::string                                                    source_;
   std::string                                                    sink_;
   std::vector<ConversionSignature>                               sequence_;
+  std::vector<std::string>                                       names_;
 };
 
 using ConversionSequence = std::vector<ConversionSequence_>;

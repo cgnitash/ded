@@ -23,7 +23,7 @@ void
 void
     ProcessSpec::configurePreTag(std::string name, std::string &value)
 {
-  value = rs::find_if(tags_.pre_, [=](auto ns) { return ns.name_ == name; })
+  value = rs::find(tags_.pre_, name, &ded::specs::NamedSignal::name_)
               ->signal_spec_.identifier();
 }
 
@@ -36,7 +36,7 @@ void
 void
     ProcessSpec::configurePostTag(std::string name, std::string &value)
 {
-  value = rs::find_if(tags_.post_, [=](auto ns) { return ns.name_	 == name; })
+  value = rs::find(tags_.post_, name, &ded::specs::NamedSignal::name_)
               ->signal_spec_.identifier();
 }
 
@@ -49,18 +49,9 @@ void
 void
     ProcessSpec::configureInput(std::string name, ConversionSequence &input)
 {
-  for (auto &sequence : input_conversions_)
-    if (sequence.front() == name)
-    {
-      ConversionSequence_ cs;
-      cs.source_ = name;
-      cs.sink_   = sequence.back();
-      for (auto i = 1u; i < sequence.size() - 1; i++)
-      {
-        cs.sequence_.push_back(ALL_CONVERTER_SPECS[sequence[i]].signature());
-      }
-      input.push_back(cs);
-    }
+  for (auto &conversion : input_conversions_)
+    if (conversion.source_ == name)
+      input.push_back(conversion);
 }
 
 void
@@ -72,18 +63,9 @@ void
 void
     ProcessSpec::configureOutput(std::string name, ConversionSequence &output)
 {
-	for (auto &sequence : output_conversions_)
-		if (sequence.back() == name)
-    {
-      ConversionSequence_ cs;
-      cs.source_ = name;
-      cs.sink_   = sequence.front();
-      for (auto i = 1u; i < sequence.size() - 1; i++)
-      {
-        cs.sequence_.push_back(ALL_CONVERTER_SPECS[sequence[i]].signature());
-      }
-      output.push_back(cs);
-    }
+  for (auto &conversion : output_conversions_)
+    if (conversion.sink_ == name)
+      output.push_back(conversion);
 }
 
 void
@@ -427,8 +409,9 @@ void
     throw language::ParserError{};
   }
 
-  auto source = rs::find_if(io_.inputs_,
-                            [&](auto sig) { return sig.name_ == lst.front(); });
+  ConversionSequence_ cs;
+
+  auto source = rs::find(io_.inputs_, lst.front(), &NamedSignal::name_);
   if (source == rs::end(io_.inputs_))
   {
     errInvalidToken(signal_conversion_sequence,
@@ -436,9 +419,9 @@ void
                         " is not an input signal provided by " + name_);
     throw language::ParserError{};
   }
+  cs.source_ = lst.front();
 
-  auto sink =
-      rs::find_if(sigs, [&](auto sig) { return sig.name_ == lst.back(); });
+  auto sink = rs::find(sigs, lst.back(), &NamedSignal::name_);
   if (sink == rs::end(sigs))
   {
     errInvalidToken(signal_conversion_sequence,
@@ -447,6 +430,7 @@ void
                         sub_spec_name.expr_);
     throw language::ParserError{};
   }
+  cs.sink_ = lst.back();
 
   auto sig = source->signal_spec_;
 
@@ -458,7 +442,10 @@ void
                       lst[i] + " is not a converter component");
       throw language::ParserError{};
     }
-    auto [in, out] = ALL_CONVERTER_SPECS[lst[i]].args();
+
+	auto converter_spec = ALL_CONVERTER_SPECS[lst[i]];
+
+    auto [in, out] = converter_spec.args();
 
     if (!sig.convertibleTo(in))
     {
@@ -467,6 +454,9 @@ void
                           lst[i]);
       throw language::ParserError{};
     }
+
+    cs.sequence_.push_back(converter_spec.signature());
+	cs.names_.push_back(converter_spec.name());
 
     in.updatePlaceholders(sig);
     out.updatePlaceholders(in);
@@ -481,7 +471,7 @@ void
     throw language::ParserError{};
   }
 
-  input_conversions_.push_back(lst);
+  input_conversions_.push_back(cs);
 }
 
 void ProcessSpec::bindOutputSignal(
@@ -503,28 +493,28 @@ void ProcessSpec::bindOutputSignal(
     throw language::ParserError{};
   }
 
-  auto source =
-      //rs::find_if(sigs, [&](auto sig) { return sig.name_ == lst.front(); });
-      rs::find(sigs, lst.front(), &NamedSignal::name_);
- // [&](auto sig) { return sig.name_ == lst.front(); });
+  ConversionSequence_ cs;
+
+  auto source = rs::find(sigs, lst.front(), &NamedSignal::name_);
   if (source == rs::end(sigs))
   {
     errInvalidToken(signal_conversion_sequence,
-                    "sink " + lst.front() +
+                    "source " + lst.front() +
                         " is not an output signal provided by " +
                         sub_spec_name.expr_);
     throw language::ParserError{};
   }
+  cs.source_ = lst.front();
 
-  auto sink = rs::find_if(io_.outputs_,
-                            [&](auto sig) { return sig.name_ == lst.back(); });
+  auto sink = rs::find(io_.outputs_, lst.back(), &NamedSignal::name_);
   if (sink == rs::end(io_.outputs_))
   {
     errInvalidToken(signal_conversion_sequence,
-                    "source " + lst.back() +
+                    "sink " + lst.back() +
                         " is not an output signal provided by " + name_);
     throw language::ParserError{};
   }
+  cs.sink_ = lst.back();
 
   auto sig = source->signal_spec_;
 
@@ -536,7 +526,10 @@ void ProcessSpec::bindOutputSignal(
                       lst[i] + " is not a converter component");
       throw language::ParserError{};
     }
-    auto [in, out] = ALL_CONVERTER_SPECS[lst[i]].args();
+	   
+	auto converter_spec = 	ALL_CONVERTER_SPECS[lst[i]];
+
+    auto [in, out] = converter_spec.args();
 
     if (!sig.convertibleTo(in))
     {
@@ -545,6 +538,9 @@ void ProcessSpec::bindOutputSignal(
                           lst[i]);
       throw language::ParserError{};
     }
+
+	cs.sequence_.push_back(converter_spec.signature());
+	cs.names_.push_back(converter_spec.name());
 
     in.updatePlaceholders(sig);
     out.updatePlaceholders(in);
@@ -559,7 +555,7 @@ void ProcessSpec::bindOutputSignal(
     throw language::ParserError{};
   }
 
-  output_conversions_.push_back(lst);
+  output_conversions_.push_back(cs);
 }
 
 /*
@@ -705,18 +701,12 @@ void
 
   for (auto &sig_freq : traces_.pre_)
     sig_freq.signal_.updateIdentifier(
-        rs::find_if(tags_.pre_,
-                    [n = sig_freq.signal_.userName()](auto tag) {
-                      return tag.name_ == n;
-                    })
+        rs::find(tags_.pre_, sig_freq.signal_.userName(), &NamedSignal::name_)
             ->signal_spec_.identifier());
 
   for (auto &sig_freq : traces_.post_)
     sig_freq.signal_.updateIdentifier(
-        rs::find_if(tags_.post_,
-                    [n = sig_freq.signal_.userName()](auto tag) {
-                      return tag.name_ == n;
-                    })
+        rs::find(tags_.post_, sig_freq.signal_.userName(), &NamedSignal::name_)
             ->signal_spec_.identifier());
 
   for (auto &es : nested_)
@@ -743,17 +733,13 @@ void
       throw language::ParserError{};
     }
 
-    if (auto i = rs::find_if(
-            tags_.pre_,
-            [name = tag_name.expr_](auto ns) { return ns.name_ == name; });
+    if (auto i = rs::find(tags_.pre_, tag_name.expr_, &NamedSignal::name_);
         i != rs::end(tags_.pre_))
     {
       traces_.pre_.push_back(
           { i->signal_spec_.fullName(), std::stoi(frequency.expr_) });
     }
-    else if (i = rs::find_if(
-                 tags_.post_,
-                 [name = tag_name.expr_](auto ns) { return ns.name_ == name; });
+    else if (i = rs::find(tags_.post_, tag_name.expr_, &NamedSignal::name_);
              i != rs::end(tags_.post_))
     {
       traces_.post_.push_back(
@@ -878,7 +864,6 @@ ProcessSpec::ProcessSpec(language::Block block)
 
   name_token_ = block.name_token_;
 
-  //parseParameters(block);
   parameters_.loadFromSpec(block.overrides_, name_);
   parseSignalBinds(block);
   parseTraces(block);
@@ -900,20 +885,20 @@ std::vector<std::string>
     return alignment + parameter.first + ":" + parameter.second.valueAsString();
   });
   lines.push_back(alignment + "INPUTS");
-  //rs::transform(io_.inputs_, rs::back_inserter(lines), pad_signal);
-  for (auto sequence : input_conversions_)
-  { 
-	  lines.push_back(alignment + sequence[0]);
-	  for (auto i = 1u; i < sequence.size(); i++)
-	 	 lines.push_back(alignment + " " + sequence[i]);
+  for (auto &conversion : input_conversions_)
+  {
+    lines.push_back(alignment + conversion.source_);
+    for (auto &conv : conversion.names_)
+      lines.push_back(alignment + " " + conv);
+    lines.push_back(alignment + " " + conversion.sink_);
   }
   lines.push_back(alignment + "OUTPUTS");
-  //rs::transform(io_.outputs_, rs::back_inserter(lines), pad_signal);
-  for (auto sequence : output_conversions_)
-  { 
-	  lines.push_back(alignment + sequence[0]);
-	  for (auto i = 1u; i < sequence.size(); i++)
-	 	 lines.push_back(alignment + " " + sequence[i]);
+  for (auto &conversion : output_conversions_)
+  {
+    lines.push_back(alignment + conversion.source_);
+    for (auto &conv : conversion.names_)
+      lines.push_back(alignment + " " + conv);
+    lines.push_back(alignment + " " + conversion.sink_);
   }
   lines.push_back(alignment + "PRETAGS");
   rs::transform(tags_.pre_, rs::back_inserter(lines), pad_signal);
@@ -977,23 +962,18 @@ ProcessSpec
     auto p =
         std::find_if(f + 1, pop_dump.end(), [](auto l) { return l[0] != ' '; });
 
-	std::vector<std::string> sequence;
-	sequence.push_back(*f);
+	//std::vector<std::string> sequence;
+	ConversionSequence_ cs;
+	cs.source_ = *f;
 
-    std::transform(f + 1, p, std::back_inserter(sequence), [](auto l) { return l.substr(1); });
+    std::transform(f + 1, p - 1, std::back_inserter(cs.names_), [](auto l) { return l.substr(1); });
 
-	input_conversions_.push_back(sequence);
-	/*
-    ProcessSpec e;
-    e.setUserSpecifiedName(*f);
-    nested_[*f].e = std::make_unique<ProcessSpec>(
-        e.deserialise(std::vector<std::string>(f + 1, p)));
-	*/
+	cs.sink_ = (p - 1)->substr(1);
+	for (auto name : cs.names_)
+		cs.sequence_.push_back(ALL_CONVERTER_SPECS[name].signature());
+	input_conversions_.push_back(cs);
 
     f = p;
-    //auto l = *f;
-    //auto p = l.find(':');
-    //io_.inputs_.push_back({ l.substr(0, p), SignalSpec{ l } });
   }
 
   //TEST
@@ -1012,23 +992,17 @@ ProcessSpec
     auto p =
         std::find_if(f + 1, pop_dump.end(), [](auto l) { return l[0] != ' '; });
 
-	std::vector<std::string> sequence;
-	sequence.push_back(*f);
+	ConversionSequence_ cs;
+	cs.source_ = *f;
 
-    std::transform(f + 1, p, std::back_inserter(sequence), [](auto l) { return l.substr(1); });
+    std::transform(f + 1, p - 1, std::back_inserter(cs.names_), [](auto l) { return l.substr(1); });
 
-	output_conversions_.push_back(sequence);
-	/*
-    ProcessSpec e;
-    e.setUserSpecifiedName(*f);
-    nested_[*f].e = std::make_unique<ProcessSpec>(
-        e.deserialise(std::vector<std::string>(f + 1, p)));
-	*/
+	cs.sink_ = (p - 1)->substr(1);
+	for (auto name : cs.names_)
+		cs.sequence_.push_back(ALL_CONVERTER_SPECS[name].signature());
+	output_conversions_.push_back(cs);
 
     f = p;
-    //auto l = *f;
-    //auto p = l.find(':');
-    //io_.outputs_.push_back({ l.substr(0, p), SignalSpec{ l } });
   }
 
   //TEST
@@ -1208,6 +1182,7 @@ std::string
   out << " outputs\n";
   for (auto [output, value] : io_.outputs_)
     out << std::setw(16) << output << " : " << value.type() << "\n";
+  /*
   out << " input_conversions\n";
   for (auto seq : input_conversions_)
   	for (auto s : seq)
@@ -1216,6 +1191,7 @@ std::string
   for (auto seq : output_conversions_)
   	for (auto s : seq)
     	out << std::setw(16) << s << "\n";
+		*/
   out << " pre-tags\n";
   for (auto [pre_tag, value] : tags_.pre_)
     out << std::setw(16) << pre_tag << " : " << value.type() << "\n";
