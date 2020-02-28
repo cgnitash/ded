@@ -30,7 +30,9 @@ enum class TokenType
   close_varied_argument,
   open_nested_block_vector,
   close_nested_block_vector,
-  signal_bind
+  input_signal_bind_,
+  output_signal_bind_
+  //signal_bind
 };
 
 TokenType parseTokenType(std::string);
@@ -66,8 +68,6 @@ struct Block
   } range_{};
   std::vector<TokenAssignment> overrides_{};
   //std::vector<TokenAssignment> signal_binds_{};
-  std::vector<Token> input_signal_binds_{};
-  std::vector<Token> output_signal_binds_{};
   std::vector<TokenAssignment> traces_{};
   struct TokenBlocks
   {
@@ -76,6 +76,14 @@ struct Block
   };
   std::vector<TokenBlocks>  nested_{};
   std::vector<TokenBlocks> nested_vector_{};
+  struct TokenBlockSignalBind 
+  {
+	  Token source_;
+	  Token sink_;
+	  std::vector<TokenBlocks> sequence_;
+  };
+  std::vector<TokenBlockSignalBind> input_signal_binds_{};
+  std::vector<TokenBlockSignalBind> output_signal_binds_{};
 };
 
 }   // namespace language

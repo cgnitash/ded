@@ -107,7 +107,8 @@ struct ConversionSequence_
   std::string                                                    source_;
   std::string                                                    sink_;
   std::vector<ConversionSignature>                               sequence_;
-  std::vector<std::string>                                       names_;
+  std::vector<ConverterSpec>                                     specs_;
+  //std::vector<std::string>                                       names_;
 };
 
 using ConversionSequence = std::vector<ConversionSequence_>;

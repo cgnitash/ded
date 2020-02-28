@@ -76,7 +76,7 @@ ConverterSpec
 
   auto f = rs::begin(pop_dump) + 2;
 
-  for (; *f != "ENTITY"; f++)
+  for (; f != pop_dump.end(); f++)
   {
     auto                   l = *f;
     auto                   p = l.find(':');

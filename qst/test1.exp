@@ -30,8 +30,10 @@ fors = $sequence
      first 	= 	$forager 	
 				{ 
 				  ? food_eaten 5 
-				_OUT : " out_sense > action "
-				_IN : " line_of_sight > in_sense "
+				action <- out_sense 
+				line_of_sight ->  in_sense 
+				#_OUT : " out_sense > action "
+				#_IN : " line_of_sight > in_sense "
 				#action : out_sense
 				}
      second = $elite_replacement  {  strength = 0.4 }

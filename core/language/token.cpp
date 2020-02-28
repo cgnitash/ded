@@ -31,8 +31,12 @@ TokenType
     return TokenType::assignment;
   if (s == "?")
     return TokenType::trace;
-  if (s == ":")
-    return TokenType::signal_bind;
+  //if (s == ":")
+    //return TokenType::signal_bind;
+  if (s == "->")
+    return TokenType::input_signal_bind_;
+  if (s == "<-")
+    return TokenType::output_signal_bind_;
   if (s[0] == '$')
     return TokenType::component;
   if (s[0] == '!')

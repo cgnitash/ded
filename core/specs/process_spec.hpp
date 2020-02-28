@@ -64,8 +64,8 @@ class ProcessSpec
   // might not be required
   IO io_;
   // since replaced by
-  std::vector<language::Token> input_conversion_sequence_;
-  std::vector<language::Token> output_conversion_sequence_;
+  std::vector<language::Block::TokenBlockSignalBind> input_conversion_sequence_;
+  std::vector<language::Block::TokenBlockSignalBind> output_conversion_sequence_;
   ConversionSequence input_conversions_;
   ConversionSequence output_conversions_;
 
@@ -107,12 +107,17 @@ class ProcessSpec
                      bool          is_input);
   */
 
-  void bindOutputSignal(language::Token signal_conversion_sequence,
+  void bindOutputSignal(language::Block::TokenBlockSignalBind signal_conversion_sequence,
                         SignalSpecSet   sigs,
                         language::Token sub_spec_name);
-  void bindInputSignal(language::Token signal_conversion_sequence,
+  void bindInputSignal(language::Block::TokenBlockSignalBind signal_conversion_sequence,
                        SignalSpecSet   sigs,
                        language::Token sub_spec_name);
+
+  void convertSignalConversionSequence(language::Block::TokenBlocks converter,
+                                       SignalSpec &                 sig,
+                                       language::Token &source_token,
+                                       ConversionSequence_ &cs);
 
   void        updateNestedConstraints(SignalSpecSet &constraints);
   void matchTagFlowEqualities(int &tag_count);

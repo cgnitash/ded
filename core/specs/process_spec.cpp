@@ -391,11 +391,56 @@ void
 }
 
 void
-    ProcessSpec::bindInputSignal(language::Token signal_conversion_sequence,
-                                 SignalSpecSet   sigs,
-                                 language::Token sub_spec_name)
+    ProcessSpec::convertSignalConversionSequence(
+        language::Block::TokenBlocks converter,
+        SignalSpec                   &sig,
+        language::Token              &source_token,
+        ConversionSequence_          &cs)
+{
+	auto name = converter.name_;
+	auto block = converter.blocks_[0];
+
+    if (!config_manager::isConverterBlock(name.expr_.substr(1)))
+    {
+      errInvalidToken(name, "Not a converter component");
+      throw language::ParserError{};
+    }
+
+	//auto converter_spec = ALL_CONVERTER_SPECS[name.expr_];
+	auto converter_spec = ConverterSpec{block};
+
+    auto [in, out] = converter_spec.args();
+
+    if (!sig.convertibleTo(in))
+    {
+      errInvalidToken(source_token,
+                      " output_type cannot be converted : output_type = " +
+                          sig.diagnosticName());
+      errInvalidToken(name,
+                      " to expected input_type : input_type = " +
+                          in.diagnosticName());
+      throw language::ParserError{};
+    }
+
+    cs.sequence_.push_back(converter_spec.signature());
+    cs.specs_.push_back(converter_spec);
+	//might not be needed
+	//cs.names_.push_back(converter_spec.name());
+
+    in.updatePlaceholders(sig);
+    out.updatePlaceholders(in);
+    sig = out;
+	source_token = name;
+}
+
+void
+    ProcessSpec::bindInputSignal(
+        language::Block::TokenBlockSignalBind signal_conversion_sequence,
+        SignalSpecSet                         sigs,
+        language::Token                       sub_spec_name)
 {
 
+	/*
   auto sequence = signal_conversion_sequence.expr_;
   sequence.erase(rs::remove(sequence, ' '), rs::end(sequence));
   auto expression = sequence.substr(1, sequence.size() - 2);
@@ -408,66 +453,45 @@ void
                     "unrecognized conversion sequence");
     throw language::ParserError{};
   }
-
+	*/
   ConversionSequence_ cs;
 
-  auto source = rs::find(io_.inputs_, lst.front(), &NamedSignal::name_);
+  auto source_token = signal_conversion_sequence.source_;
+  auto source = rs::find(io_.inputs_, source_token.expr_, &NamedSignal::name_);
   if (source == rs::end(io_.inputs_))
   {
-    errInvalidToken(signal_conversion_sequence,
-                    "source " + lst.front() +
-                        " is not an input signal provided by " + name_);
+    errInvalidToken(source_token, "Not an input signal provided by " + name_);
     throw language::ParserError{};
   }
-  cs.source_ = lst.front();
+  cs.source_ = source_token.expr_;
 
-  auto sink = rs::find(sigs, lst.back(), &NamedSignal::name_);
+  auto sink_token = signal_conversion_sequence.sink_;
+  auto sink       = rs::find(sigs, sink_token.expr_, &NamedSignal::name_);
   if (sink == rs::end(sigs))
   {
-    errInvalidToken(signal_conversion_sequence,
-                    "sink " + lst.back() +
-                        " is not an input signal provided by " +
+    errInvalidToken(sink_token,
+                        "Not an input signal provided by " +
                         sub_spec_name.expr_);
     throw language::ParserError{};
   }
-  cs.sink_ = lst.back();
+  cs.sink_ = sink_token.expr_;
 
   auto sig = source->signal_spec_;
 
-  for (auto i = 1u; i < lst.size() - 1; i++)
+  //for (auto i = 1u; i < lst.size() - 1; i++)
+  for (auto converter : signal_conversion_sequence.sequence_)
   {
-    if (!config_manager::isConverterBlock(lst[i]))
-    {
-      errInvalidToken(signal_conversion_sequence,
-                      lst[i] + " is not a converter component");
-      throw language::ParserError{};
-    }
-
-	auto converter_spec = ALL_CONVERTER_SPECS[lst[i]];
-
-    auto [in, out] = converter_spec.args();
-
-    if (!sig.convertibleTo(in))
-    {
-      errInvalidToken(signal_conversion_sequence,
-                      lst[i - 1] + " result cannot be converted to input of " +
-                          lst[i]);
-      throw language::ParserError{};
-    }
-
-    cs.sequence_.push_back(converter_spec.signature());
-	cs.names_.push_back(converter_spec.name());
-
-    in.updatePlaceholders(sig);
-    out.updatePlaceholders(in);
-    sig = out;
+	  convertSignalConversionSequence(converter, sig, source_token, cs);
   }
 
   if (!sig.convertibleTo(sink->signal_spec_))
   {
-    errInvalidToken(signal_conversion_sequence,
-                    lst[lst.size() - 2] + " result cannot be converted to " +
-                        sink->name_);
+    errInvalidToken(source_token,
+                    " output_type cannot be converted : output_type = " +
+                        sig.diagnosticName());
+    errInvalidToken(sink_token,
+                    " to expected input_type : input_type = " +
+                        sink->signal_spec_.diagnosticName());
     throw language::ParserError{};
   }
 
@@ -475,11 +499,12 @@ void
 }
 
 void ProcessSpec::bindOutputSignal(
-    language::Token signal_conversion_sequence,
+    language::Block::TokenBlockSignalBind signal_conversion_sequence,
     SignalSpecSet sigs,
     language::Token sub_spec_name)
 {
 
+	/*
   auto sequence = signal_conversion_sequence.expr_;
   sequence.erase(rs::remove(sequence, ' '), rs::end(sequence));
   auto expression = sequence.substr(1, sequence.size() - 2);
@@ -492,32 +517,35 @@ void ProcessSpec::bindOutputSignal(
                     "unrecognized conversion sequence");
     throw language::ParserError{};
   }
+*/
 
   ConversionSequence_ cs;
 
-  auto source = rs::find(sigs, lst.front(), &NamedSignal::name_);
+  auto source_token = signal_conversion_sequence.source_;
+  auto source = rs::find(sigs, source_token.expr_, &NamedSignal::name_);
   if (source == rs::end(sigs))
   {
-    errInvalidToken(signal_conversion_sequence,
-                    "source " + lst.front() +
-                        " is not an output signal provided by " +
-                        sub_spec_name.expr_);
+    errInvalidToken(source_token, "Not an output signal provided by " + sub_spec_name.expr_);
     throw language::ParserError{};
   }
-  cs.source_ = lst.front();
+  cs.source_ = source_token.expr_;
 
-  auto sink = rs::find(io_.outputs_, lst.back(), &NamedSignal::name_);
+  auto sink_token = signal_conversion_sequence.sink_;
+  auto sink       = rs::find(io_.outputs_, sink_token.expr_, &NamedSignal::name_);
   if (sink == rs::end(io_.outputs_))
   {
-    errInvalidToken(signal_conversion_sequence,
-                    "sink " + lst.back() +
-                        " is not an output signal provided by " + name_);
+    errInvalidToken(sink_token, "Not an output signal provided by " + name_);
     throw language::ParserError{};
   }
-  cs.sink_ = lst.back();
+  cs.sink_ = sink_token.expr_;
 
   auto sig = source->signal_spec_;
 
+  for (auto converter : signal_conversion_sequence.sequence_)
+  {
+	  convertSignalConversionSequence(converter, sig, source_token, cs);
+  }
+  /*
   for (auto i = 1u; i < lst.size() - 1; i++)
   {
     if (!config_manager::isConverterBlock(lst[i]))
@@ -546,12 +574,15 @@ void ProcessSpec::bindOutputSignal(
     out.updatePlaceholders(in);
     sig = out;
   }
-
+	*/
   if (!sig.convertibleTo(sink->signal_spec_))
   {
-    errInvalidToken(signal_conversion_sequence,
-                    lst[lst.size() - 2] + " result cannot be converted to " +
-                        sink->name_);
+    errInvalidToken(source_token,
+                    " output_type cannot be converted : output_type = " +
+                        sig.diagnosticName());
+    errInvalidToken(sink_token,
+                    " to expected input_type : input_type = " +
+                        sink->signal_spec_.diagnosticName());
     throw language::ParserError{};
   }
 
@@ -888,16 +919,22 @@ std::vector<std::string>
   for (auto &conversion : input_conversions_)
   {
     lines.push_back(alignment + conversion.source_);
-    for (auto &conv : conversion.names_)
-      lines.push_back(alignment + " " + conv);
+    for (auto &conv : conversion.specs_)
+    {   // lines.push_back(alignment + " " + conv);
+      auto c_dump = conv.serialise(depth + 1);
+      lines.insert(lines.end(), c_dump.begin(), c_dump.end());
+    }
     lines.push_back(alignment + " " + conversion.sink_);
   }
   lines.push_back(alignment + "OUTPUTS");
   for (auto &conversion : output_conversions_)
   {
     lines.push_back(alignment + conversion.source_);
-    for (auto &conv : conversion.names_)
-      lines.push_back(alignment + " " + conv);
+    for (auto &conv : conversion.specs_)
+    {   // lines.push_back(alignment + " " + conv);
+      auto c_dump = conv.serialise(depth + 1);
+      lines.insert(lines.end(), c_dump.begin(), c_dump.end());
+    }
     lines.push_back(alignment + " " + conversion.sink_);
   }
   lines.push_back(alignment + "PRETAGS");
@@ -957,14 +994,19 @@ ProcessSpec
     parameters_.parameters_[l.substr(0, p)] = c;
   }
 
+  std::vector<ConverterSpec> ins;
   for (++f; *f != "OUTPUTS";)
   {
-    auto p =
-        std::find_if(f + 1, pop_dump.end(), [](auto l) { return l[0] != ' '; });
+	  /*
+    //auto p =
+      //  std::find_if(f + 1, pop_dump.end(), [](auto l) { return l[0] != ' '; });
 
 	//std::vector<std::string> sequence;
 	ConversionSequence_ cs;
 	cs.source_ = *f;
+
+    auto p =
+        std::find_if(f + 1, pop_dump.end(), [](auto l) { return l[0] != ' '; });
 
     std::transform(f + 1, p - 1, std::back_inserter(cs.names_), [](auto l) { return l.substr(1); });
 
@@ -973,7 +1015,15 @@ ProcessSpec
 		cs.sequence_.push_back(ALL_CONVERTER_SPECS[name].signature());
 	input_conversions_.push_back(cs);
 
+    //std::transform(f + 1, p, f + 1, [](auto l) { return l.substr(1); });
+
+    ConverterSpec e;
+    //e.setUserSpecifiedName(*f);
+    e.deserialise(std::vector<std::string>(f + 1, p ));
+    //nested_vector_[*f].first.push_back(ns);
+	input_conversions_.sequence_.push_back(e);
     f = p;
+	*/
   }
 
   //TEST
@@ -989,6 +1039,7 @@ ProcessSpec
 
   for (++f; *f != "PRETAGS";)
   {
+	  /*
     auto p =
         std::find_if(f + 1, pop_dump.end(), [](auto l) { return l[0] != ' '; });
 
@@ -1003,6 +1054,7 @@ ProcessSpec
 	output_conversions_.push_back(cs);
 
     f = p;
+	*/
   }
 
   //TEST
