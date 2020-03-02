@@ -9,7 +9,7 @@ namespace concepts
 {
 
 void
-    Substrate::input(specs::ConversionSequence conversion_sequence, Signal s)
+    Substrate::input(specs::ConversionSignatureSequence conversion_sequence, Signal s)
 {
   for (auto conversion : conversion_sequence)
   {
@@ -23,7 +23,7 @@ void
 }
 
 Signal
-    Substrate::output(specs::ConversionSequence sequence)
+    Substrate::output(specs::ConversionSignatureSequence sequence)
 {
   Signal sp;
   for (auto conversion : sequence)

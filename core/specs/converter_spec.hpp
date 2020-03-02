@@ -26,14 +26,11 @@ class Converter;
 namespace specs
 {
 
-using ConversionSignature = std::function<concepts::Signal(concepts::Signal)>;
-
 class ConverterSpec
 {
   std::string                                   name_;
   Parameters                                              parameters_;
   std::pair<SignalSpec,SignalSpec> args_;
-  ConversionSignature                                     conversion_;
 
 public:
 
@@ -42,11 +39,6 @@ public:
   }
 
   ConverterSpec( language::Block);
-
-  ConversionSignature signature()
-  {
-	  return conversion_;
-  }
 
   auto
       name() const
@@ -102,17 +94,26 @@ public:
 };
 
 //private 
+
 struct ConversionSequence_
 {
   std::string                                                    source_;
   std::string                                                    sink_;
-  std::vector<ConversionSignature>                               sequence_;
   std::vector<ConverterSpec>                                     specs_;
-  //std::vector<std::string>                                       names_;
 };
 
 using ConversionSequence = std::vector<ConversionSequence_>;
 
+using ConversionSignature = std::function<concepts::Signal(concepts::Signal)>;
+
+struct ConversionSignatureSequence_
+{
+  std::string                                                    source_;
+  std::string                                                    sink_;
+  std::vector<ConversionSignature>                               sequence_;
+};
+
+using ConversionSignatureSequence = std::vector<ConversionSignatureSequence_>;
 
 }   // namespace specs
 }   // namespace ded

@@ -8,6 +8,7 @@
 
 #include "../configuration.hpp"
 #include "process_spec.hpp"
+#include "../../components.hpp"
 
 namespace ded
 {
@@ -47,11 +48,21 @@ void
 }
 
 void
-    ProcessSpec::configureInput(std::string name, ConversionSequence &input)
+    ProcessSpec::configureInput(std::string name, ConversionSignatureSequence &input)
 {
   for (auto &conversion : input_conversions_)
     if (conversion.source_ == name)
-      input.push_back(conversion);
+    {
+      ConversionSignatureSequence_ css;
+	  css.source_ = conversion.source_;
+	  css.sink_ = conversion.sink_;
+      for (auto s : conversion.specs_)
+      {
+        auto c = makeConverter(s);
+        css.sequence_.push_back(c.getConversionFunction());
+      }
+      input.push_back(css);
+    }
 }
 
 void
@@ -61,11 +72,21 @@ void
 }
 
 void
-    ProcessSpec::configureOutput(std::string name, ConversionSequence &output)
+    ProcessSpec::configureOutput(std::string name, ConversionSignatureSequence &output)
 {
   for (auto &conversion : output_conversions_)
     if (conversion.sink_ == name)
-      output.push_back(conversion);
+    {
+      ConversionSignatureSequence_ css;
+	  css.source_ = conversion.source_;
+	  css.sink_ = conversion.sink_;
+      for (auto s : conversion.specs_)
+      {
+        auto c = makeConverter(s);
+        css.sequence_.push_back(c.getConversionFunction());
+      }
+      output.push_back(css);
+    }
 }
 
 void
@@ -406,7 +427,6 @@ void
       throw language::ParserError{};
     }
 
-	//auto converter_spec = ALL_CONVERTER_SPECS[name.expr_];
 	auto converter_spec = ConverterSpec{block};
 
     auto [in, out] = converter_spec.args();
@@ -422,10 +442,7 @@ void
       throw language::ParserError{};
     }
 
-    cs.sequence_.push_back(converter_spec.signature());
     cs.specs_.push_back(converter_spec);
-	//might not be needed
-	//cs.names_.push_back(converter_spec.name());
 
     in.updatePlaceholders(sig);
     out.updatePlaceholders(in);
@@ -440,20 +457,6 @@ void
         language::Token                       sub_spec_name)
 {
 
-	/*
-  auto sequence = signal_conversion_sequence.expr_;
-  sequence.erase(rs::remove(sequence, ' '), rs::end(sequence));
-  auto expression = sequence.substr(1, sequence.size() - 2);
-
-  auto lst = expression | rv::split('>') | rs::to<std::vector<std::string>>;
-
-  if (lst.size() < 2)
-  {
-    errInvalidToken(signal_conversion_sequence,
-                    "unrecognized conversion sequence");
-    throw language::ParserError{};
-  }
-	*/
   ConversionSequence_ cs;
 
   auto source_token = signal_conversion_sequence.source_;
@@ -478,7 +481,6 @@ void
 
   auto sig = source->signal_spec_;
 
-  //for (auto i = 1u; i < lst.size() - 1; i++)
   for (auto converter : signal_conversion_sequence.sequence_)
   {
 	  convertSignalConversionSequence(converter, sig, source_token, cs);
@@ -504,28 +506,14 @@ void ProcessSpec::bindOutputSignal(
     language::Token sub_spec_name)
 {
 
-	/*
-  auto sequence = signal_conversion_sequence.expr_;
-  sequence.erase(rs::remove(sequence, ' '), rs::end(sequence));
-  auto expression = sequence.substr(1, sequence.size() - 2);
-
-  auto lst = expression | rv::split('>') | rs::to<std::vector<std::string>>;
-
-  if (lst.size() < 2)
-  {
-    errInvalidToken(signal_conversion_sequence,
-                    "unrecognized conversion sequence");
-    throw language::ParserError{};
-  }
-*/
-
   ConversionSequence_ cs;
 
   auto source_token = signal_conversion_sequence.source_;
   auto source = rs::find(sigs, source_token.expr_, &NamedSignal::name_);
   if (source == rs::end(sigs))
   {
-    errInvalidToken(source_token, "Not an output signal provided by " + sub_spec_name.expr_);
+    errInvalidToken(source_token,
+                    "Not an output signal provided by " + sub_spec_name.expr_);
     throw language::ParserError{};
   }
   cs.source_ = source_token.expr_;
@@ -545,36 +533,7 @@ void ProcessSpec::bindOutputSignal(
   {
 	  convertSignalConversionSequence(converter, sig, source_token, cs);
   }
-  /*
-  for (auto i = 1u; i < lst.size() - 1; i++)
-  {
-    if (!config_manager::isConverterBlock(lst[i]))
-    {
-      errInvalidToken(signal_conversion_sequence,
-                      lst[i] + " is not a converter component");
-      throw language::ParserError{};
-    }
-	   
-	auto converter_spec = 	ALL_CONVERTER_SPECS[lst[i]];
 
-    auto [in, out] = converter_spec.args();
-
-    if (!sig.convertibleTo(in))
-    {
-      errInvalidToken(signal_conversion_sequence,
-                      lst[i - 1] + " result cannot be converted to input of " +
-                          lst[i]);
-      throw language::ParserError{};
-    }
-
-	cs.sequence_.push_back(converter_spec.signature());
-	cs.names_.push_back(converter_spec.name());
-
-    in.updatePlaceholders(sig);
-    out.updatePlaceholders(in);
-    sig = out;
-  }
-	*/
   if (!sig.convertibleTo(sink->signal_spec_))
   {
     errInvalidToken(source_token,
@@ -589,116 +548,6 @@ void ProcessSpec::bindOutputSignal(
   output_conversions_.push_back(cs);
 }
 
-/*
-void
-    ProcessSpec::errSignalBind(SignalSpec      proc_sig,
-                               language::Token sub_spec_name,
-                               SignalSpecSet   sub_sigs,
-                               bool            is_input)
-{
-  auto diagnostic_message = name_token_.diagnostic_;
-  auto left_padding       = std::string(name_token_.location_.column_ + 10, ' ');
-  std::cout << "parse-error\n"
-            << diagnostic_message << "\n"
-            << left_padding << utilities::TermColours::red_fg << "^"
-            << std::string(name_token_.expr_.length() - 1, '~') << "\n"
-            << left_padding << (is_input ? "input" : "output")
-            << " signals provided by substrate cannot be bound\n"
-            << utilities::TermColours::reset << left_padding
-            << proc_sig.diagnosticName() << "\n\n";
-
-  auto substrate_name_token  = sub_spec_name;
-  auto ss_diagnostic_message = substrate_name_token.diagnostic_;
-  auto ss_left_padding =
-      std::string(substrate_name_token.location_.column_ + 10, ' ');
-
-  std::cout << ss_diagnostic_message << "\n"
-            << ss_left_padding << utilities::TermColours::red_fg << "^"
-            << std::string(substrate_name_token.expr_.length() - 1, '~') << "\n"
-            << ss_left_padding << "viable " << (is_input ? "input" : "output")
-            << " signal candidates provided\n"
-            << utilities::TermColours::reset;
-
-  for (auto sig : sub_sigs)
-    std::cout << ss_left_padding << sig.signal_spec_.diagnosticName() << std::endl;
-  throw SpecError{};
-}
-
-bool
-    ProcessSpec::attemptExplicitBind(SignalSpec &    proc_sig,
-                                     SignalSpecSet   sub_sigs,
-                                     language::Token sub_spec_name,
-                                     bool is_input)
-{
-
-  auto sig_bind = rs::find_if(signal_binds_, [&proc_sig](auto token_pair) {
-    return token_pair.lhs_.expr_ == proc_sig.userName();
-  });
-  if (sig_bind == rs::end(signal_binds_))
-    return false;
-
-  auto conversion_sequence = specs::parseConversionSequence( sig_bind->rhs_.expr_);
-
-  auto sub_sig = rs::find_if(sub_sigs, [sig_bind](auto ns) {
-    return ns.name_ == sig_bind->rhs_.expr_;
-  });
-
-  if (sub_sig == rs::end(sub_sigs))
-  {
-      std::string io_type = is_input ? "input" : "output";
-      errInvalidToken(sig_bind->rhs_,
-                      "this is not an " + io_type + " signal provided by " +
-                          sub_spec_name.expr_,
-                      sub_sigs | rv::transform(&NamedSignal::name_) |
-                          rs::to<std::vector<std::string>>);
-      throw language::ParserError{};
-  }
-
-  if (!sub_sig->signal_spec_.exactlyMatches(proc_sig))
-  {
-	errSignalBind(proc_sig, sub_spec_name, sub_sigs, is_input); 
-    throw language::ParserError{};
-  }
-
-  proc_sig.updateIdentifier(sub_sig->signal_spec_.identifier());
-  return true;
-}
-
-void
-    ProcessSpec::bindSignalsTo(SignalSpecSet   sub_sigs,
-                               language::Token sub_spec_name,
-                               bool            is_input)
-{
-  auto &proc_sigs = is_input ? io_.inputs_ : io_.outputs_;
-  for (auto &proc_name_sig : proc_sigs)
-  {
-    auto &proc_sig = proc_name_sig.signal_spec_;
-    if (!attemptExplicitBind(proc_sig, sub_sigs, sub_spec_name, is_input))
-    {
-      std::string io_type = is_input ? "input" : "output";
-      errInvalidToken(name_token_,
-                      io_type + " signal " + proc_name_sig.name_ +
-                          " is not bound to an " + io_type + " signal of " +
-                          sub_spec_name.expr_);
-      throw language::ParserError{};
-    }
-
-	// BELOW SHOULD BE REMOVED
-      continue;
-    auto matches = rs::count_if(sub_sigs, [proc_sig](auto ns) {
-      return ns.second.exactlyMatches(proc_sig);
-    });
-    if (matches != 1)
-    {
-      errSignalBind(proc_sig, sub_spec_name, sub_sigs, is_input);
-    }
-    auto i = rs::find_if(sub_sigs, [proc_sig](auto ns) {
-      return ns.second.exactlyMatches(proc_sig);
-    });
-    proc_sig.updateIdentifier(i->second.identifier());
-	}
-}
-*/
 std::vector<std::pair<Trace, std::string>>
     ProcessSpec::queryTraces()
 {
@@ -859,25 +708,6 @@ void
 {
 	input_conversion_sequence_ = block.input_signal_binds_;
 	output_conversion_sequence_ = block.output_signal_binds_;
-	/*
-  signal_binds_ = block.signal_binds_;
-
-  for (auto signal_bind : signal_binds_)
-  {
-    auto doesnt_contain_signal = [](auto sigs, auto sig_bind) {
-      return rs::find_if(sigs, [&](auto sig) {
-               return sig_bind.lhs_.expr_ == sig.name_;
-             }) == rs::end(sigs);
-    };
-    if (doesnt_contain_signal(io_.inputs_, signal_bind) &&
-        doesnt_contain_signal(io_.outputs_, signal_bind))
-    {
-      errInvalidToken(signal_bind.lhs_,
-                      "this is not an io signal of " + name_);
-      throw language::ParserError{};
-    }
-  }
-   */
 }
 
 ProcessSpec::ProcessSpec(language::Block block)
@@ -1018,17 +848,6 @@ ProcessSpec
     input_conversions_.push_back(cs);
   }
 
-  //TEST
-  /*
-  std::cout <<  "testing input_conversions_ \n";
-  for (auto sequence : input_conversions_)
-  { 
-	  std::cout <<  sequence[0] << "\n";
-	  for (auto i = 1u; i < sequence.size(); i++)
-            std::cout << " " << sequence[i] << "\n";
-  }
-  */
-
   for (++f; *f != "PRETAGS";)
   {
     ConversionSequence_ cs;
@@ -1048,17 +867,6 @@ ProcessSpec
     }
     output_conversions_.push_back(cs);
   }
-
-  //TEST
-  /*
-  std::cout <<  "testing output_conversions_ \n";
-  for (auto sequence : output_conversions_)
-  { 
-	  std::cout <<  sequence[0] << "\n";
-	  for (auto i = 1u; i < sequence.size(); i++)
-            std::cout << " " << sequence[i] << "\n";
-  }
-  */
 
   for (++f; *f != "POSTTAGS"; f++)
   {
@@ -1235,7 +1043,7 @@ std::string
   for (auto seq : output_conversions_)
   	for (auto s : seq)
     	out << std::setw(16) << s << "\n";
-		*/
+  */
   out << " pre-tags\n";
   for (auto [pre_tag, value] : tags_.pre_)
     out << std::setw(16) << pre_tag << " : " << value.type() << "\n";
@@ -1244,7 +1052,7 @@ std::string
     out << std::setw(16) << post_tag << " : " << value.type() << "\n";
 
   out << " nested\n" << prettyPrintNested();
-  //out << " nested-vector\n" << prettyPrintNestedVector();
+  out << " nested-vector\n" << prettyPrintNestedVector();
   out << "}\n";
   return out.str();
 }

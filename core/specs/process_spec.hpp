@@ -71,8 +71,6 @@ class ProcessSpec
 
   Tags tags_;
 
-  //std::vector<language::TokenAssignment> signal_binds_;
-
   std::map<std::string, NestedProcessSpec>              nested_;
   std::map<std::string, std::pair<std::vector<NestedProcessSpec>, Tags>>
       nested_vector_;
@@ -93,19 +91,6 @@ class ProcessSpec
   void updateAndMatchTags(SignalSpecSet &source_tags,
                           SignalSpecSet &sink_tags,
                           int &          tag_count);
-  /*
-  bool attemptExplicitBind(SignalSpec &    sig,
-                           SignalSpecSet   sub_sigs,
-                           language::Token sub_spec_name,
-                           bool            is_input);
-  void errSignalBind(SignalSpec      proc_sig,
-                     language::Token sub_spec_name,
-                     SignalSpecSet   sub_sigs,
-                     bool);
-  void bindSignalsTo(SignalSpecSet sigs,
-                     language::Token   sub_spec_name,
-                     bool          is_input);
-  */
 
   void bindOutputSignal(language::Block::TokenBlockSignalBind signal_conversion_sequence,
                         SignalSpecSet   sigs,
@@ -189,13 +174,13 @@ public:
       bindInput(std::string name, std::string value);
 
   void
-      configureInput(std::string name, ConversionSequence &input);
+      configureInput(std::string name, ConversionSignatureSequence &input);
 
   void
       bindOutput(std::string name, std::string value);
 
   void
-      configureOutput(std::string name, ConversionSequence &output);
+      configureOutput(std::string name, ConversionSignatureSequence &output);
 
   void bindProcess(std::string name, ProcessSpec proc);
 

@@ -60,6 +60,12 @@ public:
     return self_->convert_(s);
   }
 
+  specs::ConversionSignature
+      getConversionFunction()
+  {
+    return self_->getConversionFunction_();
+  }
+
 private:
   // interface/ABC for an Converter
   struct ConverterInterface
@@ -69,11 +75,11 @@ private:
     virtual ~ConverterInterface()             = default;
     virtual ConverterInterface *copy_() const = 0;
 
+    virtual specs::ConversionSignature getConversionFunction_() const = 0;
+
     // mandatory methods
-    //virtual std::string fromSignal_() const = 0;
-    //virtual std::string toSignal_() const = 0;
     virtual Signal convert_(Signal) = 0;
-    virtual void                 configure_(specs::ConverterSpec) = 0;
+    virtual void configure_(specs::ConverterSpec) = 0;
     virtual specs::ConverterSpec publishConfiguration_()          = 0;
 	
     // optional methods
@@ -99,7 +105,13 @@ private:
       return new ConverterOject(*this);
     }
 
-	// provided global method
+    specs::ConversionSignature
+        getConversionFunction_() const override
+    {
+      using std::placeholders::_1;
+      return std::bind(&UserConverter::convert, data_, _1);
+    }
+        // provided global method
     std::string
         classNameAsString_() const override
     {
@@ -108,39 +120,6 @@ private:
 
     // mandatory methods
     //
-/*	
-    template <typename T>
-    using HasFromSignal =
-        decltype(std::declval<T &>().fromSignal());
-    std::string
-        fromSignal_() const override
-    {
-      if constexpr (utilities::TMP::
-                        has_signature<UserConverter, std::string, HasFromSignal>{})
-        return data_.fromSignal();
-      else
-        static_assert(ded::utilities::TMP::concept_fail<UserConverter>{},
-                      "\033[35mConverter does not satisfy "
-                      "\033[33m\"fromSignal\"\033[35m concept "
-                      "requirement\033[0m");
-    }
-
-    template <typename T>
-    using HasToSignal =
-        decltype(std::declval<T &>().toSignal());
-    std::string
-        toSignal_() const override
-    {
-      if constexpr (utilities::TMP::
-                        has_signature<UserConverter, std::string, HasToSignal>{})
-        return data_.toSignal();
-      else
-        static_assert(ded::utilities::TMP::concept_fail<UserConverter>{},
-                      "\033[35mConverter does not satisfy "
-                      "\033[33m\"toSignal\"\033[35m concept "
-                      "requirement\033[0m");
-    }
-*/
     template <typename T>
     using HasConvert =
         decltype(std::declval<T &>().convert(std::declval<Signal>()));
@@ -170,11 +149,6 @@ private:
         auto es  = data_.publishConfiguration();
         es.name_ = autoClassNameAsString<UserConverter>();
 
-		using std::placeholders::_1;
-		 std::function<concepts::Signal(concepts::Signal)>   f_convert = 
-			 std::bind( &UserConverter::convert, data_, _1 );
-		es.conversion_ = f_convert; //data_.convert;
-
         return es;
       }
       else
@@ -187,13 +161,14 @@ private:
     template <typename T>
     using HasConf = decltype(
         std::declval<T &>().configure(std::declval<specs::ConverterSpec>()));
-    void
+	void
         configure_(specs::ConverterSpec c) override
     {
       if constexpr (utilities::TMP::
                         has_signature<UserConverter, void, HasConf>{})
       {
         data_.configure(c);
+
       }
       else
         static_assert(ded::utilities::TMP::concept_fail<UserConverter>{},

@@ -21,10 +21,8 @@ class forager {
 
   std::string food_eaten_tag_ = "double";
 
-  //std::string org_input_los_tag_     = "<double,sensor_range>";
-  //std::string org_output_action_tag_ = "<double,2>";
-  ded::specs::ConversionSequence input_los;
-  ded::specs::ConversionSequence output_action;
+  ded::specs::ConversionSignatureSequence input_los;
+  ded::specs::ConversionSignatureSequence output_action;
 
   long grid_size_    = 10;
   long sensor_range_ = 4;
@@ -85,7 +83,7 @@ public:
 
   ded::specs::ProcessSpec publishConfiguration()
   {
-    ded::specs::ProcessSpec es;//{"forager"};
+    ded::specs::ProcessSpec es;
     es.bindParameter("grid_size",grid_size_);
     es.bindParameter("updates",updates_);
     es.bindParameter("density",density_);
@@ -96,8 +94,6 @@ public:
  
     es.bindPostTag("food_eaten","double");
 
-    //es.bindInput("line_of_sight",org_input_los_tag_);
-    //es.bindOutput("action",org_output_action_tag_);
     es.bindInput("line_of_sight","<double,sensor_range>");
     es.bindOutput("action","<double,2>");
     return es;

@@ -17,6 +17,7 @@ struct Label
 {
   std::string name_{}, value_{};
 };
+
 using Labels = std::vector<Label>;
 
 class Parser
@@ -44,7 +45,6 @@ class Parser
 
   void attemptOverride(Block &, int &);
   void attemptParameterOverride(Block &, int &);
-  //void attemptSignalBindOverride(Block &, int &);
   void attemptInputSignalBindOverride(Block &, int &);
   void attemptOutputSignalBindOverride(Block &, int &);
   void attemptTrace(Block &, int &);
@@ -99,13 +99,6 @@ public:
     lexer_ = s;
   }
 
-  /*
-  void
-      updateLabels(Label label)
-  {
-    labels_.push_back(label);
-  }
-*/
   void resolveTrackedWords();
 
 };
