@@ -2,22 +2,22 @@
 # working
 # tests nested process with nested tags 
 
-e = $markov_brain {
+substrate e = $markov_brain {
      hiddens = 5
 	 outputs = 2
 	 inputs = 4
 	}
 
-Population = $linear 
+population Population = $linear 
 	{ 
 	size = 40
 	entity = !e # `entity` is special
 	track_lineage = true 
 	}
 
-rep_for = $replicate 
+process rep_for = $replicate 
 	{
-		num = 2 
+		num = [ 2 3 4 ] 
 		env = $forager 
 				{ 
 				? food_eaten 3 
@@ -27,7 +27,7 @@ rep_for = $replicate
 		? x 10 
 	}
 		
-fs = 
+process fs = 
   $sequence  {
      first 	= !rep_for 
      second = $elite_replacement { 
@@ -36,7 +36,7 @@ fs =
 }
 
 
-Process = $cycle  { 
+process Process = $cycle  { 
  count = 101
   world = !fs
 }

@@ -22,7 +22,7 @@ void
 {
   auto const tokens = lexer_.getTokens();
 
-  if (begin + 2 >= static_cast<int>(tokens.size()))
+  if (begin + 3 >= static_cast<int>(tokens.size()))
   {
     errInvalidToken(tokens[begin], "unable to parse expression syntax");
     throw ParserError{};
@@ -30,34 +30,40 @@ void
 
   if (tokens[begin].type_ != TokenType::word)
   {
+    errInvalidToken(tokens[begin], "expected component type here");
+    throw ParserError{};
+  }
+
+  if (tokens[begin + 1].type_ != TokenType::word)
+  {
     errInvalidToken(tokens[begin], "expected new variable name here");
     throw ParserError{};
   }
 
   if (auto prev = rs::find_if(variables_,
-                              [tok = tokens[begin]](auto var) {
+                              [tok = tokens[begin + 1]](auto var) {
                                 return var.user_name_.expr_ == tok.expr_;
                               });
       prev != variables_.end())
   {
-    errInvalidToken(tokens[begin], "variable re-definition not allowed");
+    errInvalidToken(tokens[begin + 1], "variable re-definition not allowed");
     errInvalidToken(prev->user_name_, "variable already defined here");
     throw ParserError{};
   }
 
-  if (tokens[begin + 1].type_ != TokenType::assignment)
+  if (tokens[begin + 2].type_ != TokenType::assignment)
     errInvalidToken(tokens[begin + 1], "expected =");
 
-  if (tokens[begin + 2].type_ != TokenType::component &&
-      tokens[begin + 2].type_ != TokenType::variable)
+  if (tokens[begin + 3].type_ != TokenType::component &&
+      tokens[begin + 3].type_ != TokenType::variable)
   {
-    errInvalidToken(tokens[begin + 2],
+    errInvalidToken(tokens[begin + 3],
                     "expected existing variable name or component here");
     throw ParserError{};
   }
-  auto nested_block          = expandBlock(begin + 2);
-  nested_block.range_.begin_ = begin + 2;
-  variables_.push_back({ tokens[begin], nested_block });
+  auto nested_block          = expandBlock(begin + 3);
+  nested_block.range_.begin_ = begin + 3;
+  variables_.push_back({ tokens[begin], tokens[begin + 1], nested_block });
 }
 
 Block

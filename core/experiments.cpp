@@ -1,58 +1,101 @@
 
 #include <experimental/filesystem>
-#include <regex>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <regex>
 
+#include "configuration.hpp"
+#include "experiments.hpp"
 #include "utilities/term_colours.hpp"
 #include "utilities/utilities.hpp"
-#include "experiments.hpp"
-#include "configuration.hpp"
 
-namespace ded {
+namespace ded
+{
 namespace experiments
 {
+
+SpecVariant
+    variableToSpec(std ::string type, language::Block block)
+{
+  auto name = block.name_token_.expr_.substr(1);
+
+  if (type == "process")
+  {
+    if (!config_manager::isProcessBlock(name))
+    {
+      errInvalidToken(block.name_token_,
+                      "this is not an exisiting process component",
+                      config_manager::allProcessNames());
+      throw config_manager::ConfigError{};
+    }
+    return ded::specs::ProcessSpec{ block };
+  }
+  else if (type == "substrate")
+  {
+    if (!config_manager::isSubstrateBlock(name))
+    {
+      errInvalidToken(block.name_token_,
+                      "this is not an exisiting substrate component",
+                      config_manager::allSubstrateNames());
+      std::cout << name + " is not a component of type " + type;
+      throw config_manager::ConfigError{};
+    }
+    return ded::specs::SubstrateSpec{ block };
+  }
+  else if (type == "population")
+  {
+    if (!config_manager::isPopulationBlock(name))
+    {
+      errInvalidToken(block.name_token_,
+                      "this is not an exisiting population component",
+                      config_manager::allPopulationNames());
+      std::cout << name + " is not a component of type " + type;
+      throw config_manager::ConfigError{};
+    }
+    return ded::specs::PopulationSpec{ block };
+  }
+  else if (type == "converter")
+  {
+    if (!config_manager::isConverterBlock(name))
+    {
+      errInvalidToken(block.name_token_,
+                      "this is not an exisiting converter component",
+                      config_manager::allConverterNames());
+      std::cout << name + " is not a component of type " + type;
+      throw config_manager::ConfigError{};
+    }
+    return ded::specs::ConverterSpec{ block };
+  }
+  else if (type == "encoding")
+  {
+    if (!config_manager::isEncodingBlock(name))
+    {
+      errInvalidToken(block.name_token_,
+                      "this is not an exisiting encoding component",
+                      config_manager::allEncodingNames());
+      std::cout << name + " is not a component of type " + type;
+      throw config_manager::ConfigError{};
+    }
+    return ded::specs::EncodingSpec{ block };
+  }
+  else
+  {
+    std::cout << " unknown component type " + type;
+    throw config_manager::ConfigError{};
+  }
+}
 
 Simulation
     parseSimulation(language::Parser parser)
 {
 
-  std::map<std::string,
-           std::variant<ded::specs::SubstrateSpec,
-                        ded::specs::ProcessSpec,
-                        ded::specs::EncodingSpec,
-                        ded::specs::ConverterSpec,
-                        ded::specs::PopulationSpec>>
-      variables;
+  std::map<std::string, SpecVariant> variables;
 
   auto parser_variables = parser.variables();
-  for (auto [name, block] : parser_variables)
-  {
-    switch( ded::config_manager::typeOfBlock(block.name_.substr(1)))
-	{
-    case config_manager::SpecType::process:
-      variables[name.expr_] = ded::specs::ProcessSpec{  block };
-      break;
-    case config_manager::SpecType::substrate:
-      variables[name.expr_] = ded::specs::SubstrateSpec{ block };
-      break;
-    case config_manager::SpecType::population:
-      variables[name.expr_] = ded::specs::PopulationSpec{  block };
-      break;
-    case config_manager::SpecType::converter:
-      variables[name.expr_] = ded::specs::ConverterSpec{  block };
-      break;
-    case config_manager::SpecType::encoding:
-      variables[name.expr_] = ded::specs::EncodingSpec{  block };
-      break;
-    case config_manager::SpecType::UNKNOWN:
-    errInvalidToken(block.name_token_,
-                    "this is not an exisiting component",
-                    config_manager::allComponentNames());
-    throw language::ParserError{};
-    }
-  }
+  for (auto [type_token, name_token, block] : parser_variables)
+    variables[name_token.expr_] = variableToSpec(
+        type_token.expr_, block);
 
   if (variables.find("Process") == variables.end())
   {
@@ -75,12 +118,14 @@ Simulation
               << " does not define population 'Population'\n";
     throw specs::SpecError{};
   }
-  if (!std::holds_alternative<ded::specs::PopulationSpec>(variables["Population"]))
+  if (!std::holds_alternative<ded::specs::PopulationSpec>(
+          variables["Population"]))
   {
     std::cout << "error: 'Population' must be of type population\n";
     throw specs::SpecError{};
   }
-  auto population_spec = std::get<ded::specs::PopulationSpec>(variables["Population"]);
+  auto population_spec =
+      std::get<ded::specs::PopulationSpec>(variables["Population"]);
 
   process_spec.bindSubstrateIO(
       population_spec.instantiateNestedSubstrateUserParameterSizes());
@@ -89,7 +134,9 @@ Simulation
 
   process_spec.recordTraces();
 
-  return { population_spec, process_spec, parser.labels(), process_spec.queryTraces() };
+  return {
+    population_spec, process_spec, parser.labels(), process_spec.queryTraces()
+  };
 }
 
 std::vector<language::Parser>
@@ -102,7 +149,7 @@ std::vector<language::Parser>
     std::vector<language::Parser> next_explosion;
     for (auto p : exploded_parsers)
       for (auto ep : p.varyParameter())
-		 next_explosion.push_back(ep);
+        next_explosion.push_back(ep);
 
     if (next_explosion.size() == exploded_parsers.size())
       break;
@@ -115,20 +162,21 @@ std::vector<language::Parser>
 std::vector<Simulation>
     parseAllSimulations(std::string file_name)
 {
-	language::Lexer lexer{file_name};
+  language::Lexer lexer{ file_name };
 
   ded::language::Parser p;
   p.updateLexer(lexer);
 
   auto exploded_parsers = expandAllTokens(p);
 
-  for (auto & p : exploded_parsers) {
-	  p.parseFromLexer();
-	  p.resolveTrackedWords();
+  for (auto &p : exploded_parsers)
+  {
+    p.parseFromLexer();
+    p.resolveTrackedWords();
   }
 
-  return exploded_parsers |
-         rv::transform(parseSimulation) | rs::to<std::vector<Simulation>>;
+  return exploded_parsers | rv::transform(parseSimulation) |
+         rs::to<std::vector<Simulation>>;
 }
 
 std::pair<specs::PopulationSpec, specs::ProcessSpec>
@@ -158,7 +206,7 @@ std::pair<specs::PopulationSpec, specs::ProcessSpec>
 
 void
     prepareSimulationsMsuHpcc(const std::vector<std::string> &exp_names,
-                              int                              replicate_count)
+                              int                             replicate_count)
 {
   std::ofstream sb_script("./run.sb");
   sb_script << R"~(#!/bin/bash -login
@@ -167,32 +215,33 @@ void
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 		
-#SBATCH --array=0-)~" <<  replicate_count - 1 <<
-R"~(
+#SBATCH --array=0-)~"
+            << replicate_count - 1 <<
+      R"~(
 cd ${SLURM_SUBMIT_DIR}
 ./ded -f $1 ${SLURM_ARRAY_TASK_ID} 
 )~";
 
   std::ofstream experiment_script("./run.sh");
-    experiment_script << "\nfor exp in ";
-    for (auto e : exp_names)
-      experiment_script << e << " ";
-    experiment_script << "; do sbatch run.sb $exp ; done\n";
+  experiment_script << "\nfor exp in ";
+  for (auto e : exp_names)
+    experiment_script << e << " ";
+  experiment_script << "; do sbatch run.sb $exp ; done\n";
 }
 
 void
     prepareSimulationsLocally(const std::vector<std::string> &exp_names,
-                                int                            replicate_count)
+                              int                             replicate_count)
 {
 
   std::ofstream experiment_script("./run.sh");
-    experiment_script << "\nfor exp in ";
-    for (auto e : exp_names)
-      experiment_script << e << " ";
-    experiment_script << "; do for rep in ";
-    for (auto i : rv::iota(0, replicate_count))
-      experiment_script << i << " ";
-    experiment_script << "; do ./ded -f $exp $rep ; done ; done\n";
+  experiment_script << "\nfor exp in ";
+  for (auto e : exp_names)
+    experiment_script << e << " ";
+  experiment_script << "; do for rep in ";
+  for (auto i : rv::iota(0, replicate_count))
+    experiment_script << i << " ";
+  experiment_script << "; do ./ded -f $exp $rep ; done ; done\n";
 }
 
 std::vector<std::string>
@@ -236,8 +285,8 @@ std::vector<std::string>
   }
   if (exp_names.empty())
   {
-      std::cout << "error: no experiments to simulate\n";
-	  throw specs::SpecError{};
+    std::cout << "error: no experiments to simulate\n";
+    throw specs::SpecError{};
   }
   return exp_names;
 }

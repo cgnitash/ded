@@ -35,8 +35,7 @@ PopulationSpec::PopulationSpec( language::Block block)
     auto name       = blover.name_;
     auto nested_block = blover.blocks_[0];
 
-    if (config_manager::typeOfBlock(nested_block.name_.substr(1)) !=
-        config_manager::SpecType::substrate)
+    if (!config_manager::isSubstrateBlock(nested_block.name_.substr(1)))
     {
       errInvalidToken(name,
                              "override of " + name.expr_ +

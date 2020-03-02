@@ -15,44 +15,68 @@ namespace ded
 namespace config_manager
 {
 
-SpecType
-    typeOfBlock(std::string name)
-{
-  if (isSubstrateBlock(name))
-    return SpecType::substrate;
-  if (isProcessBlock(name))
-    return SpecType::process;
-  if (isPopulationBlock(name))
-    return SpecType::population;
-  if (isEncodingBlock(name))
-    return SpecType::encoding;
-  if (isConverterBlock(name))
-    return SpecType::converter;
-  return SpecType::UNKNOWN;
-}
-
 void
-    showConfig(std::ostream &out, std::string name)
+    showConfig(std::ostream &out, std::string type_and_name)
 {
-  switch (typeOfBlock(name))
+  auto colon = type_and_name.find(':');
+  if (colon == std::string::npos)
   {
-    case SpecType::process:
-      out << ALL_PROCESS_SPECS[name].prettyPrint();
-      break;
-    case SpecType::substrate:
-      out << ALL_SUBSTRATE_SPECS[name].prettyPrint();
-      break;
-    case SpecType::population:
-      out << ALL_POPULATION_SPECS[name].prettyPrint();
-      break;
-    case SpecType::encoding:
-      out << ALL_ENCODING_SPECS[name].prettyPrint();
-      break;
-    case SpecType::converter:
-      out << ALL_CONVERTER_SPECS[name].prettyPrint();
-      break;
-    case SpecType::UNKNOWN:
-      out << "component " << name << " not found\n";
+    std::cout << "unrecognized <component-type>:<component-name> syntax";
+    throw ConfigError{};
+  }
+
+  auto type = type_and_name.substr(0, colon);
+  auto name = type_and_name.substr(colon + 1);
+
+  if (type == "process")
+  {
+    if (!isProcessBlock(name))
+    {
+      std::cout << name + " is not a component of type " + type;
+      throw ConfigError{};
+    }
+    out << ALL_PROCESS_SPECS[name].prettyPrint();
+  }
+  else if (type == "substrate")
+  {
+    if (!isSubstrateBlock(name))
+    {
+      std::cout << name + " is not a component of type " + type;
+      throw ConfigError{};
+    }
+    out << ALL_SUBSTRATE_SPECS[name].prettyPrint();
+  }
+  else if (type == "population")
+  {
+    if (!isPopulationBlock(name))
+    {
+      std::cout << name + " is not a component of type " + type;
+      throw ConfigError{};
+    }
+    out << ALL_POPULATION_SPECS[name].prettyPrint();
+  }
+  else if (type == "converter")
+  {
+    if (!isConverterBlock(name))
+    {
+      std::cout << name + " is not a component of type " + type;
+      throw ConfigError{};
+    }
+    out << ALL_CONVERTER_SPECS[name].prettyPrint();
+  }
+  else if (type == "encoding")
+  {
+    if (!isEncodingBlock(name))
+    {
+      std::cout << name + " is not a component of type " + type;
+      throw ConfigError{};
+    }
+    out << ALL_ENCODING_SPECS[name].prettyPrint();
+  }
+  else
+  {
+    std::cout << " unknown component type " + type;
+    throw ConfigError{};
   }
 
   return;

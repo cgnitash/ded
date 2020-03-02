@@ -53,6 +53,14 @@ struct Simulation
   }
 };
 
+using SpecVariant = std::variant<ded::specs::SubstrateSpec,
+                                 ded::specs::ProcessSpec,
+                                 ded::specs::EncodingSpec,
+                                 ded::specs::ConverterSpec,
+                                 ded::specs::PopulationSpec>;
+
+SpecVariant variableToSpec(std ::string type, language::Block block);
+
 std::vector<language::Parser> expandAllTokens(language::Parser);
 
 Simulation parseSimulation(language::Parser);

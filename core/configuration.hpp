@@ -29,16 +29,13 @@ std::string autoClassNameAsString() = delete;
 namespace config_manager
 {
 
+struct ConfigError
+{
+};
+
 void        showConfig(std::ostream &out, std::string name);
 void        listAllConfigs(std::ostream &out);
 void        saveAllConfigs();
-
-enum class SpecType
-{
-	encoding, substrate, process, population, converter, UNKNOWN
-};
-
-SpecType typeOfBlock(std::string name);
 
 bool        isSubstrateBlock(std::string name);
 bool        isEncodingBlock(std::string name);

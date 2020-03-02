@@ -285,9 +285,8 @@ void
     auto name       = blover.name_;
     auto nested_block = blover.blocks_[0];
 
-    auto ct = config_manager::typeOfBlock(nested_block.name_.substr(1));
-    if (ct != config_manager::SpecType::substrate &&
-        ct != config_manager::SpecType::encoding)
+    if (!config_manager::isSubstrateBlock(nested_block.name_.substr(1)) &&
+        !config_manager::isEncodingBlock(nested_block.name_.substr(1)))
     {
       errInvalidToken(name,
                              "override of " + name.expr_ +
@@ -295,7 +294,7 @@ void
       throw language::ParserError{};
     }
 
-    if (ct == config_manager::SpecType::substrate)
+    if (config_manager::isSubstrateBlock(nested_block.name_.substr(1)))
     {
       auto f = rs::find_if(
           nested_, [&](auto param) { return param.first == name.expr_; });
@@ -311,7 +310,7 @@ void
       f->second.e =
           std::make_unique<SubstrateSpec>(SubstrateSpec{  nested_block });
     }
-    if (ct == config_manager::SpecType::encoding)
+    if (config_manager::isEncodingBlock(nested_block.name_.substr(1)))
     {
       auto f = rs::find_if(
           encodings_, [&](auto param) { return param.first == name.expr_; });
@@ -348,13 +347,11 @@ void
     }
     for (auto nested_block : blover.blocks_)
     {
-
-      if (config_manager::typeOfBlock(nested_block.name_.substr(1)) !=
-          config_manager::SpecType::substrate)
+      if (!config_manager::isSubstrateBlock(nested_block.name_.substr(1)))
       {
         errInvalidToken(name,
-                               "nested vector of " + name.expr_ +
-                                   " must be of type substrate");
+                        "nested vector of " + name.expr_ +
+                            " must be of type substrate");
         throw language::ParserError{};
       }
 

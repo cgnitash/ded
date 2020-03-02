@@ -52,7 +52,8 @@ int
     Flags              Arguments	             Description
     -----              ---------                 -----------
     -l, --list                                   : lists all components currently loaded
-    -p, --print        <component-name>...       : print publication for each component in component-names
+    -p, --print        <component-type>:<component-name>...       
+												 : print publication for each component in component-names
     -s, --save                                   : saves configuration files 
     -v, --verify       <file-name>               : verify simulations in file-name
     -rl, --run-local   <file-name> <N>           : runs all simulations in file-name with N replicates (locally)
@@ -150,6 +151,9 @@ catch (const ded::language::ParserError &)
 {
 }
 catch (const ded::specs::SpecError &)
+{
+}
+catch (const ded::config_manager::ConfigError &)
 {
 }
 catch (...)

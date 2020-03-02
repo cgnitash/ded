@@ -27,6 +27,7 @@ class Parser
 
   struct UserVariable
   {
+	  Token type_{};
 	  Token user_name_{};
 	  Block user_specified_block_{};
   };

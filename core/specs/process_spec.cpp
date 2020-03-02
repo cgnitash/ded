@@ -684,8 +684,7 @@ void
 
     for (auto [i, nested_block] : rv::enumerate(blover.blocks_))
     {
-      if (config_manager::typeOfBlock(nested_block.name_.substr(1)) !=
-          config_manager::SpecType::process)
+      if (!config_manager::isProcessBlock(nested_block.name_.substr(1)))
       {
         errInvalidToken(name,
                         "nested process vector of " + name.expr_ +
