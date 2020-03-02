@@ -919,23 +919,27 @@ std::vector<std::string>
   for (auto &conversion : input_conversions_)
   {
     lines.push_back(alignment + conversion.source_);
+    lines.push_back(alignment + conversion.sink_);
     for (auto &conv : conversion.specs_)
-    {   // lines.push_back(alignment + " " + conv);
-      auto c_dump = conv.serialise(depth + 1);
+    {
+      lines.push_back(alignment + "-");
+      auto c_dump = conv.serialise(depth);
       lines.insert(lines.end(), c_dump.begin(), c_dump.end());
+      lines.push_back(alignment + "-");
     }
-    lines.push_back(alignment + " " + conversion.sink_);
   }
   lines.push_back(alignment + "OUTPUTS");
   for (auto &conversion : output_conversions_)
   {
     lines.push_back(alignment + conversion.source_);
+    lines.push_back(alignment + conversion.sink_);
     for (auto &conv : conversion.specs_)
-    {   // lines.push_back(alignment + " " + conv);
-      auto c_dump = conv.serialise(depth + 1);
+    {
+      lines.push_back(alignment + "-");
+      auto c_dump = conv.serialise(depth);
       lines.insert(lines.end(), c_dump.begin(), c_dump.end());
+      lines.push_back(alignment + "-");
     }
-    lines.push_back(alignment + " " + conversion.sink_);
   }
   lines.push_back(alignment + "PRETAGS");
   rs::transform(tags_.pre_, rs::back_inserter(lines), pad_signal);
@@ -994,36 +998,24 @@ ProcessSpec
     parameters_.parameters_[l.substr(0, p)] = c;
   }
 
-  std::vector<ConverterSpec> ins;
   for (++f; *f != "OUTPUTS";)
   {
-	  /*
-    //auto p =
-      //  std::find_if(f + 1, pop_dump.end(), [](auto l) { return l[0] != ' '; });
+    ConversionSequence_ cs;
+    cs.source_ = *f++;
+    cs.sink_   = *f++;
 
-	//std::vector<std::string> sequence;
-	ConversionSequence_ cs;
-	cs.source_ = *f;
+    while (*f == "-")
+    {
+      auto p = std::find_if(
+          f + 1, pop_dump.end(), [](auto l) { return l[0] == '-'; });
 
-    auto p =
-        std::find_if(f + 1, pop_dump.end(), [](auto l) { return l[0] != ' '; });
+      ConverterSpec e;
+      e.deserialise(std::vector<std::string>(f + 1, p));
+      cs.specs_.push_back(e);
 
-    std::transform(f + 1, p - 1, std::back_inserter(cs.names_), [](auto l) { return l.substr(1); });
-
-	cs.sink_ = (p - 1)->substr(1);
-	for (auto name : cs.names_)
-		cs.sequence_.push_back(ALL_CONVERTER_SPECS[name].signature());
-	input_conversions_.push_back(cs);
-
-    //std::transform(f + 1, p, f + 1, [](auto l) { return l.substr(1); });
-
-    ConverterSpec e;
-    //e.setUserSpecifiedName(*f);
-    e.deserialise(std::vector<std::string>(f + 1, p ));
-    //nested_vector_[*f].first.push_back(ns);
-	input_conversions_.sequence_.push_back(e);
-    f = p;
-	*/
+      f = p + 1;
+    }
+    input_conversions_.push_back(cs);
   }
 
   //TEST
@@ -1039,22 +1031,22 @@ ProcessSpec
 
   for (++f; *f != "PRETAGS";)
   {
-	  /*
-    auto p =
-        std::find_if(f + 1, pop_dump.end(), [](auto l) { return l[0] != ' '; });
+    ConversionSequence_ cs;
+    cs.source_ = *f++;
+    cs.sink_   = *f++;
 
-	ConversionSequence_ cs;
-	cs.source_ = *f;
+    while (*f == "-")
+    {
+      auto p = std::find_if(
+          f + 1, pop_dump.end(), [](auto l) { return l[0] == '-'; });
 
-    std::transform(f + 1, p - 1, std::back_inserter(cs.names_), [](auto l) { return l.substr(1); });
+      ConverterSpec e;
+      e.deserialise(std::vector<std::string>(f + 1, p));
+      cs.specs_.push_back(e);
 
-	cs.sink_ = (p - 1)->substr(1);
-	for (auto name : cs.names_)
-		cs.sequence_.push_back(ALL_CONVERTER_SPECS[name].signature());
-	output_conversions_.push_back(cs);
-
-    f = p;
-	*/
+      f = p + 1;
+    }
+    output_conversions_.push_back(cs);
   }
 
   //TEST
