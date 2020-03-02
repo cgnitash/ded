@@ -1,4 +1,6 @@
 
+# working
+# tests nested process with nested tags 
 
 e = $markov_brain {
      hiddens = 5
@@ -15,12 +17,16 @@ Population = $linear
 
 rep_for = $replicate 
 	{
-		num = [ 1 2 3 ]
+		num = 2 
 		env = $forager 
-				{ ? food_eaten 3 }
+				{ 
+				? food_eaten 3 
+				action <- out_sense 
+				line_of_sight ->  in_sense 
+				}
 		? x 10 
 	}
-
+		
 fs = 
   $sequence  {
      first 	= !rep_for 

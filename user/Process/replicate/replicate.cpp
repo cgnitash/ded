@@ -11,12 +11,12 @@ ded::concepts::Population
     // evaluate the entire population
     // add scores to accumulated scores
 	auto res_pop = env.evaluate(pop);
-    rs::transform(res_pop.getAsVector(),
+        rs::transform(res_pop.getAsVector(),
                       accumulated_scores,
                       rs::begin(accumulated_scores),
                       [this](const auto &org, auto score) {
                         return score +
-                               std::get<double>(org.data.getValue(x_tag_));
+                               std::any_cast<double>(org.data.getValue(x_tag_));
                       });
   });
 
