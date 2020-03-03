@@ -406,9 +406,72 @@ void
 
   auto ios = sub_spec.getIO();
   for (auto &oc : input_conversion_sequence_)
-    bindInputSignal(oc, ios.inputs_, sub_spec.nameToken());
+    bindSignalConversionSequence(oc,  sub_spec, true);
   for (auto &oc : output_conversion_sequence_)
-    bindOutputSignal(oc, ios.outputs_, sub_spec.nameToken());
+    bindSignalConversionSequence(oc,  sub_spec, false);
+}
+
+void
+    ProcessSpec::bindSignalConversionSequence(
+        language::Block::TokenBlockSignalBind signal_conversion_sequence,
+        specs::SubstrateSpec                  sub_spec,
+        bool                                  is_input)
+{
+
+  ConversionSequence_ cs;
+
+  auto message = is_input ? std::string{"input"} : std::string{"output"};
+
+  auto sub_ios = sub_spec.getIO();
+  auto &source_sigs = is_input ? io_.inputs_ : sub_ios.outputs_;
+  auto &sink_sigs = is_input ? sub_ios.inputs_ : io_.outputs_;
+
+  auto source_token = signal_conversion_sequence.source_;
+  auto source = rs::find(source_sigs, source_token.expr_, &NamedSignal::name_);
+  if (source == rs::end(source_sigs))
+  {
+    errInvalidToken(source_token,
+                    "Not an " + message + " signal of " +
+                        (is_input ? name_ : sub_spec.name()),
+                    source_sigs | rv::transform(&NamedSignal::name_) |
+                        rs::to<std::vector<std::string>>);
+    throw language::ParserError{};
+  }
+  cs.source_ = source_token.expr_;
+
+  auto sink_token = signal_conversion_sequence.sink_;
+  auto sink       = rs::find(sink_sigs, sink_token.expr_, &NamedSignal::name_);
+  if (sink == rs::end(sink_sigs))
+  {
+    errInvalidToken(sink_token,
+                    "Not an " + message + " signal of " +
+                        (is_input ? sub_spec.name() : name_),
+                    sink_sigs | rv::transform(&NamedSignal::name_) |
+                        rs::to<std::vector<std::string>>);
+    throw language::ParserError{};
+  }
+  cs.sink_ = sink_token.expr_;
+
+  auto sig = source->signal_spec_;
+
+  for (auto converter : signal_conversion_sequence.sequence_)
+    convertSignalConversionSequence(converter, sig, source_token, cs);
+
+  if (!sig.convertibleTo(sink->signal_spec_))
+  {
+    errInvalidToken(source_token,
+                    " output_type cannot be converted : output_type = " +
+                        sig.diagnosticName());
+    errInvalidToken(sink_token,
+                    " to expected input_type : input_type = " +
+                        sink->signal_spec_.diagnosticName());
+    throw language::ParserError{};
+  }
+
+  if (is_input)
+    input_conversions_.push_back(cs);
+  else
+    output_conversions_.push_back(cs);
 }
 
 void
@@ -423,7 +486,9 @@ void
 
     if (!config_manager::isConverterBlock(name.expr_.substr(1)))
     {
-      errInvalidToken(name, "Not a converter component");
+      errInvalidToken(name,
+                      "Not a converter component",
+                      config_manager::allConverterNames());
       throw language::ParserError{};
     }
 
@@ -448,104 +513,6 @@ void
     out.updatePlaceholders(in);
     sig = out;
 	source_token = name;
-}
-
-void
-    ProcessSpec::bindInputSignal(
-        language::Block::TokenBlockSignalBind signal_conversion_sequence,
-        SignalSpecSet                         sigs,
-        language::Token                       sub_spec_name)
-{
-
-  ConversionSequence_ cs;
-
-  auto source_token = signal_conversion_sequence.source_;
-  auto source = rs::find(io_.inputs_, source_token.expr_, &NamedSignal::name_);
-  if (source == rs::end(io_.inputs_))
-  {
-    errInvalidToken(source_token, "Not an input signal provided by " + name_);
-    throw language::ParserError{};
-  }
-  cs.source_ = source_token.expr_;
-
-  auto sink_token = signal_conversion_sequence.sink_;
-  auto sink       = rs::find(sigs, sink_token.expr_, &NamedSignal::name_);
-  if (sink == rs::end(sigs))
-  {
-    errInvalidToken(sink_token,
-                        "Not an input signal provided by " +
-                        sub_spec_name.expr_);
-    throw language::ParserError{};
-  }
-  cs.sink_ = sink_token.expr_;
-
-  auto sig = source->signal_spec_;
-
-  for (auto converter : signal_conversion_sequence.sequence_)
-  {
-	  convertSignalConversionSequence(converter, sig, source_token, cs);
-  }
-
-  if (!sig.convertibleTo(sink->signal_spec_))
-  {
-    errInvalidToken(source_token,
-                    " output_type cannot be converted : output_type = " +
-                        sig.diagnosticName());
-    errInvalidToken(sink_token,
-                    " to expected input_type : input_type = " +
-                        sink->signal_spec_.diagnosticName());
-    throw language::ParserError{};
-  }
-
-  input_conversions_.push_back(cs);
-}
-
-void ProcessSpec::bindOutputSignal(
-    language::Block::TokenBlockSignalBind signal_conversion_sequence,
-    SignalSpecSet sigs,
-    language::Token sub_spec_name)
-{
-
-  ConversionSequence_ cs;
-
-  auto source_token = signal_conversion_sequence.source_;
-  auto source = rs::find(sigs, source_token.expr_, &NamedSignal::name_);
-  if (source == rs::end(sigs))
-  {
-    errInvalidToken(source_token,
-                    "Not an output signal provided by " + sub_spec_name.expr_);
-    throw language::ParserError{};
-  }
-  cs.source_ = source_token.expr_;
-
-  auto sink_token = signal_conversion_sequence.sink_;
-  auto sink       = rs::find(io_.outputs_, sink_token.expr_, &NamedSignal::name_);
-  if (sink == rs::end(io_.outputs_))
-  {
-    errInvalidToken(sink_token, "Not an output signal provided by " + name_);
-    throw language::ParserError{};
-  }
-  cs.sink_ = sink_token.expr_;
-
-  auto sig = source->signal_spec_;
-
-  for (auto converter : signal_conversion_sequence.sequence_)
-  {
-	  convertSignalConversionSequence(converter, sig, source_token, cs);
-  }
-
-  if (!sig.convertibleTo(sink->signal_spec_))
-  {
-    errInvalidToken(source_token,
-                    " output_type cannot be converted : output_type = " +
-                        sig.diagnosticName());
-    errInvalidToken(sink_token,
-                    " to expected input_type : input_type = " +
-                        sink->signal_spec_.diagnosticName());
-    throw language::ParserError{};
-  }
-
-  output_conversions_.push_back(cs);
 }
 
 std::vector<std::pair<Trace, std::string>>

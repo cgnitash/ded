@@ -28,7 +28,11 @@ void
     throw ParserError{};
   }
 
-  if (tokens[begin].type_ != TokenType::word)
+  if (tokens[begin].type_ != TokenType::word ||
+      !rs::contains(
+          std::vector<std::string>{
+              "process", "substrate", "encoding", "population", "converter" },
+          tokens[begin].expr_))
   {
     errInvalidToken(tokens[begin], "expected component type here");
     throw ParserError{};
@@ -36,7 +40,7 @@ void
 
   if (tokens[begin + 1].type_ != TokenType::word)
   {
-    errInvalidToken(tokens[begin], "expected new variable name here");
+    errInvalidToken(tokens[begin + 1], "expected new variable name here");
     throw ParserError{};
   }
 
@@ -58,7 +62,10 @@ void
       tokens[begin + 3].type_ != TokenType::variable)
   {
     errInvalidToken(tokens[begin + 3],
-                    "expected existing variable name or component here");
+                    "expected existing variable name or component here",
+                    variables_ | rv::transform([](auto var) {
+                      return var.user_name_.expr_;
+                    }) | rs::to<std::vector<std::string>>);
     throw ParserError{};
   }
   auto nested_block          = expandBlock(begin + 3);

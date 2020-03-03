@@ -92,12 +92,10 @@ class ProcessSpec
                           SignalSpecSet &sink_tags,
                           int &          tag_count);
 
-  void bindOutputSignal(language::Block::TokenBlockSignalBind signal_conversion_sequence,
-                        SignalSpecSet   sigs,
-                        language::Token sub_spec_name);
-  void bindInputSignal(language::Block::TokenBlockSignalBind signal_conversion_sequence,
-                       SignalSpecSet   sigs,
-                       language::Token sub_spec_name);
+  void bindSignalConversionSequence(
+      language::Block::TokenBlockSignalBind signal_conversion_sequence,
+      specs::SubstrateSpec                  sub_spec,
+      bool                                  is_input);
 
   void convertSignalConversionSequence(language::Block::TokenBlocks converter,
                                        SignalSpec &                 sig,
