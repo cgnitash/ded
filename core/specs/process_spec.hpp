@@ -12,9 +12,9 @@
 #include "../utilities/term_colours.hpp"
 #include "../utilities/utilities.hpp"
 #include "configuration_primitive.hpp"
+#include "converter_spec.hpp"
 #include "population_spec.hpp"
 #include "signal_spec.hpp"
-#include "converter_spec.hpp"
 
 namespace ded
 {
@@ -30,8 +30,8 @@ namespace specs
 
 struct Trace
 {
-  SignalSpec signal_;
-  int        frequency_;
+  std::string name_;
+  int         frequency_;
 };
 
 struct TraceConfig
@@ -56,32 +56,33 @@ class ProcessSpec
 
   TraceConfig traces_;
 
-  std::string                                   name_;
-  language::Token                           name_token_;
-  std::string                                   user_specified_name_;
-  Parameters                                              parameters_;
+  std::string     name_;
+  language::Token name_token_;
+  std::string     user_specified_name_;
+  Parameters      parameters_;
 
   // might not be required
   IO io_;
   // since replaced by ??
   std::vector<language::Block::TokenBlockSignalBind> input_conversion_sequence_;
-  std::vector<language::Block::TokenBlockSignalBind> output_conversion_sequence_;
+  std::vector<language::Block::TokenBlockSignalBind>
+                                                     output_conversion_sequence_;
   std::vector<language::Block::TokenBlockSignalBind> tag_conversion_sequence_;
-  ConversionSequence input_conversions_;
-  ConversionSequence output_conversions_;
+  ConversionSequence                                 input_conversions_;
+  ConversionSequence                                 output_conversions_;
 
-  Tags tags_;
+  Tags               tags_;
   ConversionSequence tag_conversions_;
 
-  std::map<std::string, NestedProcessSpec>              nested_;
+  std::map<std::string, NestedProcessSpec> nested_;
   std::map<std::string, std::pair<std::vector<NestedProcessSpec>, Tags>>
       nested_vector_;
 
-  void parseSignalBinds( language::Block);
+  void parseSignalBinds(language::Block);
   void parseTagBinds(language::Block block);
-  void parseTraces( language::Block);
-  void parseNested( language::Block);
-  void parseNestedVector( language::Block);
+  void parseTraces(language::Block);
+  void parseNested(language::Block);
+  void parseNestedVector(language::Block);
 
   std::pair<SignalSpecSet, std::string> getTagsWithName(language::Token token,
                                                         bool            is_pre);
@@ -96,19 +97,18 @@ class ProcessSpec
 
   void convertSignalConversionSequence(language::Block::TokenBlocks converter,
                                        SignalSpec &                 sig,
-                                       language::Token &source_token,
+                                       language::Token &    source_token,
                                        ConversionSequence_ &cs);
 
   std::string prettyPrintNested();
   std::string prettyPrintNestedVector();
 
 public:
-
   ProcessSpec(std::string name = "") : name_(name)
   {
   }
 
-  ProcessSpec( language::Block);
+  ProcessSpec(language::Block);
 
   auto
       name() const
@@ -146,33 +146,27 @@ public:
                     ArgumentType                          value,
                     std::vector<Constraint<ArgumentType>> cons = {})
   {
-	parameters_.bind(name, value, cons);
+    parameters_.bind(name, value, cons);
   }
 
   template <typename ValueType>
   void
       configureParameter(std::string name, ValueType &value)
   {
-    parameters_.configure(name, value); 
+    parameters_.configure(name, value);
   }
 
-  void
-      bindPreTag(std::string name, std::string value);
+  void bindPreTag(std::string name, std::string value);
 
-  void
-      bindPostTag(std::string name, std::string value);
+  void bindPostTag(std::string name, std::string value);
 
-  void
-      bindInput(std::string name, std::string value);
+  void bindInput(std::string name, std::string value);
 
-  void
-      configureInput(std::string name, ConversionSignatureSequence &input);
+  void configureInput(std::string name, ConversionSignatureSequence &input);
 
-  void
-      bindOutput(std::string name, std::string value);
+  void bindOutput(std::string name, std::string value);
 
-  void
-      configureOutput(std::string name, ConversionSignatureSequence &output);
+  void configureOutput(std::string name, ConversionSignatureSequence &output);
 
   void bindProcess(std::string name, ProcessSpec proc);
 
@@ -183,33 +177,30 @@ public:
   void configureProcessVector(std::string               name,
                               std::vector<ProcessSpec> &procs);
 
-  void bindProcessPreConstraints(
-      std::string                                      proc_name,
-      std::vector<SignalConstraint> pre_constraints);
+  void bindProcessPreConstraints(std::string                   proc_name,
+                                 std::vector<SignalConstraint> pre_constraints);
 
   void bindProcessPostConstraints(
-      std::string                                      proc_name,
+      std::string                   proc_name,
       std::vector<SignalConstraint> post_constraints);
 
   void bindProcessVectorPreConstraints(
-      std::string                                      proc_name,
+      std::string                   proc_name,
       std::vector<SignalConstraint> pre_constraints);
 
   void bindProcessVectorPostConstraints(
-      std::string                                      proc_name,
+      std::string                   proc_name,
       std::vector<SignalConstraint> post_constraints);
-
 
   std::vector<std::string> serialise(long, bool) const;
   ProcessSpec              deserialise(std::vector<std::string>);
-  std::string prettyPrint();
+  std::string              prettyPrint();
 
   void                                       instantiateUserParameterSizes();
   void                                       bindSubstrateIO(SubstrateSpec);
-  void                                       recordTraces();
   std::vector<std::pair<Trace, std::string>> queryTraces();
 
-  void                                       bindTags();
+  void bindTags();
   friend class concepts::Process;
 };
 

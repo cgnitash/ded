@@ -16,34 +16,16 @@ namespace specs
 {
 
 void
-    SubstrateSpec::bindInput(std::string name, std::string value)
+    SubstrateSpec::bindInput(std::string name, std::string type)
 {
-  io_.inputs_.push_back({ name, SignalSpec{ name, name, value } });
+  io_.inputs_.push_back({ name, SignalSpec{ type } });
 }
 
-/*
 void
-    SubstrateSpec::configureInput(std::string name, std::string &value)
+    SubstrateSpec::bindOutput(std::string name, std::string type)
 {
-  auto i = rs::find_if(io_.inputs_, [=](auto ns) { return ns.name_ == name; });
-  value  = i->signal_spec_.identifier();
+  io_.outputs_.push_back({ name, SignalSpec{ type } });
 }
-*/
-
-void
-    SubstrateSpec::bindOutput(std::string name, std::string value)
-{
-  io_.outputs_.push_back({ name, SignalSpec{ name, name, value } });
-}
-
-/*
-void
-    SubstrateSpec::configureOutput(std::string name, std::string &value)
-{
-  auto i = rs::find_if(io_.outputs_, [=](auto ns) { return ns.name_ == name; });
-  value  = i->signal_spec_.identifier();
-}
-*/
 
 void
     SubstrateSpec::bindEncoding(std::string name, EncodingSpec e)
@@ -96,8 +78,8 @@ void
 
 void
     SubstrateSpec::bindSubstrate(
-        std::string                                      substrate_name,
-        SubstrateSpec                                    sub,
+        std::string                   substrate_name,
+        SubstrateSpec                 sub,
         std::vector<SignalConstraint> input_constraints,
         std::vector<SignalConstraint> output_constraints)
 {
@@ -109,7 +91,7 @@ void
   }
   nested_[substrate_name].e = std::make_unique<SubstrateSpec>(sub);
 
-  auto &constraints  = nested_[substrate_name].constraints_;
+  auto &constraints = nested_[substrate_name].constraints_;
 
   rs::transform(
       input_constraints, rs::back_inserter(constraints.inputs_), toSignal);
@@ -125,172 +107,26 @@ void
   {
     std::cout << "Warning: <" << name_ << ":" << name
               << "> substrate spec has not been bind-ed (probably error)\n";
-    //      std::exit(1);
   }
   else
     sub = *nested_[name].e;
 }
 
 void
-    SubstrateSpec::errSignalBind(SubstrateSpec sub_spec,
-                                 SignalSpec    sig,
-                                 bool          is_input)
-{
-  auto diagnostic_message = name_token_.diagnostic_;
-  auto left_padding       = std::string(name_token_.location_.column_ + 10, ' ');
-  std::cout << "parse-error\n\n"
-            << diagnostic_message << "\n"
-            << left_padding << utilities::TermColours::red_fg << "^"
-            << std::string(name_token_.expr_.length() - 1, '~') << "\n"
-            << left_padding << "no " << (is_input ? "input" : "output")
-            << " signals provided by substrate can be bound\n"
-            << utilities::TermColours::reset << left_padding
-            << sig.diagnosticName() << "\n\n";
-
-  auto substrate_name_token  = sub_spec.nameToken();
-  auto ss_diagnostic_message = substrate_name_token.diagnostic_;
-  auto ss_left_padding =
-      std::string(substrate_name_token.location_.column_ + 10, ' ');
-
-  std::cout << ss_diagnostic_message << "\n"
-            << ss_left_padding << utilities::TermColours::red_fg << "^"
-            << std::string(substrate_name_token.expr_.length() - 1, '~') << "\n"
-            << ss_left_padding << "viable " << (is_input ? "input" : "output")
-            << " signal candidates provided\n"
-            << utilities::TermColours::reset;
-
-  auto valid_signals =
-      is_input ? sub_spec.getIO().inputs_ : sub_spec.getIO().outputs_;
-  for (auto sig : valid_signals)
-    std::cout << ss_left_padding << sig.signal_spec_.diagnosticName() << std::endl;
-  throw SpecError{};
-}
-
-void
-    SubstrateSpec::matchNestedSignals(NestedSubstrateSpec &nes,
-                                      SignalSpecSet &      source_tags,
-                                      SignalSpecSet &      sink_tags,
-                                      bool                 is_input)
-{
-  if (source_tags.size() != sink_tags.size())
-  {
-    std::cout << "cannot match nested substrate signals\n";
-    throw SpecError{};
-  }
-  auto sink_tags_copy = sink_tags;
-  for (auto &n_tag : source_tags)
-  {
-    auto &src     = n_tag.signal_spec_;
-    auto  matches = rs::count_if(sink_tags_copy, [sig = src](auto ns) {
-      return ns.signal_spec_.exactlyMatches(sig);
-    });
-    if (matches > 1)
-    {
-      std::cout << "error: multiple tags match exactly\n";
-      throw SpecError{};
-    }
-    if (!matches)
-    {
-      errSignalBind(*nes.e, src, is_input);
-    }
-
-    rs::find_if(sink_tags,
-                [sig = src](auto ns) { return ns.signal_spec_.exactlyMatches(sig); })
-        ->signal_spec_.updateIdentifier(src.identifier());
-
-    sink_tags_copy.erase(rs::find_if(sink_tags_copy, [sig = src](auto ns) {
-      return ns.signal_spec_.exactlyMatches(sig);
-    }));
-  }
-}
-
-void
-    SubstrateSpec::checkNestedIO()
-{
-  for (auto &ename_es : nested_)
-  {
-    auto &es = ename_es.second;
-    matchNestedSignals(es, es.constraints_.inputs_, es.e->io_.inputs_, true);
-    matchNestedSignals(es, es.constraints_.outputs_, es.e->io_.outputs_, false);
-    es.e->checkNestedIO();
-  }
-}
-
-void
-    SubstrateSpec::bindSubstrateIO(SubstrateSpec sub_spec)
-{
-  auto ios = sub_spec.getIO();
-
-  for (auto &n_sig : io_.inputs_)
-  {
-    auto &in_sig  = n_sig.signal_spec_;
-    auto  matches = rs::count_if(ios.inputs_, [sig = in_sig](auto ns) {
-      return ns.signal_spec_.exactlyMatches(sig);
-    });
-    if (matches > 1)
-    {
-      std::cout << "error: multiple input signals match exactly\n";
-      // throw;
-    }
-    if (!matches)
-    {
-      std::cout << "error: no input signals match exactly (convertible signals "
-                   "not supported yet)\n  "
-                << n_sig.signal_spec_.fullName() << "\nviable candidates";
-      for (auto sig : ios.inputs_)
-        std::cout << "\n    " << sig.signal_spec_.fullName();
-      throw SpecError{};
-    }
-    auto i = rs::find_if(ios.inputs_, [sig = in_sig](auto ns) {
-      return ns.signal_spec_.exactlyMatches(sig);
-    });
-    in_sig.updateIdentifier(i->signal_spec_.identifier());
-    ios.inputs_.erase(i);
-  }
-
-  for (auto &n_sig : io_.outputs_)
-  {
-    auto &out_sig = n_sig.signal_spec_;
-    auto  matches = rs::count_if(ios.outputs_, [sig = out_sig](auto ns) {
-      return ns.signal_spec_.exactlyMatches(sig);
-    });
-    if (matches > 1)
-    {
-      std::cout << "error: multiple output signals match exactly\n";
-      // throw;
-    }
-    if (!matches)
-    {
-      std::cout << "error: no input signals match exactly (convertible signals "
-                   "not supported yet)\n  "
-                << n_sig.signal_spec_.fullName() << "\nviable candidates";
-      for (auto sig : ios.outputs_)
-        std::cout << "\n    " << sig.signal_spec_.fullName();
-      throw SpecError{};
-    }
-    auto i = rs::find_if(ios.outputs_, [sig = out_sig](auto ns) {
-      return ns.signal_spec_.exactlyMatches(sig);
-    });
-    out_sig.updateIdentifier(i->signal_spec_.identifier());
-    ios.outputs_.erase(i);
-  }
-}
-
-void
-    SubstrateSpec::parseNested( language::Block block)
+    SubstrateSpec::parseNested(language::Block block)
 {
   // Must be wrong
   for (auto blover : block.nested_)
   {
-    auto name       = blover.name_;
+    auto name         = blover.name_;
     auto nested_block = blover.blocks_[0];
 
     if (!config_manager::isSubstrateBlock(nested_block.name_.substr(1)) &&
         !config_manager::isEncodingBlock(nested_block.name_.substr(1)))
     {
       errInvalidToken(name,
-                             "override of " + name.expr_ +
-                                 " must be of type substrate/encoding");
+                      "override of " + name.expr_ +
+                          " must be of type substrate/encoding");
       throw language::ParserError{};
     }
 
@@ -308,7 +144,7 @@ void
       }
 
       f->second.e =
-          std::make_unique<SubstrateSpec>(SubstrateSpec{  nested_block });
+          std::make_unique<SubstrateSpec>(SubstrateSpec{ nested_block });
     }
     if (config_manager::isEncodingBlock(nested_block.name_.substr(1)))
     {
@@ -323,14 +159,13 @@ void
         throw language::ParserError{};
       }
 
-      f->second = EncodingSpec{  nested_block };
+      f->second = EncodingSpec{ nested_block };
     }
   }
 }
 
 void
-    SubstrateSpec::parseNestedVector(
-                                     language::Block  block)
+    SubstrateSpec::parseNestedVector(language::Block block)
 {
   for (auto blover : block.nested_vector_)
   {
@@ -356,14 +191,13 @@ void
       }
 
       NestedSubstrateSpec ns;
-      ns.e =
-          std::make_unique<SubstrateSpec>(SubstrateSpec{  nested_block });
+      ns.e = std::make_unique<SubstrateSpec>(SubstrateSpec{ nested_block });
       f->second.push_back(ns);
     }
   }
 }
 
-SubstrateSpec::SubstrateSpec( language::Block block)
+SubstrateSpec::SubstrateSpec(language::Block block)
 {
   auto block_name = block.name_.substr(1);
   if (!rs::contains(config_manager::allSubstrateNames(), block_name))
@@ -378,11 +212,10 @@ SubstrateSpec::SubstrateSpec( language::Block block)
 
   name_token_ = block.name_token_;
 
-  //parseParameters( block);
   parameters_.loadFromSpec(block.overrides_, name_);
-  parseNested( block);
-  parseNestedVector( block);
-  instantiateUserParameterSizes(0);
+  parseNested(block);
+  parseNestedVector(block);
+  instantiateUserParameterSizes();
 }
 
 std::vector<std::string>
@@ -391,13 +224,15 @@ std::vector<std::string>
   std::vector<std::string> lines;
   auto                     alignment = std::string(depth, ' ');
 
-  auto pad_signal = [&](auto sig) { return alignment + sig.signal_spec_.fullName(); };
+  auto pad_signal = [&](auto sig) { return alignment + sig.name_; };
 
   lines.push_back(alignment + "substrate:" + name_);
   lines.push_back(alignment + "PARAMETERS");
-  rs::transform(parameters_.parameters_, rs::back_inserter(lines), [&](auto parameter) {
-    return alignment + parameter.first + ":" + parameter.second.valueAsString();
-  });
+  rs::transform(
+      parameters_.parameters_, rs::back_inserter(lines), [&](auto parameter) {
+        return alignment + parameter.first + ":" +
+               parameter.second.valueAsString();
+      });
   lines.push_back(alignment + "INPUTS");
   rs::transform(io_.inputs_, rs::back_inserter(lines), pad_signal);
   lines.push_back(alignment + "OUTPUTS");
@@ -527,22 +362,21 @@ std::string
 }
 
 void
-    SubstrateSpec::instantiateUserParameterSizes(int sig_count)
+    SubstrateSpec::instantiateUserParameterSizes()
 {
   for (auto &n_sig : io_.inputs_)
     for (auto &[param, cp] : parameters_.parameters_)
-      if (cp.typeAsString() == "long" && param == n_sig.signal_spec_.userParameter())
-      {
-        n_sig.signal_spec_.instantiateUserParameter(std::stol(cp.valueAsString()));
-        n_sig.signal_spec_.updateIdentifier("~sig" + std::to_string(sig_count++));
-      }
+      if (cp.typeAsString() == "long" &&
+          param == n_sig.signal_spec_.userParameter())
+        n_sig.signal_spec_.instantiateUserParameter(
+            std::stol(cp.valueAsString()));
+
   for (auto &n_sig : io_.outputs_)
     for (auto &[param, cp] : parameters_.parameters_)
-      if (cp.typeAsString() == "long" && param == n_sig.signal_spec_.userParameter())
-      {
-        n_sig.signal_spec_.instantiateUserParameter(std::stol(cp.valueAsString()));
-        n_sig.signal_spec_.updateIdentifier("~sig" + std::to_string(sig_count++));
-      }
+      if (cp.typeAsString() == "long" &&
+          param == n_sig.signal_spec_.userParameter())
+        n_sig.signal_spec_.instantiateUserParameter(
+            std::stol(cp.valueAsString()));
 }
 
 }   // namespace specs

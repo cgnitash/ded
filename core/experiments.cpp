@@ -132,7 +132,7 @@ Simulation
 
   process_spec.bindTags();
 
-  process_spec.recordTraces();
+  //process_spec.recordTraces();
 
   return {
     population_spec, process_spec, parser.labels(), process_spec.queryTraces()

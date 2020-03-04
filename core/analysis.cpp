@@ -6,9 +6,9 @@
 #include <regex>
 #include <vector>
 
+#include "specs/population_spec.hpp"
 #include "specs/process_spec.hpp"
 #include "specs/substrate_spec.hpp"
-#include "specs/population_spec.hpp"
 
 #include "analysis.hpp"
 #include "experiments.hpp"
@@ -20,8 +20,7 @@ namespace ded
 namespace experiments
 {
 std::tuple<specs::Trace, std::string, std::vector<Simulation>>
-    getSingleTrace(std::vector<Simulation> simulations,
-                     std::string             trace_name)
+    getSingleTrace(std::vector<Simulation> simulations, std::string trace_name)
 {
 
   std::vector<std::tuple<specs::Trace, std::string, std::vector<Simulation>>>
@@ -50,23 +49,22 @@ std::tuple<specs::Trace, std::string, std::vector<Simulation>>
     throw language::ParserError{};   // wrong exception
   }
 
-  auto base_trace_name = m[1].str();
+  auto base_trace_name     = m[1].str();
   auto trace_paths_back_up = trace_paths;
-  trace_paths.erase(
-      std::remove_if(std::begin(trace_paths),
-                     std::end(trace_paths),
-                     [&base_trace_name](auto t) {
-                       return std::get<0>(t).signal_.userName() !=
-                              base_trace_name;
-                     }),
-      std::end(trace_paths));
+  trace_paths.erase(std::remove_if(std::begin(trace_paths),
+                                   std::end(trace_paths),
+                                   [&base_trace_name](auto t) {
+                                     return std::get<0>(t).name_ !=
+                                            base_trace_name;
+                                   }),
+                    std::end(trace_paths));
 
   if (trace_paths.empty())
   {
     std::cout << "error: trace name " << base_trace_name
               << " not a valid trace\nvalid traces are\n";
     for (auto t : trace_paths_back_up)
-      std::cout << std::get<1>(t) << std::get<0>(t).signal_.userName() << "\n";
+      std::cout << std::get<1>(t) << std::get<0>(t).name_ << "\n";
     throw language::ParserError{};   // wrong exception
   }
 
@@ -74,9 +72,9 @@ std::tuple<specs::Trace, std::string, std::vector<Simulation>>
   {
     std::cout << "error: trace name " << base_trace_name
               << " is repeated\nspecify trace as follows\n";
-    for (auto [i,t]  : rv::enumerate(trace_paths))
-      std::cout << std::get<1>(t) << std::get<0>(t).signal_.userName() << "~"
-                << i + 1 << "\n";
+    for (auto [i, t] : rv::enumerate(trace_paths))
+      std::cout << std::get<1>(t) << std::get<0>(t).name_ << "~" << i + 1
+                << "\n";
     throw language::ParserError{};   // wrong exception
   }
 
@@ -101,7 +99,7 @@ std::pair<std::vector<int>, int>
   std::vector<int> invocation_counts;
   for (const auto &sim : true_simulations)
   {
-    auto barCode = sim.barCode();
+    auto barCode  = sim.barCode();
     auto exp_path = "data/" + barCode + "/";
     if (!std::experimental::filesystem::exists(exp_path))
     {
@@ -112,8 +110,7 @@ std::pair<std::vector<int>, int>
 
     for (auto rep : rv::iota(0))
     {
-      auto rep_path =
-          exp_path + std::to_string(rep) + "/" + trace_path;
+      auto rep_path = exp_path + std::to_string(rep) + "/" + trace_path;
       if (!std::experimental::filesystem::exists(rep_path))
       {
         rep_counts.push_back(rep);
@@ -121,11 +118,9 @@ std::pair<std::vector<int>, int>
       }
       int invocation = trace.frequency_;
       while (std::experimental::filesystem::exists(
-          rep_path + trace.signal_.userName() + "_" +
-          std::to_string(invocation) + ".csv"))
+          rep_path + trace.name_ + "_" + std::to_string(invocation) + ".csv"))
         invocation += trace.frequency_;
       invocation_counts.push_back(invocation - trace.frequency_);
-      // std::cout << invocation << "\n";
     }
   }
 
@@ -145,8 +140,7 @@ std::pair<std::vector<int>, int>
   }
 
   return { rv::iota(trace.frequency_, *low + 1) |
-               rv::filter(
-                   [f = trace.frequency_](auto i) { return !(i % f); }),
+               rv::filter([f = trace.frequency_](auto i) { return !(i % f); }),
            *low_rep };
 }
 
@@ -156,10 +150,9 @@ void
   auto simulations = ded::experiments::parseAllSimulations(file_name);
   auto single      = getSingleTrace(simulations, trace_name);
 
-  //auto [trace, trace_path, true_simulations] = single;
-  auto trace = std::get<0>(single);
-  auto trace_path = std::get<1>(single);
-  auto [invokes, max_rep]                    = findAllStoredData(single);
+  auto trace              = std::get<0>(single);
+  auto trace_path         = std::get<1>(single);
+  auto [invokes, max_rep] = findAllStoredData(single);
 
   std::ofstream analysis_file("analysis.R");
   analysis_file << "#!/usr/bin/env Rscript";
@@ -177,8 +170,8 @@ void
                     rv::intersperse(",") | ra::join)
                 << ")\n";
   analysis_file << "data=un_reported_data(exps,\"/" + trace_path << "\",\""
-                << trace.signal_.userName() << "\",0:" << max_rep - 1
-                << ",seq(" << trace.frequency_ << "," << invokes.back() << ","
+                << trace.name_ << "\",0:" << max_rep - 1 << ",seq("
+                << trace.frequency_ << "," << invokes.back() << ","
                 << trace.frequency_ << "))";
   analysis_file << "\nall_avg = "
                    "compute_all(avg,exps,labels,data)\npdf(\"result.pdf\")\n";

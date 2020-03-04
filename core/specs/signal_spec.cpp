@@ -1,18 +1,18 @@
 
+#include <iostream>
 #include <string>
 #include <vector>
-#include <iostream>
 
-#include "signal_spec.hpp"
-#include "configuration_primitive.hpp"
 #include "../utilities/utilities.hpp"
+#include "configuration_primitive.hpp"
+#include "signal_spec.hpp"
 
 namespace ded
 {
 namespace specs
 {
 
-	// forward declaration
+// forward declaration
 struct SpecError;
 
 bool
@@ -42,88 +42,62 @@ bool
   return size_ == other.size_;
 }
 
-SignalSpec::SignalSpec(std::string sig)
-{
-  auto p = sig.find(':');
-  *this  = SignalSpec(sig.substr(0, p), sig.substr(p + 1));
-}
-
-SignalSpec::SignalSpec(std::string name, std::string idt)
-{
-  auto p = idt.find('-');
-  *this  = SignalSpec(name, idt.substr(0, p), idt.substr(p + 1));
-}
-
-SignalSpec::SignalSpec(std::string name, std::string id, std::string type)
-    : user_name_(name), internal_identifier_(id), full_type_(type)
+SignalSpec::SignalSpec(std::string type) : full_type_(type)
 {
 
   std::smatch m;
- if (! std::regex_match(full_type_,m, valid_signal_type_))
- {
-	 std::cout << "unable to parse signal type " << full_type_ << "\n";
-		 throw SpecError{};
- }
-  
- if (m[0].str().empty())
- {
-	 is_any_type_ = true;
-	 return;
- }
- 
- 
- if (auto non_vector_type = m[1].str();
-		 !non_vector_type.empty())
- {
-	 full_type_ = non_vector_type;
-	 return;
- }
+  if (!std::regex_match(full_type_, m, valid_signal_type_))
+  {
+    std::cout << "unable to parse signal type " << full_type_ << "\n";
+    throw SpecError{};
+  }
 
- is_vector_   = true;
- vector_type_ = m[2].str();
+  if (m[0].str().empty())
+  {
+    is_any_type_ = true;
+    return;
+  }
 
- if (auto size = m[3].str(); size.empty())
-   is_any_vector_size_ = true;
- else if (size == "_")
+  if (auto non_vector_type = m[1].str(); !non_vector_type.empty())
+  {
+    full_type_ = non_vector_type;
+    return;
+  }
 
-   is_placeholder_vector_size_ = true;
+  is_vector_   = true;
+  vector_type_ = m[2].str();
 
- else if (std::isdigit(size[0]))
-   size_ = std::stol(size);
- else
- {
-   is_user_set_vector_size_ = true;
-   user_parameter_          = size;
- }
+  if (auto size = m[3].str(); size.empty())
+    is_any_vector_size_ = true;
+  else if (size == "_")
+
+    is_placeholder_vector_size_ = true;
+
+  else if (std::isdigit(size[0]))
+    size_ = std::stol(size);
+  else
+  {
+    is_user_set_vector_size_ = true;
+    user_parameter_          = size;
+  }
 }
 
-  void SignalSpec::updatePlaceholders(SignalSpec in){
-		  
-	  if (full_type_ == "_")
-		  full_type_ = in.full_type_;
-	  if (vector_type_ == "_")
-		  vector_type_ = in.full_type_;
-	  if (is_placeholder_vector_size_)
-		  size_ = in.size_;
-  
-  }
+void
+    SignalSpec::updatePlaceholders(SignalSpec in)
+{
+
+  if (full_type_ == "_")
+    full_type_ = in.full_type_;
+  if (vector_type_ == "_")
+    vector_type_ = in.full_type_;
+  if (is_placeholder_vector_size_)
+    size_ = in.size_;
+}
 
 NamedSignal
     toSignal(SignalConstraint user_constraint)
 {
-  auto name  = user_constraint.name_;
-  auto type =  user_constraint.type_;
-  return { name, SignalSpec{ name, name, type } };
-}
-
-std::ostream &
-    operator<<(std::ostream &out, TagType const &t)
-{
-  if (t == TagType::pre)
-	out << "pre";
-  else
-	out << "post";
-  return out;
+  return { user_constraint.name_, SignalSpec{ user_constraint.type_ } };
 }
 
 }   // namespace specs

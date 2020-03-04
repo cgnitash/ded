@@ -31,11 +31,13 @@ process fors = $sequence
      first 	= 	$forager 	
 				{ 
 				? food_eaten 5 
-				#action <- $vb_vd <- $vd_vb  <- out_sense 
-				action <- $add { by = 2.0 } <- out_sense 
+				action <- $vb_vd <- $vd_vb  <- out_sense 
+				#action <- $add { by = 2.0 } <- out_sense 
 				line_of_sight ->  $vd_vb  -> $vb_vd -> in_sense 
 				}
      second = $elite_replacement  {  strength = 0.4 }
+
+	 first:food_eaten => second:value
 }
 
 

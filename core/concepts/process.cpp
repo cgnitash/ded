@@ -1,11 +1,11 @@
 
 #include <experimental/filesystem>
-#include <string>
 #include <fstream>
 #include <iostream>
+#include <string>
 
-#include "process.hpp"
 #include "../../components.hpp"
+#include "process.hpp"
 
 namespace ded
 {
@@ -69,19 +69,17 @@ void
   for (auto n : ts)
     if (invocations_ && !(invocations_ % n.frequency_))
     {
-      specs::SignalSpec s_spec{ n.signal_ };
-      std::ofstream pop_stats_file{ ded::GLOBAL_PATH + s_spec.userName() + "_" +
+      std::ofstream pop_stats_file{ ded::GLOBAL_PATH + n.name_ + "_" +
                                     std::to_string(invocations_) + ".csv" };
-      pop_stats_file << "id," << s_spec.userName() << "\n";
+      pop_stats_file << "id," << n.name_ << "\n";
       for (const auto &org : pop.getAsVector())
         pop_stats_file << org.getID() << ","
-                       << std::any_cast<double>(
-                              org.data.getValue(s_spec.identifier()))
+                       << std::any_cast<double>(org.data.getValue(n.name_))
                        << std::endl;
     }
 }
 
-concepts::Population 
+concepts::Population
     Process::applyTagConversions(concepts::Population pop)
 {
 

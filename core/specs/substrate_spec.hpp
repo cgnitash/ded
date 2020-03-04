@@ -80,49 +80,37 @@ public:
                     ArgumentType                          value,
                     std::vector<Constraint<ArgumentType>> cons = {})
   {
-	parameters_.bind(name, value, cons);
-	}
+    parameters_.bind(name, value, cons);
+  }
 
   template <typename T>
   void
       configureParameter(std::string name, T &value)
   {
-    parameters_.configure(name, value); 
+    parameters_.configure(name, value);
   }
 
   void bindInput(std::string name, std::string value);
 
-  //void configureInput(std::string name, std::string &value);
   void bindOutput(std::string name, std::string value);
-  //void configureOutput(std::string name, std::string &value);
   void bindEncoding(std::string name, EncodingSpec e);
   void configureEncoding(std::string name, EncodingSpec &e);
   void bindNestedSubstrates(std::string name, std::vector<SubstrateSpec> subs);
   void configureNestedSubstrates(std::string                 name,
                                  std::vector<SubstrateSpec> &subs);
-  void bindSubstrate(
-      std::string                                      name,
-      SubstrateSpec                                    sub,
-      std::vector<SignalConstraint> input_constraints,
-      std::vector<SignalConstraint> output_constraints);
+  void bindSubstrate(std::string                   name,
+                     SubstrateSpec                 sub,
+                     std::vector<SignalConstraint> input_constraints,
+                     std::vector<SignalConstraint> output_constraints);
   void configureSubstrate(std::string name, SubstrateSpec &sub);
-  void parseNested( language::Block);
-  void parseNestedVector( language::Block);
+  void parseNested(language::Block);
+  void parseNestedVector(language::Block);
 
   std::vector<std::string> serialise(long) const;
   SubstrateSpec            deserialise(std::vector<std::string>);
   std::string              prettyPrint();
 
-  void instantiateUserParameterSizes(int);
-  void checkNestedIO();
-  void updateNestedConstraints(SignalSpecSet &constraints);
-  void matchNestedSignals(NestedSubstrateSpec &,
-                          SignalSpecSet &source_tags,
-                          SignalSpecSet &sink_tags,
-                          bool           is_input);
-  void errSignalBind(SubstrateSpec sub_spec, SignalSpec sig, bool is_input);
-
-  void bindSubstrateIO(SubstrateSpec);
+  void instantiateUserParameterSizes();
 
   friend class concepts::Substrate;
 };
