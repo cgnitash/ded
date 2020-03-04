@@ -34,6 +34,8 @@ process fors = $sequence
 				line_of_sight ->  in_sense 
 				}
      second = $elite_replacement  {  strength = 0.4 }
+	
+	 first:food_eaten => second:value
 }
 
 

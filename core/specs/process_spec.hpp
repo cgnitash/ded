@@ -63,34 +63,31 @@ class ProcessSpec
 
   // might not be required
   IO io_;
-  // since replaced by
+  // since replaced by ??
   std::vector<language::Block::TokenBlockSignalBind> input_conversion_sequence_;
   std::vector<language::Block::TokenBlockSignalBind> output_conversion_sequence_;
+  std::vector<language::Block::TokenBlockSignalBind> tag_conversion_sequence_;
   ConversionSequence input_conversions_;
   ConversionSequence output_conversions_;
 
   Tags tags_;
+  ConversionSequence tag_conversions_;
 
   std::map<std::string, NestedProcessSpec>              nested_;
   std::map<std::string, std::pair<std::vector<NestedProcessSpec>, Tags>>
       nested_vector_;
 
-  std::vector<TagFlow>
-      tag_flow_equalities_;
-  std::vector<TagFlow>
-      tag_flow_inequalities_;
-
   void parseSignalBinds( language::Block);
+  void parseTagBinds(language::Block block);
   void parseTraces( language::Block);
   void parseNested( language::Block);
   void parseNestedVector( language::Block);
 
-  void matchTags(SignalSpecSet &source_tags,
-                 SignalSpecSet &sink_tags,
-                 int &          tag_count);
-  void updateAndMatchTags(SignalSpecSet &source_tags,
-                          SignalSpecSet &sink_tags,
-                          int &          tag_count);
+  std::pair<SignalSpecSet, std::string> getTagsWithName(language::Token token,
+                                                        bool            is_pre);
+
+  void bindTagConversionSequence(
+      language::Block::TokenBlockSignalBind signal_conversion_sequence);
 
   void bindSignalConversionSequence(
       language::Block::TokenBlockSignalBind signal_conversion_sequence,
@@ -102,9 +99,6 @@ class ProcessSpec
                                        language::Token &source_token,
                                        ConversionSequence_ &cs);
 
-  void        updateNestedConstraints(SignalSpecSet &constraints);
-  void matchTagFlowEqualities(int &tag_count);
-  void matchNestedTagConstraints(int &tag_count);
   std::string prettyPrintNested();
   std::string prettyPrintNestedVector();
 
@@ -126,6 +120,12 @@ public:
       traces() const
   {
     return traces_;
+  }
+
+  auto
+      getTagConversions()
+  {
+    return tag_conversions_;
   }
 
   auto
@@ -160,13 +160,7 @@ public:
       bindPreTag(std::string name, std::string value);
 
   void
-      configurePreTag(std::string name, std::string &value);
-
-  void
       bindPostTag(std::string name, std::string value);
-
-  void
-      configurePostTag(std::string name, std::string &value);
 
   void
       bindInput(std::string name, std::string value);
@@ -205,7 +199,6 @@ public:
       std::string                                      proc_name,
       std::vector<SignalConstraint> post_constraints);
 
-  void bindTagEquality(NamedTag x, NamedTag y);
 
   std::vector<std::string> serialise(long, bool) const;
   ProcessSpec              deserialise(std::vector<std::string>);
@@ -213,10 +206,10 @@ public:
 
   void                                       instantiateUserParameterSizes();
   void                                       bindSubstrateIO(SubstrateSpec);
-  void                                       bindTags(int);
   void                                       recordTraces();
   std::vector<std::pair<Trace, std::string>> queryTraces();
 
+  void                                       bindTags();
   friend class concepts::Process;
 };
 

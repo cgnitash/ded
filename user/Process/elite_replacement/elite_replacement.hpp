@@ -7,7 +7,6 @@
 
 class elite_replacement {
 
-  std::string value_tag_ = "double";
   double      strength_  = 0.1;
   int invoke_ = 0;
 
@@ -31,8 +30,6 @@ public:
   void configure(ded::specs::ProcessSpec es)
   {
     es.configureParameter("strength",strength_);
-
-    es.configurePreTag("value",value_tag_);
   }
 
   ded::concepts::Population evaluate(ded::concepts::Population);

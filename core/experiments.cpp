@@ -130,7 +130,7 @@ Simulation
   process_spec.bindSubstrateIO(
       population_spec.instantiateNestedSubstrateUserParameterSizes());
 
-  process_spec.bindTags(0);
+  process_spec.bindTags();
 
   process_spec.recordTraces();
 

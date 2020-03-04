@@ -24,15 +24,19 @@ process rep_for = $replicate
 				action <- out_sense 
 				line_of_sight ->  in_sense 
 				}
-		? x 10 
+		env:food_eaten => env:x
+		? fx 10 
 	}
 		
 process fs = 
-  $sequence  {
+  $sequence  
+  {
      first 	= !rep_for 
-     second = $elite_replacement { 
- 	 strength = 0.4   
-  }
+     second = $elite_replacement 
+     { 
+	 	 strength = 0.4   
+     }
+	first:fx => second:value
 }
 
 

@@ -19,8 +19,6 @@
 
 class forager {
 
-  std::string food_eaten_tag_ = "double";
-
   ded::specs::ConversionSignatureSequence input_los;
   ded::specs::ConversionSignatureSequence output_action;
 
@@ -110,8 +108,6 @@ public:
     es.configureParameter("sensor_range",sensor_range_);
     es.configureParameter("direction",directional_);
 
-
-    es.configurePostTag("food_eaten",food_eaten_tag_);
 
     es.configureInput("line_of_sight",input_los);
     es.configureOutput("action",output_action);

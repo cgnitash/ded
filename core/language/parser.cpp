@@ -113,8 +113,9 @@ Block
 
     if (begin + 3 >= static_cast<int>(tokens.size()) ||
         (tokens[begin + 1].type_ != TokenType::assignment &&
-         tokens[begin + 1].type_ != TokenType::input_signal_bind_&&
-         tokens[begin + 1].type_ != TokenType::output_signal_bind_ &&
+         tokens[begin + 1].type_ != TokenType::input_signal_bind &&
+         tokens[begin + 1].type_ != TokenType::output_signal_bind &&
+         tokens[begin + 1].type_ != TokenType::tag_bind &&
          tokens[begin].type_ != TokenType::trace))
     {
       errInvalidToken(tokens[begin], "unable to parse override syntax");
@@ -140,11 +141,14 @@ void
     case TokenType::assignment:
       attemptParameterOverride(current, begin);
       break;
-    case TokenType::input_signal_bind_:
-      attemptInputSignalBindOverride(current, begin);
+    case TokenType::tag_bind:
+      attemptTagBindOverride(current, begin);
       break;
-    case TokenType::output_signal_bind_:
-      attemptOutputSignalBindOverride(current, begin);
+    case TokenType::input_signal_bind:
+      attemptSignalBindOverride(current, begin, true);
+      break;
+    case TokenType::output_signal_bind:
+      attemptSignalBindOverride(current, begin, false);
       break;
     default:
       errInvalidToken(tokens[begin],
@@ -155,13 +159,14 @@ void
 }
 
 void
-    Parser::attemptInputSignalBindOverride(Block &current, int &begin)
+    Parser::attemptTagBindOverride(Block &current, int &begin)
 {
   auto const tokens = lexer_.getTokens();
 
-  if (tokens[begin].type_ != TokenType::word)
+  if (tokens[begin].type_ != TokenType::word &&
+      tokens[begin].type_ != TokenType::tag_name)
   {
-    errInvalidToken(tokens[begin], "expected input signal here");
+    errInvalidToken(tokens[begin], "expected tag-name here");
     throw ParserError{};
   }
 
@@ -170,9 +175,72 @@ void
 
   while (begin + 2 < static_cast<int>(tokens.size()))
   {
-    if (tokens[begin + 1].type_ != TokenType::input_signal_bind_)
+    if (tokens[begin + 1].type_ != TokenType::tag_bind)
     {
-      errInvalidToken(tokens[begin + 1], "expected -> here");
+      errInvalidToken(tokens[begin + 1], "expected => here");
+      throw ParserError{};
+    }
+
+    if (tokens[begin + 2].type_ == TokenType::component ||
+        tokens[begin + 2].type_ == TokenType::variable)
+    {
+      auto converter_block = expandBlock(begin + 2);
+      conversion_sequence.sequence_.push_back(
+          { tokens[begin + 2], { converter_block } });
+      begin = converter_block.range_.end_ - 1;
+    }
+    else if (tokens[begin + 2].type_ == TokenType::word ||
+             tokens[begin].type_ == TokenType::tag_name)
+    {
+      conversion_sequence.sink_ = tokens[begin + 2];
+      begin += 2;
+      break;
+    }
+    else
+    {
+      errInvalidToken(
+          tokens[begin + 2],
+          "expected signal-name or Converter-component here");
+      throw ParserError{};
+    }
+  }
+
+  begin++;
+
+  current.tag_binds_.push_back(conversion_sequence);
+}
+
+
+void
+    Parser::attemptSignalBindOverride(Block &current, int &begin, bool is_input)
+{
+  auto const tokens = lexer_.getTokens();
+
+  auto signal_bind_type =
+      is_input ? TokenType::input_signal_bind : TokenType::output_signal_bind;
+
+  if (tokens[begin].type_ != TokenType::word)
+  {
+    errInvalidToken(
+        tokens[begin],
+        "expected " +
+            (is_input ? std::string{ "input" } : std::string{ "output" }) +
+            " signal here");
+    throw ParserError{};
+  }
+
+  Block::TokenBlockSignalBind conversion_sequence;
+  conversion_sequence.source_ = tokens[begin];
+
+  while (begin + 2 < static_cast<int>(tokens.size()))
+  {
+    if (tokens[begin + 1].type_ != signal_bind_type)
+    {
+      errInvalidToken(
+          tokens[begin + 1],
+          "expected " +
+              (is_input ? std::string{ "->" } : std::string{ "<-" }) +
+              " here");
       throw ParserError{};
     }
 
@@ -194,63 +262,21 @@ void
     {
       errInvalidToken(
           tokens[begin + 2],
-          "expected Substrate-input-signal or Converter-component here");
+          "expected signal-name or Converter-component here");
       throw ParserError{};
     }
   }
 
   begin++;
-  current.input_signal_binds_.push_back(conversion_sequence);
-}
 
-void
-    Parser::attemptOutputSignalBindOverride(Block &current, int &begin)
-{
-  auto const tokens = lexer_.getTokens();
-
-  if (tokens[begin].type_ != TokenType::word)
+  if (is_input)
+    current.input_signal_binds_.push_back(conversion_sequence);
+  else
   {
-    errInvalidToken(tokens[begin], "expected output signal here");
-    throw ParserError{};
+    std::swap(conversion_sequence.source_, conversion_sequence.sink_);
+    rs::reverse(conversion_sequence.sequence_);
+    current.output_signal_binds_.push_back(conversion_sequence);
   }
-
-  Block::TokenBlockSignalBind conversion_sequence;
-  conversion_sequence.sink_ = tokens[begin];
-
-  while (begin + 2 < static_cast<int>(tokens.size()))
-  {
-    if (tokens[begin + 1].type_ != TokenType::output_signal_bind_)
-    {
-      errInvalidToken(tokens[begin + 1], "expected <- here");
-      throw ParserError{};
-    }
-
-    if (tokens[begin + 2].type_ == TokenType::component ||
-        tokens[begin + 2].type_ == TokenType::variable)
-    {
-      auto converter_block = expandBlock(begin + 2);
-      conversion_sequence.sequence_.push_back(
-          { tokens[begin + 2], { converter_block } });
-      begin = converter_block.range_.end_ - 1;
-    }
-    else if (tokens[begin + 2].type_ == TokenType::word)
-    {
-      conversion_sequence.source_ = tokens[begin + 2];
-      begin += 2;
-      break;
-    }
-    else
-    {
-      errInvalidToken(
-          tokens[begin + 2],
-          "expected Substrate-input-signal or Converter-component here");
-      throw ParserError{};
-    }
-  }
-
-  begin++;
-  rs::reverse(conversion_sequence.sequence_);
-  current.output_signal_binds_.push_back(conversion_sequence);
 }
 
 void

@@ -21,24 +21,11 @@ void
   tags_.pre_.push_back({ name, SignalSpec{ name, name, value } });
 }
 
-void
-    ProcessSpec::configurePreTag(std::string name, std::string &value)
-{
-  value = rs::find(tags_.pre_, name, &ded::specs::NamedSignal::name_)
-              ->signal_spec_.identifier();
-}
 
 void
     ProcessSpec::bindPostTag(std::string name, std::string value)
 {
   tags_.post_.push_back({ name, SignalSpec{ name, name, value } });
-}
-
-void
-    ProcessSpec::configurePostTag(std::string name, std::string &value)
-{
-  value = rs::find(tags_.post_, name, &ded::specs::NamedSignal::name_)
-              ->signal_spec_.identifier();
 }
 
 void
@@ -216,161 +203,103 @@ void
 }
 
 void
-    ProcessSpec::bindTagEquality(NamedTag x,
-                                 NamedTag y)
+    ProcessSpec::bindTags()
 {
-  if (nested_.find(x.name_) == nested_.end() ||
-      nested_.find(y.name_) == nested_.end())
-  {
-    std::cout << "User error: cannot bind tag equality \n";
-    throw SpecError{};
-  }
-
-  tag_flow_equalities_.push_back({ x, y });
-}
-
-void
-    ProcessSpec::matchTags(SignalSpecSet &source_tags,
-                           SignalSpecSet &sink_tags,
-                           int &          tag_count)
-{
-
-  if (source_tags.size() != sink_tags.size())
-  {
-    std::cout << "cannot match flow equality\n";
-    throw SpecError{};
-  }
-  auto sink_tags_copy = sink_tags;
-  for (auto &n_tag : source_tags)
-  {
-    auto &src     = n_tag.signal_spec_;
-    auto  matches = rs::count_if(sink_tags_copy, [sig = src](auto ns) {
-      return ns.signal_spec_.exactlyMatches(sig);
-    });
-    if (matches > 1)
-    {
-      std::cout << "error: multiple tags match exactly\n";
-      throw SpecError{};
-    }
-    if (!matches)
-    {
-      std::cout << "error: no tags match exactly (convertible signals "
-                   "not supported yet)\n";
-      throw SpecError{};
-    }
-
-    auto snk = rs::find_if(sink_tags, [sig = src](auto ns) {
-      return ns.signal_spec_.exactlyMatches(sig);
-    });
-
-    if (snk->signal_spec_.identifier()[0] == '~')
-    {
-      if (src.identifier()[0] != '~')
-        src.updateIdentifier(snk->signal_spec_.identifier());
-      if (snk->signal_spec_.identifier() != src.identifier())
-      {
-        std::cout
-            << "error: tags were previously bound, and are in conflict now\n";
-        throw SpecError{};
-      }
-    }
-    else if (src.identifier()[0] == '~')
-    {
-      if (snk->signal_spec_.identifier()[0] != '~')
-        snk->signal_spec_.updateIdentifier(src.identifier());
-      if (snk->signal_spec_.identifier() != src.identifier())
-      {
-        std::cout << "error: tags were previously bound, and are in "
-                     "conflict now\n";
-        throw SpecError{};
-      }
-    }
-    else
-    {
-      tag_count++;
-      snk->signal_spec_.updateIdentifier("~tag" + std::to_string(tag_count));
-      src.updateIdentifier("~tag" + std::to_string(tag_count));
-    }
-
-    sink_tags_copy.erase(rs::find_if(sink_tags_copy, [sig = src](auto ns) {
-      return ns.signal_spec_.exactlyMatches(sig);
-    }));
-  }
-}
-
-void
-    ProcessSpec::matchTagFlowEqualities(int &tag_count)
-{
-
-  for (auto [source, sink] : tag_flow_equalities_)
-  {
-    auto &source_tags = source.type_ == TagType::pre
-                            ? nested_[source.name_].e->tags_.pre_
-                            : nested_[source.name_].e->tags_.post_;
-    auto &sink_tags = sink.type_ == TagType::pre
-                          ? nested_[sink.name_].e->tags_.pre_
-                          : nested_[sink.name_].e->tags_.post_;
-    matchTags(source_tags, sink_tags, tag_count);
-  }
-}
-
-void
-    ProcessSpec::updateNestedConstraints(SignalSpecSet &constraints)
-{
-  for (auto &source_tag : constraints)
-  {
-    auto same_user_name = [&source_tag](auto tag) {
-      return tag.signal_spec_.userName() == source_tag.signal_spec_.userName();
-    };
-    if (auto f = rs::find_if(tags_.pre_, same_user_name);
-        f != rs::end(tags_.pre_))
-      source_tag.signal_spec_.updateIdentifier(f->signal_spec_.identifier());
-    else if (f = rs::find_if(tags_.post_, same_user_name);
-             f != rs::end(tags_.post_))
-      source_tag.signal_spec_.updateIdentifier(f->signal_spec_.identifier());
-  }
-}
-
-void
-    ProcessSpec::updateAndMatchTags(SignalSpecSet &source_tags,
-                                    SignalSpecSet &sink_tags,
-                                    int &          tag_count)
-{
-  if (!source_tags.empty())
-  {
-    updateNestedConstraints(source_tags);
-    matchTags(source_tags, sink_tags, tag_count);
-  }
-}
-
-void
-    ProcessSpec::matchNestedTagConstraints(int &tag_count)
-{
-  for (auto &ename_es : nested_)
-  {
-    auto &es = ename_es.second;
-    updateAndMatchTags(es.constraints_.pre_, es.e->tags_.pre_, tag_count);
-    updateAndMatchTags(es.constraints_.post_, es.e->tags_.post_, tag_count);
-  }
-
-  for (auto &es_vec : nested_vector_)
-    for (auto &es : es_vec.second.first)
-    {
-      updateAndMatchTags(es.constraints_.pre_, es.e->tags_.pre_, tag_count);
-      updateAndMatchTags(es.constraints_.post_, es.e->tags_.post_, tag_count);
-    }
-}
-
-void
-    ProcessSpec::bindTags(int tag_count)
-{
-
-  matchTagFlowEqualities(tag_count);
-
-  matchNestedTagConstraints(tag_count);
-
   for (auto &es : nested_)
-    es.second.e->bindTags(tag_count);
+    es.second.e->bindTags();
+
+  for (auto &c : tag_conversion_sequence_)
+	  bindTagConversionSequence(c);
+}
+
+std::pair<SignalSpecSet, std::string>
+    ProcessSpec::getTagsWithName(language::Token token, bool is_pre)
+{
+  if (token.type_ == language::TokenType::tag_name)
+  {
+    auto p           = token.expr_.find(':');
+    auto nested_name = token.expr_.substr(0, p);
+    auto nested_tag  = token.expr_.substr(p + 1);
+
+    if (nested_.find(nested_name) == nested_.end())
+    {
+      errInvalidToken(token,
+                      "This is not a nested process of " + name_,
+                      nested_ | rv::keys | rs::to<std::vector<std::string>>);
+      throw language::ParserError{};
+    }
+    return { is_pre ? rv::concat(nested_[nested_name].e->tags_.post_,
+                                 nested_[nested_name].constraints_.pre_) |
+                          rs::to<std::vector<NamedSignal>>
+                    : rv::concat(nested_[nested_name].e->tags_.pre_,
+                                 nested_[nested_name].constraints_.post_) |
+                          rs::to<std::vector<NamedSignal>>,
+             nested_tag };
+  }
+  else
+  {
+    return { is_pre ? tags_.pre_ : tags_.post_, token.expr_ };
+  }
+}
+
+void
+    ProcessSpec::bindTagConversionSequence(
+        language::Block::TokenBlockSignalBind tag_conversion_sequence)
+{
+
+  ConversionSequence_ cs;
+
+  auto source_token = tag_conversion_sequence.source_;
+  auto [source_sigs, source_name] = getTagsWithName(source_token, true);
+  auto source = rs::find(source_sigs, source_name, &NamedSignal::name_);
+  if (source == rs::end(source_sigs))
+  {
+    errInvalidToken(source_token,
+                    source_name + " is not a pre tag ",
+                    source_sigs | rv::transform(&NamedSignal::name_) |
+                        rs::to<std::vector<std::string>>);
+    throw language::ParserError{};
+  }
+  cs.source_ = source_name;
+
+  auto sink_token = tag_conversion_sequence.sink_;
+  auto [sink_sigs, sink_name] = getTagsWithName(sink_token, false);
+  auto sink = rs::find(sink_sigs, sink_name, &NamedSignal::name_);
+  if (sink == rs::end(sink_sigs))
+  {
+    errInvalidToken(sink_token,
+                    sink_name + " is not a pre tag ",
+                    sink_sigs | rv::transform(&NamedSignal::name_) |
+                        rs::to<std::vector<std::string>>);
+    throw language::ParserError{};
+  }
+  cs.sink_ = sink_name;
+
+  auto sig = source->signal_spec_;
+
+  for (auto converter : tag_conversion_sequence.sequence_)
+    convertSignalConversionSequence(converter, sig, source_token, cs);
+
+  if (!sig.convertibleTo(sink->signal_spec_))
+  {
+    errInvalidToken(source_token,
+                    " output_type cannot be converted : output_type = " +
+                        sig.diagnosticName());
+    errInvalidToken(sink_token,
+                    " to expected input_type : input_type = " +
+                        sink->signal_spec_.diagnosticName());
+    throw language::ParserError{};
+  }
+
+  if (source_token.type_ == language::TokenType::tag_name)
+  {
+    auto p           = source_token.expr_.find(':');
+    auto nested_name = source_token.expr_.substr(0, p);
+    //auto nested_tag  = source_token.expr_.substr(p + 1);
+	nested_[nested_name].e->tag_conversions_.push_back(cs);
+  }
+  else
+  tag_conversions_.push_back(cs);
 }
 
 void
@@ -676,6 +605,12 @@ void
 	output_conversion_sequence_ = block.output_signal_binds_;
 }
 
+void
+    ProcessSpec::parseTagBinds(language::Block block)
+{
+  tag_conversion_sequence_ = block.tag_binds_;
+}
+
 ProcessSpec::ProcessSpec(language::Block block)
 {
   auto block_name = block.name_.substr(1);
@@ -696,6 +631,8 @@ ProcessSpec::ProcessSpec(language::Block block)
   parseTraces(block);
   parseNested(block);
   parseNestedVector(block);
+  parseTagBinds(block);
+
 }
 
 std::vector<std::string>
@@ -704,7 +641,7 @@ std::vector<std::string>
   std::vector<std::string> lines;
   auto                     alignment = std::string(depth, ' ');
 
-  auto pad_signal = [&](auto sig) { return alignment + sig.signal_spec_.fullName(); };
+  //auto pad_signal = [&](auto sig) { return alignment + sig.signal_spec_.fullName(); };
 
   lines.push_back(alignment + "process:" + name_);
   lines.push_back(alignment + "PARAMETERS");
@@ -737,10 +674,19 @@ std::vector<std::string>
       lines.push_back(alignment + "-");
     }
   }
-  lines.push_back(alignment + "PRETAGS");
-  rs::transform(tags_.pre_, rs::back_inserter(lines), pad_signal);
-  lines.push_back(alignment + "POSTTAGS");
-  rs::transform(tags_.post_, rs::back_inserter(lines), pad_signal);
+  lines.push_back(alignment + "TAGS");
+  for (auto &conversion : tag_conversions_)
+  {
+    lines.push_back(alignment + conversion.source_);
+    lines.push_back(alignment + conversion.sink_);
+    for (auto &conv : conversion.specs_)
+    {
+      lines.push_back(alignment + "-");
+      auto c_dump = conv.serialise(depth);
+      lines.insert(lines.end(), c_dump.begin(), c_dump.end());
+      lines.push_back(alignment + "-");
+    }
+  }
   if (with_traces)
   {
     // needs to go
@@ -814,7 +760,7 @@ ProcessSpec
     input_conversions_.push_back(cs);
   }
 
-  for (++f; *f != "PRETAGS";)
+  for (++f; *f != "TAGS";)
   {
     ConversionSequence_ cs;
     cs.source_ = *f++;
@@ -834,18 +780,24 @@ ProcessSpec
     output_conversions_.push_back(cs);
   }
 
-  for (++f; *f != "POSTTAGS"; f++)
+  for (++f; *f != "PRETRACES"; )
   {
-    auto l = *f;
-    auto p = l.find(':');
-    tags_.pre_.push_back({ l.substr(0, p), SignalSpec{ l } });
-  }
+    ConversionSequence_ cs;
+    cs.source_ = *f++;
+    cs.sink_   = *f++;
 
-  for (++f; *f != "PRETRACES"; f++)
-  {
-    auto l = *f;
-    auto p = l.find(':');
-    tags_.post_.push_back({ l.substr(0, p), SignalSpec{ l } });
+    while (*f == "-")
+    {
+      auto p = std::find_if(
+          f + 1, pop_dump.end(), [](auto l) { return l[0] == '-'; });
+
+      ConverterSpec e;
+      e.deserialise(std::vector<std::string>(f + 1, p));
+      cs.specs_.push_back(e);
+
+      f = p + 1;
+    }
+    tag_conversions_.push_back(cs);
   }
 
   for (++f; *f != "POSTTRACES"; f++)
@@ -923,18 +875,6 @@ std::string
     out << nspec.e->prettyPrint();
   }
 
-  if (!tag_flow_equalities_.empty() || !tag_flow_inequalities_.empty())
-  {
-    out << "   with tag-flow-constraints:\n";
-    for (auto tag_flow : tag_flow_equalities_)
-      out << std::setw(20) << tag_flow.from_.type_ << "(" << tag_flow.from_.name_
-          << ") <=> " << tag_flow.to_.type_ << "(" << tag_flow.to_.name_
-          << ")\n";
-    for (auto tag_flow : tag_flow_inequalities_)
-      out << std::setw(20) << tag_flow.from_.type_ << "(" << tag_flow.from_.name_
-          << ") <!=> " << tag_flow.to_.type_ << "(" << tag_flow.to_.name_
-          << ")\n";
-  }
   return out.str();
 }
 
@@ -1000,16 +940,6 @@ std::string
   out << " outputs\n";
   for (auto [output, value] : io_.outputs_)
     out << std::setw(16) << output << " : " << value.type() << "\n";
-  /*
-  out << " input_conversions\n";
-  for (auto seq : input_conversions_)
-  	for (auto s : seq)
-    	out << std::setw(16) << s << "\n";
-  out << " output_conversions_\n";
-  for (auto seq : output_conversions_)
-  	for (auto s : seq)
-    	out << std::setw(16) << s << "\n";
-  */
   out << " pre-tags\n";
   for (auto [pre_tag, value] : tags_.pre_)
     out << std::setw(16) << pre_tag << " : " << value.type() << "\n";

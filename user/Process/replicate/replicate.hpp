@@ -18,8 +18,6 @@ class replicate {
 
   long num_ = 1;
 
-  std::string x_tag_ = "double";
-
   ded::specs::ProcessSpec env_{ "null_process" };
   ded::concepts::Process      env = ded::makeProcess(env_);
 
@@ -32,7 +30,7 @@ public:
 
     es.bindParameter("num", num_);
 
-    es.bindPostTag("x", "double");
+    es.bindPostTag("fx", "double");
 
     es.bindProcess("env", env_);
     es.bindProcessPostConstraints("env", { { "x", "double" } });
@@ -46,7 +44,6 @@ public:
     es.configureProcess("env", env_);
     env = ded::makeProcess(env_);
 
-    es.configurePostTag("x", x_tag_);
   }
 
   ded::concepts::Population evaluate(ded::concepts::Population);

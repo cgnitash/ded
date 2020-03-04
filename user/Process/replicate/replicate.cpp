@@ -14,9 +14,9 @@ ded::concepts::Population
         rs::transform(res_pop.getAsVector(),
                       accumulated_scores,
                       rs::begin(accumulated_scores),
-                      [this](const auto &org, auto score) {
+                      [](const auto &org, auto score) {
                         return score +
-                               std::any_cast<double>(org.data.getValue(x_tag_));
+                               std::any_cast<double>(org.data.getValue("x"));
                       });
   });
 
@@ -27,7 +27,7 @@ ded::concepts::Population
                     accumulated_scores,
                     rs::begin(vec),
                     [this](auto org, const auto score) {
-                      org.data.setValue(x_tag_, score / this->num_);
+                      org.data.setValue("fx", score / this->num_);
                       return org;
                     });
 

@@ -192,7 +192,7 @@ ded::concepts::Population
   for (auto &org : vec)
   {
     org.reset();
-    org.data.setValue(food_eaten_tag_, eval(org));
+    org.data.setValue("food_eaten", eval(org));
   }
   pop.merge(vec);
   return pop;

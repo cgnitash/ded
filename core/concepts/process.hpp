@@ -57,10 +57,6 @@ public:
 
   void configure(specs::ProcessSpec);
 
-	// signal conversion function
-//	std::vector<NamedS> sSI(std::string source, Signal s);
-//	std::vector<NamedS> sSO(std::string source, Signal s);
-
 private:
   // interface/ABC for an Process
   struct ProcessInterface
@@ -174,6 +170,10 @@ private:
   specs::TraceConfig traces_;
 
   int invocations_ = 0;
+
+  specs::ConversionSignatureSequence tag_conversions_;
+
+  concepts::Population applyTagConversions(concepts::Population);
 
   // wtf? regular string compiles 'maybe' but is wrong
   // std::string user_specified_name_;

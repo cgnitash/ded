@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "process.hpp"
+#include "../../components.hpp"
 
 namespace ded
 {
@@ -27,6 +28,8 @@ Population
 
   recordTraces(p_r, traces_.post_);
 
+  p_r = applyTagConversions(p_r);
+
   GLOBAL_PATH.pop_back();
   GLOBAL_PATH = GLOBAL_PATH.substr(0, GLOBAL_PATH.find_last_of('/') + 1);
 
@@ -42,8 +45,23 @@ void
 
   user_specified_name_ = { es.getUserSpecifiedName() };
 
+  auto tag_conversions = es.getTagConversions();
+  for (auto &conversion : tag_conversions)
+  {
+    specs::ConversionSignatureSequence_ css;
+    css.source_ = conversion.source_;
+    css.sink_   = conversion.sink_;
+    for (auto s : conversion.specs_)
+    {
+      auto c = makeConverter(s);
+      css.sequence_.push_back(c.getConversionFunction());
+    }
+    tag_conversions_.push_back(css);
+  }
+
   self_->configure_(es);
 }
+
 void
     Process::recordTraces(const Population &pop, std::vector<specs::Trace> ts)
 {
@@ -61,6 +79,29 @@ void
                               org.data.getValue(s_spec.identifier()))
                        << std::endl;
     }
+}
+
+concepts::Population 
+    Process::applyTagConversions(concepts::Population pop)
+{
+
+  auto vec = pop.getAsVector();
+
+  auto convert_org = [this](auto org) {
+    for (auto cs : tag_conversions_)
+    {
+      auto sig = org.data.getValue(cs.source_);
+      for (auto c : cs.sequence_)
+        sig = c(sig);
+      org.data.setValue(cs.sink_, sig);
+      org.data.clear(cs.source_);
+    }
+    return org;
+  };
+
+  ra::transform(vec, convert_org);
+  pop.merge(vec);
+  return pop;
 }
 
 }   // namespace concepts

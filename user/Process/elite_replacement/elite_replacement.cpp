@@ -15,13 +15,10 @@ ded::concepts::Population
       rs::begin(pop),
       rs::begin(pop) +  fraction,
       rs::end(pop),
-      [this](const auto &org1, const auto &org2) {
-        return std::any_cast<double>(org1.data.getValue(value_tag_)) >
-               std::any_cast<double>(org2.data.getValue(value_tag_));
+      [](const auto &org1, const auto &org2) {
+        return std::any_cast<double>(org1.data.getValue("value")) >
+               std::any_cast<double>(org2.data.getValue("value"));
       });
-
-  // done with value_tag_
-  for (auto &org : pop) org.data.clear(value_tag_);
 
   // get the sorted best fraction of orgs from above
   auto best_orgs = rv::take(pop, fraction);

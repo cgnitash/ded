@@ -46,8 +46,8 @@ class Parser
 
   void attemptOverride(Block &, int &);
   void attemptParameterOverride(Block &, int &);
-  void attemptInputSignalBindOverride(Block &, int &);
-  void attemptOutputSignalBindOverride(Block &, int &);
+  void               attemptTagBindOverride(Block &, int &);
+  void attemptSignalBindOverride(Block &, int &, bool is_input);
   void attemptTrace(Block &, int &);
   std::vector<Block> attemptVectorBlock(int);
 

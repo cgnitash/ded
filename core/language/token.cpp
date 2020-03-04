@@ -19,6 +19,12 @@ TokenType
     return TokenType::open_varied_argument;
   if (s == "]")
     return TokenType::close_varied_argument;
+  if (s == "=>")
+    return TokenType::tag_bind;
+  if (s == "->")
+    return TokenType::input_signal_bind;
+  if (s == "<-")
+    return TokenType::output_signal_bind;
   if (s == "<")
     return TokenType::open_nested_block_vector;
   if (s == ">")
@@ -31,18 +37,14 @@ TokenType
     return TokenType::assignment;
   if (s == "?")
     return TokenType::trace;
-  //if (s == ":")
-    //return TokenType::signal_bind;
-  if (s == "->")
-    return TokenType::input_signal_bind_;
-  if (s == "<-")
-    return TokenType::output_signal_bind_;
   if (s[0] == '$')
     return TokenType::component;
   if (s[0] == '!')
     return TokenType::variable;
   if (s[0] == '^')
     return TokenType::tracked_word;
+  if (s.find(':') != std::string::npos)
+    return TokenType::tag_name;
   return TokenType::word;
 }
 
