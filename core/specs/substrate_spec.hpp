@@ -68,7 +68,7 @@ public:
     return name_token_;
   }
 
-  auto
+  auto&
       getIO()
   {
     return io_;

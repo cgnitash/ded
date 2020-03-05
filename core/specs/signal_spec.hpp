@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "../utilities/term_colours.hpp"
+#include "../utilities/utilities.hpp"
 
 namespace ded
 {
@@ -29,7 +30,12 @@ private:
   bool        is_any_vector_size_         = false;
   bool        is_user_set_vector_size_    = false;
   bool        is_placeholder_vector_size_ = false;
-  bool        is_explicitly_bound_        = false;
+
+  struct
+  {
+    bool             is_bound_ = false;
+    std::vector<int> indices_;
+  } bindings_;
 
 public:
   SignalSpec() = default;
@@ -59,27 +65,44 @@ public:
     return user_parameter_;
   }
 
-  void
-      instantiateUserParameter(long size)
-  {
-    size_ = size;
-  }
-
-  bool
-      isExplicitlyBound()
-  {
-    return is_explicitly_bound_;
-  }
-
-  void
-      setExplicitlyBound()
-  {
-    is_explicitly_bound_ = true;
-  }
+  void instantiateUserParameter(long size);
 
   void updatePlaceholders(SignalSpec);
   bool exactlyMatches(SignalSpec);
   bool convertibleTo(SignalSpec);
+
+  bool
+      isVectorType() const
+  {
+    return is_vector_;
+  }
+
+  bool
+      isBound() const
+  {
+    return bindings_.is_bound_;
+  }
+
+  void
+      setBound()
+  {
+    bindings_.is_bound_ = true;
+    bindings_.indices_.clear();
+  }
+
+  void addBoundIndices(std::vector<int> indices);
+
+  std::vector<int>
+      unboundIndices()
+  {
+    return bindings_.indices_;
+  }
+
+  bool isPartiallyBounded()
+  {
+    return bindings_.indices_.size() &&
+           static_cast<long>(bindings_.indices_.size()) != size_;
+  }
 };
 
 struct NamedSignal

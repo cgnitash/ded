@@ -92,7 +92,7 @@ class ProcessSpec
 
   void bindSignalConversionSequence(
       language::Block::TokenBlockSignalBind signal_conversion_sequence,
-      specs::SubstrateSpec                  sub_spec,
+      specs::SubstrateSpec                  &sub_spec,
       bool                                  is_input);
 
   void convertSignalConversionSequence(language::Block::TokenBlocks converter,

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include<range/v3/action/remove.hpp>
 
 #include "../utilities/utilities.hpp"
 #include "configuration_primitive.hpp"
@@ -74,12 +75,22 @@ SignalSpec::SignalSpec(std::string type) : full_type_(type)
     is_placeholder_vector_size_ = true;
 
   else if (std::isdigit(size[0]))
+  {
     size_ = std::stol(size);
+    bindings_.indices_ = rv::iota(0, size_) | rs::to<std::vector<int>>;
+  }
   else
   {
     is_user_set_vector_size_ = true;
     user_parameter_          = size;
   }
+}
+
+void
+    SignalSpec::instantiateUserParameter(long size)
+{
+  size_              = size;
+  bindings_.indices_ = rv::iota(0, size_) | rs::to<std::vector<int>>;
 }
 
 void
@@ -92,6 +103,15 @@ void
     vector_type_ = in.full_type_;
   if (is_placeholder_vector_size_)
     size_ = in.size_;
+}
+
+void
+    SignalSpec::addBoundIndices(std::vector<int> indices)
+{
+  for (auto i : indices)
+     bindings_.indices_ |= ra::remove(i);
+
+  bindings_.is_bound_ |= bindings_.indices_.empty();
 }
 
 NamedSignal

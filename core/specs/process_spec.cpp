@@ -338,17 +338,33 @@ void
     for (auto &es : esvec.second.first)
       es.e->bindSubstrateIO(sub_spec);
 
-  auto ios = sub_spec.getIO();
   for (auto &oc : input_conversion_sequence_)
     bindSignalConversionSequence(oc, sub_spec, true);
   for (auto &oc : output_conversion_sequence_)
     bindSignalConversionSequence(oc, sub_spec, false);
+
+  for (auto spec : io_.outputs_)
+    if (!spec.signal_spec_.isBound())
+    {
+      errInvalidToken(name_token_,
+                      "output signal " + spec.name_ + " not bound");
+      throw language::ParserError{};
+    }
+
+  auto ios = sub_spec.getIO();
+  for (auto spec : ios.inputs_)
+    if (spec.signal_spec_.isPartiallyBounded())
+    {
+      errInvalidToken(name_token_,
+                      "input signal of " + sub_spec.name() + " is partially bound");
+      throw language::ParserError{};
+    }
 }
 
 void
     ProcessSpec::bindSignalConversionSequence(
         language::Block::TokenBlockSignalBind signal_conversion_sequence,
-        specs::SubstrateSpec                  sub_spec,
+        specs::SubstrateSpec                  &sub_spec,
         bool                                  is_input)
 {
 
@@ -356,7 +372,7 @@ void
 
   auto message = is_input ? std::string{ "input" } : std::string{ "output" };
 
-  auto  sub_ios     = sub_spec.getIO();
+  auto &sub_ios     = sub_spec.getIO();
   auto &source_sigs = is_input ? io_.inputs_ : sub_ios.outputs_;
   auto &sink_sigs   = is_input ? sub_ios.inputs_ : io_.outputs_;
 
@@ -401,6 +417,14 @@ void
                         sink->signal_spec_.diagnosticName());
     throw language::ParserError{};
   }
+
+  if (sink->signal_spec_.isVectorType())
+  {
+	  // and last conversion was not APPLY
+	  sink->signal_spec_.setBound();
+  }
+  else
+	  sink->signal_spec_.setBound();
 
   if (is_input)
     input_conversions_.push_back(cs);
