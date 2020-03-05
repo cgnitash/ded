@@ -1,11 +1,11 @@
 
 
-#include <string>
 #include <iostream>
+#include <string>
 
-#include "token.hpp"
 #include "../utilities/term_colours.hpp"
 #include "../utilities/utilities.hpp"
+#include "token.hpp"
 
 namespace ded
 {
@@ -48,30 +48,35 @@ TokenType
   return TokenType::word;
 }
 
-void errInvalidToken(Token                    token,
-                     std::string              message,
-                     std::vector<std::string> suggestions)
+void
+    errInvalidToken(Token                    token,
+                    std::string              message,
+                    std::vector<std::string> suggestions)
 {
-  auto left_padding = std::string(token.location_.column_ + 10, ' ');
-  std::cout << "parse-error\n\n"
-            << token.diagnostic_ << "\n"
-            << left_padding << utilities::TermColours::red_fg
-            << "^" << std::string(token.expr_.length() - 1, '~') << "\n"
-            << left_padding<<  message;
+  auto source_location = token.from_file_ + ":" +
+                         std::to_string(token.location_.line_) + ":" +
+                         std::to_string(token.location_.column_);
+  auto left_padding =
+      std::string(token.location_.column_ + source_location.length(), ' ');
+
+  std::cout << utilities::TermColours::cyan_fg << source_location
+            << utilities::TermColours::reset << token.diagnostic_ << "\n"
+            << left_padding << utilities::TermColours::red_fg << "^"
+            << std::string(token.expr_.length() - 1, '~') << "\n"
+            << left_padding << message;
 
   if (auto suggestion = rs::find_if(suggestions,
-                           [word = token.expr_](auto attempt) {
-                             return utilities::match(attempt, word);
-                           });
-     suggestion != rs::end(suggestions))
+                                    [word = token.expr_](auto attempt) {
+                                      return utilities::match(attempt, word);
+                                    });
+      suggestion != rs::end(suggestions))
     std::cout << "\n"
-              << left_padding<< "Did you mean "
-              << utilities::TermColours::green_fg << *suggestion 
-              << utilities::TermColours::red_fg <<  "?";
+              << left_padding << "Did you mean "
+              << utilities::TermColours::green_fg << *suggestion
+              << utilities::TermColours::red_fg << "?";
 
   std::cout << utilities::TermColours::reset << std::endl;
 }
-
 
 }   // namespace language
 }   // namespace ded

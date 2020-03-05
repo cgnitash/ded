@@ -3,9 +3,9 @@
 #include <iomanip>
 #include <iostream>
 
-#include "lexer.hpp"
 #include "../utilities/term_colours.hpp"
 #include "../utilities/utilities.hpp"
+#include "lexer.hpp"
 
 namespace ded
 {
@@ -59,23 +59,19 @@ void
         diagnostic_message.insert(column + expr.length(),
                                   utilities::TermColours::reset);
         diagnostic_message.insert(column, utilities::TermColours::red_fg);
-        std::stringstream diagnostic;
-        diagnostic << utilities::TermColours::cyan_fg << "Line" << std::setw(4)
-                   << line_number + 1 << ": " << utilities::TermColours::reset
-                   << diagnostic_message;
         auto type = language::parseTokenType(expr);
         tokens_.push_back(language::Token{
             type,
             expr,
+            file_name_,
             { static_cast<int>(line_number), static_cast<int>(column) },
-            diagnostic.str(),
+            diagnostic_message,
             type == language::TokenType::tracked_word ? expr : std::string{} });
       }
     }
 
     if (i != line.cend())
     {
-
       std::cout << "parse-error:\n\n"
                 << utilities::TermColours::cyan_fg << "Line" << std::setw(4)
                 << line_number + 1 << ": " << utilities::TermColours::reset

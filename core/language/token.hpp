@@ -42,6 +42,7 @@ struct Token
 {
   TokenType   type_{};
   std::string expr_{};
+  std::string from_file_{};
   struct TokenLocation
   {
     int line_{}, column_{};
