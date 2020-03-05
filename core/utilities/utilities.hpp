@@ -7,8 +7,8 @@
 #include <range/v3/all.hpp>
 
 namespace rs = ranges; 
-namespace rv = ranges::view; 
-namespace ra = ranges::action; 
+namespace rv = ranges::views; 
+namespace ra = ranges::actions; 
 
 namespace ded
 {
