@@ -42,16 +42,7 @@ public:
 
   SignalSpec(std::string type);
 
-  auto
-      diagnosticName() const
-  {
-    return full_type_ +
-           (is_user_set_vector_size_
-                ? utilities::TermColours::blue_fg + "    with [" +
-                      user_parameter_ + " = " + std::to_string(size_) + "]" +
-                      utilities::TermColours::reset
-                : "");
-  }
+  std::string diagnosticName() const;
 
   auto
       type() const
@@ -67,6 +58,7 @@ public:
 
   void instantiateUserParameter(long size);
 
+  bool sliceableBy(long from, long to, long every);
   void updatePlaceholders(SignalSpec);
   bool exactlyMatches(SignalSpec);
   bool convertibleTo(SignalSpec);

@@ -20,8 +20,8 @@ struct SpecError
 {
 };
 
-inline static const std::regex r_long{ R"~~(^\d+$)~~" };
-inline static const std::regex r_double{ R"~~(^\d+\.\d*$)~~" };
+inline static const std::regex r_long{ R"~~(^-?\d+$)~~" };
+inline static const std::regex r_double{ R"~~(^-?\d+\.\d*$)~~" };
 inline static const std::regex r_bool{ R"~~(^(true)|(false)$)~~" };
 inline static const std::regex r_string{ R"~~(^".*"$)~~" };
 inline static const std::regex r_null{ R"~~(^NULL$)~~" };

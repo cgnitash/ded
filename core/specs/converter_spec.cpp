@@ -82,5 +82,16 @@ std::string
   return out.str();
 }
 
+ConversionSignature
+    makeSliceConverter(long from, long every, std::string vtt)
+{
+  if (vtt == "double")
+    return sliceConverter<double>(from, every);
+  if (vtt == "long")
+    return sliceConverter<long>(from, every);
+  if (vtt == "bool")
+    return sliceConverter<bool>(from, every);
+  return sliceConverter<std::string>(from, every);
+}
 }   // namespace specs
 }   // namespace ded

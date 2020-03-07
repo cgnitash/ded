@@ -45,8 +45,21 @@ void
       css.sink_   = conversion.sink_;
       for (auto s : conversion.specs_)
       {
-        auto c = makeConverter(s);
-        css.sequence_.push_back(c.getConversionFunction());
+        if (s.name() != "$slice")
+        {
+          auto c = makeConverter(s);
+          css.sequence_.push_back(c.getConversionFunction());
+        }
+        else
+        {
+          long from, every;
+		  std::string vtt;
+          s.configureParameter("from", from);
+          //s.configureParameter("to", to);
+          s.configureParameter("every", every);
+          s.configureParameter("vtt", vtt);
+          css.sequence_.push_back(makeSliceConverter(from, every, vtt));
+        }
       }
       input.push_back(css);
     }
@@ -70,8 +83,21 @@ void
       css.sink_   = conversion.sink_;
       for (auto s : conversion.specs_)
       {
-        auto c = makeConverter(s);
-        css.sequence_.push_back(c.getConversionFunction());
+        if (s.name() != "$slice")
+        {
+          auto c = makeConverter(s);
+          css.sequence_.push_back(c.getConversionFunction());
+        }
+        else
+        {
+          long from, every;
+		  std::string vtt;
+          s.configureParameter("from", from);
+          //s.configureParameter("to", to);
+          s.configureParameter("every", every);
+          s.configureParameter("vtt", vtt);
+          css.sequence_.push_back(makeSliceConverter(from, every, vtt));
+        }
       }
       output.push_back(css);
     }
@@ -485,7 +511,26 @@ void
 
   auto [in, out] = converter_spec.args();
 
-  if (!sig.convertibleTo(in))
+  if (name.expr_ == "$slice")
+  {
+    long from, to, every;
+	std::string vtt;
+    converter_spec.configureParameter("from", from);
+    converter_spec.configureParameter("to", to);
+    converter_spec.configureParameter("every", every);
+    if (!sig.sliceableBy(from, to, every))
+    {
+      errInvalidToken(source_token,
+                      " result type of this converter is : " +
+                          sig.diagnosticName());
+      errInvalidToken(name,
+                      " which cannot be sliced to indices [" +
+                          std::to_string(from) + ":" + std::to_string(to) +
+                          "," + std::to_string(every) + "]");
+      throw language::ParserError{};
+    }
+  }
+  else if (!sig.convertibleTo(in))
   {
     errInvalidToken(source_token,
                     " result type of this converter is : " +

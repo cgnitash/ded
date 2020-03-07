@@ -25,6 +25,18 @@ bool
 }
 
 bool
+    SignalSpec::sliceableBy(long from, long to, long every)
+{
+  if (!is_vector_)
+    return false;
+  if (size_ < to)
+    return false;
+  size_ = (to - from) / every;
+
+  return true;
+}
+
+bool
     SignalSpec::convertibleTo(SignalSpec other)
 {
   if (other.is_any_type_)
@@ -100,10 +112,21 @@ void
   if (full_type_ == "_")
     full_type_ = in.full_type_;
   if (vector_type_ == "_")
-    vector_type_ = in.full_type_;
-  if (is_placeholder_vector_size_)
+    vector_type_ = in.vector_type_;
+  if (is_vector_)
     size_ = in.size_;
 }
+
+std::string
+    SignalSpec::diagnosticName() const
+{
+  return full_type_ +
+         (is_user_set_vector_size_ || is_placeholder_vector_size_
+              ? utilities::TermColours::blue_fg + "    with [ " +
+                    (user_parameter_.empty() ? "_" : user_parameter_) + " = " +
+                    std::to_string(size_) + " ]" + utilities::TermColours::reset
+              : "");
+  }
 
 void
     SignalSpec::addBoundIndices(std::vector<int> indices)

@@ -116,5 +116,18 @@ struct ConversionSignatureSequence_
 
 using ConversionSignatureSequence = std::vector<ConversionSignatureSequence_>;
 
+template <typename T>
+ConversionSignature
+    sliceConverter(long from, long every)
+{
+
+  return [=](concepts::Signal s) -> concepts::Signal {
+    auto v = std::any_cast<std::vector<T>>(s);
+    return v | rv::drop_exactly(from) | rv::stride(every) |
+           rs::to<std::vector<T>>;
+  };
+}
+
+ConversionSignature makeSliceConverter(long from, long every, std::string vtt);
 }   // namespace specs
 }   // namespace ded
