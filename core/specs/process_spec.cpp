@@ -350,14 +350,38 @@ void
                       "output signal " + spec.name_ + " not bound");
       throw language::ParserError{};
     }
-
   auto ios = sub_spec.getIO();
   for (auto spec : ios.inputs_)
     if (spec.signal_spec_.isPartiallyBounded())
     {
       errInvalidToken(name_token_,
-                      "input signal of " + sub_spec.name() + " is partially bound");
+                      "input signal " + spec.name_ + " is partially bound");
       throw language::ParserError{};
+    }
+
+  // only warnings
+  for (auto spec : io_.inputs_)
+    if (!spec.signal_spec_.isBound())
+    {
+      errInvalidToken(name_token_,
+                      "input signal " + spec.name_ + " is not bound");
+      //throw language::ParserError{};
+    }
+  if (!io_.inputs_.empty())
+  for (auto spec : ios.inputs_)
+    if (!spec.signal_spec_.isBound())
+    {
+      errInvalidToken(name_token_,
+                      "input signal of " + sub_spec.name() + " is not bound");
+      //throw language::ParserError{};
+    }
+  if (!io_.outputs_.empty())
+  for (auto spec : ios.outputs_)
+    if (!spec.signal_spec_.isBound())
+    {
+      errInvalidToken(name_token_,
+                      "output signal of " + sub_spec.name() + " is not bound");
+     // throw language::ParserError{};
     }
 }
 
@@ -417,6 +441,14 @@ void
                         sink->signal_spec_.diagnosticName());
     throw language::ParserError{};
   }
+
+  if (source->signal_spec_.isVectorType())
+  {
+	  // and first conversion is not SLICE
+	  source->signal_spec_.setBound();
+  }
+  else
+	  source->signal_spec_.setBound();
 
   if (sink->signal_spec_.isVectorType())
   {
