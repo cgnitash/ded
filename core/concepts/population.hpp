@@ -89,13 +89,17 @@ public:
   specs::PopulationSpec
       publishConfiguration()
   {
-    return self_->publishConfiguration_();
+  specs::PopulationSpec spec;
+  spec.setConfigured(false);
+  self_->configuration_(spec);
+  spec.setConfigured(true);
+  return spec;
   }
 
   void
       configure(specs::PopulationSpec es)
   {
-    self_->configure_(es);
+    self_->configuration_(es);
   }
 
 private:
@@ -108,8 +112,7 @@ private:
     virtual PopulationInterface *copy_() const = 0;
 
     // mandatory methods
-    virtual specs::PopulationSpec publishConfiguration_()           = 0;
-    virtual void                  configure_(specs::PopulationSpec) = 0;
+    virtual void configuration_(specs::PopulationSpec&) = 0;
 
     virtual size_t                 size_() const                  = 0;
     virtual std::vector<Substrate> getAsVector_() const           = 0;
@@ -244,34 +247,16 @@ private:
     }
 
     template <typename T>
-    using HasPubConf = decltype(std::declval<T &>().publishConfiguration());
-    specs::PopulationSpec
-        publishConfiguration_() override
-    {
-      if constexpr (utilities::TMP::has_signature<UserPopulation,
-                                                  specs::PopulationSpec,
-                                                  HasPubConf>{})
-      {
-        auto ps  = data_.publishConfiguration();
-        ps.name_ = autoClassNameAsString<UserPopulation>();
-        return ps;
-      }
-      else
-        static_assert(ded::utilities::TMP::concept_fail<UserPopulation>{},
-                      "\033[35mPopulation does not satisfy "
-                      "\033[33m\"publishable\"\033[35m concept "
-                      "requirement\033[0m");
-    }
-
-    template <typename T>
     using HasConf = decltype(
-        std::declval<T &>().configure(std::declval<specs::PopulationSpec>()));
+        std::declval<T &>().configuration(std::declval<specs::PopulationSpec&>()));
     void
-        configure_(specs::PopulationSpec c) override
+        configuration_(specs::PopulationSpec &c) override
     {
-      if constexpr (utilities::TMP::
-                        has_signature<UserPopulation, void, HasConf>{})
-        data_.configure(c);
+      if constexpr (utilities::TMP::has_signature<UserPopulation, void, HasConf>{})
+	  {
+        data_.configuration(c);
+        c.name_ = autoClassNameAsString<UserPopulation>();
+	  }
       else
         static_assert(ded::utilities::TMP::concept_fail<UserPopulation>{},
                       "\033[35mPopulation does not satisfy "

@@ -27,9 +27,6 @@ namespace specs
 
 class PopulationSpec
 {
-  std::string   name_;
-  Parameters    parameters_;
-  SubstrateSpec es_{ "null_entity" };
 
 public:
   PopulationSpec(std::string name = "") : name_(name)
@@ -52,30 +49,23 @@ public:
 
   template <typename ArgumentType>
   void
-      bindParameter(std::string                           name,
-                    ArgumentType                          value,
-                    std::vector<Constraint<ArgumentType>> cons = {})
+      parameter(std::string                           name,
+                ArgumentType &                        value,
+                std::vector<Constraint<ArgumentType>> cons = {})
   {
-    parameters_.bind(name, value, cons);
-  }
-
-  template <typename T>
-  void
-      configureParameter(std::string name, T &value)
-  {
-    parameters_.configure(name, value);
+    if (isConfigurable)
+      parameters_.configure(name, value);
+    else
+      parameters_.bind(name, value, cons);
   }
 
   void
-      bindSubstrate(SubstrateSpec e)
+      nestedSubstrate(SubstrateSpec &e)
   {
-    es_ = e;
-  }
-
-  void
-      configureSubstrate(SubstrateSpec &e)
-  {
-    e = es_;
+    if (isConfigurable)
+      e = es_;
+    else
+      es_ = e;
   }
 
   std::vector<std::string> serialise(long) const;
@@ -88,9 +78,21 @@ public:
     es_.instantiateUserParameterSizes();
     return es_;
   }
+
+  void setConfigured(bool conf)
+  {
+	  isConfigurable = conf;
+  }
+
   //  friend std::ostream &operator<<(std::ostream &out, PopulationSpec e)
 
   friend class concepts::Population;
+
+private:
+  bool          isConfigurable = true;
+  std::string   name_;
+  Parameters    parameters_;
+  SubstrateSpec es_{ "null_entity" };
 };
 
 }   // namespace specs

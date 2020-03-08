@@ -115,7 +115,6 @@ private:
                       "requirement\033[0m");
     }
 
-
     template <typename T>
     using HasConf = decltype(
         std::declval<T &>().configuration(std::declval<specs::ProcessSpec&>()));
