@@ -9,17 +9,9 @@ class null_substrate
 {
 
 public:
-  void configure(ded::specs::SubstrateSpec)
+  void
+      configuration(ded::specs::SubstrateSpec &)
   {
-  }
-  null_substrate()
-  {
-    configure(publishConfiguration());
-  }
-  ded::specs::SubstrateSpec
-      publishConfiguration()
-  {
-    return {};
   }
 
   void

@@ -16,31 +16,38 @@ namespace specs
 {
 
 void
-    SubstrateSpec::bindInput(std::string name, std::string type)
+    SubstrateSpec::input(std::string name, std::string type)
 {
   io_.inputs_.push_back({ name, SignalSpec{ type } });
 }
 
 void
-    SubstrateSpec::bindOutput(std::string name, std::string type)
+    SubstrateSpec::output(std::string name, std::string type)
 {
   io_.outputs_.push_back({ name, SignalSpec{ type } });
 }
 
 void
-    SubstrateSpec::bindEncoding(std::string name, EncodingSpec e)
+    SubstrateSpec::encoding(std::string name, EncodingSpec &e)
 {
+	if (isConfigurable)
+  e = encodings_[name];
+	else
   encodings_[name] = e;
 }
 
 void
-    SubstrateSpec::configureEncoding(std::string name, EncodingSpec &e)
+    SubstrateSpec::nestedSubstrateVector(std::string                 name,
+                                         std::vector<SubstrateSpec> &subs)
 {
-  e = encodings_[name];
+  if (isConfigurable)
+    configureNestedSubstrateVector(name, subs);
+  else
+    bindNestedSubstrateVector(name, subs);
 }
 
 void
-    SubstrateSpec::bindNestedSubstrates(std::string                name,
+    SubstrateSpec::bindNestedSubstrateVector(std::string                name,
                                         std::vector<SubstrateSpec> subs)
 {
   if (nested_vector_.find(name) != nested_vector_.end())
@@ -59,7 +66,7 @@ void
 }
 
 void
-    SubstrateSpec::configureNestedSubstrates(std::string                 name,
+    SubstrateSpec::configureNestedSubstrateVector(std::string                 name,
                                              std::vector<SubstrateSpec> &subs)
 {
   if (nested_vector_.find(name) == nested_vector_.end())
@@ -74,6 +81,19 @@ void
     auto ne = *ns.e;
     subs.push_back(ne);
   }
+}
+
+void
+    SubstrateSpec::nestedSubstrate(
+        std::string                   name,
+        SubstrateSpec &               sub,
+        std::vector<SignalConstraint> input_constraints,
+        std::vector<SignalConstraint> output_constraints)
+{
+  if (isConfigurable)
+    configureSubstrate(name, sub);
+  else
+    bindSubstrate(name, sub, input_constraints, output_constraints);
 }
 
 void

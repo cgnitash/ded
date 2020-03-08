@@ -16,7 +16,7 @@
 #include <thread>
 #include <vector>
 
-long ded::concepts::Substrate::entity_id_ = 0;
+long ded::concepts::Substrate::substrate_id_ = 0;
 
 std::string ded::GLOBAL_PATH = "./";
 

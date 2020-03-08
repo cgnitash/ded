@@ -53,7 +53,7 @@ public:
   void
       resetGlobalSubstrateIDs()
   {
-    entity_id_ = 0;
+    substrate_id_ = 0;
   }
 
   // public interface of Substrates
@@ -147,7 +147,11 @@ public:
   specs::SubstrateSpec
       publishConfiguration()
   {
-    return self_->publishConfiguration_();
+  specs::SubstrateSpec spec;
+  spec.setConfigured(false);
+  self_->configuration_(spec);
+  spec.setConfigured(true);
+  return spec;
   }
 
   void
@@ -159,7 +163,7 @@ public:
   void
       configure(specs::SubstrateSpec es)
   {
-    self_->configure_(es);
+    self_->configuration_(es);
   }
 
 private:
@@ -178,8 +182,7 @@ private:
     virtual void                 tick_()                          = 0;
     virtual void                 input_(std::string, Signal)      = 0;
     virtual Signal               output_(std::string)             = 0;
-    virtual void                 configure_(specs::SubstrateSpec) = 0;
-    virtual specs::SubstrateSpec publishConfiguration_()          = 0;
+    virtual void                 configuration_(specs::SubstrateSpec &) = 0;
 
     // optional methods
     virtual Encoding getEncoding_() const        = 0;
@@ -196,7 +199,7 @@ private:
 
     // provided methods
     SubstrateObject(UserSubstrate x)
-        : id_(++entity_id_), ancestor_(0), data_(std::move(x))
+        : id_(++substrate_id_), ancestor_(0), data_(std::move(x))
     {
     }
 
@@ -300,7 +303,7 @@ private:
                         has_signature<UserSubstrate, void, HasMutate>{})
       {
         ancestor_ = id_;
-        id_       = ++entity_id_;
+        id_       = ++substrate_id_;
         data_.mutate();
       }
       else
@@ -310,41 +313,22 @@ private:
                       "requirement\033[0m");
     }
 
-    template <typename T>
-    using HasPubConf = decltype(std::declval<T &>().publishConfiguration());
-    specs::SubstrateSpec
-        publishConfiguration_() override
-    {
-      if constexpr (utilities::TMP::has_signature<UserSubstrate,
-                                                  specs::SubstrateSpec,
-                                                  HasPubConf>{})
-      {
-        auto es  = data_.publishConfiguration();
-        es.name_ = autoClassNameAsString<UserSubstrate>();
-        return es;
-      }
-      else
-        static_assert(ded::utilities::TMP::concept_fail<UserSubstrate>{},
-                      "\033[35mSubstrate does not satisfy "
-                      "\033[33m\"configurable\"\033[35m concept "
-                      "requirement\033[0m");
-    }
 
     template <typename T>
     using HasConf = decltype(
-        std::declval<T &>().configure(std::declval<specs::SubstrateSpec>()));
+        std::declval<T &>().configuration(std::declval<specs::SubstrateSpec&>()));
     void
-        configure_(specs::SubstrateSpec c) override
+        configuration_(specs::SubstrateSpec &c) override
     {
-      if constexpr (utilities::TMP::
-                        has_signature<UserSubstrate, void, HasConf>{})
-      {
-        data_.configure(c);
-      }
+      if constexpr (utilities::TMP::has_signature<UserSubstrate, void, HasConf>{})
+	  {
+        data_.configuration(c);
+        c.name_ = autoClassNameAsString<UserSubstrate>();
+	  }
       else
         static_assert(ded::utilities::TMP::concept_fail<UserSubstrate>{},
-                      "\033[35mSubstrate does not satisfy "
-                      "\033[33m\"publishable\"\033[35m concept "
+                      "\033[35mSubstratedoes not satisfy "
+                      "\033[33m\"configurable\"\033[35m concept "
                       "requirement\033[0m");
     }
 
@@ -407,7 +391,7 @@ private:
     UserSubstrate data_;
   };
 
-  static long                         entity_id_;
+  static long                         substrate_id_;
   std::unique_ptr<SubstrateInterface> self_;
 };
 

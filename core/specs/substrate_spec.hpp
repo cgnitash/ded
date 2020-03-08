@@ -30,26 +30,6 @@ namespace specs
 
 class SubstrateSpec
 {
-  struct NestedSubstrateSpec
-  {
-    std::unique_ptr<SubstrateSpec> e;
-    IO                             constraints_;
-    NestedSubstrateSpec() = default;
-    NestedSubstrateSpec(const NestedSubstrateSpec &ns)
-        : e(std::make_unique<SubstrateSpec>(*ns.e)),
-          constraints_(ns.constraints_)
-    {
-    }
-  };
-
-  std::string                                             name_;
-  language::Token                                         name_token_;
-  Parameters                                              parameters_;
-  std::map<std::string, NestedSubstrateSpec>              nested_;
-  std::map<std::string, std::vector<NestedSubstrateSpec>> nested_vector_;
-  std::map<std::string, EncodingSpec>                     encodings_;
-  IO                                                      io_;
-
 public:
   SubstrateSpec(std::string name = "") : name_(name)
   {
@@ -76,33 +56,28 @@ public:
 
   template <typename ArgumentType>
   void
-      bindParameter(std::string                           name,
-                    ArgumentType                          value,
+      parameter(std::string                           name,
+                    ArgumentType                          &value,
                     std::vector<Constraint<ArgumentType>> cons = {})
   {
-    parameters_.bind(name, value, cons);
+    if (isConfigurable)
+      parameters_.configure(name, value);
+    else
+      parameters_.bind(name, value, cons);
   }
 
-  template <typename T>
-  void
-      configureParameter(std::string name, T &value)
-  {
-    parameters_.configure(name, value);
-  }
+  void input(std::string name, std::string value);
+  void output(std::string name, std::string value);
 
-  void bindInput(std::string name, std::string value);
+  void encoding(std::string name, EncodingSpec &e);
 
-  void bindOutput(std::string name, std::string value);
-  void bindEncoding(std::string name, EncodingSpec e);
-  void configureEncoding(std::string name, EncodingSpec &e);
-  void bindNestedSubstrates(std::string name, std::vector<SubstrateSpec> subs);
-  void configureNestedSubstrates(std::string                 name,
-                                 std::vector<SubstrateSpec> &subs);
-  void bindSubstrate(std::string                   name,
-                     SubstrateSpec                 sub,
+  void nestedSubstrate(std::string                   name,
+                     SubstrateSpec                 &sub,
                      std::vector<SignalConstraint> input_constraints,
                      std::vector<SignalConstraint> output_constraints);
-  void configureSubstrate(std::string name, SubstrateSpec &sub);
+
+  void nestedSubstrateVector(std::string name, std::vector<SubstrateSpec> &subs);
+
   void parseNested(language::Block);
   void parseNestedVector(language::Block);
 
@@ -112,7 +87,43 @@ public:
 
   void instantiateUserParameterSizes();
 
+  void setConfigured(bool conf)
+  {
+	  isConfigurable = conf;
+  }
+
   friend class concepts::Substrate;
+private:
+	bool isConfigurable = true;
+
+  struct NestedSubstrateSpec
+  {
+    std::unique_ptr<SubstrateSpec> e;
+    IO                             constraints_;
+    NestedSubstrateSpec() = default;
+    NestedSubstrateSpec(const NestedSubstrateSpec &ns)
+        : e(std::make_unique<SubstrateSpec>(*ns.e)),
+          constraints_(ns.constraints_)
+    {
+    }
+  };
+
+  std::string                                             name_;
+  language::Token                                         name_token_;
+  Parameters                                              parameters_;
+  std::map<std::string, NestedSubstrateSpec>              nested_;
+  std::map<std::string, std::vector<NestedSubstrateSpec>> nested_vector_;
+  std::map<std::string, EncodingSpec>                     encodings_;
+  IO                                                      io_;
+
+  void bindSubstrate(std::string                   name,
+                     SubstrateSpec                 sub,
+                     std::vector<SignalConstraint> input_constraints,
+                     std::vector<SignalConstraint> output_constraints);
+  void configureSubstrate(std::string name, SubstrateSpec &sub);
+  void bindNestedSubstrateVector(std::string name, std::vector<SubstrateSpec> subs);
+  void configureNestedSubstrateVector(std::string                 name,
+                                 std::vector<SubstrateSpec> &subs);
 };
 
 }   // namespace specs

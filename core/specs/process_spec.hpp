@@ -42,7 +42,95 @@ struct TraceConfig
 
 class ProcessSpec
 {
+public:
+  ProcessSpec(std::string name = "") : name_(name)
+  {
+  }
 
+  ProcessSpec(language::Block);
+
+  auto
+      name() const
+  {
+    return name_;
+  }
+
+  auto
+      traces() const
+  {
+    return traces_;
+  }
+
+  auto
+      getTagConversions()
+  {
+    return tag_conversions_;
+  }
+
+  auto
+      getUserSpecifiedName() const
+  {
+    return user_specified_name_;
+  }
+
+  auto
+      setUserSpecifiedName(std::string name)
+  {
+    user_specified_name_ = name;
+  }
+
+  template <typename ArgumentType>
+  void
+      parameter(std::string                           name,
+                    ArgumentType                          &value,
+                    std::vector<Constraint<ArgumentType>> cons = {})
+  {
+    if (isConfigurable)
+      parameters_.configure(name, value);
+    else
+      parameters_.bind(name, value, cons);
+  }
+
+  void preTag(std::string name, std::string value);
+
+  void postTag(std::string name, std::string value);
+
+  void input(std::string                  name,
+             std::string                  value,
+             ConversionSignatureSequence &input);
+
+  void output(std::string                  name,
+              std::string                  value,
+              ConversionSignatureSequence &output);
+
+  void nestedProcess(std::string                   name,
+                     ProcessSpec &                 proc,
+                     std::vector<SignalConstraint> pre_constraints = {},
+                     std::vector<SignalConstraint> post_constraints = {});
+
+  void nestedProcessVector(std::string                   name,
+                           std::vector<ProcessSpec> &    procs,
+                           std::vector<SignalConstraint> pre_constraints = {},
+                           std::vector<SignalConstraint> post_constraints = {});
+
+  std::vector<std::string> serialise(long, bool) const;
+  ProcessSpec              deserialise(std::vector<std::string>);
+  std::string              prettyPrint();
+
+  void                                       instantiateUserParameterSizes();
+  void                                       bindSubstrateIO(SubstrateSpec);
+  std::vector<std::pair<Trace, std::string>> queryTraces();
+
+  void bindTags();
+
+  void setConfigured(bool conf)
+  {
+	  isConfigurable = conf;
+  }
+
+  friend class concepts::Process;
+
+private:
   bool isConfigurable = true;
 
   struct NestedProcessSpec
@@ -138,93 +226,6 @@ class ProcessSpec
   std::string prettyPrintNested();
   std::string prettyPrintNestedVector();
 
-public:
-  ProcessSpec(std::string name = "") : name_(name)
-  {
-  }
-
-  ProcessSpec(language::Block);
-
-  auto
-      name() const
-  {
-    return name_;
-  }
-
-  auto
-      traces() const
-  {
-    return traces_;
-  }
-
-  auto
-      getTagConversions()
-  {
-    return tag_conversions_;
-  }
-
-  auto
-      getUserSpecifiedName() const
-  {
-    return user_specified_name_;
-  }
-
-  auto
-      setUserSpecifiedName(std::string name)
-  {
-    user_specified_name_ = name;
-  }
-
-  template <typename ArgumentType>
-  void
-      parameter(std::string                           name,
-                    ArgumentType                          &value,
-                    std::vector<Constraint<ArgumentType>> cons = {})
-  {
-    if (isConfigurable)
-      parameters_.configure(name, value);
-    else
-      parameters_.bind(name, value, cons);
-  }
-
-  void preTag(std::string name, std::string value);
-
-  void postTag(std::string name, std::string value);
-
-  void input(std::string                  name,
-             std::string                  value,
-             ConversionSignatureSequence &input);
-
-  void output(std::string                  name,
-              std::string                  value,
-              ConversionSignatureSequence &output);
-
-  void nestedProcess(std::string                   name,
-                     ProcessSpec &                 proc,
-                     std::vector<SignalConstraint> pre_constraints = {},
-                     std::vector<SignalConstraint> post_constraints = {});
-
-  void nestedProcessVector(std::string                   name,
-                           std::vector<ProcessSpec> &    procs,
-                           std::vector<SignalConstraint> pre_constraints = {},
-                           std::vector<SignalConstraint> post_constraints = {});
-
-  std::vector<std::string> serialise(long, bool) const;
-  ProcessSpec              deserialise(std::vector<std::string>);
-  std::string              prettyPrint();
-
-  void                                       instantiateUserParameterSizes();
-  void                                       bindSubstrateIO(SubstrateSpec);
-  std::vector<std::pair<Trace, std::string>> queryTraces();
-
-  void bindTags();
-
-  void setConfigured(bool conf)
-  {
-	  isConfigurable = conf;
-  }
-
-  friend class concepts::Process;
 };
 
 }   // namespace specs

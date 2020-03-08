@@ -63,8 +63,6 @@ private:
     virtual ProcessInterface *copy_() const = 0;
 
     // mandatory methods
-    //virtual specs::ProcessSpec publishConfiguration_()        = 0;
-    //virtual void               configure_(specs::ProcessSpec) = 0;
     virtual void               configuration_(specs::ProcessSpec&) = 0;
     virtual Population         evaluate_(Population)          = 0;
 
