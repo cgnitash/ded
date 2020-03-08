@@ -49,11 +49,7 @@ public:
 
   Population evaluate(Population);
 
-  specs::ProcessSpec
-      publishConfiguration() const
-  {
-    return self_->publishConfiguration_();
-  }
+  specs::ProcessSpec publishConfiguration() const;
 
   void configure(specs::ProcessSpec);
 
@@ -67,8 +63,9 @@ private:
     virtual ProcessInterface *copy_() const = 0;
 
     // mandatory methods
-    virtual specs::ProcessSpec publishConfiguration_()        = 0;
-    virtual void               configure_(specs::ProcessSpec) = 0;
+    //virtual specs::ProcessSpec publishConfiguration_()        = 0;
+    //virtual void               configure_(specs::ProcessSpec) = 0;
+    virtual void               configuration_(specs::ProcessSpec&) = 0;
     virtual Population         evaluate_(Population)          = 0;
 
     // optional methods
@@ -120,34 +117,18 @@ private:
                       "requirement\033[0m");
     }
 
-    template <typename T>
-    using HasPubConf = decltype(std::declval<T &>().publishConfiguration());
-    specs::ProcessSpec
-        publishConfiguration_() override
-    {
-      if constexpr (utilities::TMP::has_signature<UserProcess,
-                                                  specs::ProcessSpec,
-                                                  HasPubConf>{})
-      {
-        auto es  = data_.publishConfiguration();
-        es.name_ = autoClassNameAsString<UserProcess>();
-        return es;
-      }
-      else
-        static_assert(ded::utilities::TMP::concept_fail<UserProcess>{},
-                      "\033[35mProcess does not satisfy "
-                      "\033[33m\"publishable\"\033[35m concept "
-                      "requirement\033[0m");
-    }
 
     template <typename T>
     using HasConf = decltype(
-        std::declval<T &>().configure(std::declval<specs::ProcessSpec>()));
+        std::declval<T &>().configuration(std::declval<specs::ProcessSpec&>()));
     void
-        configure_(specs::ProcessSpec c) override
+        configuration_(specs::ProcessSpec &c) override
     {
       if constexpr (utilities::TMP::has_signature<UserProcess, void, HasConf>{})
-        data_.configure(c);
+	  {
+        data_.configuration(c);
+        c.name_ = autoClassNameAsString<UserProcess>();
+	  }
       else
         static_assert(ded::utilities::TMP::concept_fail<UserProcess>{},
                       "\033[35mProcess does not satisfy "

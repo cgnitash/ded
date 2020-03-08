@@ -43,6 +43,8 @@ struct TraceConfig
 class ProcessSpec
 {
 
+  bool isConfigurable = true;
+
   struct NestedProcessSpec
   {
     std::unique_ptr<ProcessSpec> e;
@@ -77,6 +79,39 @@ class ProcessSpec
   std::map<std::string, NestedProcessSpec> nested_;
   std::map<std::string, std::pair<std::vector<NestedProcessSpec>, Tags>>
       nested_vector_;
+
+  void bindInput(std::string name, std::string value);
+
+  void configureInput(std::string name, ConversionSignatureSequence &input);
+
+  void bindOutput(std::string name, std::string value);
+
+  void configureOutput(std::string name, ConversionSignatureSequence &output);
+
+  void bindProcess(std::string name, ProcessSpec proc);
+
+  void configureProcess(std::string name, ProcessSpec &proc);
+
+  void bindProcessVector(std::string name, std::vector<ProcessSpec> procs);
+
+  void configureProcessVector(std::string               name,
+                              std::vector<ProcessSpec> &procs);
+
+  void bindProcessPreConstraints(std::string                   proc_name,
+                                 std::vector<SignalConstraint> pre_constraints);
+
+  void bindProcessPostConstraints(
+      std::string                   proc_name,
+      std::vector<SignalConstraint> post_constraints);
+
+  void bindProcessVectorPreConstraints(
+      std::string                   proc_name,
+      std::vector<SignalConstraint> pre_constraints);
+
+  void bindProcessVectorPostConstraints(
+      std::string                   proc_name,
+      std::vector<SignalConstraint> post_constraints);
+
 
   void parseSignalBinds(language::Block);
   void parseTagBinds(language::Block block);
@@ -142,55 +177,37 @@ public:
 
   template <typename ArgumentType>
   void
-      bindParameter(std::string                           name,
-                    ArgumentType                          value,
+      parameter(std::string                           name,
+                    ArgumentType                          &value,
                     std::vector<Constraint<ArgumentType>> cons = {})
   {
-    parameters_.bind(name, value, cons);
+    if (isConfigurable)
+      parameters_.configure(name, value);
+    else
+      parameters_.bind(name, value, cons);
   }
 
-  template <typename ValueType>
-  void
-      configureParameter(std::string name, ValueType &value)
-  {
-    parameters_.configure(name, value);
-  }
+  void preTag(std::string name, std::string value);
 
-  void bindPreTag(std::string name, std::string value);
+  void postTag(std::string name, std::string value);
 
-  void bindPostTag(std::string name, std::string value);
+  void input(std::string                  name,
+             std::string                  value,
+             ConversionSignatureSequence &input);
 
-  void bindInput(std::string name, std::string value);
+  void output(std::string                  name,
+              std::string                  value,
+              ConversionSignatureSequence &output);
 
-  void configureInput(std::string name, ConversionSignatureSequence &input);
+  void nestedProcess(std::string                   name,
+                     ProcessSpec &                 proc,
+                     std::vector<SignalConstraint> pre_constraints = {},
+                     std::vector<SignalConstraint> post_constraints = {});
 
-  void bindOutput(std::string name, std::string value);
-
-  void configureOutput(std::string name, ConversionSignatureSequence &output);
-
-  void bindProcess(std::string name, ProcessSpec proc);
-
-  void configureProcess(std::string name, ProcessSpec &proc);
-
-  void bindProcessVector(std::string name, std::vector<ProcessSpec> procs);
-
-  void configureProcessVector(std::string               name,
-                              std::vector<ProcessSpec> &procs);
-
-  void bindProcessPreConstraints(std::string                   proc_name,
-                                 std::vector<SignalConstraint> pre_constraints);
-
-  void bindProcessPostConstraints(
-      std::string                   proc_name,
-      std::vector<SignalConstraint> post_constraints);
-
-  void bindProcessVectorPreConstraints(
-      std::string                   proc_name,
-      std::vector<SignalConstraint> pre_constraints);
-
-  void bindProcessVectorPostConstraints(
-      std::string                   proc_name,
-      std::vector<SignalConstraint> post_constraints);
+  void nestedProcessVector(std::string                   name,
+                           std::vector<ProcessSpec> &    procs,
+                           std::vector<SignalConstraint> pre_constraints = {},
+                           std::vector<SignalConstraint> post_constraints = {});
 
   std::vector<std::string> serialise(long, bool) const;
   ProcessSpec              deserialise(std::vector<std::string>);
@@ -201,6 +218,12 @@ public:
   std::vector<std::pair<Trace, std::string>> queryTraces();
 
   void bindTags();
+
+  void setConfigured(bool conf)
+  {
+	  isConfigurable = conf;
+  }
+
   friend class concepts::Process;
 };
 

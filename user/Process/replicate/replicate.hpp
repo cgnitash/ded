@@ -14,37 +14,27 @@
 #include <string_view>
 #include <vector>
 
-class replicate {
-
-  long num_ = 1;
-
-  ded::specs::ProcessSpec env_{ "null_process" };
-  ded::concepts::Process      env = ded::makeProcess(env_);
+class replicate
+{
 
 public:
-  replicate() { configure(publishConfiguration()); }
-
-  ded::specs::ProcessSpec publishConfiguration()
+  void
+      configuration(ded::specs::ProcessSpec &spec)
   {
-    ded::specs::ProcessSpec es;
+    spec.parameter("num", num_);
 
-    es.bindParameter("num", num_);
+    spec.postTag("fx", "double");
 
-    es.bindPostTag("fx", "double");
+    spec.nestedProcess("env", env_, {}, { { "x", "double" } });
 
-    es.bindProcess("env", env_);
-    es.bindProcessPostConstraints("env", { { "x", "double" } });
-    return es;
-  }
-
-  void configure(ded::specs::ProcessSpec es)
-  {
-    es.configureParameter("num", num_);
-
-    es.configureProcess("env", env_);
     env = ded::makeProcess(env_);
-
   }
 
   ded::concepts::Population evaluate(ded::concepts::Population);
+
+private:
+  long num_ = 1;
+
+  ded::specs::ProcessSpec env_{ "null_process" };
+  ded::concepts::Process  env = ded::makeProcess(env_);
 };

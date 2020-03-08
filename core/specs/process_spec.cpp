@@ -16,15 +16,29 @@ namespace specs
 {
 
 void
-    ProcessSpec::bindPreTag(std::string name, std::string type)
+    ProcessSpec::preTag(std::string name, std::string type)
 {
-  tags_.pre_.push_back({ name, SignalSpec{ type } });
+  if (!isConfigurable)
+    tags_.pre_.push_back({ name, SignalSpec{ type } });
 }
 
 void
-    ProcessSpec::bindPostTag(std::string name, std::string type)
+    ProcessSpec::postTag(std::string name, std::string type)
 {
-  tags_.post_.push_back({ name, SignalSpec{ type } });
+  if (!isConfigurable)
+    tags_.post_.push_back({ name, SignalSpec{ type } });
+}
+
+void
+    ProcessSpec::input(std::string                  name,
+                       std::string                  value,
+                       ConversionSignatureSequence &input)
+{
+
+  if (isConfigurable)
+    configureInput(name, input);
+  else
+    bindInput(name, value);
 }
 
 void
@@ -63,6 +77,19 @@ void
       }
       input.push_back(css);
     }
+}
+
+
+void
+    ProcessSpec::output(std::string                  name,
+                       std::string                  value,
+                       ConversionSignatureSequence &output)
+{
+
+  if (isConfigurable)
+    configureOutput(name, output);
+  else
+    bindOutput(name, value);
 }
 
 void
@@ -104,6 +131,22 @@ void
 }
 
 void
+    ProcessSpec::nestedProcess(std::string                   name,
+                               ProcessSpec &                 proc,
+                               std::vector<SignalConstraint> pre_constraints,
+                               std::vector<SignalConstraint> post_constraints)
+{
+	if (isConfigurable)
+		configureProcess(name, proc);
+	else
+	{
+		bindProcess(name, proc);
+		bindProcessPreConstraints(name, pre_constraints);
+		bindProcessPostConstraints(name, post_constraints);
+	}
+}
+
+void
     ProcessSpec::bindProcess(std::string name, ProcessSpec proc)
 {
   if (nested_.find(name) != nested_.end())
@@ -125,6 +168,22 @@ void
     throw SpecError{};
   }
   proc = *nested_[name].e;
+}
+
+void
+    ProcessSpec::nestedProcessVector(std::string               name,
+                                        std::vector<ProcessSpec> &procs,
+                           std::vector<SignalConstraint> pre_constraints,
+                           std::vector<SignalConstraint> post_constraints)
+{
+	if (isConfigurable)
+		configureProcessVector(name, procs);
+	else
+	{
+		bindProcessVector(name, procs);
+		bindProcessVectorPreConstraints(name, pre_constraints);
+		bindProcessVectorPostConstraints(name, post_constraints);
+	}
 }
 
 void

@@ -5,33 +5,25 @@
 
 #include <string>
 
-class elite_replacement {
-
-  double      strength_  = 0.1;
-  int invoke_ = 0;
+class elite_replacement
+{
 
 public:
-  elite_replacement() { configure(publishConfiguration()); }
-
-  ded::specs::ProcessSpec publishConfiguration()
+  void
+      configuration(ded::specs::ProcessSpec &spec)
   {
-    ded::specs::ProcessSpec es;
+    spec.parameter("strength",
+                   strength_,
+                   { { [](double s) { return 0.0 < s && s < 1.0; },
+                       "strength must be in the range (0.0, 1.0)" } });
 
-    es.bindParameter("strength",
-                      strength_,
-                      { { [](double s) { return 0.0 < s && s < 1.0; },
-                          "strength must be in the range (0.0, 1.0)" } });
-
-    es.bindPreTag("value", "double");
-
-    return es;
-  }
-
-  void configure(ded::specs::ProcessSpec es)
-  {
-    es.configureParameter("strength",strength_);
+    spec.preTag("value", "double");
   }
 
   ded::concepts::Population evaluate(ded::concepts::Population);
+
+private:
+  double strength_ = 0.1;
+  int    invoke_   = 0;
 };
 

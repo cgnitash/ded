@@ -38,6 +38,16 @@ Population
   return p_r;
 }
 
+specs::ProcessSpec
+    Process::publishConfiguration() const
+{
+  specs::ProcessSpec spec;
+  spec.setConfigured(false);
+  self_->configuration_(spec);
+  spec.setConfigured(true);
+  return spec;
+}
+
 void
     Process::configure(specs::ProcessSpec es)
 {
@@ -59,7 +69,7 @@ void
     tag_conversions_.push_back(css);
   }
 
-  self_->configure_(es);
+  self_->configuration_(es);
 }
 
 void
