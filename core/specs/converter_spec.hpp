@@ -159,5 +159,7 @@ ConversionSignature
 
 ConversionSignature
     makeSliceConverter(long from, long to, long every, std::string vtt);
+
+ConversionSignatureSequence_ makeConversionSignatureSequence(ConversionSequence_);	
 }   // namespace specs
 }   // namespace ded

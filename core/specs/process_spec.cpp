@@ -6,7 +6,6 @@
 #include <regex>
 #include <string>
 
-#include "../../components.hpp"
 #include "../configuration.hpp"
 #include "process_spec.hpp"
 
@@ -51,37 +50,16 @@ void
     ProcessSpec::configureInput(std::string                  name,
                                 ConversionSignatureSequence &input)
 {
-  for (auto &conversion : input_conversions_)
-    if (conversion.source_ == name)
-    {
-      ConversionSignatureSequence_ css;
-      css.source_ = conversion.source_;
-      css.sink_   = conversion.sink_;
-      for (auto s : conversion.specs_)
-      {
-        if (s.name() != "slice")
-        {
-          auto c = makeConverter(s);
-          css.sequence_.push_back(c.getConversionFunction());
-        }
-        else
-        {
-          auto slice_range = s.getSliceRange();
-          css.sequence_.push_back(makeSliceConverter(slice_range.from,
-                                                     slice_range.to,
-                                                     slice_range.every,
-                                                     slice_range.vtt));
-        }
-      }
-      input.push_back(css);
-    }
+  input = input_conversions_ |
+          rv::filter([=](auto c) { return c.source_ == name; }) |
+          rv::transform(makeConversionSignatureSequence) |
+          rs::to<ConversionSignatureSequence>;
 }
-
 
 void
     ProcessSpec::output(std::string                  name,
-                       std::string                  value,
-                       ConversionSignatureSequence &output)
+                        std::string                  value,
+                        ConversionSignatureSequence &output)
 {
 
   if (isConfigurable)
@@ -100,30 +78,10 @@ void
     ProcessSpec::configureOutput(std::string                  name,
                                  ConversionSignatureSequence &output)
 {
-  for (auto &conversion : output_conversions_)
-    if (conversion.sink_ == name)
-    {
-      ConversionSignatureSequence_ css;
-      css.source_ = conversion.source_;
-      css.sink_   = conversion.sink_;
-      for (auto s : conversion.specs_)
-      {
-        if (s.name() != "slice")
-        {
-          auto c = makeConverter(s);
-          css.sequence_.push_back(c.getConversionFunction());
-        }
-        else
-        {
-          auto slice_range = s.getSliceRange();
-          css.sequence_.push_back(makeSliceConverter(slice_range.from,
-                                                     slice_range.to,
-                                                     slice_range.every,
-                                                     slice_range.vtt));
-        }
-      }
-      output.push_back(css);
-    }
+  output = output_conversions_ |
+           rv::filter([=](auto c) { return c.sink_ == name; }) |
+           rv::transform(makeConversionSignatureSequence) |
+           rs::to<ConversionSignatureSequence>;
 }
 
 void
@@ -132,14 +90,14 @@ void
                                std::vector<SignalConstraint> pre_constraints,
                                std::vector<SignalConstraint> post_constraints)
 {
-	if (isConfigurable)
-		configureProcess(name, proc);
-	else
-	{
-		bindProcess(name, proc);
-		bindProcessPreConstraints(name, pre_constraints);
-		bindProcessPostConstraints(name, post_constraints);
-	}
+  if (isConfigurable)
+    configureProcess(name, proc);
+  else
+  {
+    bindProcess(name, proc);
+    bindProcessPreConstraints(name, pre_constraints);
+    bindProcessPostConstraints(name, post_constraints);
+  }
 }
 
 void
@@ -167,19 +125,20 @@ void
 }
 
 void
-    ProcessSpec::nestedProcessVector(std::string               name,
-                                        std::vector<ProcessSpec> &procs,
-                           std::vector<SignalConstraint> pre_constraints,
-                           std::vector<SignalConstraint> post_constraints)
+    ProcessSpec::nestedProcessVector(
+        std::string                   name,
+        std::vector<ProcessSpec> &    procs,
+        std::vector<SignalConstraint> pre_constraints,
+        std::vector<SignalConstraint> post_constraints)
 {
-	if (isConfigurable)
-		configureProcessVector(name, procs);
-	else
-	{
-		bindProcessVector(name, procs);
-		bindProcessVectorPreConstraints(name, pre_constraints);
-		bindProcessVectorPostConstraints(name, post_constraints);
-	}
+  if (isConfigurable)
+    configureProcessVector(name, procs);
+  else
+  {
+    bindProcessVector(name, procs);
+    bindProcessVectorPreConstraints(name, pre_constraints);
+    bindProcessVectorPostConstraints(name, post_constraints);
+  }
 }
 
 void
@@ -428,48 +387,80 @@ void
     if (!spec.signal_spec_.isBound())
     {
       errInvalidToken(name_token_,
-                      "output signal " + spec.name_ + " not bound");
+                      "All output signals of a process must be " + spec.name_ +
+                          " completely bound");
       throw language::ParserError{};
     }
   auto ios = sub_spec.getIO();
   for (auto spec : ios.inputs_)
     if (spec.signal_spec_.isPartiallyBounded())
     {
+      std::string s;
+      for (int i : spec.signal_spec_.unboundIndices())
+        s += std::to_string(i) + " ";
       errInvalidToken(name_token_,
-                      "input signal " + spec.name_ + " is partially bound");
+                      "input signals " + spec.name_ +
+                          " cannot be partially provided to "
+                          "substrates: unbound_indices [ " +
+                          s + "]");
       throw language::ParserError{};
     }
 
   // only warnings
   for (auto spec : io_.inputs_)
-    if (!spec.signal_spec_.isBound())
+    if (spec.signal_spec_.isPartiallyBounded())
     {
-      errInvalidToken(name_token_,
-                      "input signal " + spec.name_ + " is not bound");
-      //throw language::ParserError{};
+      std::string s;
+      for (int i : spec.signal_spec_.unboundIndices())
+        s += std::to_string(i) + " ";
+      errWarningToken(name_token_,
+                      "input signal " + spec.name_ +
+                          ": are you sure you want to partially read from this "
+                          "process inputs "
+                          ": unread_indices [ " +
+                          s + "]");
+      // throw language::ParserError{};
     }
   if (!io_.inputs_.empty())
-  for (auto spec : ios.inputs_)
-    if (!spec.signal_spec_.isBound())
-    {
-      errInvalidToken(name_token_,
-                      "input signal of " + sub_spec.name() + " is not bound");
-      //throw language::ParserError{};
-    }
+    for (auto spec : ios.inputs_)
+      if (spec.signal_spec_.isPartiallyBounded())
+      {
+        std::string s;
+        for (int i : spec.signal_spec_.unboundIndices())
+          s += std::to_string(i) + " ";
+        errWarningToken(
+            name_token_,
+            "input signal of " + sub_spec.name() +
+                " is partially bound"
+                " are you sure you want to partially read from this "
+                "substrate inputs "
+                ": unread_indices [ " +
+                s + "]");
+        // throw language::ParserError{};
+      }
   if (!io_.outputs_.empty())
-  for (auto spec : ios.outputs_)
-    if (!spec.signal_spec_.isBound())
-    {
-      errInvalidToken(name_token_,
-                      "output signal of " + sub_spec.name() + " is not bound");
-     // throw language::ParserError{};
-    }
+    for (auto spec : ios.outputs_)
+      if (spec.signal_spec_.isPartiallyBounded())
+      {
+        std::string s;
+        for (int i : spec.signal_spec_.unboundIndices())
+          s += std::to_string(i) + " ";
+        errWarningToken(
+            name_token_,
+            "output signal of " + sub_spec.name() +
+                " is not bound"
+                " are you sure you want to partially read from this "
+                "substrate outputs "
+                ": unread_indices [ " +
+                s + "]");
+        // throw language::ParserError{};
+      }
 }
 
 void
     ProcessSpec::bindSignalConversionSequence(
         language::Block::TokenBlockSignalBind signal_conversion_sequence,
-        specs::SubstrateSpec                  &sub_spec,
+        specs::SubstrateSpec &                sub_spec,
         bool                                  is_input)
 {
 
@@ -525,19 +516,27 @@ void
 
   if (source->signal_spec_.isVectorType())
   {
-	  // and first conversion is not SLICE
-	  source->signal_spec_.setBound();
+    // and first conversion is not SLICE
+    // source->signal_spec_.setBound();
+    if (!cs.specs_.empty() and cs.specs_.front().name() == "slice")
+    {
+      auto [from, to, every, vtt] = cs.specs_.front().getSliceRange();
+      source->signal_spec_.addBoundIndices(
+          rv::iota(from, to) | rv::stride(every) | rs::to<std::vector<int>>);
+    }
+    else
+      source->signal_spec_.setBound();
   }
   else
-	  source->signal_spec_.setBound();
+    source->signal_spec_.setBound();
 
   if (sink->signal_spec_.isVectorType())
   {
-	  // and last conversion was not APPLY
-	  sink->signal_spec_.setBound();
+    // and last conversion was not APPLY
+    sink->signal_spec_.setBound();
   }
   else
-	  sink->signal_spec_.setBound();
+    sink->signal_spec_.setBound();
 
   if (is_input)
     input_conversions_.push_back(cs);

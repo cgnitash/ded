@@ -6,6 +6,7 @@
 #include <string>
 #include <variant>
 
+#include "../../components.hpp"
 #include "../configuration.hpp"
 #include "converter_spec.hpp"
 
@@ -96,6 +97,32 @@ ConversionSignature
   if (vtt == "bool")
     return sliceConverter<bool>(from, to, every);
   return sliceConverter<std::string>(from, to, every);
+}
+
+ConversionSignatureSequence_
+    makeConversionSignatureSequence(ConversionSequence_ conversion)
+{
+
+  ConversionSignatureSequence_ css;
+  css.source_ = conversion.source_;
+  css.sink_   = conversion.sink_;
+  for (auto s : conversion.specs_)
+  {
+    if (s.name() != "slice")
+    {
+      auto c = makeConverter(s);
+      css.sequence_.push_back(c.getConversionFunction());
+    }
+    else
+    {
+      auto slice_range = s.getSliceRange();
+      css.sequence_.push_back(makeSliceConverter(slice_range.from,
+                                                 slice_range.to,
+                                                 slice_range.every,
+                                                 slice_range.vtt));
+    }
+  }
+  return css;
 }
 }   // namespace specs
 }   // namespace ded

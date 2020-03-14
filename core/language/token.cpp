@@ -49,7 +49,8 @@ TokenType
 }
 
 void
-    errInvalidToken(Token                    token,
+    errInvalidToken_detail_(bool is_error,
+			Token                    token,
                     std::string              message,
                     std::vector<std::string> suggestions)
 {
@@ -61,8 +62,10 @@ void
 
   std::cout << utilities::TermColours::cyan_fg << source_location
             << utilities::TermColours::reset << token.diagnostic_ << "\n"
-            << left_padding << utilities::TermColours::red_fg << "^"
-            << std::string(token.expr_.length() - 1, '~') << "\n"
+            << left_padding
+            << (is_error ? utilities::TermColours::red_fg
+                         : utilities::TermColours::magenta_fg)
+            << "^" << std::string(token.expr_.length() - 1, '~') << "\n"
             << left_padding << message;
 
   if (auto suggestion = rs::find_if(suggestions,
@@ -78,5 +81,19 @@ void
   std::cout << utilities::TermColours::reset << std::endl;
 }
 
+void
+    errInvalidToken(Token                    token,
+                    std::string              message,
+                    std::vector<std::string> suggestions)
+{
+  errInvalidToken_detail_(true, token, message, suggestions);
+}
+void
+    errWarningToken(Token                    token,
+                    std::string              message,
+                    std::vector<std::string> suggestions)
+{
+  errInvalidToken_detail_(false, token, message, suggestions);
+}
 }   // namespace language
 }   // namespace ded

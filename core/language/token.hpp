@@ -54,6 +54,13 @@ struct Token
 void errInvalidToken(Token                    token,
                      std::string              message,
                      std::vector<std::string> suggestions = {});
+void errWarningToken(Token                    token,
+                     std::string              message,
+                     std::vector<std::string> suggestions = {});
+void errInvalidToken_detail_(bool                     is_error,
+                             Token                    token,
+                             std::string              message,
+                             std::vector<std::string> suggestions = {});
 
 struct TokenAssignment
 {
