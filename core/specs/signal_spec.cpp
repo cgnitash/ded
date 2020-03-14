@@ -25,13 +25,14 @@ bool
 }
 
 bool
-    SignalSpec::sliceableBy(long from, long to, long every)
+    SignalSpec::sliceableBy(long from, long to, long every, std::string &vtt)
 {
   if (!is_vector_)
     return false;
   if (size_ < to)
     return false;
   size_ = (to - from) / every;
+  vtt = vector_type_ ;
 
   return true;
 }

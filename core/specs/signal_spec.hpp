@@ -58,7 +58,7 @@ public:
 
   void instantiateUserParameter(long size);
 
-  bool sliceableBy(long from, long to, long every);
+  bool sliceableBy(long from, long to, long every, std::string &vtt);
   void updatePlaceholders(SignalSpec);
   bool exactlyMatches(SignalSpec);
   bool convertibleTo(SignalSpec);

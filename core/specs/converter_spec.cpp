@@ -14,7 +14,7 @@ namespace ded
 namespace specs
 {
 
-ConverterSpec::ConverterSpec( language::Block block)
+ConverterSpec::ConverterSpec(language::Block block)
 {
   auto block_name = block.name_.substr(1);
   if (!rs::contains(config_manager::allConverterNames(), block_name))
@@ -38,9 +38,11 @@ std::vector<std::string>
 
   lines.push_back(alignment + "converter:" + name_);
   lines.push_back(alignment + "PARAMETERS");
-  rs::transform(parameters_.parameters_, rs::back_inserter(lines), [&](auto parameter) {
-    return alignment + parameter.first + ":" + parameter.second.valueAsString();
-  });
+  rs::transform(
+      parameters_.parameters_, rs::back_inserter(lines), [&](auto parameter) {
+        return alignment + parameter.first + ":" +
+               parameter.second.valueAsString();
+      });
 
   return lines;
 }
@@ -76,22 +78,24 @@ std::string
   for (auto [parameter, value] : parameters_.parameters_)
     out << std::setw(16) << parameter << " : " << value.valueAsString() << "\n";
 
-  out << std::setw(16) << "input" << " : " << args_.first.type() << "\n";
-  out << std::setw(16) << "output" << " : " << args_.second.type() << "\n";
+  out << std::setw(16) << "input"
+      << " : " << args_.first.type() << "\n";
+  out << std::setw(16) << "output"
+      << " : " << args_.second.type() << "\n";
   out << "}\n";
   return out.str();
 }
 
 ConversionSignature
-    makeSliceConverter(long from, long every, std::string vtt)
+    makeSliceConverter(long from, long to, long every, std::string vtt)
 {
   if (vtt == "double")
-    return sliceConverter<double>(from, every);
+    return sliceConverter<double>(from, to, every);
   if (vtt == "long")
-    return sliceConverter<long>(from, every);
+    return sliceConverter<long>(from, to, every);
   if (vtt == "bool")
-    return sliceConverter<bool>(from, every);
-  return sliceConverter<std::string>(from, every);
+    return sliceConverter<bool>(from, to, every);
+  return sliceConverter<std::string>(from, to, every);
 }
 }   // namespace specs
 }   // namespace ded

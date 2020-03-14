@@ -11,8 +11,8 @@ substrate e = $markov_brain
 {
      #hiddens =   [ 2 3 4 ] 
      hiddens =    2
-	 outputs =  2 
-	 inputs = 4
+	 outputs =  3 
+	 inputs = 3
 	 genome = !enc
 }
 
@@ -34,10 +34,10 @@ process fors = $sequence
 				? food_eaten 5 
 				#action <- $vb_vd <- $vd_vb  <- out_sense 
 				#not working #
-action <-  $slice { from = 0 to = 2 every = 1 }  <- out_sense 
+				action <-  $slice { from = 0 to = 2 every = 1 }  <- out_sense 
 				#action <- $add { by = 2.0 } <- out_sense 
 				#line_of_sight ->  $vd_vb  -> $vb_vd -> in_sense 
-				line_of_sight ->  $slice { from = 0 to = 4 every = 1 } -> in_sense 
+				line_of_sight ->  $slice { from = 1 to = 4 every = 1 } -> in_sense 
 				}
      second = $elite_replacement  {  strength = 0.4 }
 

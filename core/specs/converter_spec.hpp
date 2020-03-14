@@ -26,6 +26,12 @@ class Converter;
 namespace specs
 {
 
+struct SliceRange
+{
+  long        from = 0, to = 0, every = 0;
+  std::string vtt{};
+};
+
 class ConverterSpec
 {
 public:
@@ -65,6 +71,25 @@ public:
       parameters_.bind(name, value, cons);
   }
 
+  template <typename ArgumentType>
+  void
+      forceParameter(std::string name, ArgumentType value)
+  {
+    parameters_.parameters_[name].setValue(value);
+  }
+
+  SliceRange
+      getSliceRange()
+  {
+	  long from = 0, to = 0, every = 0;
+	  std::string vtt;
+	  parameters_.configure("from", from);
+	  parameters_.configure("to", to);
+	  parameters_.configure("every", every);
+	  parameters_.configure("vtt", vtt);
+	  return {from, to , every, vtt};
+  }
+
   void
       bindFrom(std::string from)
   {
@@ -96,7 +121,6 @@ private:
   std::string                       name_;
   Parameters                        parameters_;
   std::pair<SignalSpec, SignalSpec> args_;
-
 };
 
 // private
@@ -123,16 +147,17 @@ using ConversionSignatureSequence = std::vector<ConversionSignatureSequence_>;
 
 template <typename T>
 ConversionSignature
-    sliceConverter(long from, long every)
+    sliceConverter(long from, long to, long every)
 {
 
   return [=](concepts::Signal s) -> concepts::Signal {
     auto v = std::any_cast<std::vector<T>>(s);
-    return v | rv::drop_exactly(from) | rv::stride(every) |
+    return v | rv::slice(from, to) | rv::stride(every) |
            rs::to<std::vector<T>>;
   };
 }
 
-ConversionSignature makeSliceConverter(long from, long every, std::string vtt);
+ConversionSignature
+    makeSliceConverter(long from, long to, long every, std::string vtt);
 }   // namespace specs
 }   // namespace ded

@@ -59,20 +59,18 @@ void
       css.sink_   = conversion.sink_;
       for (auto s : conversion.specs_)
       {
-        if (s.name() != "$slice")
+        if (s.name() != "slice")
         {
           auto c = makeConverter(s);
           css.sequence_.push_back(c.getConversionFunction());
         }
         else
         {
-          long from, every;
-		  std::string vtt;
-          s.parameter("from", from);
-          //s.configureParameter("to", to);
-          s.parameter("every", every);
-          s.parameter("vtt", vtt);
-          css.sequence_.push_back(makeSliceConverter(from, every, vtt));
+          auto slice_range = s.getSliceRange();
+          css.sequence_.push_back(makeSliceConverter(slice_range.from,
+                                                     slice_range.to,
+                                                     slice_range.every,
+                                                     slice_range.vtt));
         }
       }
       input.push_back(css);
@@ -110,20 +108,18 @@ void
       css.sink_   = conversion.sink_;
       for (auto s : conversion.specs_)
       {
-        if (s.name() != "$slice")
+        if (s.name() != "slice")
         {
           auto c = makeConverter(s);
           css.sequence_.push_back(c.getConversionFunction());
         }
         else
         {
-          long from, every;
-		  std::string vtt;
-          s.parameter("from", from);
-          //s.configureParameter("to", to);
-          s.parameter("every", every);
-          s.parameter("vtt", vtt);
-          css.sequence_.push_back(makeSliceConverter(from, every, vtt));
+          auto slice_range = s.getSliceRange();
+          css.sequence_.push_back(makeSliceConverter(slice_range.from,
+                                                     slice_range.to,
+                                                     slice_range.every,
+                                                     slice_range.vtt));
         }
       }
       output.push_back(css);
@@ -572,12 +568,8 @@ void
 
   if (name.expr_ == "$slice")
   {
-    long from, to, every;
-	std::string vtt;
-    converter_spec.parameter("from", from);
-    converter_spec.parameter("to", to);
-    converter_spec.parameter("every", every);
-    if (!sig.sliceableBy(from, to, every))
+    auto [from, to, every, vtt] = converter_spec.getSliceRange();
+    if (!sig.sliceableBy(from, to, every, vtt))
     {
       errInvalidToken(source_token,
                       " result type of this converter is : " +
@@ -588,6 +580,7 @@ void
                           "," + std::to_string(every) + "]");
       throw language::ParserError{};
     }
+    converter_spec.forceParameter("vtt", vtt);
   }
   else if (!sig.convertibleTo(in))
   {
