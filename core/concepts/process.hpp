@@ -118,11 +118,21 @@ private:
     template <typename T>
     using HasConf = decltype(
         std::declval<T &>().configuration(std::declval<specs::ProcessSpec&>()));
+    template <typename T>
+    using HasConf_byval = decltype(
+        std::declval<T &>().configuration(std::declval<specs::ProcessSpec>()));
     void
         configuration_(specs::ProcessSpec &c) override
     {
       if constexpr (utilities::TMP::has_signature<UserProcess, void, HasConf>{})
-	  {
+      {
+        if constexpr (utilities::TMP::
+                          has_signature<UserProcess, void, HasConf_byval>{})
+          static_assert(ded::utilities::TMP::concept_fail<UserProcess>{},
+                        "\033[35mconfiguration must take ProcessSpec by "
+                        "non-const reference"
+                        "\033[0m");
+
         data_.configuration(c);
         c.name_ = autoClassNameAsString<UserProcess>();
 	  }

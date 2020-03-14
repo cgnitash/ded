@@ -11,27 +11,11 @@ class vd_vb
 {
 
 public:
-  vd_vb()
-  {
-    configure(publishConfiguration());
-  }
-
-  ded::specs::ConverterSpec
-      publishConfiguration()
-  {
-    ded::specs::ConverterSpec es;
-
-    es.bindFrom("<double,_>");
-    es.bindTo( "<bool,_>");
-
-
-    return es;
-  }
-
   void
-      configure(ded::specs::ConverterSpec )
+      configuration(ded::specs::ConverterSpec &es)
   {
-
+    es.bindTo("<double,_>");
+    es.bindFrom("<bool,_>");
   }
 
   ded::concepts::Signal

@@ -45,13 +45,17 @@ public:
   specs::ConverterSpec
       publishConfiguration()
   {
-    return self_->publishConfiguration_();
+    specs::ConverterSpec spec;
+    spec.setConfigured(false);
+    self_->configuration_(spec);
+    spec.setConfigured(true);
+    return spec;
   }
 
   void
       configure(specs::ConverterSpec es)
   {
-    self_->configure_(es);
+    self_->configuration_(es);
   }
 
   Signal
@@ -79,8 +83,10 @@ private:
 
     // mandatory methods
     virtual Signal convert_(Signal) = 0;
-    virtual void configure_(specs::ConverterSpec) = 0;
-    virtual specs::ConverterSpec publishConfiguration_()          = 0;
+    virtual void   configuration_(specs::ConverterSpec &) = 0;
+    
+	//virtual void configure_(specs::ConverterSpec) = 0;
+    //virtual specs::ConverterSpec publishConfiguration_()          = 0;
 	
     // optional methods
 
@@ -138,42 +144,31 @@ private:
     }
 
     template <typename T>
-    using HasPubConf = decltype(std::declval<T &>().publishConfiguration());
-    specs::ConverterSpec
-        publishConfiguration_() override
-    {
-      if constexpr (utilities::TMP::has_signature<UserConverter,
-                                                  specs::ConverterSpec,
-                                                  HasPubConf>{})
-      {
-        auto es  = data_.publishConfiguration();
-        es.name_ = autoClassNameAsString<UserConverter>();
-
-        return es;
-      }
-      else
-        static_assert(ded::utilities::TMP::concept_fail<UserConverter>{},
-                      "\033[35mConverter does not satisfy "
-                      "\033[33m\"configurable\"\033[35m concept "
-                      "requirement\033[0m");
-    }
-
-    template <typename T>
     using HasConf = decltype(
-        std::declval<T &>().configure(std::declval<specs::ConverterSpec>()));
-	void
-        configure_(specs::ConverterSpec c) override
+        std::declval<T &>().configuration(std::declval<specs::ConverterSpec&>()));
+    template <typename T>
+    using HasConf_byval = decltype(
+        std::declval<T &>().configuration(std::declval<specs::ConverterSpec>()));
+    void
+        configuration_(specs::ConverterSpec &c) override
     {
       if constexpr (utilities::TMP::
                         has_signature<UserConverter, void, HasConf>{})
       {
-        data_.configure(c);
+        if constexpr (utilities::TMP::
+                          has_signature<UserConverter, void, HasConf_byval>{})
+          static_assert(ded::utilities::TMP::concept_fail<UserConverter>{},
+                        "\033[35mconfiguration must take ConverterSpec by "
+                        "non-const reference"
+                        "\033[0m");
 
-      }
+        data_.configuration(c);
+        c.name_ = autoClassNameAsString<UserConverter>();
+	  }
       else
         static_assert(ded::utilities::TMP::concept_fail<UserConverter>{},
-                      "\033[35mConverter does not satisfy "
-                      "\033[33m\"publishable\"\033[35m concept "
+                      "\033[35mPopulation does not satisfy "
+                      "\033[33m\"configurable\"\033[35m concept "
                       "requirement\033[0m");
     }
 

@@ -68,10 +68,10 @@ void
         {
           long from, every;
 		  std::string vtt;
-          s.configureParameter("from", from);
+          s.parameter("from", from);
           //s.configureParameter("to", to);
-          s.configureParameter("every", every);
-          s.configureParameter("vtt", vtt);
+          s.parameter("every", every);
+          s.parameter("vtt", vtt);
           css.sequence_.push_back(makeSliceConverter(from, every, vtt));
         }
       }
@@ -119,10 +119,10 @@ void
         {
           long from, every;
 		  std::string vtt;
-          s.configureParameter("from", from);
+          s.parameter("from", from);
           //s.configureParameter("to", to);
-          s.configureParameter("every", every);
-          s.configureParameter("vtt", vtt);
+          s.parameter("every", every);
+          s.parameter("vtt", vtt);
           css.sequence_.push_back(makeSliceConverter(from, every, vtt));
         }
       }
@@ -574,9 +574,9 @@ void
   {
     long from, to, every;
 	std::string vtt;
-    converter_spec.configureParameter("from", from);
-    converter_spec.configureParameter("to", to);
-    converter_spec.configureParameter("every", every);
+    converter_spec.parameter("from", from);
+    converter_spec.parameter("to", to);
+    converter_spec.parameter("every", every);
     if (!sig.sliceableBy(from, to, every))
     {
       errInvalidToken(source_token,

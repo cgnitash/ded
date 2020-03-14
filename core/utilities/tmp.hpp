@@ -12,22 +12,24 @@ namespace utilities
 namespace TMP
 {
 
-// Tweaks from http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4502.pdf
 // Primary template handles all types not supporting the operation.
-template <typename, template <typename> typename, typename = std::void_t<>>
+template <template <typename...> typename Call,
+          typename Return,
+          typename AlwaysVoid,
+          typename... T>
 struct is_detected : std::false_type
 {
 };
 
 // // Specialization recognizes/validates only types supporting the archetype.
-template <typename T, template <typename> typename Op>
-struct is_detected<T, Op, std::void_t<Op<T>>> : std::true_type
+template <template <typename...> typename Call, typename Return, typename... T>
+struct is_detected<Call, Return, std::void_t<Call<T...>>, T...>
+    : std::is_same<Call<T...>, Return>
 {
 };
 
-template <typename T, typename Ret, template <typename> typename Op>
-struct has_signature
-    : std::conjunction<is_detected<T, Op>, std::is_same<Op<T>, Ret>>
+template <typename T, typename Return, template <typename...> typename Call>
+struct has_signature : is_detected<Call, Return, void, T>
 {
 };
 
@@ -37,7 +39,6 @@ struct concept_fail : std::false_type
 {
 };
 
-// From https://www.youtube.com/watch?v=9PFMllbyaLM
 // template class that contains an overload set of operator()
 template <typename... lambdas>
 struct overload_set : lambdas...

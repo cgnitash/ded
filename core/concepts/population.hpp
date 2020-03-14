@@ -249,11 +249,22 @@ private:
     template <typename T>
     using HasConf = decltype(
         std::declval<T &>().configuration(std::declval<specs::PopulationSpec&>()));
+    template <typename T>
+    using HasConf_byval = decltype(
+        std::declval<T &>().configuration(std::declval<specs::PopulationSpec>()));
     void
         configuration_(specs::PopulationSpec &c) override
     {
-      if constexpr (utilities::TMP::has_signature<UserPopulation, void, HasConf>{})
-	  {
+      if constexpr (utilities::TMP::
+                        has_signature<UserPopulation, void, HasConf>{})
+      {
+        if constexpr (utilities::TMP::
+                          has_signature<UserPopulation, void, HasConf_byval>{})
+          static_assert(ded::utilities::TMP::concept_fail<UserPopulation>{},
+                        "\033[35mconfiguration must take PopulationSpec by "
+                        "non-const reference"
+                        "\033[0m");
+
         data_.configuration(c);
         c.name_ = autoClassNameAsString<UserPopulation>();
 	  }

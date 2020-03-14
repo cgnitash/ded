@@ -28,10 +28,6 @@ namespace specs
 
 class ConverterSpec
 {
-  std::string                       name_;
-  Parameters                        parameters_;
-  std::pair<SignalSpec, SignalSpec> args_;
-
 public:
   ConverterSpec(std::string name = "") : name_(name)
   {
@@ -59,18 +55,14 @@ public:
 
   template <typename ArgumentType>
   void
-      bindParameter(std::string                           name,
-                    ArgumentType                          value,
+      parameter(std::string                           name,
+                    ArgumentType                          &value,
                     std::vector<Constraint<ArgumentType>> cons = {})
   {
-    parameters_.bind(name, value, cons);
-  }
-
-  template <typename T>
-  void
-      configureParameter(std::string name, T &value)
-  {
-    parameters_.configure(name, value);
+    if (isConfigurable)
+      parameters_.configure(name, value);
+    else
+      parameters_.bind(name, value, cons);
   }
 
   void
@@ -90,8 +82,21 @@ public:
   std::string              prettyPrint();
 
   //  friend std::ostream &operator<<(std::ostream &out, ConverterSpec e)
+  void setConfigured(bool conf)
+  {
+	  isConfigurable = conf;
+  }
+
 
   friend class concepts::Converter;
+
+private:
+  bool isConfigurable = true;
+
+  std::string                       name_;
+  Parameters                        parameters_;
+  std::pair<SignalSpec, SignalSpec> args_;
+
 };
 
 // private

@@ -20,7 +20,7 @@ namespace ded
 namespace concepts
 {
 
-//concepts::Converter  makeConverter(specs::ConverterSpec);
+// concepts::Converter  makeConverter(specs::ConverterSpec);
 
 // polymorphic wrapper for Substrates
 class Substrate
@@ -126,11 +126,9 @@ public:
     return self_->parseEncoding_(s);
   }
 
-  void
-      input( specs::ConversionSignatureSequence sequence, Signal s );
+  void input(specs::ConversionSignatureSequence sequence, Signal s);
 
-  Signal
-      output( specs::ConversionSignatureSequence sequence);
+  Signal output(specs::ConversionSignatureSequence sequence);
 
   void
       mutate()
@@ -147,11 +145,11 @@ public:
   specs::SubstrateSpec
       publishConfiguration()
   {
-  specs::SubstrateSpec spec;
-  spec.setConfigured(false);
-  self_->configuration_(spec);
-  spec.setConfigured(true);
-  return spec;
+    specs::SubstrateSpec spec;
+    spec.setConfigured(false);
+    self_->configuration_(spec);
+    spec.setConfigured(true);
+    return spec;
   }
 
   void
@@ -177,12 +175,12 @@ private:
     virtual long                getAncestor_() const = 0;
 
     // mandatory methods
-    virtual void                 mutate_()                        = 0;
-    virtual void                 reset_()                         = 0;
-    virtual void                 tick_()                          = 0;
-    virtual void                 input_(std::string, Signal)      = 0;
-    virtual Signal               output_(std::string)             = 0;
-    virtual void                 configuration_(specs::SubstrateSpec &) = 0;
+    virtual void   mutate_()                              = 0;
+    virtual void   reset_()                               = 0;
+    virtual void   tick_()                                = 0;
+    virtual void   input_(std::string, Signal)            = 0;
+    virtual Signal output_(std::string)                   = 0;
+    virtual void   configuration_(specs::SubstrateSpec &) = 0;
 
     // optional methods
     virtual Encoding getEncoding_() const        = 0;
@@ -221,11 +219,11 @@ private:
       return id_;
     }
 
-	// provided global method
+    // provided global method
     std::string
         classNameAsString_() const override
     {
-        return autoClassNameAsString<UserSubstrate>();
+      return autoClassNameAsString<UserSubstrate>();
     }
 
     // mandatory methods
@@ -313,18 +311,28 @@ private:
                       "requirement\033[0m");
     }
 
-
     template <typename T>
-    using HasConf = decltype(
-        std::declval<T &>().configuration(std::declval<specs::SubstrateSpec&>()));
+    using HasConf = decltype(std::declval<T &>().configuration(
+        std::declval<specs::SubstrateSpec &>()));
+    template <typename T>
+    using HasConf_byval = decltype(std::declval<T &>().configuration(
+        std::declval<specs::SubstrateSpec>()));
     void
         configuration_(specs::SubstrateSpec &c) override
     {
-      if constexpr (utilities::TMP::has_signature<UserSubstrate, void, HasConf>{})
-	  {
+      if constexpr (
+          utilities::TMP::has_signature<UserSubstrate, void, HasConf>{} )
+      {
+        if constexpr (utilities::TMP::
+                          has_signature<UserSubstrate, void, HasConf_byval>{})
+          static_assert(ded::utilities::TMP::concept_fail<UserSubstrate>{},
+                        "\033[35mconfiguration must take SubstrateSpec by "
+                        "non-const reference"
+                        "\033[0m");
+
         data_.configuration(c);
         c.name_ = autoClassNameAsString<UserSubstrate>();
-	  }
+      }
       else
         static_assert(ded::utilities::TMP::concept_fail<UserSubstrate>{},
                       "\033[35mSubstratedoes not satisfy "
@@ -339,8 +347,8 @@ private:
     Encoding
         getEncoding_() const override
     {
-      if constexpr (utilities::TMP::is_detected<UserSubstrate,
-                                                EncodingGettable>{})
+      if constexpr (utilities::TMP::
+                        is_detected<EncodingGettable, void, UserSubstrate>{})
       {
         return data_.getEncoding();
       }
@@ -357,8 +365,8 @@ private:
     void
         setEncoding_(Encoding e) override
     {
-      if constexpr (utilities::TMP::is_detected<UserSubstrate,
-                                                EncodingSettable>{})
+      if constexpr (utilities::TMP::
+                        is_detected<EncodingSettable, void, UserSubstrate>{})
       {
         data_.setEncoding(e);
       }
@@ -371,8 +379,8 @@ private:
     Encoding
         parseEncoding_(std::string s) override
     {
-      if constexpr (utilities::TMP::is_detected<UserSubstrate,
-                                                EncodingParsable>{})
+      if constexpr (utilities::TMP::
+                        is_detected<EncodingParsable, void, UserSubstrate>{})
       {
         return data_.parseEncoding(s);
       }
