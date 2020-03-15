@@ -413,48 +413,30 @@ void
       std::string s;
       for (int i : spec.signal_spec_.unboundIndices())
         s += std::to_string(i) + " ";
+      errWarningToken(
+          name_token_,
+          "this process generates an input signal \n    " + spec.name_ +
+              " :  " + spec.signal_spec_.diagnosticName() +
+              " \nAre you sure you want to partially read from this "
+              "input? \nUnread indices [ " +
+              s + "]");
+      // throw language::ParserError{};
+    }
+  for (auto spec : ios.outputs_)
+    if (spec.signal_spec_.isPartiallyBounded())
+    {
+      std::string s;
+      for (int i : spec.signal_spec_.unboundIndices())
+        s += std::to_string(i) + " ";
       errWarningToken(name_token_,
-                      "input signal " + spec.name_ +
-                          ": are you sure you want to partially read from this "
-                          "process inputs "
-                          ": unread_indices [ " +
+                      "this process is reading an output signal of \n  " +
+                          sub_spec.name() + "\n    " + spec.name_ + " :  " +
+                          spec.signal_spec_.diagnosticName() +
+                          " \nAre you sure you want to partially read from "
+                          "this substrate's output? \nUnread indices [ " +
                           s + "]");
       // throw language::ParserError{};
     }
-  if (!io_.inputs_.empty())
-    for (auto spec : ios.inputs_)
-      if (spec.signal_spec_.isPartiallyBounded())
-      {
-        std::string s;
-        for (int i : spec.signal_spec_.unboundIndices())
-          s += std::to_string(i) + " ";
-        errWarningToken(
-            name_token_,
-            "input signal of " + sub_spec.name() +
-                " is partially bound"
-                " are you sure you want to partially read from this "
-                "substrate inputs "
-                ": unread_indices [ " +
-                s + "]");
-        // throw language::ParserError{};
-      }
-  if (!io_.outputs_.empty())
-    for (auto spec : ios.outputs_)
-      if (spec.signal_spec_.isPartiallyBounded())
-      {
-        std::string s;
-        for (int i : spec.signal_spec_.unboundIndices())
-          s += std::to_string(i) + " ";
-        errWarningToken(
-            name_token_,
-            "output signal of " + sub_spec.name() +
-                " is not bound"
-                " are you sure you want to partially read from this "
-                "substrate outputs "
-                ": unread_indices [ " +
-                s + "]");
-        // throw language::ParserError{};
-      }
 }
 
 void

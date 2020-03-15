@@ -58,15 +58,19 @@ void
                          std::to_string(token.location_.line_) + ":" +
                          std::to_string(token.location_.column_);
   auto left_padding =
-      std::string(token.location_.column_ + source_location.length(), ' ');
+      std::string(source_location.length() + token.location_.column_, ' ');
+
+  message = "^" + std::string(token.expr_.length() - 1, '~') +
+            (is_error ? "\nError: " : "\nWarning: ") + message;
 
   std::cout << utilities::TermColours::cyan_fg << source_location
-            << utilities::TermColours::reset << token.diagnostic_ << "\n"
-            << left_padding
-            << (is_error ? utilities::TermColours::red_fg
-                         : utilities::TermColours::magenta_fg)
-            << "^" << std::string(token.expr_.length() - 1, '~') << "\n"
-            << left_padding << message;
+            << utilities::TermColours::reset << token.diagnostic_;
+
+  for (auto line : ra::split(message, '\n'))
+    std::cout << "\n"
+              << (is_error ? utilities::TermColours::red_fg
+                           : utilities::TermColours::magenta_fg)
+              << left_padding << line;
 
   if (auto suggestion = rs::find_if(suggestions,
                                     [word = token.expr_](auto attempt) {
