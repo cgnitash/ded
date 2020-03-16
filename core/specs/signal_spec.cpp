@@ -121,13 +121,18 @@ void
 std::string
     SignalSpec::diagnosticName() const
 {
-  return full_type_ +
-         (is_user_set_vector_size_ || is_placeholder_vector_size_
-              ? utilities::TermColours::blue_fg + "    with [ " +
-                    (user_parameter_.empty() ? "_" : user_parameter_) + " = " +
-                    std::to_string(size_) + " ]" + utilities::TermColours::reset
-              : "");
-  }
+  auto diagnostic_type = full_type_;
+  if (full_type_[1] == '_')
+    diagnostic_type += utilities::TermColours::blue_fg +
+                       "    with [ _type = " + vector_type_ + " ]" +
+                       utilities::TermColours::reset;
+  if (is_user_set_vector_size_ || is_placeholder_vector_size_)
+    diagnostic_type += utilities::TermColours::blue_fg + "    with [ " +
+                       (user_parameter_.empty() ? "_" : user_parameter_) +
+                       " = " + std::to_string(size_) + " ]" +
+                       utilities::TermColours::reset;
+  return diagnostic_type;
+}
 
 void
     SignalSpec::addBoundIndices(std::vector<int> indices)

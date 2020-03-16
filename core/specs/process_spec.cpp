@@ -488,10 +488,10 @@ void
   if (!sig.convertibleTo(sink->signal_spec_))
   {
     errInvalidToken(source_token,
-                    " result type of this converter is : " +
+                    " result type of this converter is\n    " +
                         sig.diagnosticName());
     errInvalidToken(sink_token,
-                    " which cannot be converted to expected type : " +
+                    " which cannot be converted to expected type\n    " +
                         sink->signal_spec_.diagnosticName());
     throw language::ParserError{};
   }
@@ -536,7 +536,7 @@ void
   auto name  = converter.name_;
   auto block = converter.blocks_[0];
 
-  if (!config_manager::isConverterBlock(name.expr_.substr(1)))
+  if (!config_manager::isConverterBlock(block.name_token_.expr_.substr(1)))
   {
     errInvalidToken(
         name, "Not a converter component", config_manager::allConverterNames());
@@ -547,7 +547,7 @@ void
 
   auto [in, out] = converter_spec.args();
 
-  if (name.expr_ == "$slice")
+  if (block.name_token_.expr_ == "$slice")
   {
     auto [from, to, every, vtt] = converter_spec.getSliceRange();
     if (!sig.sliceableBy(from, to, every, vtt))
@@ -566,10 +566,10 @@ void
   else if (!sig.convertibleTo(in))
   {
     errInvalidToken(source_token,
-                    " result type of this converter is : " +
+                    " result type of this converter is\n    " +
                         sig.diagnosticName());
     errInvalidToken(name,
-                    " which cannot be converted to expected type : " +
+                    " which cannot be converted to expected type\n    " +
                         in.diagnosticName());
     throw language::ParserError{};
   }

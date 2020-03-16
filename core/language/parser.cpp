@@ -118,7 +118,11 @@ Block
          tokens[begin + 1].type_ != TokenType::tag_bind &&
          tokens[begin].type_ != TokenType::trace))
     {
-      errInvalidToken(tokens[begin], "unable to parse override syntax");
+      if (tokens[begin].type_ == TokenType::input_signal_bind ||
+          tokens[begin].type_ == TokenType::output_signal_bind)
+        errInvalidToken(tokens[begin], "please see signal binding syntax");
+      else
+        errInvalidToken(tokens[begin], "unable to parse override syntax");
       throw ParserError{};
     }
 
