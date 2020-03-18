@@ -25,7 +25,7 @@ public:
     es.parameter(
         "every",
         every_,
-        { { [](long every) { return every > 0; }, "every must be positive" } });
+        { { [](auto every) { return every > 0; }, "every must be greater than 0" } });
 
     es.bindFrom("<_,_>");
     es.bindTo("<_,_>");

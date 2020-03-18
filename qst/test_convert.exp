@@ -35,7 +35,7 @@ process fors = $sequence
 				? food_eaten 5 
 				#action <- $vb_vd <- $vd_vb  <- out_sense 
 				#not working #
-				action <-  $slice { from = 0 to = 1 every = 1 }  <- out_sense 
+				action <-  $slice { from = 0 to = 2 every = 1 }  <- out_sense 
 				#action <- $add { by = 2.0 } <- out_sense 
 				#line_of_sight ->  $vd_vb  -> $vb_vd -> in_sense 
 				line_of_sight -> !no_slice -> in_sense 

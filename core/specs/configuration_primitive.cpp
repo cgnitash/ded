@@ -96,7 +96,7 @@ void
     auto con = f->second.checkConstraints();
     if (con)
     {
-      errInvalidToken(value, "parameter constraint not satisfied: " + *con);
+      errInvalidToken(value, "parameter constraint not satisfied\n" + *con);
       throw language::ParserError{};
     }
   }

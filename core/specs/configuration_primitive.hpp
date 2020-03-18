@@ -29,8 +29,9 @@ inline static const std::regex r_null{ R"~~(^NULL$)~~" };
 template <typename ArgumentType>
 struct Constraint
 {
-  std::function<bool(ArgumentType)> function_{};
-  std::string                   value_;
+  //std::function<bool(ArgumentType)> function_{};
+  bool (*function_)(ArgumentType){};
+  std::string value_;
 };
 
 class ConfigurationPrimitive
