@@ -121,6 +121,8 @@ private:
   std::string                       name_;
   Parameters                        parameters_;
   std::pair<SignalSpec, SignalSpec> args_;
+
+  void checkInvalidTokens(language::Block block);
 };
 
 // private

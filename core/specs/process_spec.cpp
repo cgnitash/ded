@@ -14,6 +14,12 @@ namespace ded
 namespace specs
 {
 
+
+void
+    ProcessSpec::checkInvalidTokens(language::Block)
+{
+}
+
 void
     ProcessSpec::preTag(std::string name, std::string type)
 {
@@ -737,6 +743,8 @@ ProcessSpec::ProcessSpec(language::Block block)
   }
 
   *this = ALL_PROCESS_SPECS.at(block_name);
+
+  checkInvalidTokens(block);
 
   name_token_ = block.name_token_;
 

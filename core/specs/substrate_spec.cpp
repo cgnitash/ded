@@ -16,6 +16,39 @@ namespace specs
 {
 
 void
+    SubstrateSpec::checkInvalidTokens(language::Block block)
+{
+
+  if (!block.traces_.empty())
+  {
+    errInvalidToken(block.traces_[0].lhs_,
+                    "traces are not allowed in Substrates");
+    throw SpecError{};
+  }
+
+  if (!block.input_signal_binds_.empty())
+  {
+    errInvalidToken(block.input_signal_binds_[0].sink_,
+                    "signal bindings are not allowed in Substrates");
+    throw SpecError{};
+  }
+
+  if (!block.output_signal_binds_.empty())
+  {
+    errInvalidToken(block.output_signal_binds_[0].sink_,
+                    "signal bindings are not allowed in Substrates");
+    throw SpecError{};
+  }
+
+  if (!block.tag_binds_.empty())
+  {
+    errInvalidToken(block.tag_binds_[0].sink_,
+                    "signal bindings are not allowed in Substrates");
+    throw SpecError{};
+  }
+}
+
+void
     SubstrateSpec::input(std::string name, std::string type)
 {
   io_.inputs_.push_back({ name, SignalSpec{ type } });
@@ -229,6 +262,8 @@ SubstrateSpec::SubstrateSpec(language::Block block)
   }
 
   *this = ALL_SUBSTRATE_SPECS.at(block_name);
+
+  checkInvalidTokens(block);
 
   name_token_ = block.name_token_;
 

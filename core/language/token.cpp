@@ -56,7 +56,7 @@ void
 {
   auto source_location = token.from_file_ + ":" +
                          std::to_string(token.location_.line_) + ":" +
-                         std::to_string(token.location_.column_);
+                         std::to_string(token.location_.column_) + " ";
   auto left_padding =
       std::string(source_location.length() + token.location_.column_, ' ');
 

@@ -124,6 +124,8 @@ private:
   void bindNestedSubstrateVector(std::string name, std::vector<SubstrateSpec> subs);
   void configureNestedSubstrateVector(std::string                 name,
                                  std::vector<SubstrateSpec> &subs);
+
+  void checkInvalidTokens(language::Block block);
 };
 
 }   // namespace specs

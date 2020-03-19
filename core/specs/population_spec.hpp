@@ -93,6 +93,7 @@ private:
   std::string   name_;
   Parameters    parameters_;
   SubstrateSpec es_{ "null_entity" };
+  void checkInvalidTokens(language::Block block);
 };
 
 }   // namespace specs

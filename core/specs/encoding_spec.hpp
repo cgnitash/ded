@@ -22,9 +22,11 @@ namespace specs
 
 class EncodingSpec
 {
+	private:
   std::string                                   name_;
-//  std::map<std::string, ConfigurationPrimitive> parameters_;
   Parameters                                              parameters_;
+
+  void checkInvalidTokens(language::Block block);
 
 public:
   EncodingSpec(std::string name = "") : name_(name)

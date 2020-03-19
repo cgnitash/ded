@@ -15,6 +15,53 @@ namespace ded
 namespace specs
 {
 
+void
+    ConverterSpec::checkInvalidTokens(language::Block block)
+{
+
+  if (!block.traces_.empty())
+  {
+    errInvalidToken(block.traces_[0].lhs_,
+                    "traces are not allowed in Converters");
+    throw SpecError{};
+  }
+
+  if (!block.input_signal_binds_.empty())
+  {
+    errInvalidToken(block.input_signal_binds_[0].sink_,
+                    "signal bindings are not allowed in Converters");
+    throw SpecError{};
+  }
+
+  if (!block.output_signal_binds_.empty())
+  {
+    errInvalidToken(block.output_signal_binds_[0].sink_,
+                    "signal bindings are not allowed in Converters");
+    throw SpecError{};
+  }
+
+  if (!block.tag_binds_.empty())
+  {
+    errInvalidToken(block.tag_binds_[0].sink_,
+                    "signal bindings are not allowed in Converters");
+    throw SpecError{};
+  }
+
+  if (!block.nested_.empty())
+  {
+    errInvalidToken(block.nested_[0].name_,
+                    "Converters can't have nested components");
+    throw SpecError{};
+  }
+
+  if (!block.nested_vector_.empty())
+  {
+    errInvalidToken(block.nested_vector_[0].name_,
+                    "Converters can't have nested component vectors");
+    throw SpecError{};
+  }
+}
+
 ConverterSpec::ConverterSpec(language::Block block)
 {
   auto block_name = block.name_.substr(1);
@@ -28,7 +75,10 @@ ConverterSpec::ConverterSpec(language::Block block)
 
   *this = ALL_CONVERTER_SPECS.at(block_name);
 
+  checkInvalidTokens(block);
+  
   parameters_.loadFromSpec(block.overrides_, name_);
+	
 }
 
 std::vector<std::string>

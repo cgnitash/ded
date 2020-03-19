@@ -223,6 +223,8 @@ private:
                                        language::Token &    source_token,
                                        ConversionSequence_ &cs);
 
+  void checkInvalidTokens(language::Block block);
+
   std::string prettyPrintNested();
   std::string prettyPrintNestedVector();
 

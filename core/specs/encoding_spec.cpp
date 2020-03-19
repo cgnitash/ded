@@ -16,6 +16,53 @@ namespace specs
 {
 
 
+void
+    EncodingSpec::checkInvalidTokens(language::Block block)
+{
+
+  if (!block.traces_.empty())
+  {
+    errInvalidToken(block.traces_[0].lhs_,
+                    "traces are not allowed in Encodings");
+    throw SpecError{};
+  }
+
+  if (!block.input_signal_binds_.empty())
+  {
+    errInvalidToken(block.input_signal_binds_[0].sink_,
+                    "signal bindings are not allowed in Encodings");
+    throw SpecError{};
+  }
+
+  if (!block.output_signal_binds_.empty())
+  {
+    errInvalidToken(block.output_signal_binds_[0].sink_,
+                    "signal bindings are not allowed in Encodings");
+    throw SpecError{};
+  }
+
+  if (!block.tag_binds_.empty())
+  {
+    errInvalidToken(block.tag_binds_[0].sink_,
+                    "signal bindings are not allowed in Encodings");
+    throw SpecError{};
+  }
+
+  if (!block.nested_.empty())
+  {
+    errInvalidToken(block.nested_[0].name_,
+                    "Encodings can't have nested components");
+    throw SpecError{};
+  }
+
+  if (!block.nested_vector_.empty())
+  {
+    errInvalidToken(block.nested_vector_[0].name_,
+                    "Encodings can't have nested component vectors");
+    throw SpecError{};
+  }
+}
+
 EncodingSpec::EncodingSpec( language::Block block)
 {
 
@@ -29,6 +76,8 @@ EncodingSpec::EncodingSpec( language::Block block)
   }
 
   *this = ALL_ENCODING_SPECS.at(block_name);
+
+  checkInvalidTokens(block);
 
   parameters_.loadFromSpec(block.overrides_, name_);
 }
