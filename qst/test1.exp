@@ -9,10 +9,10 @@ encoding enc = $encoding
 
 substrate e = $markov_brain
 {
-     hiddens =   [ 2 3 4 ]
-     #hiddens =    2
+     #hiddens =   [ 2 3 4 ]
+     hiddens =    2
 	 outputs =  2 
-	 inputs = 4
+	 inputs = [ 4 8 12 ]
 	 genome = !enc
 }
 
@@ -30,6 +30,7 @@ process fors = $sequence
 {
      first 	= 	$forager 	
 				{ 
+			sensor_range = ^e-inputs
 				? food_eaten 5 
 				action <- out_sense 
 				line_of_sight ->  in_sense 

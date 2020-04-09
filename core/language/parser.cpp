@@ -347,7 +347,13 @@ void
   }
   if (tokens[begin + 2].type_ != TokenType::word)
   {
-    errInvalidToken(tokens[begin + 2], "expected tag name here");
+    if (tokens[begin + 2].type_ == TokenType::tracked_word)
+      errInvalidToken(
+          tokens[begin + 2],
+          "traces cannot depend on other tags: must be a literal Number");
+    else
+      errInvalidToken(tokens[begin + 2],
+                      "expected parameter trace number here");
     throw ParserError{};
   }
   current.traces_.push_back({ tokens[begin + 1], tokens[begin + 2] });
