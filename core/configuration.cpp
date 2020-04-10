@@ -85,23 +85,23 @@ void
 void
     listAllConfigs(std::ostream &out)
 {
-  out << "Substrate:\n";
+  out << "substrate:\n";
   for (auto n_spec : ALL_SUBSTRATE_SPECS)
     out << "    " << n_spec.first << "\n";
 
-  out << "Process:\n";
+  out << "process:\n";
   for (auto n_spec : ALL_PROCESS_SPECS)
     out << "    " << n_spec.first << "\n";
 
-  out << "Population:\n";
+  out << "population:\n";
   for (auto n_spec : ALL_POPULATION_SPECS)
     out << "    " << n_spec.first << "\n";
 
-  out << "Encoding:\n";
+  out << "encoding:\n";
   for (auto n_spec : ALL_ENCODING_SPECS)
     out << "    " << n_spec.first << "\n";
 
-  out << "Converter:\n";
+  out << "converter:\n";
   for (auto n_spec : ALL_CONVERTER_SPECS)
     out << "    " << n_spec.first << "\n";
 
@@ -111,17 +111,16 @@ void
 void
     saveAllConfigs()
 {
-  std::ofstream file("configurations.cfg");
   for (auto n_es : ALL_SUBSTRATE_SPECS)
-    file << "\n" << n_es.second.prettyPrint();
+    std::cout << "\n" << n_es.second.prettyPrint();
   for (auto n_es : ALL_PROCESS_SPECS)
-    file << "\n" << n_es.second.prettyPrint();
+    std::cout << "\n" << n_es.second.prettyPrint();
   for (auto n_es : ALL_POPULATION_SPECS)
-    file << "\n" << n_es.second.prettyPrint();
+    std::cout << "\n" << n_es.second.prettyPrint();
   for (auto n_es : ALL_ENCODING_SPECS)
-    file << "\n" << n_es.second.prettyPrint();
+    std::cout << "\n" << n_es.second.prettyPrint();
   for (auto n_es : ALL_CONVERTER_SPECS)
-    file << "\n" << n_es.second.prettyPrint();
+    std::cout << "\n" << n_es.second.prettyPrint();
   return;
 }
 

@@ -81,7 +81,9 @@ SpecVariant
   }
   else
   {
-    std::cout << " unknown component type " + type;
+    std::cout << " unknown component type " + type
+              << "\nvalid component types are substrate  process population "
+                 "encoding converter";
     throw config_manager::ConfigError{};
   }
 }

@@ -393,8 +393,8 @@ void
     if (!spec.signal_spec_.isBound())
     {
       errInvalidToken(name_token_,
-                      "All output signals of a process must be " + spec.name_ +
-                          " completely bound");
+                      "output signal <" + spec.name_ +
+                          "> must be completely bound");
       throw language::ParserError{};
     }
   auto ios = sub_spec.getIO();

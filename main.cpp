@@ -52,9 +52,9 @@ int
     Flags              Arguments	             Description
     -----              ---------                 -----------
     -l, --list                                   : lists all components currently loaded
-    -p, --print        <component-type>:<component-name>...       
-												 : print publication for each component in component-names
-    -s, --save                                   : saves configuration files 
+    -s, --show         <component-type>:<component-name>...       
+												 : show default configuration for each component
+    -sa, --show-all                              : show default configuration for all available components
     -v, --verify       <file-name>               : verify simulations in file-name
     -rl, --run-local   <file-name> <N>           : runs all simulations in file-name with N replicates (locally)
     -rh, --run-hpc     <file-name> <N>           : runs all simulations in this file-name with N replicates (msu hpc)
@@ -62,21 +62,20 @@ int
     -f                 <bar-code> <N>            : run a single simulation with REP ID N (should NOT be called manually)
 )~~";
   }
-  else if (argc == 2 && (mode == "-s" || mode == "--save"))
-  {
-    std::cout << "saving configurations.cfg ... \n";
-    ded::config_manager::saveAllConfigs();
-  }
   else if (argc == 2 && (mode == "-l" || mode == "--list"))
   {
     ded::config_manager::listAllConfigs(std::cout);
     std::cout << std::endl;
   }
-  else if (argc > 2 && (mode == "-p" || mode == "--print"))
+  else if (argc > 2 && (mode == "-s" || mode == "--show"))
   {
     for (auto i{ 2 }; i < argc; i++)
       ded::config_manager::showConfig(std::cout, std::string(argv[i]));
     std::cout << std::endl;
+  }
+  else if (argc == 2 && (mode == "-sa" || mode == "--show-all"))
+  {
+    ded::config_manager::saveAllConfigs();
   }
   else if (argc == 3 && (mode == "-v" || mode == "--verify"))
   {
