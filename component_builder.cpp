@@ -17,14 +17,15 @@ Options
     getBuildOptions(std::string fname)
 {
 
-  Options          build_options;
+  Options       build_options;
   std::ifstream cfg(fname);
   if (!cfg.is_open())
   {
     std::cout << "Error: component file " << fname << " not found" << std::endl;
     std::exit(1);
   }
-  std::regex r(R"~~(^\s*(Substrate|Process|Population|Converter)\s*:\s*(\w+)\s*$)~~");
+  std::regex r(
+      R"~~(^\s*(substrate|process|population|converter)\s*:\s*(\w+)\s*$)~~");
   std::regex comments(R"~~(#.*$)~~");
   std::regex spaces(R"~~(^\s*$)~~");
   for (std::string line; std::getline(cfg, line);)
@@ -37,9 +38,8 @@ Options
       build_options[m[1]].push_back(m[2]);
     else
     {
-      std::cout << "<ded-core>Error:"
-                << " unrecognised line in components file \"" << fname << "\""
-                << line << "\n";
+      std::cout << "Error: unrecognised line in components file \"" << fname
+                << "\"" << line << "\n";
       std::exit(1);
     }
   }
@@ -62,8 +62,10 @@ void
 
   header << "\n#include<string_view>\n\nnamespace ded {\n\n";
 
-  for (auto [type, names] : build_options)
+  for (auto const &[lower_case_type, names] : build_options)
   {
+    auto type = lower_case_type;
+    type[0]   = std::toupper(type[0]);
     header << "specs::" << type << "Spec default" << type
            << "Spec(std::string name) \n{\n";
     for (auto name : names)
@@ -74,8 +76,10 @@ void
            << ": \" << name;\n  throw specs::SpecError{};\n}\n\n";
   }
 
-  for (auto [type, names] : build_options)
+  for (auto const &[lower_case_type, names] : build_options)
   {
+    auto type = lower_case_type;
+    type[0]   = std::toupper(type[0]);
     header << "concepts::" << type << " make" << type << "(specs::" << type
            << "Spec spec) \n{\n";
     for (auto name : names)
@@ -86,24 +90,28 @@ void
            << ": \" << spec.name();\n  throw specs::SpecError{};\n}\n\n";
   }
 
-  for (auto name : rv::concat(build_options["Substrate"],
-                              build_options["Process"],
-                              build_options["Converter"],
-                              build_options["Population"]))
+  for (auto name : rv::concat(build_options["substrate"],
+                              build_options["process"],
+                              build_options["converter"],
+                              build_options["population"]))
     header << "template<>\nstd::string autoClassNameAsString<" << name
            << ">() \n{ return \"" << name << "\"; }\n\n";
 
   header << "void generateAllSpecs() {\n";
-  for (auto [type, names] : build_options)
+  for (auto const &[lower_case_type, names] : build_options)
   {
+    auto type = lower_case_type;
+    type[0]   = std::toupper(type[0]);
     header << "  generate" << type << "Spec({"
            << (names | rv::transform([](auto s) { return "\"" + s + "\""; }) |
                rv::intersperse(",") | ra::join)
            << "});\n";
   }
+  // hard coded until encoding spec interface is provided
   header << "  ALL_ENCODING_SPECS[\"encoding\"] = "
             "ded::concepts::Encoding{}.publishConfiguration();\n}\n";
 
+  // this goes soon
   header << R"~(
 inline void
     generateSubstrateSpec(std::initializer_list<std::string> component_list)
@@ -179,8 +187,8 @@ inline void
 
 void
     generateMakefile(const std::string &fname,
-                      Options               build_options,
-                      std::string        args)
+                     Options            build_options,
+                     std::string        args)
 {
   auto asHeader = [](auto s) { return s + ".hpp "; };
   auto asSource = [](auto s) { return s + ".cpp "; };
@@ -214,7 +222,7 @@ void
                                           "core/concepts/encoding" };
 
   std::vector<std::string> user_files;
-  for (auto &[type, names] : build_options)
+  for (auto const &[type, names] : build_options)
     for (auto &name : names)
       user_files.push_back("user/" + type + "/" + name + "/" + name);
 
