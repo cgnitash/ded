@@ -33,7 +33,8 @@ enum class TokenType
   input_signal_bind,
   output_signal_bind,
   tag_name,
-  tag_bind
+  tag_bind,
+  keyword
 };
 
 TokenType parseTokenType(std::string);

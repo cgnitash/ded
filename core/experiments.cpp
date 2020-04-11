@@ -16,9 +16,11 @@ namespace experiments
 {
 
 SpecVariant
-    variableToSpec(std ::string type, language::Block block)
+    variableToSpec(std ::string type_name, language::Block block)
 {
   auto name = block.name_token_.expr_.substr(1);
+
+  auto type = type_name.substr(2);
 
   if (type == "process")
   {
@@ -82,7 +84,7 @@ SpecVariant
   else
   {
     std::cout << " unknown component type " + type
-              << "\nvalid component types are substrate  process population "
+              << "\nvalid component types are substrate process population "
                  "encoding converter";
     throw config_manager::ConfigError{};
   }

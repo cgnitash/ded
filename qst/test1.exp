@@ -2,21 +2,21 @@
 # working
 # tests basic experiment
 
-encoding enc = $encoding 
+__encoding enc = $encoding 
 {
 	point_mutate_prob =  0.005 
 }
 
-substrate e = $markov_brain
+__substrate e = $markov_brain
 {
      #hiddens =   [ 2 3 4 ]
      hiddens =    2
 	 outputs =  2 
-	 inputs = [ 4 8 12 ]
+	 inputs = 4#[ 4 8 12 ]
 	 genome = !enc
 }
 
-population Population = $linear 
+__population Population = $linear 
 { 
 	size = 50 
 	entity = !e # `entity` is special
@@ -26,7 +26,7 @@ population Population = $linear
 
 
 
-process fors = $sequence  
+__process fors = $sequence  
 {
      first 	= 	$forager 	
 				{ 
@@ -41,7 +41,7 @@ process fors = $sequence
 }
 
 
-process Process = $cycle  { 
+__process Process = $cycle  { 
  count = 101
   world = !fors
 }

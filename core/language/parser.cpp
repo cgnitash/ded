@@ -28,13 +28,13 @@ void
     throw ParserError{};
   }
 
-  if (tokens[begin].type_ != TokenType::word ||
+  if (tokens[begin].type_ != TokenType::keyword ||
       !rs::contains(
           std::vector<std::string>{
               "process", "substrate", "encoding", "population", "converter" },
-          tokens[begin].expr_))
+          tokens[begin].expr_.substr(2)))
   {
-    errInvalidToken(tokens[begin], "expected component type here");
+    errInvalidToken(tokens[begin], "expected keyword for new definition here");
     throw ParserError{};
   }
 

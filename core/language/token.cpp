@@ -45,6 +45,8 @@ TokenType
     return TokenType::tracked_word;
   if (s.find(':') != std::string::npos)
     return TokenType::tag_name;
+  if (s.length() > 1 && s.substr(0, 2) == "__")
+    return TokenType::keyword;
   return TokenType::word;
 }
 
