@@ -52,8 +52,8 @@ int
     Flags              Arguments	             Description
     -----              ---------                 -----------
     -l, --list                                   : lists all components currently loaded
-    -s, --show         <component-type>:<component-name>...       
-												 : show default configuration for each component
+    -s, --show         <component-type>:<component-name>... 
+                                                 : show default configuration for each component
     -sa, --show-all                              : show default configuration for all available components
     -v, --verify       <file-name>               : verify simulations in file-name
     -rl, --run-local   <file-name> <N>           : runs all simulations in file-name with N replicates (locally)
