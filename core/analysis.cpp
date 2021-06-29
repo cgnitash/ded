@@ -139,9 +139,12 @@ std::pair<std::vector<int>, int>
               << " will be used\n";
   }
 
-  return { rv::iota(trace.frequency_, *low + 1) |
-               rv::filter([f = trace.frequency_](auto i) { return !(i % f); }),
-           *low_rep };
+  auto all_reps =
+      rv::iota(trace.frequency_, *low + 1) |
+      rv::filter([f = trace.frequency_](auto i) { return !(i % f); }) |
+      rs::to<std::vector<int>>;
+
+  return { all_reps, *low_rep };
 }
 
 void
