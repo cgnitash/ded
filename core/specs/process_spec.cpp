@@ -14,9 +14,7 @@ namespace ded
 namespace specs
 {
 
-
-void
-    ProcessSpec::checkInvalidTokens(language::Block)
+void ProcessSpec::checkInvalidTokens(language::Block)
 {
 }
 
@@ -353,25 +351,10 @@ void
     ProcessSpec::instantiateUserParameterSizes()
 {
   for (auto &n_sig : io_.inputs_)
-      /*
-    for (auto &[param, cp] : parameters_.parameters_)
-      if (cp.typeAsString() == "long" &&
-          param == n_sig.signal_spec_.userParameter())
-        n_sig.signal_spec_.instantiateUserParameter(
-            std::stol(cp.valueAsString()));
-    */
-        n_sig.signal_spec_.instantiateUserParameter(parameters_.parameters_);
-
+    n_sig.signal_spec_.instantiateUserParameter(parameters_.parameters_);
 
   for (auto &n_sig : io_.outputs_)
-    /*
-      for (auto &[param, cp] : parameters_.parameters_)
-      if (cp.typeAsString() == "long" &&
-          param == n_sig.signal_spec_.userParameter())
-        n_sig.signal_spec_.instantiateUserParameter(
-            std::stol(cp.valueAsString()));
-  */
-        n_sig.signal_spec_.instantiateUserParameter(parameters_.parameters_);
+    n_sig.signal_spec_.instantiateUserParameter(parameters_.parameters_);
 
   for (auto &es : nested_)
     es.second.e->instantiateUserParameterSizes();

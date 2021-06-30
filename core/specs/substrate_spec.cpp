@@ -421,22 +421,9 @@ void
     SubstrateSpec::instantiateUserParameterSizes()
 {
   for (auto &n_sig : io_.inputs_)
-    /*
-  for (auto &[param, cp] : parameters_.parameters_)
-    if (cp.typeAsString() == "long" &&
-        param == n_sig.signal_spec_.userParameter())
-      n_sig.signal_spec_.instantiateUserParameter(
-          std::stol(cp.valueAsString()));
-*/
     n_sig.signal_spec_.instantiateUserParameter(parameters_.parameters_);
+
   for (auto &n_sig : io_.outputs_)
-    /*
-     for (auto &[param, cp] : parameters_.parameters_)
-        if (cp.typeAsString() == "long" &&
-            param == n_sig.signal_spec_.userParameter())
-          n_sig.signal_spec_.instantiateUserParameter(
-              std::stol(cp.valueAsString()));
-              */
     n_sig.signal_spec_.instantiateUserParameter(parameters_.parameters_);
 }
 
