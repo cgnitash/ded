@@ -1,9 +1,10 @@
 
 #include <iostream>
+#include <range/v3/action/remove.hpp>
 #include <string>
 #include <vector>
-#include<range/v3/action/remove.hpp>
 
+#include "../utilities/calculator/calculator.hpp"
 #include "../utilities/utilities.hpp"
 #include "configuration_primitive.hpp"
 #include "signal_spec.hpp"
@@ -32,7 +33,7 @@ bool
   if (size_ < to)
     return false;
   size_ = (to - from) / every;
-  vtt = vector_type_ ;
+  vtt   = vector_type_;
 
   return true;
 }
@@ -81,28 +82,36 @@ SignalSpec::SignalSpec(std::string type) : full_type_(type)
   is_vector_   = true;
   vector_type_ = m[2].str();
 
-  if (auto size = m[3].str(); size.empty())
+  if (auto size_expr = m[3].str(); size_expr.empty())
     is_any_vector_size_ = true;
-  else if (size == "_")
-
+  else if (size_expr == "_")
     is_placeholder_vector_size_ = true;
-
-  else if (std::isdigit(size[0]))
+  else if (std::isdigit(size_expr[0]))   // should check for just a number
   {
-    size_ = std::stol(size);
+    size_              = std::stol(size_expr);
     bindings_.indices_ = rv::iota(0, size_) | rs::to<std::vector<int>>;
   }
   else
   {
     is_user_set_vector_size_ = true;
-    user_parameter_          = size;
+    user_parameter_          = size_expr;
   }
 }
 
 void
-    SignalSpec::instantiateUserParameter(long size)
+    SignalSpec::instantiateUserParameter(
+        std::map<std::string, ConfigurationPrimitive> const &config_params)
 {
-  size_              = size;
+  if (user_parameter_.empty())
+    return;
+  auto size = user_parameter_;
+  for (auto const &[param, cp] : config_params)
+    if (cp.typeAsString() == "long")
+    {
+      std::regex p{ param };
+      size = std::regex_replace(size, p, cp.valueAsString());
+    }
+  size_              = calculator::eval(size);
   bindings_.indices_ = rv::iota(0, size_) | rs::to<std::vector<int>>;
 }
 
@@ -138,7 +147,7 @@ void
     SignalSpec::addBoundIndices(std::vector<int> indices)
 {
   for (auto i : indices)
-     bindings_.indices_ |= ra::remove(i);
+    bindings_.indices_ |= ra::remove(i);
 
   bindings_.is_bound_ |= bindings_.indices_.empty();
 }

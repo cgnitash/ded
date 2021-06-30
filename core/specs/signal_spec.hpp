@@ -8,6 +8,7 @@
 
 #include "../utilities/term_colours.hpp"
 #include "../utilities/utilities.hpp"
+#include "configuration_primitive.hpp"
 
 namespace ded
 {
@@ -15,7 +16,7 @@ namespace specs
 {
 
 inline static const std::regex valid_signal_type_{
-  R"~~((\w+)?|<(\w+)?,(\w+|\d+|_)?>)~~"
+  R"~~((\w+)?|<(\w+)?,(.*)>)~~"
 };
 
 class SignalSpec
@@ -56,7 +57,7 @@ public:
     return user_parameter_;
   }
 
-  void instantiateUserParameter(long size);
+  void instantiateUserParameter(std::map<std::string, ConfigurationPrimitive>const &  config_params);
 
   bool sliceableBy(long from, long to, long every, std::string &vtt);
   void updatePlaceholders(SignalSpec);
@@ -90,7 +91,8 @@ public:
     return bindings_.indices_;
   }
 
-  bool isPartiallyBounded()
+  bool
+      isPartiallyBounded()
   {
     return bindings_.indices_.size() &&
            static_cast<long>(bindings_.indices_.size()) != size_;

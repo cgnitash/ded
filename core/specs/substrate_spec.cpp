@@ -63,10 +63,10 @@ void
 void
     SubstrateSpec::encoding(std::string name, EncodingSpec &e)
 {
-	if (isConfigurable)
-  e = encodings_[name];
-	else
-  encodings_[name] = e;
+  if (isConfigurable)
+    e = encodings_[name];
+  else
+    encodings_[name] = e;
 }
 
 void
@@ -81,7 +81,7 @@ void
 
 void
     SubstrateSpec::bindNestedSubstrateVector(std::string                name,
-                                        std::vector<SubstrateSpec> subs)
+                                             std::vector<SubstrateSpec> subs)
 {
   if (nested_vector_.find(name) != nested_vector_.end())
   {
@@ -99,8 +99,9 @@ void
 }
 
 void
-    SubstrateSpec::configureNestedSubstrateVector(std::string                 name,
-                                             std::vector<SubstrateSpec> &subs)
+    SubstrateSpec::configureNestedSubstrateVector(
+        std::string                 name,
+        std::vector<SubstrateSpec> &subs)
 {
   if (nested_vector_.find(name) == nested_vector_.end())
   {
@@ -420,18 +421,23 @@ void
     SubstrateSpec::instantiateUserParameterSizes()
 {
   for (auto &n_sig : io_.inputs_)
-    for (auto &[param, cp] : parameters_.parameters_)
-      if (cp.typeAsString() == "long" &&
-          param == n_sig.signal_spec_.userParameter())
-        n_sig.signal_spec_.instantiateUserParameter(
-            std::stol(cp.valueAsString()));
-
+    /*
+  for (auto &[param, cp] : parameters_.parameters_)
+    if (cp.typeAsString() == "long" &&
+        param == n_sig.signal_spec_.userParameter())
+      n_sig.signal_spec_.instantiateUserParameter(
+          std::stol(cp.valueAsString()));
+*/
+    n_sig.signal_spec_.instantiateUserParameter(parameters_.parameters_);
   for (auto &n_sig : io_.outputs_)
-    for (auto &[param, cp] : parameters_.parameters_)
-      if (cp.typeAsString() == "long" &&
-          param == n_sig.signal_spec_.userParameter())
-        n_sig.signal_spec_.instantiateUserParameter(
-            std::stol(cp.valueAsString()));
+    /*
+     for (auto &[param, cp] : parameters_.parameters_)
+        if (cp.typeAsString() == "long" &&
+            param == n_sig.signal_spec_.userParameter())
+          n_sig.signal_spec_.instantiateUserParameter(
+              std::stol(cp.valueAsString()));
+              */
+    n_sig.signal_spec_.instantiateUserParameter(parameters_.parameters_);
 }
 
 }   // namespace specs

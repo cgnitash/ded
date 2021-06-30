@@ -34,7 +34,7 @@ public:
 
     spec.postTag("food_eaten","double");
 
-    spec.input("line_of_sight","<double,sensor_range>",input_los);
+    spec.input("line_of_sight","<double, sensor_range >",input_los);
     spec.output("action", "<double,2>", output_action);
 
     resources_ = std::vector(grid_size_, std::vector(grid_size_, 0));
