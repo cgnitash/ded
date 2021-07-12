@@ -255,9 +255,27 @@ void
 
   for (auto &c : tag_conversion_sequence_)
     bindTagConversionSequence(c);
+
+  for (auto n : nested_)
+  {
+    for (auto tag : n.second.e->tags_.pre_)
+      if (!tag.signal_spec_.isBound())
+      {
+        errInvalidToken(name_token_,
+                        "pre tag " + tag.name_ + " is not bound to a post tag");
+        throw language::ParserError{};
+      }
+    for (auto tag : n.second.e->tags_.post_)
+      if (!tag.signal_spec_.isBound())
+      {
+        errInvalidToken(name_token_,
+                        "post tag " + tag.name_ + " is not bound to a pre tag");
+        throw language::ParserError{};
+      }
+  }
 }
 
-std::pair<SignalSpecSet, std::string>
+std::pair<NamedSignal, std::string>
     ProcessSpec::getTagsWithName(language::Token token, bool is_pre)
 {
   if (token.type_ == language::TokenType::tag_name)
@@ -269,21 +287,50 @@ std::pair<SignalSpecSet, std::string>
     if (nested_.find(nested_name) == nested_.end())
     {
       errInvalidToken(token,
-                      "This is not a nested process of " + name_,
+                      "<" + nested_name + "> is not a nested process of " +
+                          name_,
                       nested_ | rv::keys | rs::to<std::vector<std::string>>);
       throw language::ParserError{};
     }
-    return { is_pre ? rv::concat(nested_[nested_name].e->tags_.post_,
-                                 nested_[nested_name].constraints_.pre_) |
-                          rs::to<std::vector<NamedSignal>>
-                    : rv::concat(nested_[nested_name].e->tags_.pre_,
-                                 nested_[nested_name].constraints_.post_) |
-                          rs::to<std::vector<NamedSignal>>,
-             nested_tag };
+    auto &ret_tags_nested = is_pre ? nested_[nested_name].e->tags_.post_
+                                   : nested_[nested_name].e->tags_.pre_;
+    auto  ret_tag_itr_nested =
+        rs::find(ret_tags_nested, nested_tag, &NamedSignal::name_);
+    auto &ret_tags_constraints = is_pre
+                                     ? nested_[nested_name].constraints_.pre_
+                                     : nested_[nested_name].constraints_.post_;
+    auto  ret_tag_itr_constraints =
+        rs::find(ret_tags_constraints, nested_tag, &NamedSignal::name_);
+    if (ret_tag_itr_nested == rs::end(ret_tags_nested) &&
+        ret_tag_itr_constraints == rs::end(ret_tags_constraints))
+    {
+      errInvalidToken(token,
+                      nested_tag + " is not a valid tag ",
+                      rv::concat(ret_tags_nested, ret_tags_constraints) |
+                          rv::transform(&NamedSignal::name_) |
+                          rs::to<std::vector<std::string>>);
+      throw language::ParserError{};
+    }
+    auto &ret_tag_itr = ret_tag_itr_nested == rs::end(ret_tags_nested)
+                            ? ret_tag_itr_constraints
+                            : ret_tag_itr_nested;
+    ret_tag_itr->signal_spec_.setBound();
+    return { *ret_tag_itr, nested_tag };
   }
-  else
+  else   // this case might be completely unnecessary
   {
-    return { is_pre ? tags_.pre_ : tags_.post_, token.expr_ };
+    auto &ret_tags    = is_pre ? tags_.pre_ : tags_.post_;
+    auto  ret_tag_itr = rs::find(ret_tags, token.expr_, &NamedSignal::name_);
+    if (ret_tag_itr == rs::end(ret_tags))
+    {
+      errInvalidToken(token,
+                      token.expr_ + " is not a post tag ",
+                      ret_tags | rv::transform(&NamedSignal::name_) |
+                          rs::to<std::vector<std::string>>);
+      throw language::ParserError{};
+    }
+    ret_tag_itr->signal_spec_.setBound();
+    return { *ret_tag_itr, token.expr_ };
   }
 }
 
@@ -291,48 +338,29 @@ void
     ProcessSpec::bindTagConversionSequence(
         language::Block::TokenBlockSignalBind tag_conversion_sequence)
 {
-
   ConversionSequence_ cs;
 
-  auto source_token               = tag_conversion_sequence.source_;
-  auto [source_sigs, source_name] = getTagsWithName(source_token, true);
-  auto source = rs::find(source_sigs, source_name, &NamedSignal::name_);
-  if (source == rs::end(source_sigs))
-  {
-    errInvalidToken(source_token,
-                    source_name + " is not a pre tag ",
-                    source_sigs | rv::transform(&NamedSignal::name_) |
-                        rs::to<std::vector<std::string>>);
-    throw language::ParserError{};
-  }
-  cs.source_ = source_name;
+  auto source_token              = tag_conversion_sequence.source_;
+  auto [source_sig, source_name] = getTagsWithName(source_token, true);
+  cs.source_                     = source_name;
 
-  auto sink_token             = tag_conversion_sequence.sink_;
-  auto [sink_sigs, sink_name] = getTagsWithName(sink_token, false);
-  auto sink = rs::find(sink_sigs, sink_name, &NamedSignal::name_);
-  if (sink == rs::end(sink_sigs))
-  {
-    errInvalidToken(sink_token,
-                    sink_name + " is not a pre tag ",
-                    sink_sigs | rv::transform(&NamedSignal::name_) |
-                        rs::to<std::vector<std::string>>);
-    throw language::ParserError{};
-  }
-  cs.sink_ = sink_name;
+  auto sink_token            = tag_conversion_sequence.sink_;
+  auto [sink_sig, sink_name] = getTagsWithName(sink_token, false);
+  cs.sink_                   = sink_name;
 
-  auto sig = source->signal_spec_;
+  auto sig = source_sig.signal_spec_;
 
   for (auto converter : tag_conversion_sequence.sequence_)
     convertSignalConversionSequence(converter, sig, source_token, cs);
 
-  if (!sig.convertibleTo(sink->signal_spec_))
+  if (!sig.convertibleTo(sink_sig.signal_spec_))
   {
     errInvalidToken(source_token,
                     " result type of this converter is : " +
                         sig.diagnosticName());
     errInvalidToken(sink_token,
                     " which cannot be converted to expected type : " +
-                        sink->signal_spec_.diagnosticName());
+                        sink_sig.signal_spec_.diagnosticName());
     throw language::ParserError{};
   }
 

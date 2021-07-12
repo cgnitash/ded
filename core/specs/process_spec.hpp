@@ -82,8 +82,8 @@ public:
   template <typename ArgumentType>
   void
       parameter(std::string                           name,
-                    ArgumentType                          &value,
-                    std::vector<Constraint<ArgumentType>> cons = {})
+                ArgumentType &                        value,
+                std::vector<Constraint<ArgumentType>> cons = {})
   {
     if (isConfigurable)
       parameters_.configure(name, value);
@@ -105,12 +105,12 @@ public:
 
   void nestedProcess(std::string                   name,
                      ProcessSpec &                 proc,
-                     std::vector<SignalConstraint> pre_constraints = {},
+                     std::vector<SignalConstraint> pre_constraints  = {},
                      std::vector<SignalConstraint> post_constraints = {});
 
   void nestedProcessVector(std::string                   name,
                            std::vector<ProcessSpec> &    procs,
-                           std::vector<SignalConstraint> pre_constraints = {},
+                           std::vector<SignalConstraint> pre_constraints  = {},
                            std::vector<SignalConstraint> post_constraints = {});
 
   std::vector<std::string> serialise(long, bool) const;
@@ -123,9 +123,10 @@ public:
 
   void bindTags();
 
-  void setConfigured(bool conf)
+  void
+      setConfigured(bool conf)
   {
-	  isConfigurable = conf;
+    isConfigurable = conf;
   }
 
   friend class concepts::Process;
@@ -156,7 +157,7 @@ private:
   // since replaced by ??
   std::vector<language::Block::TokenBlockSignalBind> input_conversion_sequence_;
   std::vector<language::Block::TokenBlockSignalBind>
-                                                     output_conversion_sequence_;
+      output_conversion_sequence_;
   std::vector<language::Block::TokenBlockSignalBind> tag_conversion_sequence_;
   ConversionSequence                                 input_conversions_;
   ConversionSequence                                 output_conversions_;
@@ -200,22 +201,21 @@ private:
       std::string                   proc_name,
       std::vector<SignalConstraint> post_constraints);
 
-
   void parseSignalBinds(language::Block);
   void parseTagBinds(language::Block block);
   void parseTraces(language::Block);
   void parseNested(language::Block);
   void parseNestedVector(language::Block);
 
-  std::pair<SignalSpecSet, std::string> getTagsWithName(language::Token token,
-                                                        bool            is_pre);
+  std::pair<NamedSignal, std::string> getTagsWithName(language::Token token,
+                                                      bool            is_pre);
 
   void bindTagConversionSequence(
       language::Block::TokenBlockSignalBind signal_conversion_sequence);
 
   void bindSignalConversionSequence(
       language::Block::TokenBlockSignalBind signal_conversion_sequence,
-      specs::SubstrateSpec                  &sub_spec,
+      specs::SubstrateSpec &                sub_spec,
       bool                                  is_input);
 
   void convertSignalConversionSequence(language::Block::TokenBlocks converter,
@@ -227,7 +227,6 @@ private:
 
   std::string prettyPrintNested();
   std::string prettyPrintNestedVector();
-
 };
 
 }   // namespace specs
