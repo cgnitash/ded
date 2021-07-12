@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "../utilities/calculator/calculator.hpp"
+#include "../utilities/calculator.hpp"
 #include "../utilities/utilities.hpp"
 #include "configuration_primitive.hpp"
 #include "signal_spec.hpp"

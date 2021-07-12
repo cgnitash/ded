@@ -3,6 +3,7 @@
 #include "components.hpp"
 
 #include <algorithm>
+#include <exception>
 #include <experimental/filesystem>
 #include <fstream>
 #include <functional>
@@ -24,14 +25,15 @@ std::map<std::string, ded::specs::SubstrateSpec>  ded::ALL_SUBSTRATE_SPECS;
 std::map<std::string, ded::specs::ProcessSpec>    ded::ALL_PROCESS_SPECS;
 std::map<std::string, ded::specs::PopulationSpec> ded::ALL_POPULATION_SPECS;
 std::map<std::string, ded::specs::EncodingSpec>   ded::ALL_ENCODING_SPECS;
-std::map<std::string, ded::specs::ConverterSpec>   ded::ALL_CONVERTER_SPECS;
+std::map<std::string, ded::specs::ConverterSpec>  ded::ALL_CONVERTER_SPECS;
 
 struct CommandLineError
 {
 };
 
 int
-    main(int argc, char **argv) try
+    main(int argc, char **argv)
+try
 {
 
   // check all things that aren't being checked statically,
@@ -119,6 +121,14 @@ int
   }
   else if (argc == 4 && mode == "-f")
   {
+    if (!std::experimental::filesystem::exists("./data/" +
+                                               std::string{ argv[2] }))
+    {
+      std::cout
+          << "Error: invalid manually specified simulation; does not exist\n";
+      std::exit(0);
+    }
+
     auto [pop_spec, proc_spec] = ded::experiments::loadSimulation(argv[2]);
 
     auto pop         = ded::makePopulation(pop_spec);
