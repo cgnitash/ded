@@ -51,14 +51,14 @@ TokenType
 }
 
 void
-    errInvalidToken_detail_(bool is_error,
-			Token                    token,
-                    std::string              message,
-                    std::vector<std::string> suggestions)
+    errInvalidToken_detail_(bool                     is_error,
+                            Token                    token,
+                            std::string              message,
+                            std::vector<std::string> suggestions)
 {
   auto source_location = token.from_file_ + ":" +
-                         std::to_string(token.location_.line_) + ":" +
-                         std::to_string(token.location_.column_) + " ";
+                         std::to_string(token.location_.line_ + 1) + ":" +
+                         std::to_string(token.location_.column_ + 1) + " ";
   auto left_padding =
       std::string(source_location.length() + token.location_.column_, ' ');
 
