@@ -262,17 +262,41 @@ void
       if (!tag.signal_spec_.isBound())
       {
         errInvalidToken(name_token_,
-                        "pre tag " + tag.name_ + " is not bound to a post tag");
+                        "pre tag " + tag.name_ +
+                            " is not bound to a post tag of " + n.first);
         throw language::ParserError{};
       }
     for (auto tag : n.second.e->tags_.post_)
       if (!tag.signal_spec_.isBound())
       {
         errInvalidToken(name_token_,
-                        "post tag " + tag.name_ + " is not bound to a pre tag");
+                        "post tag " + tag.name_ +
+                            " is not bound to a pre tag of" + n.first);
         throw language::ParserError{};
       }
   }
+
+  for (auto nv : nested_vector_)
+    for (auto [i, n] : rv::enumerate(nv.second.first))
+    {
+      for (auto tag : n.e->tags_.pre_)
+        if (!tag.signal_spec_.isBound())
+        {
+          errInvalidToken(name_token_,
+                          "pre tag " + tag.name_ + " of " + nv.first + ":" +
+                              std::to_string(i) +
+                              " is not bound to a post tag");
+          throw language::ParserError{};
+        }
+      for (auto tag : n.e->tags_.post_)
+        if (!tag.signal_spec_.isBound())
+        {
+          errInvalidToken(name_token_,
+                          "post tag " + tag.name_ + " of " + nv.first + ":" +
+                              std::to_string(i) + " is not bound to a pre tag");
+          throw language::ParserError{};
+        }
+    }
 }
 
 std::pair<NamedSignal, std::string>
@@ -284,38 +308,89 @@ std::pair<NamedSignal, std::string>
     auto nested_name = token.expr_.substr(0, p);
     auto nested_tag  = token.expr_.substr(p + 1);
 
-    if (nested_.find(nested_name) == nested_.end())
+    if (auto p2 = nested_tag.find(':'); p2 != std::string::npos)
     {
-      errInvalidToken(token,
-                      "<" + nested_name + "> is not a nested process of " +
-                          name_,
-                      nested_ | rv::keys | rs::to<std::vector<std::string>>);
-      throw language::ParserError{};
+      auto nested_vector_id =
+          std::stol(nested_tag.substr(0, p2));   // check this is numeric
+      nested_tag = nested_tag.substr(p2 + 1);
+
+      if (nested_vector_.find(nested_name) == nested_vector_.end())
+      {
+        errInvalidToken(
+            token,
+            "<" + nested_name + "> is not a nested process of " + name_,
+            nested_vector_ | rv::keys | rs::to<std::vector<std::string>>);
+        throw language::ParserError{};
+      }
+
+      auto &ret_tags_nested = is_pre ? nested_vector_[nested_name]
+                                           .first[nested_vector_id]
+                                           .e->tags_.post_
+                                     : nested_vector_[nested_name]
+                                           .first[nested_vector_id]
+                                           .e->tags_.pre_;
+
+      auto ret_tag_itr_nested =
+          rs::find(ret_tags_nested, nested_tag, &NamedSignal::name_);
+      auto &ret_tags_constraints = is_pre ? nested_vector_[nested_name]
+                                                .first[nested_vector_id]
+                                                .constraints_.pre_
+                                          : nested_vector_[nested_name]
+                                                .first[nested_vector_id]
+                                                .constraints_.post_;
+      auto  ret_tag_itr_constraints =
+          rs::find(ret_tags_constraints, nested_tag, &NamedSignal::name_);
+      if (ret_tag_itr_nested == rs::end(ret_tags_nested) &&
+          ret_tag_itr_constraints == rs::end(ret_tags_constraints))
+      {
+        errInvalidToken(token,
+                        nested_tag + " is not a valid tag ",
+                        rv::concat(ret_tags_nested, ret_tags_constraints) |
+                            rv::transform(&NamedSignal::name_) |
+                            rs::to<std::vector<std::string>>);
+        throw language::ParserError{};
+      }
+      auto &ret_tag_itr = ret_tag_itr_nested == rs::end(ret_tags_nested)
+                              ? ret_tag_itr_constraints
+                              : ret_tag_itr_nested;
+      ret_tag_itr->signal_spec_.setBound();
+      return { *ret_tag_itr, nested_tag };
     }
-    auto &ret_tags_nested = is_pre ? nested_[nested_name].e->tags_.post_
-                                   : nested_[nested_name].e->tags_.pre_;
-    auto  ret_tag_itr_nested =
-        rs::find(ret_tags_nested, nested_tag, &NamedSignal::name_);
-    auto &ret_tags_constraints = is_pre
-                                     ? nested_[nested_name].constraints_.pre_
-                                     : nested_[nested_name].constraints_.post_;
-    auto  ret_tag_itr_constraints =
-        rs::find(ret_tags_constraints, nested_tag, &NamedSignal::name_);
-    if (ret_tag_itr_nested == rs::end(ret_tags_nested) &&
-        ret_tag_itr_constraints == rs::end(ret_tags_constraints))
+    else
     {
-      errInvalidToken(token,
-                      nested_tag + " is not a valid tag ",
-                      rv::concat(ret_tags_nested, ret_tags_constraints) |
-                          rv::transform(&NamedSignal::name_) |
-                          rs::to<std::vector<std::string>>);
-      throw language::ParserError{};
+      if (nested_.find(nested_name) == nested_.end())
+      {
+        errInvalidToken(token,
+                        "<" + nested_name + "> is not a nested process of " +
+                            name_,
+                        nested_ | rv::keys | rs::to<std::vector<std::string>>);
+        throw language::ParserError{};
+      }
+      auto &ret_tags_nested = is_pre ? nested_[nested_name].e->tags_.post_
+                                     : nested_[nested_name].e->tags_.pre_;
+      auto  ret_tag_itr_nested =
+          rs::find(ret_tags_nested, nested_tag, &NamedSignal::name_);
+      auto &ret_tags_constraints =
+          is_pre ? nested_[nested_name].constraints_.pre_
+                 : nested_[nested_name].constraints_.post_;
+      auto ret_tag_itr_constraints =
+          rs::find(ret_tags_constraints, nested_tag, &NamedSignal::name_);
+      if (ret_tag_itr_nested == rs::end(ret_tags_nested) &&
+          ret_tag_itr_constraints == rs::end(ret_tags_constraints))
+      {
+        errInvalidToken(token,
+                        nested_tag + " is not a valid tag ",
+                        rv::concat(ret_tags_nested, ret_tags_constraints) |
+                            rv::transform(&NamedSignal::name_) |
+                            rs::to<std::vector<std::string>>);
+        throw language::ParserError{};
+      }
+      auto &ret_tag_itr = ret_tag_itr_nested == rs::end(ret_tags_nested)
+                              ? ret_tag_itr_constraints
+                              : ret_tag_itr_nested;
+      ret_tag_itr->signal_spec_.setBound();
+      return { *ret_tag_itr, nested_tag };
     }
-    auto &ret_tag_itr = ret_tag_itr_nested == rs::end(ret_tags_nested)
-                            ? ret_tag_itr_constraints
-                            : ret_tag_itr_nested;
-    ret_tag_itr->signal_spec_.setBound();
-    return { *ret_tag_itr, nested_tag };
   }
   else   // this case might be completely unnecessary
   {
@@ -368,11 +443,23 @@ void
   {
     auto p           = source_token.expr_.find(':');
     auto nested_name = source_token.expr_.substr(0, p);
-    // auto nested_tag  = source_token.expr_.substr(p + 1);
-    nested_[nested_name].e->tag_conversions_.push_back(cs);
+    auto nested_tag  = source_token.expr_.substr(p + 1);
+    if (auto p2 = nested_tag.find(':'); p2 != std::string::npos)
+    {
+      auto nested_vector_id = std::stol(nested_tag.substr(0, p2));
+      nested_vector_[nested_name]
+          .first[nested_vector_id]
+          .e->tag_conversions_.push_back(cs);
+    }
+    else
+    {
+      nested_[nested_name].e->tag_conversions_.push_back(cs);
+    }
   }
-  else
+  else   // may not be needed at all
+  {
     tag_conversions_.push_back(cs);
+  }
 }
 
 void

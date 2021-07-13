@@ -7,35 +7,20 @@
 
 class fork_join {
 
-  std::string info_tag_;
   std::vector<ded::concepts::Process> envs_;
   std::vector<ded::specs::ProcessSpec> env_specs_;
 
 public:
-  fork_join() { configure(publishConfiguration()); }
-
-  ded::specs::ProcessSpec publishConfiguration()
+  void configuration(ded::specs::ProcessSpec &ps)
   {
-    ded::specs::ProcessSpec es;
-
-    es.bindPostTag("info", "double");
-
-	es.bindProcessVector("envs", env_specs_);
-    es.bindProcessVectorPostConstraints("envs", { { "info", "double" } });
-
-    return es;
-  }
-
-  void configure(ded::specs::ProcessSpec es)
-  {
-  es.configureProcessVector("envs", env_specs_);
+  ps.nestedProcessVector("envs", env_specs_,{}, {{"x", "double"}});
   envs_.clear();
   for (auto &env_spec : env_specs_)
   {
 	envs_.push_back(ded::makeProcess(env_spec));
   }
 
-    es.configurePostTag("info", info_tag_);
+    ps.postTag("info", "double");
   }
 
   ded::concepts::Population evaluate(ded::concepts::Population);
