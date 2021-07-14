@@ -1,55 +1,72 @@
 
+# Day-Night experiment; the kind of experiment where a population
+# is evaluated for some generations in one environemnt, and then for
+# some generations in a different environment, and oscillates between them
 
-e = $markov_brain 
+__substrate e = $markov_brain 
  {
-     hiddens = 5
-	 outputs = 2
-	 inputs = 4
+   hiddens = 5
+   outputs = 2
+   inputs = 4
  }
 
-Population = $linear 
- { 
-	size = 40
-	entity = !e # `entity` is special
-	track_lineage = true 
- }
+__population Population = $linear 
+{ 
+  size = 40
+  entity = !e 
+  track_lineage = true 
+}
 
- night = $cycle 
+# this is the "night" version where the food is not replaced
+__process night = $cycle 
  {
- 	count = 10
-  	world = $sequence 
-	{
-		first = $forager { replace = false }
-		second = $elite_replacement 
-		{ 
-			? value 5 
-		}
-	}
+   count = 10
+   world = $sequence 
+           {
+             first = $forager 
+                     { 
+                       replace = false 
+                       action <- out_sense     
+                       line_of_sight -> in_sense 
+                     }
+             second = $elite_replacement 
+                      { 
+                        ? value 5 
+                      }
+             first:food_eaten => second:value 
+           }
  }
 
-day = $cycle 
- {
- 	count = 10
-  	world = $sequence 
-	{
-		first = $forager { replace = true }
-     	second = $elite_replacement  
-		{ 
-			? value 5 
-		}
-	}
- }
+# this is the "night" version where the food is replaced
+__process day = $cycle
+{
+   count = 10
+   world = $sequence 
+           {
+             first = $forager #{ replace = true }
+                     { 
+                       replace = false 
+                       action <- out_sense     
+                       line_of_sight -> in_sense 
+                     }
+             second = $elite_replacement 
+                      { 
+                        ? value 5 
+                      }
+             first:food_eaten => second:value 
+           }
+}
 
-day_night = $sequence 
- {
-	first = !day
-	second = !night
- }
+# oscillate between both environments
+__process day_night = $sequence 
+{
+  first = !day
+  second = !night
+}
 
-
-Process = $cycle  
- { 
+__process Process = $cycle  
+{ 
   count = 40
   world = !day_night
- }
+}
 

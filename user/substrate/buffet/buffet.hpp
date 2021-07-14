@@ -8,9 +8,6 @@
 class buffet
 {
 
-  std::string in_sense_   = "<double,inputs>";
-  std::string out_sense_  = "<double,outputs>";
-
   ded::concepts::Encoding  genome_;
   ded::specs::EncodingSpec genome_spec_ = genome_.publishConfiguration();
   std::regex               encoding_parser_{ R"(([^:]+):)" };
@@ -21,8 +18,10 @@ class buffet
 
   std::vector<double> buffer_;
 
-  std::vector<ded::concepts::Substrate> gates_;
+  std::vector<ded::concepts::Substrate>  gates_;
   std::vector<ded::specs::SubstrateSpec> gate_specs_;
+
+  std::vector<long> codon_{ 7, 14 };
 
   struct GateEncodings
   {
@@ -37,59 +36,35 @@ class buffet
   void compute_gates_();
 
 public:
-  buffet()
-  {
-    configure(publishConfiguration());
-  }
-
-  ded::specs::SubstrateSpec
-      publishConfiguration()
-  {
-    ded::specs::SubstrateSpec es;
-
-    es.bindParameter("inputs", input_);
-    es.bindParameter("outputs", output_);
-    es.bindParameter("hiddens", hidden_);
-
-    es.bindNestedSubstrates("gates", gate_specs_);
-
-    es.bindInput("in_layer", "<double,inputs>");
-    es.bindOutput("out_layer", "<double,outputs>");
-
-    es.bindEncoding("genome", genome_spec_);
-
-    return es;
-  }
-
   void
-      configure(ded::specs::SubstrateSpec es)
+      configuration(ded::specs::SubstrateSpec &es)
   {
 
-    es.configureParameter("inputs", input_);
-    es.configureParameter("outputs", output_);
-    es.configureParameter("hiddens", hidden_);
-    es.configureNestedSubstrates("gates", gate_specs_);
+    es.parameter("inputs", input_);
+    es.parameter("outputs", output_);
+    es.parameter("hiddens", hidden_);
 
-    es.configureInput("in_layer", in_sense_);
+    es.input("in_layer", "<double,inputs>");
+    es.output("out_layer", "<double,outputs>");
 
-    es.configureOutput("out_layer", out_sense_);
-
-    es.configureEncoding("genome", genome_spec_);
+    es.encoding("genome", genome_spec_);
     genome_.configure(genome_spec_);
 
+    es.nestedSubstrateVector("gates", gate_specs_);
+
     genome_.generate(500);
-	for (auto &gate_spec :  gate_specs_) 
-	{
-      gate_spec.bindSubstrateIO(es);
-	  auto gate = ded::makeSubstrate(gate_spec);
+    genome_.seedCodons(codon_, 4);
+    for (auto &gate_spec : gate_specs_)
+    {
+      auto gate = ded::makeSubstrate(gate_spec);
       gates_.push_back(gate);
-      gate_encodings_.push_back(
-          { static_cast<long>(gate.getEncoding().size()),
-            gate.getEncoding() | rv::take(2) | rs::to<std::vector<long>>,
-            gate_spec });
+      auto ge = gate.getEncoding();
+      gate_encodings_.push_back({ static_cast<long>(gate.getEncoding().size()),
+                                  ge | rv::take(2) | rs::to<std::vector<long>>,
+                                  gate_spec });
     }
 
-    for (auto & gate_encoding : gate_encodings_)
+    for (auto &gate_encoding : gate_encodings_)
     {
       genome_.seedCodons(gate_encoding.start_codon, 4);
     }
@@ -113,5 +88,8 @@ public:
     genome_ = e;
     compute_gates_();
   }
-  ded::concepts::Encoding parseEncoding(std::string){ return {}; }
+  ded::concepts::Encoding parseEncoding(std::string)
+  {
+    return {};
+  }
 };

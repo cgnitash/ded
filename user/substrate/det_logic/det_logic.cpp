@@ -4,23 +4,6 @@
 #include <algorithm>
 #include <vector>
 
-/*
-ded::concepts::Encoding
-    det_logic::parseEncoding(std::string s)
-{
-  ded::concepts::Encoding e;
-  for (std::sregex_iterator end,
-       i(std::begin(s), std::end(s), encoding_parser_);
-       i != end;
-       i++)
-  {
-    auto site = (*i)[1].str();
-    if (!site.empty()) { e.push_back(std::stol(site)); }
-  }
-  return e;
-}
-*/
-
 void
     det_logic::reset()
 {
@@ -40,7 +23,7 @@ void
 void
     det_logic::input(std::string n, ded::concepts::Signal s)
 {
-  if (n == in_sense_)
+  if (n == "ins")
   {
     auto v = std::any_cast<std::vector<double>>(s);
     if (static_cast<long>(v.size()) != input_)
@@ -65,7 +48,7 @@ ded::concepts::Signal
     det_logic::output(std::string n)
 {
 
-  if (n == out_sense_)
+  if (n == "outs")
   {
     return buffer_ | rs::copy | ra::slice(input_, input_ + output_);
   }

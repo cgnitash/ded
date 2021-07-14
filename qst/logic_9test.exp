@@ -1,0 +1,49 @@
+
+# testing ground for logic 9
+
+__encoding enc = $encoding 
+{
+	point_mutate_prob =  0.005 
+}
+
+__substrate e = $markov_brain
+{
+     #hiddens =   [ 1 2 3 4 5 ]
+     hiddens =  2
+	 outputs =  4 
+	 inputs = 8#[ 4 8 12 ]
+	 genome = !enc
+}
+
+__population Population = $linear 
+{ 
+	size = 10 
+	entity = !e # `entity` is special
+	track_lineage = true 
+	load_from = ""
+}
+
+
+
+__process fors = $sequence  
+{
+     first 	= 	$logic_9 	
+				{ 
+                  tests = 1
+                  bits = 4
+			      #args = ^e-inputs
+				  ? logic_done 5 
+				  result <- out_sense 
+				  args ->  in_sense 
+				}
+     second = $elite_replacement  {  strength = 0.4 }
+	
+	 first:logic_done => second:value
+}
+
+
+__process Process = $cycle  { 
+ count = 1
+  world = !fors
+}
+

@@ -1,34 +1,38 @@
 
+# demnonstrate binding to specific parameter
 
-e = $markov_brain 
+__substrate e = $markov_brain 
 {
-     hiddens = 5
-	 outputs = 2
-	 inputs = ^fs-first-sensor_range
+   hiddens = 5
+   outputs = 2
+   inputs = ^fs-first-sensor_range  # necessary since sensor_range is varied
 }
 
-Population = $linear 
+__population Population = $linear 
 { 
-	size = 40
-	entity = !e # `entity` is special
-	track_lineage = true 
+  size = 40
+  entity = !e 
+  track_lineage = true 
 }
 
 
-fs = 
-  $sequence  
+__process fs = $sequence  
 {
-     first 	= $forager 
-			{	 
-			? food_eaten 5 
-			sensor_range =  [ 2 3  ]
-			}
+  first = $forager 
+          {   
+            ? food_eaten 5 
+            sensor_range = [ 2 3 ]  # vary this parameter across simulations
+            action <- out_sense     
+            line_of_sight -> in_sense 
+          }
 
-     second = $elite_replacement { strength = 0.4 }
+  second = $elite_replacement { strength = 0.4 }
+             
+  first:food_eaten => second:value 
 }
 
-
-Process = $cycle  { 
+__process Process = $cycle 
+{ 
   count = 50
   world = !fs 
 }

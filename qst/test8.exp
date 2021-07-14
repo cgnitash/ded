@@ -1,49 +1,44 @@
 
+# example of a composite brain
+# buffet brain contains gates (that are just substrates)
+# and wiring of the buffet brain is similar  
+# to a markov brain
 
-# no way to turn off mutations? :(
-
-e = $markov_brain 
-	{	
-		outputs =  ^env-length 
-		#outputs =  8
-	}
-
-pop = $linear 
-	{ 
-	entity = !e # `entity` is special
-	track_lineage = true 
-	load_from = ""
-	}
-
-correct_pop = !pop { size = 25 }
-
-empty_pop = !pop { size = 1 }
-
-Population = [ !correct_pop !empty_pop ]
-#Population =  !empty_pop 
-
-env = 	$max_one 	
-		{ 
-			? ones 1 
-		    length = 8
-		}
-
-no_diff_selection = $sequence  
+__substrate logic =  $det_logic
 {
-	 first = !env
-     second = $elite_replacement  {  strength = 0.01  }
+     hiddens =   2 
+   outputs =  2
+   inputs = 4
+}
+   
+__substrat e = $buffet 
+{
+     hiddens =   2 
+   outputs =  2
+   inputs = 4
+   gates = < !logic !logic >
 }
 
-
-correct_env = $sequence  
-{
-	 first = !env
-     second = $elite_replacement  {  strength = 0.4  }
+__population Population = $linear 
+{ 
+  size = 50 
+  entity = !e # `entity` is special
+  track_lineage = true 
+  load_from = ""
 }
 
-
-Process = $cycle  { 
- count = 101
-  world = [ !correct_env !no_diff_selection ]
+__process Process = $cycle  { 
+ count = 11
+  world = 
+  $sequence  
+  {
+     first   =   $forager   
+        { 
+          ? food_eaten 2 
+          line_of_sight : in_layer 
+          action : out_layer 
+        }
+     second = $elite_replacement  {  strength = 0.5  }
+  }
 }
 

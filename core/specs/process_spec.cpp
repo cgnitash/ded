@@ -271,7 +271,7 @@ void
       {
         errInvalidToken(name_token_,
                         "post tag " + tag.name_ +
-                            " is not bound to a pre tag of" + n.first);
+                            " is not bound to a pre tag of " + n.first);
         throw language::ParserError{};
       }
   }

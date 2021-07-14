@@ -46,7 +46,7 @@ void
 void
     buffet::input(std::string n, ded::concepts::Signal s)
 {
-  if (n == in_sense_)
+  if (n == "in_layer")
   {
     auto v = std::any_cast<std::vector<double>>(s);
     if (static_cast<long>(v.size()) != input_)
@@ -71,7 +71,7 @@ ded::concepts::Signal
     buffet::output(std::string n)
 {
 
-  if (n == out_sense_)
+  if (n == "out_layer")
   {
     return buffer_ | rs::copy | ra::slice(input_, input_ + output_);
   }
@@ -97,7 +97,7 @@ void
   auto        input = buffer_ | rs::copy | ra::take(input_);
   for (auto &g : gates_)
   {
-    g.input(in_sense_, input);
+    g.input(, input);
     g.tick();
     auto vec = std::any_cast<std::vector<double>>(g.output(out_sense_));
     for (auto [i, v] : rv::enumerate(vec))

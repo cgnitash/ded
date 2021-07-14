@@ -1,36 +1,54 @@
 
-# working
+# basic experiment
+# tests signal conversion 
 
-e = $markov_brain {
-     hiddens = 5
-	 outputs = 2
-	 inputs = 4
-	}
-
-Population = $linear { 
-	size = [ 20 40 60 80 ]
-	entity = !e # `entity` is special
-	track_lineage = true 
-	}
-
-
-
-fs = 
-  $sequence  {
-     first 	= 		$forager { ? food_eaten 7 }
-     second = $elite_replacement { 
- 	 strength = 	0.4 
-  }
+__encoding enc = $encoding 
+{
+  point_mutate_prob =  0.005 
 }
 
-epoch = $cycle  { 
-  world = !fs
+__substrate e = $markov_brain
+{
+   hiddens = 5 
+   outputs = 3 # use an output length that doesn't match
+               # organisms desired output length
+   inputs = 4
+   genome = !enc 
 }
 
-# lineage tracking gets turned off here
-Process = $sequence {
-	first = !epoch
-			{ count = 100 }
-    second 	= !epoch
-			{ count = 25 }
+__population Population = $linear 
+{ 
+  size = 50 
+  entity = !e 
+  track_lineage = true 
 }
+
+__process fors = $sequence  
+{
+   first = $forager   
+           { 
+             sensor_range = ^e-inputs  
+             ? food_eaten 5           
+        
+             action <- $slice   # slice the brain's output to 
+                       {        # match what's needed by environment
+                         from = 0 
+                         to = 2 
+                         every = 1 
+                       } 
+                         <- out_sense 
+
+             line_of_sight ->  in_sense 
+           }
+   
+   second = $elite_replacement { strength = 0.4 }
+  
+   first:food_eaten => second:value   
+}
+
+__process Process = $cycle  
+{ 
+  count = 101
+  world = !fors
+}
+
