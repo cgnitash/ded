@@ -3,6 +3,7 @@
 #include "roulette_wheel.hpp"
 
 #include <algorithm>
+#include <any>
 #include <iostream>
 #include <vector>
 
@@ -12,14 +13,10 @@ ded::concepts::Population
 
   auto pop = populate.getAsVector();
 
-  auto const wheel = pop | rv::transform([this](auto org) {
-                       return std::get<double>(org.data.getValue(value_tag_));
+  auto const wheel = pop | rv::transform([](const auto &org) {
+                       return std::any_cast<double>(org.data.getValue("value"));
                      }) |
                      rv::partial_sum | rs::to<std::vector<double>>;
-
-  // done with value_tag_
-  for (auto &org : pop)
-    org.data.clear(value_tag_);
 
   std::mt19937                           spinner;
   std::uniform_real_distribution<double> croupier(0, wheel.back());

@@ -7,32 +7,22 @@
 #include <iostream>
 #include <vector>
 
-class roulette_wheel {
+class roulette_wheel
+{
 
-  std::string value_tag_ = "double";
-  double      strength_  = 0.1;
-  int invoke_ = 0;
+  double strength_ = 0.1;
+  int    invoke_   = 0;
 
 public:
-  ded::specs::ProcessSpec publishConfiguration()
+  void
+      configuration(ded::specs::ProcessSpec &spec)
   {
-    ded::specs::ProcessSpec es;
+    spec.parameter("strength",
+                   strength_,
+                   { { [](double s) { return 0.0 < s && s < 1.0; },
+                       "strength must be in the range (0.0, 1.0)" } });
 
-    es.bindParameter("strength",
-                      strength_,
-                      { { [](double s) { return 0.0 < s && s < 1.0; },
-                          "strength must be in the range (0.0, 1.0)" } });
-
-    es.bindPreTag("value", "double");
-
-    return es;
-  }
-
-  void configure(ded::specs::ProcessSpec es)
-  {
-    es.configureParameter("strength",strength_);
-
-    es.configurePreTag("value",value_tag_);
+    spec.preTag("value", "double");
   }
 
   ded::concepts::Population evaluate(ded::concepts::Population);
