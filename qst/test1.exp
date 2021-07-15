@@ -1,0 +1,52 @@
+
+# tests basic experiment
+# foraging environment, where a population of markov brains (agents)
+# runs around on a grid trying to eat food. The location of
+# the food is passed to the agents via sight signals (agent knows
+# how far away food is if facing it directly, at a distance less than 5
+
+__encoding enc = $encoding 
+{
+  point_mutate_prob =  0.005  # override a specific parameter 
+}
+
+__substrate e = $markov_brain
+{
+   hiddens = [ 2 3 4 ]   # vary this parameter; generates 3 simulations
+   outputs = 2 
+   inputs = 4
+   genome = !enc  # use a previously specified component
+}
+
+__population Population = $linear 
+{ 
+  size = 50 
+  entity = !e  # `entity` is special (currently Populations are required
+                 # to have this nested Process component name
+  track_lineage = true 
+  load_from = ""         # just generates a default population
+}
+
+__process fors = $sequence  
+{
+   first = $forager   
+           { 
+             sensor_range = ^e-inputs  # track another parameter in the script
+             ? food_eaten 5            # record this tag across the population every
+                                       # 5th time this Process runs
+        
+             action <- out_sense       # bind Process signal to Substrate signal
+             line_of_sight ->  in_sense 
+           }
+   
+   second = $elite_replacement { strength = 0.4 }
+  
+   first:food_eaten => second:value    # bind tags, so that the optimizer knows what to use
+}
+
+__process Process = $cycle  
+{ 
+  count = 101
+  world = !fors
+}
+

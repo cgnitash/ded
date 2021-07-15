@@ -1,0 +1,58 @@
+
+# In every generation, the population is evaluated in
+# two different worlds, and the average score in these worlds
+# is used by the optimizer
+ 
+__substrate e = $markov_brain 
+{
+  hiddens = 5
+  outputs = 2
+  inputs = 4
+}
+
+__population Population = $linear 
+{ 
+  size = 40
+  entity = !e
+  track_lineage = true 
+}
+
+__process day = $forager 
+{ 
+  ? food_eaten 2 
+  action <- out_sense     
+  line_of_sight -> in_sense 
+}
+
+__process night = $forager 
+{ 
+  direction = false  
+  ? food_eaten 3  
+  action <- out_sense     
+  line_of_sight -> in_sense 
+}
+
+__process day_night = $sequence 
+{
+  first   =   $fork_join 
+  {
+    envs = < !day !night >
+
+    envs:0:food_eaten => envs:0:x
+    envs:1:food_eaten => envs:1:x
+  }
+
+  second = $elite_replacement 
+  { 
+    ? value 5
+    strength = [ 0.1 0.4 ] 
+  }
+  first:info => second:value 
+}
+
+__process Process = $cycle  
+{ 
+  count = 50
+  world = !day_night
+}
+

@@ -1,0 +1,72 @@
+
+# Day-Night experiment; the kind of experiment where a population
+# is evaluated for some generations in one environemnt, and then for
+# some generations in a different environment, and oscillates between them
+
+__substrate e = $markov_brain 
+ {
+   hiddens = 5
+   outputs = 2
+   inputs = 4
+ }
+
+__population Population = $linear 
+{ 
+  size = 40
+  entity = !e 
+  track_lineage = true 
+}
+
+# this is the "night" version where the food is not replaced
+__process night = $cycle 
+ {
+   count = 10
+   world = $sequence 
+           {
+             first = $forager 
+                     { 
+                       replace = false 
+                       action <- out_sense     
+                       line_of_sight -> in_sense 
+                     }
+             second = $elite_replacement 
+                      { 
+                        ? value 5 
+                      }
+             first:food_eaten => second:value 
+           }
+ }
+
+# this is the "night" version where the food is replaced
+__process day = $cycle
+{
+   count = 10
+   world = $sequence 
+           {
+             first = $forager #{ replace = true }
+                     { 
+                       replace = false 
+                       action <- out_sense     
+                       line_of_sight -> in_sense 
+                     }
+             second = $elite_replacement 
+                      { 
+                        ? value 5 
+                      }
+             first:food_eaten => second:value 
+           }
+}
+
+# oscillate between both environments
+__process day_night = $sequence 
+{
+  first = !day
+  second = !night
+}
+
+__process Process = $cycle  
+{ 
+  count = 40
+  world = !day_night
+}
+

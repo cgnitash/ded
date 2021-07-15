@@ -1,0 +1,41 @@
+
+# example where the environment generating the fitness
+# doesn't give any input to the organisms, and only
+# reads their output.
+# Also, another example of an optimizer roulette wheel`
+
+__substrate e = $markov_brain 
+{
+   hiddens = 2 
+   outputs = 8
+}
+
+__population Population = $linear 
+{ 
+  size = [ 10 20 30 40 50 ] 
+  entity = !e 
+  track_lineage = true 
+  load_from = ""
+}
+
+__process fors = $sequence  
+{
+  first = $max_one   
+          { 
+            ? ones 2 
+            length =  8   
+            ons <- out_sense     
+          }
+  second = $roulette_wheel  
+           {  
+             strength = 0.4  
+           }
+  first:ones => second:value 
+}
+
+__process Process = $cycle  
+{ 
+  count = 101
+  world = !fors
+}
+
