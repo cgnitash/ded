@@ -1,6 +1,7 @@
 
 
 #include "components.hpp"
+#include "core/specs/process_spec.hpp"
 
 #include <algorithm>
 #include <exception>
@@ -18,6 +19,7 @@
 #include <vector>
 
 long ded::concepts::Substrate::substrate_id_ = 0;
+int ded::concepts::Process::global_invocations_ = 0;
 
 std::string ded::GLOBAL_PATH = "./";
 

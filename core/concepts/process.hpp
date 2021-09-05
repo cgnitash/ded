@@ -158,6 +158,7 @@ private:
   specs::TraceConfig traces_;
 
   int invocations_ = 0;
+  static int global_invocations_;
 
   specs::ConversionSignatureSequence tag_conversions_;
 

@@ -34,6 +34,7 @@ Population
   GLOBAL_PATH = GLOBAL_PATH.substr(0, GLOBAL_PATH.find_last_of('/') + 1);
 
   invocations_++;
+  global_invocations_++;
 
   return p_r;
 }
@@ -80,7 +81,9 @@ void
     if (invocations_ && !(invocations_ % n.frequency_))
     {
       std::ofstream pop_stats_file{ ded::GLOBAL_PATH + n.name_ + "_" +
-                                    std::to_string(invocations_) + ".csv" };
+                                    std::to_string(invocations_) + "_" +
+                                    std::to_string(global_invocations_) +
+                                    ".csv" };
       pop_stats_file << "id," << n.name_ << "\n";
       for (const auto &org : pop.getAsVector())
         pop_stats_file << org.getID() << ","
